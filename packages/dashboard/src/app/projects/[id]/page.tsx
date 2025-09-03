@@ -50,7 +50,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   new FeedbacksWidget({
     projectKey: '${project.api_key}',
     target: '#feedback-widget',
-    embedMode: 'inline'
+    embedMode: 'inline',
+    apiUrl: 'https://app.feedbacks.dev/api/feedback'
   });
 </script>`;
 
