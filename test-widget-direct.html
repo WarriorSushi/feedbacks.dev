@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test My Widget (Direct)</title>
+</head>
+<body>
+    <h1>Testing My Feedbacks Widget (Direct Load)</h1>
+    
+    <!-- Load widget directly from production -->
+    <script src="https://app.feedbacks.dev/widget/widget-1.0.0.js"></script>
+    <link rel="stylesheet" href="https://app.feedbacks.dev/widget/main.css">
+
+    <div id="feedback-widget"></div>
+    <script>
+      new FeedbacksWidget({
+        projectKey: 'pk_live_3HC6o1cIgPh5utWSOBZLHyeFbBa8AECe',
+        target: '#feedback-widget',
+        embedMode: 'inline',
+        apiUrl: 'https://app.feedbacks.dev/api/feedback'
+      });
+    </script>
+</body>
+</html>

@@ -41,8 +41,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     .order('created_at', { ascending: false });
 
   const widgetCode = `<!-- Feedbacks Widget -->
-<script src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-1.0.0.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/main.css">
+<script src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@56e1707/packages/widget/dist/widget-1.0.0.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@56e1707/packages/widget/dist/main.css">
 
 <!-- Inline embed -->
 <div id="feedback-widget"></div>
