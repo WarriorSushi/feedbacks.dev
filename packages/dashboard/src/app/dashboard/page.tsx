@@ -1,20 +1,36 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MobileNav } from '@/components/mobile-nav';
 import { Plus, BarChart3, Calendar, Mail, ExternalLink } from 'lucide-react';
+import { createClient } from '@/lib/supabase-server';
 
-export default function DashboardPage() {
-  // TODO: Add back user authentication and data fetching
-  const user = { email: 'user@example.com' };
-  const projects: any[] = [];
-  const totalFeedback = 0;
+export default async function DashboardPage() {
+  const supabase = createClient();
 
-  // TODO: Redirect to auth if not logged in
-  // if (!user) {
-  //   redirect('/auth');
-  // }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/auth');
+  }
+
+  // Fetch user's projects with feedback count
+  const { data: projects, error: projectsError } = await supabase
+    .from('projects')
+    .select(`
+      *,
+      feedback:feedback(count)
+    `)
+    .eq('owner_user_id', user.id);
+
+  // Calculate total feedback across all projects
+  const totalFeedback = projects?.reduce((acc, project) => {
+    return acc + (project.feedback?.[0]?.count || 0);
+  }, 0) || 0;
 
   return (
     <div className="min-h-screen bg-background">

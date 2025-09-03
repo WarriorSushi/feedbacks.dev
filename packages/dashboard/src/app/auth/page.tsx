@@ -28,10 +28,18 @@ export default function AuthPage() {
     startTransition(async () => {
       setMessage('');
 
-      // TODO: Add back Supabase auth
-      // Simulate authentication for now
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const { error } = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
+
+        if (error) {
+          throw error;
+        }
+
         setMessage('Check your email for the sign-in link!');
         setMessageType('success');
         toast({
@@ -51,13 +59,17 @@ export default function AuthPage() {
   };
 
   const handleGithubAuth = async () => {
-    // TODO: Add back GitHub OAuth
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast({
-        title: 'GitHub sign-in',
-        description: 'GitHub OAuth not implemented yet.',
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
+
+      if (error) {
+        throw error;
+      }
     } catch (error: any) {
       setMessage(error.message);
       setMessageType('error');

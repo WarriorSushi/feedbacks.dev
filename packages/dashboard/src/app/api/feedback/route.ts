@@ -33,6 +33,12 @@ function isValidEmail(email?: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
@@ -40,7 +46,7 @@ export async function POST(request: NextRequest) {
     if (!checkRateLimit(ip)) {
       return NextResponse.json(
         { success: false, error: 'Rate limit exceeded' },
-        { status: 429 }
+        { status: 429, headers: corsHeaders }
       );
     }
 
@@ -51,7 +57,7 @@ export async function POST(request: NextRequest) {
     if (!apiKey || !message || !url) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -60,7 +66,7 @@ export async function POST(request: NextRequest) {
     if (trimmedMessage.length < 2 || trimmedMessage.length > 2000) {
       return NextResponse.json(
         { success: false, error: 'Message must be between 2 and 2000 characters' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -68,7 +74,7 @@ export async function POST(request: NextRequest) {
     if (!isValidEmail(email)) {
       return NextResponse.json(
         { success: false, error: 'Invalid email format' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -78,7 +84,7 @@ export async function POST(request: NextRequest) {
     } catch {
       return NextResponse.json(
         { success: false, error: 'Invalid URL' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -92,7 +98,7 @@ export async function POST(request: NextRequest) {
     if (projectError || !project) {
       return NextResponse.json(
         { success: false, error: 'Invalid project key' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -113,20 +119,22 @@ export async function POST(request: NextRequest) {
       console.error('Database error:', feedbackError);
       return NextResponse.json(
         { success: false, error: 'Failed to save feedback' },
-        { status: 500 }
+        { status: 500, headers: corsHeaders }
       );
     }
 
     return NextResponse.json({
       success: true,
       id: feedback.id,
+    }, {
+      headers: corsHeaders,
     });
 
   } catch (error) {
     console.error('API error:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

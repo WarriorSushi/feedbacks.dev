@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase-client';
 import { generateApiKey } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,17 @@ export default function NewProjectPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const { toast } = useToast();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/auth');
+      }
+    };
+    checkAuth();
+  }, [supabase, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,12 +38,11 @@ export default function NewProjectPage() {
       setError('');
 
       try {
-        // TODO: Add back supabase user check
-        // const { data: { user } } = await supabase.auth.getUser();
-        // if (!user) {
-        //   router.push('/auth');
-        //   return;
-        // }
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          router.push('/auth');
+          return;
+        }
 
         const trimmedName = name.trim();
         
@@ -42,17 +53,26 @@ export default function NewProjectPage() {
 
         const apiKey = generateApiKey();
         
-        // TODO: Add back supabase project creation
-        // Simulate successful creation for now
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const { data: project, error: createError } = await supabase
+          .from('projects')
+          .insert({
+            name: trimmedName,
+            api_key: apiKey,
+            owner_user_id: user.id,
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          throw createError;
+        }
 
         toast({
           title: 'Project created!',
           description: `${trimmedName} is ready to collect feedback.`,
         });
 
-        // TODO: Redirect to actual project page
-        router.push('/dashboard');
+        router.push(`/projects/${project.id}`);
       } catch (err: any) {
         setError(err.message || 'Failed to create project');
         toast({

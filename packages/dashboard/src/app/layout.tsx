@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -10,7 +10,12 @@ export const metadata: Metadata = {
   description: 'Collect user feedback with a single line of code. Premium feedback widget for developers.',
   keywords: 'feedback widget, user feedback, javascript widget, developer tools',
   authors: [{ name: 'feedbacks.dev' }],
-  viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
   themeColor: '#2563eb',
 };
 
