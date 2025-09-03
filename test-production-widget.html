@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Production Widget</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2563eb; margin-bottom: 20px; }
+        .widget-test {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2563eb;
+        }
+        .btn {
+            background: #2563eb;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .btn:hover { background: #1d4ed8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Production Widget Test</h1>
+        
+        <p><strong>Your API Key:</strong> pk_live_3HC6o1cIgPh5utWSOBZLHyeFbBa8AECe</p>
+        
+        <div class="widget-test">
+            <h3>1. Inline Widget Test</h3>
+            <p>Widget embedded directly below:</p>
+            <div id="feedback-inline" style="border: 2px dashed #2563eb; padding: 20px; border-radius: 8px; margin: 15px 0;">
+                <!-- Inline widget will load here -->
+            </div>
+        </div>
+        
+        <div class="widget-test">
+            <h3>2. Modal Trigger Test</h3>
+            <p>Click button to open feedback modal:</p>
+            <button id="feedback-trigger" class="btn">📝 Give Feedback</button>
+        </div>
+        
+        <div class="widget-test">
+            <h3>3. Floating Button Test</h3>
+            <p>Floating button appears in bottom-right corner automatically.</p>
+        </div>
+        
+        <h3>📊 How to Verify:</h3>
+        <ol>
+            <li><strong>Submit feedback</strong> using any of the widgets above</li>
+            <li><strong>Check your dashboard</strong> at <a href="https://feedbacks.dev/dashboard" target="_blank">feedbacks.dev/dashboard</a></li>
+            <li><strong>Look for new feedback</strong> in your project</li>
+        </ol>
+    </div>
+
+    <!-- Load widget from CDN -->
+    <script src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-1.0.0.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/main.css">
+    
+    <script>
+        const API_KEY = 'pk_live_3HC6o1cIgPh5utWSOBZLHyeFbBa8AECe';
+        
+        // Initialize inline widget
+        new FeedbacksWidget({
+            projectKey: API_KEY,
+            target: '#feedback-inline',
+            embedMode: 'inline'
+        });
+        
+        // Initialize modal trigger
+        new FeedbacksWidget({
+            projectKey: API_KEY,
+            target: '#feedback-trigger',
+            embedMode: 'trigger'
+        });
+        
+        // Initialize floating button
+        new FeedbacksWidget({
+            projectKey: API_KEY,
+            embedMode: 'modal'
+        });
+    </script>
+</body>
+</html>

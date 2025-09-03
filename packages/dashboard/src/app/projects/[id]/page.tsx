@@ -47,10 +47,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 <!-- Inline embed -->
 <div id="feedback-widget"></div>
 <script>
-  FeedbacksWidget.init({
-    apiKey: '${project.api_key}',
-    containerId: 'feedback-widget',
-    mode: 'inline'
+  new FeedbacksWidget({
+    projectKey: '${project.api_key}',
+    target: '#feedback-widget',
+    embedMode: 'inline'
   });
 </script>`;
 
