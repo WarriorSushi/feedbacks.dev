@@ -10,11 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Github, Mail, ArrowLeft } from 'lucide-react';
+import { Github, Mail, ArrowLeft, Chrome, MessageSquare, Key } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AuthPage() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
@@ -58,10 +60,10 @@ export default function AuthPage() {
     });
   };
 
-  const handleGithubAuth = async () => {
+  const handleOAuthAuth = async (provider: 'github' | 'google' | 'discord') => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'github',
+        provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -75,10 +77,49 @@ export default function AuthPage() {
       setMessageType('error');
       toast({
         variant: 'destructive',
-        title: 'GitHub sign-in failed',
+        title: `${provider.charAt(0).toUpperCase() + provider.slice(1)} sign-in failed`,
         description: error.message,
       });
     }
+  };
+
+  const handlePasswordAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    startTransition(async () => {
+      setMessage('');
+
+      try {
+        const authMethod = isSignUp 
+          ? supabase.auth.signUp({ email, password })
+          : supabase.auth.signInWithPassword({ email, password });
+
+        const { error, data } = await authMethod;
+
+        if (error) {
+          throw error;
+        }
+
+        if (isSignUp && !data.session) {
+          setMessage('Please check your email to confirm your account!');
+          setMessageType('success');
+          toast({
+            title: 'Account created!',
+            description: 'Check your email to confirm your account.',
+          });
+        } else {
+          router.push('/dashboard');
+        }
+      } catch (error: any) {
+        setMessage(error.message);
+        setMessageType('error');
+        toast({
+          variant: 'destructive',
+          title: isSignUp ? 'Sign-up failed' : 'Sign-in failed',
+          description: error.message,
+        });
+      }
+    });
   };
 
   return (
@@ -103,15 +144,38 @@ export default function AuthPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <Button
-                onClick={handleGithubAuth}
-                className="w-full gap-2 h-11"
-                variant="outline"
-                type="button"
-              >
-                <Github className="h-4 w-4" />
-                Continue with GitHub
-              </Button>
+              {/* OAuth Providers */}
+              <div className="space-y-3">
+                <Button
+                  onClick={() => handleOAuthAuth('google')}
+                  className="w-full gap-2 h-11"
+                  variant="outline"
+                  type="button"
+                >
+                  <Chrome className="h-4 w-4" />
+                  Continue with Google
+                </Button>
+                
+                <Button
+                  onClick={() => handleOAuthAuth('github')}
+                  className="w-full gap-2 h-11"
+                  variant="outline"
+                  type="button"
+                >
+                  <Github className="h-4 w-4" />
+                  Continue with GitHub
+                </Button>
+                
+                <Button
+                  onClick={() => handleOAuthAuth('discord')}
+                  className="w-full gap-2 h-11"
+                  variant="outline"
+                  type="button"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Continue with Discord
+                </Button>
+              </div>
 
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
@@ -119,12 +183,35 @@ export default function AuthPage() {
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with email
+                    Or use email
                   </span>
                 </div>
               </div>
+              
+              {/* Toggle between sign in/up */}
+              <div className="flex gap-2 p-1 bg-muted rounded-lg">
+                <Button
+                  type="button"
+                  variant={!isSignUp ? 'default' : 'ghost'}
+                  size="sm"
+                  className="flex-1 h-8"
+                  onClick={() => setIsSignUp(false)}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  type="button"
+                  variant={isSignUp ? 'default' : 'ghost'}
+                  size="sm"
+                  className="flex-1 h-8"
+                  onClick={() => setIsSignUp(true)}
+                >
+                  Sign Up
+                </Button>
+              </div>
 
-              <form onSubmit={handleEmailAuth} className="space-y-4">
+              {/* Email/Password Form */}
+              <form onSubmit={handlePasswordAuth} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email address</Label>
                   <Input
@@ -137,21 +224,73 @@ export default function AuthPage() {
                     className="h-11"
                   />
                 </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="h-11"
+                  />
+                  {isSignUp && (
+                    <p className="text-xs text-muted-foreground">
+                      Password must be at least 6 characters
+                    </p>
+                  )}
+                </div>
 
                 <Button 
                   type="submit" 
+                  className="w-full gap-2 h-11" 
+                  disabled={isPending || !email.trim() || !password.trim()}
+                >
+                  {isPending ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                      {isSignUp ? 'Creating account...' : 'Signing in...'}
+                    </>
+                  ) : (
+                    <>
+                      <Key className="h-4 w-4" />
+                      {isSignUp ? 'Create account' : 'Sign in'}
+                    </>
+                  )}
+                </Button>
+              </form>
+              
+              {/* Magic Link Option */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <Separator className="w-full" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or get a magic link
+                  </span>
+                </div>
+              </div>
+              
+              <form onSubmit={handleEmailAuth}>
+                <Button 
+                  type="submit" 
+                  variant="outline"
                   className="w-full gap-2 h-11" 
                   disabled={isPending || !email.trim()}
                 >
                   {isPending ? (
                     <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
                       Sending magic link...
                     </>
                   ) : (
                     <>
                       <Mail className="h-4 w-4" />
-                      Send magic link
+                      Send magic link to {email || 'email'}
                     </>
                   )}
                 </Button>
