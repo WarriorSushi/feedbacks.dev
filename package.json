@@ -1,0 +1,27 @@
+{
+  "name": "feedbacks-dev",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=packages/dashboard",
+    "build": "npm run build --workspaces",
+    "widget:dev": "npm run dev --workspace=packages/widget",
+    "widget:build": "npm run build --workspace=packages/widget",
+    "dashboard:dev": "npm run dev --workspace=packages/dashboard",
+    "dashboard:build": "npm run build --workspace=packages/dashboard",
+    "type-check": "npm run type-check --workspaces"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "ramda": "^0.31.3",
+    "tailwindcss": "^4.1.12"
+  }
+}
