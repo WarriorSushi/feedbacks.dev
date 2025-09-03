@@ -11,7 +11,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com/)
 
-[🚀 Live Demo](https://feedbacks.dev) • [📖 Documentation](./CLAUDE.md) • [🐛 Report Bug](https://github.com/your-username/feedbacks.dev/issues) • [💡 Request Feature](https://github.com/your-username/feedbacks.dev/issues)
+[🚀 Live Demo](https://feedbacks.dev) • [📖 Documentation](./CLAUDE.md) • [🐛 Report Bug](https://github.com/WarriorSushi/feedbacks.dev/issues/new?template=bug_report.md) • [💡 Request Feature](https://github.com/WarriorSushi/feedbacks.dev/issues/new?template=feature_request.md)
 
 </div>
 
@@ -72,7 +72,7 @@ That's it! Users can now submit feedback directly from your website.
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/feedbacks.dev.git
+git clone https://github.com/WarriorSushi/feedbacks.dev.git
 cd feedbacks.dev
 
 # Install dependencies
@@ -191,9 +191,9 @@ We love contributions! Please read our [Contributing Guide](./CONTRIBUTING.md) t
 
 ## 🐛 Issues & Support
 
-- 🐛 **Bug Reports**: [Create an issue](https://github.com/your-username/feedbacks.dev/issues/new?template=bug_report.md)
-- 💡 **Feature Requests**: [Create an issue](https://github.com/your-username/feedbacks.dev/issues/new?template=feature_request.md)
-- 💬 **Questions**: [Start a discussion](https://github.com/your-username/feedbacks.dev/discussions)
+- 🐛 **Bug Reports**: [Create an issue](https://github.com/WarriorSushi/feedbacks.dev/issues/new?template=bug_report.md)
+- 💡 **Feature Requests**: [Create an issue](https://github.com/WarriorSushi/feedbacks.dev/issues/new?template=feature_request.md)
+- 💬 **Questions**: [Start a discussion](https://github.com/WarriorSushi/feedbacks.dev/discussions)
 
 ## 📊 Roadmap
 
