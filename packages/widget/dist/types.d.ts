@@ -17,5 +17,6 @@ export interface WidgetConfig {
     target?: string;
     buttonText?: string;
     primaryColor?: string;
+    apiUrl?: string;
     debug?: boolean;
 }

@@ -2,7 +2,7 @@
 const nextConfig = {
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000', 'app.feedbacks.dev'],
+      allowedOrigins: ['localhost:3000', 'app.feedbacks.dev', 'www.feedbacks.dev', 'feedbacks.dev'],
     },
   },
   async headers() {

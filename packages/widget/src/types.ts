@@ -19,5 +19,6 @@ export interface WidgetConfig {
   target?: string; // CSS selector for embed target
   buttonText?: string;
   primaryColor?: string;
+  apiUrl?: string; // Custom API endpoint
   debug?: boolean;
 }

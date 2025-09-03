@@ -272,7 +272,8 @@ class FeedbacksWidget {
 
   private async submitWithRetry(data: FeedbackData, attempt = 1): Promise<FeedbackResponse> {
     try {
-      const response = await fetch('http://localhost:3000/api/feedback', {
+      const apiUrl = this.config.apiUrl || 'https://app.feedbacks.dev/api/feedback';
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

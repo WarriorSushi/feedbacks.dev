@@ -115,12 +115,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
                 <div className="flex gap-4">
                   <Button asChild>
-                    <Link href="http://localhost:8080" target="_blank">
+                    <Link 
+                      href={process.env.NODE_ENV === 'development' ? "http://localhost:8080" : "https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html"} 
+                      target="_blank"
+                    >
                       Test Widget
                     </Link>
                   </Button>
                   <Button variant="outline" asChild>
-                    <Link href="https://raw.githack.com/WarriorSushi/feedbacks.dev/main/packages/widget/dist/demo.html" target="_blank">
+                    <Link href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html" target="_blank">
                       View Demo
                     </Link>
                   </Button>
