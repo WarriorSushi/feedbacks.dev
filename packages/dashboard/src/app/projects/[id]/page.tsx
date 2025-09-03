@@ -40,9 +40,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     .eq('project_id', params.id)
     .order('created_at', { ascending: false });
 
+  const WIDGET_VERSION = '1.0'; // Update this when widget version changes
   const widgetCode = `<!-- Feedbacks Widget -->
-<script src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@56e1707/packages/widget/dist/widget-1.0.0.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@56e1707/packages/widget/dist/main.css">
+<script src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-${WIDGET_VERSION}.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-${WIDGET_VERSION}.css">
 
 <!-- Inline embed -->
 <div id="feedback-widget"></div>

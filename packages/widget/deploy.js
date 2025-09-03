@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const packageJson = require('./package.json');
 
 // Configuration for different CDN providers
 const CDN_CONFIG = {
@@ -16,6 +17,7 @@ const CDN_CONFIG = {
 };
 
 function generateInstallationCode() {
+  const version = packageJson.version;
   const instructions = `
 # Feedbacks Widget CDN Installation
 
@@ -25,12 +27,12 @@ Add this script tag to your HTML:
 
 \`\`\`html
 <!-- Load from jsDelivr CDN (recommended) -->
-<script src="${CDN_CONFIG.jsdelivr.baseUrl}/widget-1.0.0.js"></script>
-<link rel="stylesheet" href="${CDN_CONFIG.jsdelivr.baseUrl}/main.css">
+<script src="${CDN_CONFIG.jsdelivr.baseUrl}/widget-${version}.js"></script>
+<link rel="stylesheet" href="${CDN_CONFIG.jsdelivr.baseUrl}/widget-${version}.css">
 
 <!-- Alternative: Load from GitHub Raw -->
-<script src="${CDN_CONFIG.github.baseUrl}/widget-1.0.0.js"></script>
-<link rel="stylesheet" href="${CDN_CONFIG.github.baseUrl}/main.css">
+<script src="${CDN_CONFIG.github.baseUrl}/widget-${version}.js"></script>
+<link rel="stylesheet" href="${CDN_CONFIG.github.baseUrl}/widget-${version}.css">
 \`\`\`
 
 ## Usage Examples
@@ -88,14 +90,14 @@ FeedbacksWidget.init({
 - **GitHub Raw**: ${CDN_CONFIG.github.baseUrl}/
 
 Files available:
-- \`widget-1.0.0.js\` - Main widget JavaScript (8.13 KB minified)
-- \`main.css\` - Widget styles (8.9 KB)
+- \`widget-${version}.js\` - Main widget JavaScript (minified)
+- \`widget-${version}.css\` - Widget styles  
 - \`widget.d.ts\` - TypeScript definitions
 - \`types.d.ts\` - Type definitions
 
 ## Version
 
-Current version: 1.0.0
+Current version: ${version}
 
 The CDN files are automatically updated when changes are pushed to the main branch.
 `;
@@ -108,13 +110,14 @@ const instructions = generateInstallationCode();
 fs.writeFileSync(path.join(__dirname, 'CDN_INSTALLATION.md'), instructions);
 
 // Generate a simple index.html for CDN demo
+const version = packageJson.version;
 const demoHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feedbacks Widget CDN Demo</title>
-    <link rel="stylesheet" href="${CDN_CONFIG.jsdelivr.baseUrl}/main.css">
+    <link rel="stylesheet" href="${CDN_CONFIG.jsdelivr.baseUrl}/widget-${version}.css">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -169,7 +172,7 @@ const demoHtml = `<!DOCTYPE html>
         <p>Floating button appears in bottom right corner (auto-loads on page).</p>
     </div>
 
-    <script src="${CDN_CONFIG.jsdelivr.baseUrl}/widget-1.0.0.js"></script>
+    <script src="${CDN_CONFIG.jsdelivr.baseUrl}/widget-${version}.js"></script>
     <script>
         // Replace 'your-api-key' with your actual API key
         const API_KEY = 'pk_live_demo123'; // Demo key - replace with real one

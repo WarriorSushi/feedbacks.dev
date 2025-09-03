@@ -1,14 +1,16 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const packageJson = require('./package.json');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
+  const version = packageJson.version;
   
   return {
     entry: './src/widget.ts',
     output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: 'widget-1.0.0.js',
+      filename: `widget-${version}.js`,
       clean: true,
     },
     module: {
@@ -31,7 +33,9 @@ module.exports = (env, argv) => {
       extensions: ['.ts', '.js'],
     },
     plugins: [
-      ...(isProduction ? [new MiniCssExtractPlugin()] : []),
+      ...(isProduction ? [new MiniCssExtractPlugin({
+        filename: `widget-${version}.css`
+      })] : []),
     ],
     optimization: {
       minimize: isProduction,
