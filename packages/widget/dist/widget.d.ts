@@ -1,0 +1,32 @@
+import './styles.css';
+import { WidgetConfig } from './types';
+declare class FeedbacksWidget {
+    private config;
+    private isOpen;
+    private button;
+    private overlay;
+    private retryCount;
+    private maxRetries;
+    constructor(config: WidgetConfig);
+    private init;
+    private setup;
+    private log;
+    private createButton;
+    private createInlineForm;
+    private attachTriggerListeners;
+    private getFormHTML;
+    private attachEventListeners;
+    private open;
+    private close;
+    private createModal;
+    private attachFormHandlers;
+    private submitFeedback;
+    private submitWithRetry;
+    private delay;
+    private isValidEmail;
+    private setSubmitState;
+    private showSuccess;
+    private showInlineSuccess;
+    private showError;
+}
+export default FeedbacksWidget;
