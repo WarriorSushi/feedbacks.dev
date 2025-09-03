@@ -8,12 +8,7 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    
-    // Add debug logging
-    if (error) {
-      console.error('Auth callback error:', error);
-    }
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (!error) {
       const forwardedHost = request.headers.get('x-forwarded-host');
@@ -27,11 +22,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${origin}${next}`);
       }
     }
-  } else {
-    console.error('No auth code received in callback');
   }
 
   // Return the user to an error page with instructions
-  console.error('Redirecting to auth error page');
   return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }
