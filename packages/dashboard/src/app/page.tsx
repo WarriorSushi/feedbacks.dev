@@ -101,7 +101,7 @@ export default function HomePage() {
                     <Link href="/docs">Docs</Link>
                   </Button>
                   <Button className="bg-gradient-primary hover:opacity-90" asChild>
-                    <Link href="/auth">Get Started</Link>
+                    <Link href="https://app.feedbacks.dev/auth">Get Started</Link>
                   </Button>
                 </>
               )}

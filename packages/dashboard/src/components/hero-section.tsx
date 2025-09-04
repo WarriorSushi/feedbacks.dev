@@ -49,7 +49,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <Button size="lg" className="bg-gradient-primary hover:opacity-90 hero-glow" asChild>
-              <Link href={isAuthenticated ? "/dashboard" : "/auth"}>
+              <Link href={isAuthenticated ? "/dashboard" : "https://app.feedbacks.dev/auth"}>
                 {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
