@@ -6,12 +6,12 @@ Add this script tag to your HTML:
 
 ```html
 <!-- Load from jsDelivr CDN (recommended) -->
-<script src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-1.0.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-1.0.css">
+<script src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-1.0.0.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-1.0.0.css">
 
 <!-- Alternative: Load from GitHub Raw -->
-<script src="https://raw.githubusercontent.com/WarriorSushi/feedbacks.dev/main/packages/widget/dist/widget-1.0.js"></script>
-<link rel="stylesheet" href="https://raw.githubusercontent.com/WarriorSushi/feedbacks.dev/main/packages/widget/dist/widget-1.0.css">
+<script src="https://raw.githubusercontent.com/WarriorSushi/feedbacks.dev/main/packages/widget/dist/widget-1.0.0.js"></script>
+<link rel="stylesheet" href="https://raw.githubusercontent.com/WarriorSushi/feedbacks.dev/main/packages/widget/dist/widget-1.0.0.css">
 ```
 
 ## Usage Examples
@@ -69,13 +69,13 @@ FeedbacksWidget.init({
 - **GitHub Raw**: https://raw.githubusercontent.com/WarriorSushi/feedbacks.dev/main/packages/widget/dist/
 
 Files available:
-- `widget-1.0.js` - Main widget JavaScript (minified)
-- `widget-1.0.css` - Widget styles  
+- `widget-1.0.0.js` - Main widget JavaScript (minified)
+- `widget-1.0.0.css` - Widget styles  
 - `widget.d.ts` - TypeScript definitions
 - `types.d.ts` - Type definitions
 
 ## Version
 
-Current version: 1.0
+Current version: 1.0.0
 
 The CDN files are automatically updated when changes are pushed to the main branch.

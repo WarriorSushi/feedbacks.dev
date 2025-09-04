@@ -2,7 +2,7 @@
   "name": "@feedbacks/widget",
   "version": "1.0.0",
   "private": true,
-  "main": "dist/widget-1.0.js",
+  "main": "dist/widget-1.0.0.js",
   "scripts": {
     "dev": "webpack serve --mode development",
     "build": "webpack --mode production",

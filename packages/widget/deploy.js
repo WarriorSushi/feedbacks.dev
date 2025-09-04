@@ -202,6 +202,46 @@ const demoHtml = `<!DOCTYPE html>
 
 fs.writeFileSync(path.join(__dirname, 'dist', 'demo.html'), demoHtml);
 
+// Create backwards compatibility files
+const distPath = path.join(__dirname, 'dist');
+const mainFile = `widget-${version}.js`;
+const mainCssFile = `widget-${version}.css`;
+
+// Create compatibility copies for common version patterns
+const compatibilityFiles = [
+  'widget.js',                    // Generic version
+  'widget-latest.js',             // Latest version
+  `widget-${version.split('.').slice(0, 2).join('.')}.js`, // Major.minor (1.0)
+];
+
+const compatibilityCssFiles = [
+  'widget.css',
+  'widget-latest.css',
+  `widget-${version.split('.').slice(0, 2).join('.')}.css`,
+];
+
+// Copy JS files for backwards compatibility
+compatibilityFiles.forEach(fileName => {
+  if (fs.existsSync(path.join(distPath, mainFile))) {
+    fs.copyFileSync(
+      path.join(distPath, mainFile),
+      path.join(distPath, fileName)
+    );
+    console.log(`📄 Created compatibility copy: ${fileName}`);
+  }
+});
+
+// Copy CSS files for backwards compatibility  
+compatibilityCssFiles.forEach(fileName => {
+  if (fs.existsSync(path.join(distPath, mainCssFile))) {
+    fs.copyFileSync(
+      path.join(distPath, mainCssFile),
+      path.join(distPath, fileName)
+    );
+    console.log(`📄 Created compatibility copy: ${fileName}`);
+  }
+});
+
 console.log('✅ CDN deployment files generated:');
 console.log('📄 CDN_INSTALLATION.md - Installation instructions');
 console.log('📄 dist/demo.html - Live demo page');
