@@ -5,68 +5,25 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { X, Cookie } from 'lucide-react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase-client';
-import { usePathname } from 'next/navigation';
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const pathname = usePathname();
-  
-  // Don't show cookie banner on auth pages
-  if (pathname?.startsWith('/auth')) {
-    return null;
-  }
 
   useEffect(() => {
-    const checkAuthAndConsent = async () => {
-      try {
-        // First check if user already has cookie consent
-        const existingConsent = localStorage.getItem('cookie-consent');
-        if (existingConsent) {
-          setIsVisible(false);
-          setIsCheckingAuth(false);
-          return;
-        }
-        
-        // Check if user is authenticated
-        const supabase = createClient();
-        const authPromise = supabase.auth.getUser();
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Auth timeout')), 1000)
-        );
-        
-        const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
-        
-        if (user) {
-          // User is signed in - assume cookie consent (like major sites)
-          localStorage.setItem('cookie-consent', JSON.stringify({
-            choice: 'accepted',
-            timestamp: Date.now(),
-            reason: 'authenticated-user'
-          }));
-          setIsVisible(false);
-        } else {
-          // User not signed in - show cookie banner
-          setIsVisible(true);
-        }
-      } catch (error) {
-        // If auth check fails, show cookie banner
+    try {
+      const consent = localStorage.getItem('cookie-consent');
+      if (!consent) {
         setIsVisible(true);
-      } finally {
-        setIsCheckingAuth(false);
       }
-    };
-    
-    checkAuthAndConsent();
+    } catch (error) {
+      // If localStorage is blocked, show the banner
+      setIsVisible(true);
+    }
   }, []);
 
   const acceptCookies = () => {
     try {
-      localStorage.setItem('cookie-consent', JSON.stringify({
-        choice: 'accepted',
-        timestamp: Date.now()
-      }));
+      localStorage.setItem('cookie-consent', 'accepted');
     } catch (error) {
       // Handle localStorage errors gracefully
     }
@@ -75,18 +32,14 @@ export function CookieConsent() {
 
   const declineCookies = () => {
     try {
-      localStorage.setItem('cookie-consent', JSON.stringify({
-        choice: 'declined',
-        timestamp: Date.now()
-      }));
+      localStorage.setItem('cookie-consent', 'declined');
     } catch (error) {
       // Handle localStorage errors gracefully
     }
     setIsVisible(false);
   };
 
-  // Don't show banner while checking auth or if not visible
-  if (isCheckingAuth || !isVisible) return null;
+  if (!isVisible) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-md">
