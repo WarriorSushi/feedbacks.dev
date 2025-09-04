@@ -4,10 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
 import { Zap, Code, Rocket, Github, ArrowRight } from 'lucide-react';
+import { createClient } from '@/lib/supabase-server';
 
-export default function HomePage() {
-  // TODO: Add back user authentication
-  const user = null;
+export default async function HomePage() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
   const sampleCode = `<script 
   src="https://cdn.feedbacks.dev/widget-1.0.0.js"
@@ -30,7 +31,7 @@ export default function HomePage() {
             <div className="flex items-center space-x-4">
               {user ? (
                 <Button asChild>
-                  <Link href="/dashboard">Dashboard</Link>
+                  <Link href="https://app.feedbacks.dev/dashboard">Go to Dashboard</Link>
                 </Button>
               ) : (
                 <>
@@ -38,7 +39,7 @@ export default function HomePage() {
                     <Link href="/docs">Docs</Link>
                   </Button>
                   <Button asChild>
-                    <Link href="/auth">Get Started</Link>
+                    <Link href="https://app.feedbacks.dev/auth">Get Started</Link>
                   </Button>
                 </>
               )}
@@ -68,9 +69,15 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button size="lg" asChild>
-              <Link href="/auth" className="flex items-center">
-                Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
+              {user ? (
+                <Link href="https://app.feedbacks.dev/dashboard" className="flex items-center">
+                  Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              ) : (
+                <Link href="https://app.feedbacks.dev/auth" className="flex items-center">
+                  Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              )}
             </Button>
             <Button size="lg" variant="outline" asChild>
               <Link href="https://github.com/feedbacks-dev" className="flex items-center">
