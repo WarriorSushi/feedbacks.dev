@@ -112,15 +112,15 @@ export default function HomePage() {
       </nav>
 
       {/* Mobile Theme Toggle */}
-      <div className="md:hidden flex justify-between items-center px-4 sm:px-6 lg:px-8 py-2">
-        <Button variant="ghost" size="sm" asChild className="h-9 w-9 px-0">
+      <div className="md:hidden flex justify-between items-center px-4 sm:px-6 lg:px-8 py-2 bg-transparent">
+        <Button variant="ghost" size="sm" asChild className="h-9 w-9 px-0 bg-transparent hover:bg-white/10">
           <a
             href="https://github.com/feedbacksdev"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub"
           >
-            <Github className="h-4 w-4" />
+            <Github className="h-4 w-4 text-white dark:text-white" />
           </a>
         </Button>
         <ThemeToggle />
