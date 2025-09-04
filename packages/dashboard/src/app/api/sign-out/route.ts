@@ -2,6 +2,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
+  const response = NextResponse.json({ success: true });
+  
   try {
     // Create Supabase client with proper cookie handling for API routes
     const supabase = createServerClient(
@@ -13,20 +15,25 @@ export async function POST(request: NextRequest) {
             return request.cookies.get(name)?.value;
           },
           set(name: string, value: string, options: CookieOptions) {
-            // Cannot set cookies in API routes, but this is needed for the interface
+            response.cookies.set({
+              name,
+              value,
+              ...options,
+            });
           },
           remove(name: string, options: CookieOptions) {
-            // Cannot remove cookies in API routes, but this is needed for the interface
+            response.cookies.set({
+              name,
+              value: '',
+              ...options,
+              expires: new Date(0),
+            });
           },
         },
       }
     );
     
-    // Check current session before clearing
-    const { data: { user: beforeUser } } = await supabase.auth.getUser();
-    console.log('Before sign out - user:', beforeUser ? beforeUser.email : 'None');
-    
-    // Clear server-side session
+    // Clear server-side session - this will use the set/remove methods above
     const { error } = await supabase.auth.signOut();
     
     if (error) {
@@ -37,27 +44,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Create response and clear auth cookies manually
-    const response = NextResponse.json({ success: true });
-    
-    // Clear all Supabase auth cookies
-    const cookieNames = [
-      'sb-access-token',
-      'sb-refresh-token', 
-      'supabase-auth-token',
-      'sb-provider-token',
-      'sb-oauth-state'
-    ];
-    
-    cookieNames.forEach(cookieName => {
-      response.cookies.set(cookieName, '', {
-        expires: new Date(0),
-        path: '/',
-        domain: '.feedbacks.dev'
-      });
-    });
-    
-    console.log('Server-side sign out completed, cookies cleared');
+    console.log('Server-side sign out completed');
     return response;
     
   } catch (error) {

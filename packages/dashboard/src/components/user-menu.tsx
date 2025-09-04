@@ -41,12 +41,22 @@ export function UserMenu({ user }: UserMenuProps) {
     try {
       setIsSigningOut(true);
       
-      // Clear both client and server sessions
-      await supabase.auth.signOut(); // Clear client-side session
-      await fetch('/api/sign-out', { 
+      // Clear server-side session first
+      const serverSignOutResponse = await fetch('/api/sign-out', { 
         method: 'POST',
-        credentials: 'include' // Include cookies/session
-      }); // Clear server-side session
+        credentials: 'include'
+      });
+      
+      if (!serverSignOutResponse.ok) {
+        throw new Error('Server sign-out failed');
+      }
+      
+      // Then clear client-side session
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Client sign out error:', error);
+      }
       
       toast({
         title: "Signed out successfully",
