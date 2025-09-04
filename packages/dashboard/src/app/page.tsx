@@ -18,26 +18,22 @@ export default function HomePage() {
   useEffect(() => {
     const supabase = createClient();
     
-    // Client-side auth check - simple and reliable
-    const checkAuth = async () => {
+    // EXACT same auth logic as auth page (which works!)
+    const checkUser = async () => {
       try {
-        // First check session from localStorage (instant)
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          setUser(session.user);
-          setIsLoading(false);
-          return;
-        }
-        
-        // Fallback: Check user from server (with timeout)
+        // Add timeout protection (same as auth page)
         const authPromise = supabase.auth.getUser();
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Auth timeout')), 2000)
         );
         
         const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
-        setUser(user);
+        if (user) {
+          console.log('User detected on landing page:', user.email);
+          setUser(user);
+        } else {
+          setUser(null);
+        }
       } catch (error) {
         console.error('Auth check error:', error);
         setUser(null);
@@ -45,16 +41,8 @@ export default function HomePage() {
         setIsLoading(false);
       }
     };
-
-    // Listen for auth state changes (premium feature)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    checkAuth();
-
-    return () => subscription.unsubscribe();
+    
+    checkUser();
   }, []);
 
   const sampleCode = `<script 
