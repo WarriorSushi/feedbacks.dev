@@ -42,8 +42,8 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
 
           {/* Subtitle */}
           <p className="text-xl mb-8 max-w-2xl animate-fade-in text-[#1a1a1a] dark:text-gray-300" style={{ animationDelay: '0.2s' }}>
-            Lightweight, embeddable feedback widget that works everywhere. 
-            From websites to mobile apps – get user insights without the complexity.
+            Ultra-lightweight, copy-paste feedback infrastructure. 
+            Websites, mobile apps – blazing fast, future-ready.
           </p>
 
           {/* CTA buttons */}
