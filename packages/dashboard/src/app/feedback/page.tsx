@@ -171,7 +171,7 @@ export default function FeedbackPage() {
 
   return (
     <DashboardLayout user={user} projectsCount={projects.length}>
-      <div className="p-6 lg:p-8 space-y-8">
+      <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
             <MessageSquare className="h-6 w-6 text-accent" />
@@ -185,45 +185,45 @@ export default function FeedbackPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-4">
-          <div className="gradient-tile p-6">
+        <div className="grid gap-3 grid-cols-2 md:gap-4 lg:gap-6 lg:grid-cols-4">
+          <div className="gradient-tile p-3 md:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-80">Total Feedback</p>
-                <p className="text-3xl font-bold">{feedback.length}</p>
+                <p className="text-xs md:text-sm font-medium opacity-80 leading-tight">Total Feedback</p>
+                <p className="text-xl md:text-2xl lg:text-3xl font-bold">{feedback.length}</p>
               </div>
-              <MessageSquare className="h-8 w-8 opacity-60" />
+              <MessageSquare className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 opacity-60 flex-shrink-0" />
             </div>
           </div>
-          <div className="gradient-tile-warm p-6">
+          <div className="gradient-tile-warm p-3 md:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-80">New</p>
-                <p className="text-3xl font-bold">{feedback.filter(f => f.status === 'new').length}</p>
+                <p className="text-xs md:text-sm font-medium opacity-80 leading-tight">New</p>
+                <p className="text-xl md:text-2xl lg:text-3xl font-bold">{feedback.filter(f => f.status === 'new').length}</p>
               </div>
-              <Eye className="h-8 w-8 opacity-60" />
+              <Eye className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 opacity-60 flex-shrink-0" />
             </div>
           </div>
-          <div className="gradient-tile-accent p-6">
+          <div className="gradient-tile-accent p-3 md:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-80">Avg Rating</p>
-                <p className="text-3xl font-bold">
+                <p className="text-xs md:text-sm font-medium opacity-80 leading-tight">Avg Rating</p>
+                <p className="text-xl md:text-2xl lg:text-3xl font-bold">
                   {(feedback.reduce((acc, f) => acc + f.rating, 0) / feedback.length).toFixed(1)}
                 </p>
               </div>
-              <Star className="h-8 w-8 opacity-60" />
+              <Star className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 opacity-60 flex-shrink-0" />
             </div>
           </div>
-          <div className="gradient-tile p-6">
+          <div className="gradient-tile p-3 md:p-4 lg:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium opacity-80">This Week</p>
-                <p className="text-3xl font-bold">
+                <p className="text-xs md:text-sm font-medium opacity-80 leading-tight">This Week</p>
+                <p className="text-xl md:text-2xl lg:text-3xl font-bold">
                   {feedback.filter(f => new Date(f.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
                 </p>
               </div>
-              <Calendar className="h-8 w-8 opacity-60" />
+              <Calendar className="h-5 w-5 md:h-6 md:w-6 lg:h-8 lg:w-8 opacity-60 flex-shrink-0" />
             </div>
           </div>
         </div>
@@ -280,55 +280,61 @@ export default function FeedbackPage() {
             </div>
 
             {/* Feedback List */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {filteredFeedback.length > 0 ? (
                 filteredFeedback.map((item) => (
-                  <div key={item.id} className="project-item group">
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                        <User className="h-5 w-5 text-accent" />
+                  <div key={item.id} className="project-item group overflow-hidden">
+                    <div className="flex items-start gap-3 p-3 md:gap-4 md:p-4">
+                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                        <User className="h-4 w-4 md:h-5 md:w-5 text-accent" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-3">
-                            <p className="font-medium text-sm">{item.email}</p>
-                            <Badge className={`text-xs ${getStatusColor(item.status)}`}>
+                      <div className="flex-1 min-w-0 space-y-2">
+                        {/* Header row with email, badges, and time */}
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-2 min-w-0">
+                            <p className="font-medium text-sm truncate">{item.email}</p>
+                            <Badge className={`text-xs ${getStatusColor(item.status)} flex-shrink-0`}>
                               {item.status}
                             </Badge>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="outline" className="text-xs flex-shrink-0">
                               {item.project_name}
                             </Badge>
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
                             <Clock className="h-3 w-3" />
-                            {formatTimeAgo(item.created_at)}
+                            <span className="whitespace-nowrap">{formatTimeAgo(item.created_at)}</span>
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-2 mb-2">
-                          {getRatingStars(item.rating)}
-                          <span className="text-sm text-muted-foreground">({item.rating}/5)</span>
+                        {/* Rating */}
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            {getRatingStars(item.rating)}
+                          </div>
+                          <span className="text-xs text-muted-foreground">({item.rating}/5)</span>
                         </div>
                         
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        {/* Message */}
+                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                           {item.message}
                         </p>
                         
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Globe className="h-3 w-3" />
-                            <span className="truncate max-w-[200px]">{item.url}</span>
+                        {/* URL and Actions */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+                            <Globe className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{item.url}</span>
                           </div>
-                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button size="sm" variant="outline" className="h-7 text-xs">
-                              <Reply className="h-3 w-3 mr-1" />
-                              Reply
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 sm:ml-2">
+                            <Button size="sm" variant="outline" className="h-6 text-xs px-2">
+                              <Reply className="h-3 w-3" />
+                              <span className="hidden sm:inline ml-1">Reply</span>
                             </Button>
-                            <Button size="sm" variant="outline" className="h-7 text-xs">
-                              <Archive className="h-3 w-3 mr-1" />
-                              Archive
+                            <Button size="sm" variant="outline" className="h-6 text-xs px-2">
+                              <Archive className="h-3 w-3" />
+                              <span className="hidden sm:inline ml-1">Archive</span>
                             </Button>
-                            <Button size="sm" variant="outline" className="h-7 w-7 p-0">
+                            <Button size="sm" variant="outline" className="h-6 w-6 p-0">
                               <MoreHorizontal className="h-3 w-3" />
                             </Button>
                           </div>

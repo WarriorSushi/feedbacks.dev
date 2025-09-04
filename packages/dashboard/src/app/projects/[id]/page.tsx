@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CopyButton } from '@/components/copy-button';
-import { ArrowLeft, ExternalLink, Settings } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Settings, MessageSquare, Code } from 'lucide-react';
 import Link from 'next/link';
 
 interface ProjectPageProps {
@@ -75,152 +76,220 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
         {/* Project Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{project.name}</h1>
           <p className="text-gray-600 mt-2">Manage your feedback collection</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Widget Setup */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ExternalLink className="h-5 w-5" />
-                  Widget Installation
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label>API Key</Label>
-                  <div className="flex gap-2 mt-1">
-                    <Input 
-                      value={project.api_key} 
-                      readOnly 
-                      className="font-mono text-sm"
-                    />
-                    <CopyButton text={project.api_key} />
-                  </div>
-                </div>
+        {/* Project Tabs */}
+        <Tabs defaultValue="feedback" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="feedback" className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              <span className="hidden sm:inline">Feedback</span>
+            </TabsTrigger>
+            <TabsTrigger value="widget-installation" className="flex items-center gap-2">
+              <Code className="h-4 w-4" />
+              <span className="hidden sm:inline">Widget Installation</span>
+            </TabsTrigger>
+          </TabsList>
 
-                <div>
-                  <Label>Widget Code</Label>
-                  <div className="relative mt-1">
-                    <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
-                      <code>{widgetCode}</code>
-                    </pre>
-                    <CopyButton 
-                      text={widgetCode}
-                      className="absolute top-2 right-2"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <Button asChild>
-                    <Link 
-                      href={process.env.NODE_ENV === 'development' ? "http://localhost:8080" : "https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html"} 
-                      target="_blank"
-                    >
-                      Test Widget
-                    </Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html" target="_blank">
-                      View Demo
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
+          <TabsContent value="feedback" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Recent Feedback */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Feedback</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {feedbacks && feedbacks.length > 0 ? (
-                  <div className="space-y-4">
-                    {feedbacks.slice(0, 5).map((feedback) => (
-                      <div key={feedback.id} className="border rounded-lg p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant={feedback.type === 'bug' ? 'destructive' : 'default'}>
-                                {feedback.type}
-                              </Badge>
-                              <span className="text-sm text-gray-500">
-                                {new Date(feedback.created_at).toLocaleDateString()}
-                              </span>
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5" />
+                    Recent Feedback
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {feedbacks && feedbacks.length > 0 ? (
+                    <div className="space-y-4">
+                      {feedbacks.slice(0, 5).map((feedback) => (
+                        <div key={feedback.id} className="border rounded-lg p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Badge variant={feedback.type === 'bug' ? 'destructive' : 'default'}>
+                                  {feedback.type}
+                                </Badge>
+                                <span className="text-sm text-gray-500">
+                                  {new Date(feedback.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <p className="text-gray-900">{feedback.message}</p>
+                              {feedback.email && (
+                                <p className="text-sm text-gray-600 mt-1">
+                                  From: {feedback.email}
+                                </p>
+                              )}
                             </div>
-                            <p className="text-gray-900">{feedback.message}</p>
-                            {feedback.email && (
-                              <p className="text-sm text-gray-600 mt-1">
-                                From: {feedback.email}
-                              </p>
-                            )}
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <p>No feedback yet.</p>
+                      <p className="text-sm mt-1">Install the widget to start collecting feedback!</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Project Stats Sidebar */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Project Stats</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Total Feedback</Label>
+                      <p className="text-2xl font-bold text-blue-600">
+                        {feedbacks?.length || 0}
+                      </p>
+                    </div>
+                    <div>
+                      <Label>Project ID</Label>
+                      <p className="text-sm font-mono text-gray-600">
+                        {project.id}
+                      </p>
+                    </div>
+                    <div>
+                      <Label>Created</Label>
+                      <p className="text-sm text-gray-600">
+                        {new Date(project.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No feedback yet.</p>
-                    <p className="text-sm mt-1">Install the widget to start collecting feedback!</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
 
-          {/* Project Stats */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Stats</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <Label>Total Feedback</Label>
-                    <p className="text-2xl font-bold text-blue-600">
-                      {feedbacks?.length || 0}
-                    </p>
-                  </div>
-                  <div>
-                    <Label>Project ID</Label>
-                    <p className="text-sm font-mono text-gray-600">
-                      {project.id}
-                    </p>
-                  </div>
-                  <div>
-                    <Label>Created</Label>
-                    <p className="text-sm text-gray-600">
-                      {new Date(project.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button variant="outline" className="w-full justify-start gap-2">
+                    <ExternalLink className="h-4 w-4" />
+                    View All Feedback
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start gap-2">
+                    <Settings className="h-4 w-4" />
+                    Project Settings
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <ExternalLink className="h-4 w-4" />
-                  View All Feedback
-                </Button>
-                <Button variant="outline" className="w-full justify-start gap-2">
-                  <Settings className="h-4 w-4" />
-                  Project Settings
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+          <TabsContent value="widget-installation" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Widget Setup */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Code className="h-5 w-5" />
+                    Widget Installation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>API Key</Label>
+                    <div className="flex gap-2 mt-1">
+                      <Input 
+                        value={project.api_key} 
+                        readOnly 
+                        className="font-mono text-sm"
+                      />
+                      <CopyButton text={project.api_key} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Widget Code</Label>
+                    <div className="relative mt-1">
+                      <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
+                        <code>{widgetCode}</code>
+                      </pre>
+                      <CopyButton 
+                        text={widgetCode}
+                        className="absolute top-2 right-2"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button asChild className="flex-1">
+                      <Link 
+                        href={process.env.NODE_ENV === 'development' ? "http://localhost:8080" : "https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html"} 
+                        target="_blank"
+                      >
+                        Test Widget
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild className="flex-1">
+                      <Link href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html" target="_blank">
+                        View Demo
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Project Stats Sidebar for Widget Installation */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Installation Guide</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <p className="font-medium">Step 1:</p>
+                      <p className="text-gray-600">Copy your API key</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Step 2:</p>
+                      <p className="text-gray-600">Copy the widget code</p>
+                    </div>
+                    <div>
+                      <p className="font-medium">Step 3:</p>
+                      <p className="text-gray-600">Paste before closing &lt;/body&gt; tag</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Project Info</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Project ID</Label>
+                      <p className="text-sm font-mono text-gray-600">
+                        {project.id}
+                      </p>
+                    </div>
+                    <div>
+                      <Label>Created</Label>
+                      <p className="text-sm text-gray-600">
+                        {new Date(project.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

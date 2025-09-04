@@ -89,35 +89,36 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:gap-6 sm:grid-cols-2">
           {/* Profile Settings */}
           <Card className="hover-lift">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <User className="h-5 w-5 text-accent" />
-                <CardTitle>Profile Information</CardTitle>
+                <User className="h-4 w-4 text-accent" />
+                <CardTitle className="text-lg">Profile Information</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Update your personal information and account details.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+            <CardContent className="space-y-3 pt-0">
+              <div className="space-y-1.5">
+                <Label htmlFor="fullName" className="text-sm">Full Name</Label>
                 <Input 
                   id="fullName" 
                   defaultValue={user.user_metadata?.full_name || ''} 
                   placeholder="Enter your full name"
+                  className="h-9"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-sm">Email Address</Label>
                 <Input 
                   id="email" 
                   type="email" 
                   defaultValue={user.email || ''} 
                   disabled 
-                  className="bg-muted"
+                  className="bg-muted h-9"
                 />
                 <p className="text-xs text-muted-foreground">
                   Email cannot be changed from this interface.
@@ -128,20 +129,20 @@ export default function SettingsPage() {
 
           {/* Notification Settings */}
           <Card className="hover-lift">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-accent" />
-                <CardTitle>Notifications</CardTitle>
+                <Bell className="h-4 w-4 text-accent" />
+                <CardTitle className="text-lg">Notifications</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Control how and when you receive notifications.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 pt-0">
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email Notifications</Label>
-                  <p className="text-xs text-muted-foreground">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm">Email Notifications</Label>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     Receive notifications about new feedback
                   </p>
                 </div>
@@ -150,13 +151,14 @@ export default function SettingsPage() {
                   onCheckedChange={(checked: boolean) => 
                     setSettings(prev => ({ ...prev, emailNotifications: checked }))
                   }
+                  className="ml-3 flex-shrink-0"
                 />
               </div>
               <Separator />
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Weekly Reports</Label>
-                  <p className="text-xs text-muted-foreground">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm">Weekly Reports</Label>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     Get weekly summaries of your feedback data
                   </p>
                 </div>
@@ -165,6 +167,7 @@ export default function SettingsPage() {
                   onCheckedChange={(checked: boolean) => 
                     setSettings(prev => ({ ...prev, weeklyReports: checked }))
                   }
+                  className="ml-3 flex-shrink-0"
                 />
               </div>
             </CardContent>
@@ -172,20 +175,20 @@ export default function SettingsPage() {
 
           {/* Privacy Settings */}
           <Card className="hover-lift">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-accent" />
-                <CardTitle>Privacy & Security</CardTitle>
+                <Shield className="h-4 w-4 text-accent" />
+                <CardTitle className="text-lg">Privacy & Security</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Control your privacy settings and data sharing preferences.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 pt-0">
               <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Public Profile</Label>
-                  <p className="text-xs text-muted-foreground">
+                <div className="space-y-0.5 flex-1 min-w-0">
+                  <Label className="text-sm">Public Profile</Label>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     Make your profile visible to other users
                   </p>
                 </div>
@@ -194,6 +197,7 @@ export default function SettingsPage() {
                   onCheckedChange={(checked: boolean) => 
                     setSettings(prev => ({ ...prev, publicProfile: checked }))
                   }
+                  className="ml-3 flex-shrink-0"
                 />
               </div>
             </CardContent>
@@ -201,19 +205,19 @@ export default function SettingsPage() {
 
           {/* API Settings */}
           <Card className="hover-lift">
-            <CardHeader>
+            <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Key className="h-5 w-5 text-accent" />
-                <CardTitle>API Access</CardTitle>
+                <Key className="h-4 w-4 text-accent" />
+                <CardTitle className="text-lg">API Access</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Manage your API keys and integration settings.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-muted/50 rounded-lg">
+            <CardContent className="space-y-3 pt-0">
+              <div className="p-3 bg-muted/50 rounded-lg">
                 <p className="text-sm font-medium mb-2">API Rate Limits</p>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-muted-foreground">Requests/hour:</span>
                     <span className="ml-2 font-mono">1,000</span>
@@ -224,7 +228,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full h-9 text-sm">
                 Generate New API Key
               </Button>
             </CardContent>
@@ -232,11 +236,11 @@ export default function SettingsPage() {
         </div>
 
         {/* Save Button */}
-        <div className="flex justify-end pt-6 border-t">
+        <div className="flex justify-end pt-4 border-t">
           <Button 
             onClick={handleSaveSettings} 
             disabled={isSaving}
-            className="bg-gradient-primary hover:opacity-90"
+            className="bg-gradient-primary hover:opacity-90 h-9"
           >
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? 'Saving...' : 'Save Changes'}

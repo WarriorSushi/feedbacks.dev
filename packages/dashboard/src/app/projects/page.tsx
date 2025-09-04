@@ -58,15 +58,15 @@ export default function ProjectsPage() {
 
   return (
     <DashboardLayout user={user} projectsCount={projects.length}>
-      <div className="p-6 lg:p-8 space-y-8">
-        <div className="flex items-center justify-between">
+      <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Your Projects</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-2xl md:text-3xl font-bold">Your Projects</h1>
+            <p className="text-muted-foreground mt-2 text-sm md:text-base">
               Manage all your feedback collection projects in one place.
             </p>
           </div>
-          <Button asChild size="lg" className="bg-gradient-primary hover:opacity-90">
+          <Button asChild size="default" className="bg-gradient-primary hover:opacity-90 transition-opacity duration-150 w-full sm:w-auto">
             <Link href="/projects/new">
               <Plus className="h-4 w-4 mr-2" />
               New Project
@@ -75,32 +75,33 @@ export default function ProjectsPage() {
         </div>
 
         {projects.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {projects.map((project: any, index: number) => (
-              <Card key={project.id} className="hover-lift animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <CardHeader>
+              <Card key={project.id} className="hover-lift animate-fade-in transition-all duration-200" style={{ animationDelay: `${index * 0.05}s` }}>
+                <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{project.name}</CardTitle>
-                    <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-                      {project.feedback?.[0]?.count || 0} responses
+                    <CardTitle className="text-base lg:text-lg truncate">{project.name}</CardTitle>
+                    <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20 text-xs flex-shrink-0">
+                      {project.feedback?.[0]?.count || 0}
                     </Badge>
                   </div>
-                  <CardDescription className="flex items-center gap-2">
+                  <CardDescription className="flex items-center gap-2 text-sm">
                     <Calendar className="h-3 w-3" />
-                    Created {new Date(project.created_at).toLocaleDateString()}
+                    <span className="truncate">Created {new Date(project.created_at).toLocaleDateString()}</span>
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-3 bg-muted/50 rounded-lg">
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    {/* API Key - Hidden on mobile, compact on desktop */}
+                    <div className="hidden sm:block p-2 md:p-3 bg-muted/50 rounded-lg">
                       <p className="text-xs text-muted-foreground mb-1">API Key</p>
-                      <code className="text-xs font-mono">
-                        {project.api_key?.slice(0, 20)}...
+                      <code className="text-xs font-mono break-all">
+                        {project.api_key?.slice(0, 15)}...
                       </code>
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Users className="h-3 w-3" />
                           <span>{Math.floor(Math.random() * 100) + 10}</span>
@@ -111,7 +112,7 @@ export default function ProjectsPage() {
                         </div>
                       </div>
                       
-                      <Button asChild size="sm" variant="outline">
+                      <Button asChild size="sm" variant="outline" className="h-8 transition-colors duration-150">
                         <Link href={`/projects/${project.id}`}>
                           <ExternalLink className="h-3 w-3 mr-1" />
                           View

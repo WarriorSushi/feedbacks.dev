@@ -124,7 +124,7 @@ export default function HelpPage() {
         </div>
 
         {/* Quick Links */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:gap-6 sm:grid-cols-2">
           {quickLinks.map((link, index) => (
             <Card key={index} className="hover-lift group cursor-pointer">
               <CardHeader className="pb-3">
@@ -133,15 +133,15 @@ export default function HelpPage() {
                     <link.icon className="h-5 w-5 text-accent" />
                   </div>
                   {link.badge && (
-                    <Badge variant="secondary" className="bg-accent/10 text-accent">
+                    <Badge variant="secondary" className="bg-accent/10 text-accent text-xs">
                       {link.badge}
                     </Badge>
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <h3 className="font-semibold mb-2">{link.title}</h3>
-                <p className="text-sm text-muted-foreground mb-3">
+                <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
                   {link.description}
                 </p>
                 <div className="flex items-center text-accent text-sm font-medium">
@@ -164,34 +164,34 @@ export default function HelpPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="flex flex-col items-center text-center p-4 rounded-lg bg-muted/30">
-                <Mail className="h-6 w-6 text-accent mb-2" />
-                <h3 className="font-medium mb-1">Email Support</h3>
-                <p className="text-sm text-muted-foreground mb-3">
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="flex flex-col items-center text-center p-3 rounded-lg bg-muted/30">
+                <Mail className="h-5 w-5 text-accent mb-2" />
+                <h3 className="font-medium mb-1 text-sm">Email Support</h3>
+                <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                   Get help via email within 24 hours
                 </p>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="text-xs h-7">
                   Send Email
                 </Button>
               </div>
-              <div className="flex flex-col items-center text-center p-4 rounded-lg bg-muted/30">
-                <MessageCircle className="h-6 w-6 text-accent mb-2" />
-                <h3 className="font-medium mb-1">Live Chat</h3>
-                <p className="text-sm text-muted-foreground mb-3">
+              <div className="flex flex-col items-center text-center p-3 rounded-lg bg-muted/30">
+                <MessageCircle className="h-5 w-5 text-accent mb-2" />
+                <h3 className="font-medium mb-1 text-sm">Live Chat</h3>
+                <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                   Chat with us in real-time
                 </p>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="text-xs h-7">
                   Start Chat
                 </Button>
               </div>
-              <div className="flex flex-col items-center text-center p-4 rounded-lg bg-muted/30">
-                <Book className="h-6 w-6 text-accent mb-2" />
-                <h3 className="font-medium mb-1">Documentation</h3>
-                <p className="text-sm text-muted-foreground mb-3">
+              <div className="flex flex-col items-center text-center p-3 rounded-lg bg-muted/30">
+                <Book className="h-5 w-5 text-accent mb-2" />
+                <h3 className="font-medium mb-1 text-sm">Documentation</h3>
+                <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                   Browse our complete docs
                 </p>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="text-xs h-7">
                   View Docs
                   <ExternalLink className="h-3 w-3 ml-1" />
                 </Button>
@@ -223,35 +223,35 @@ export default function HelpPage() {
         </Card>
 
         {/* Resources */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:gap-6 sm:grid-cols-2">
           <Card className="hover-lift">
-            <CardHeader>
+            <CardHeader className="pb-4">
               <div className="flex items-center gap-2">
                 <Video className="h-5 w-5 text-accent" />
-                <CardTitle>Video Tutorials</CardTitle>
+                <CardTitle className="text-lg">Video Tutorials</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Step-by-step video guides to get you started quickly.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium">Widget Setup Guide</p>
-                    <p className="text-sm text-muted-foreground">5 min tutorial</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm">Widget Setup Guide</p>
+                    <p className="text-xs text-muted-foreground">5 min tutorial</p>
                   </div>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" className="text-xs px-3 h-7 ml-3 flex-shrink-0">
                     Watch
                     <ExternalLink className="h-3 w-3 ml-1" />
                   </Button>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium">Dashboard Overview</p>
-                    <p className="text-sm text-muted-foreground">8 min tutorial</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm">Dashboard Overview</p>
+                    <p className="text-xs text-muted-foreground">8 min tutorial</p>
                   </div>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" className="text-xs px-3 h-7 ml-3 flex-shrink-0">
                     Watch
                     <ExternalLink className="h-3 w-3 ml-1" />
                   </Button>
@@ -261,33 +261,33 @@ export default function HelpPage() {
           </Card>
 
           <Card className="hover-lift">
-            <CardHeader>
+            <CardHeader className="pb-4">
               <div className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-accent" />
-                <CardTitle>Guides & Articles</CardTitle>
+                <CardTitle className="text-lg">Guides & Articles</CardTitle>
               </div>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 In-depth guides and best practices for collecting feedback.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium">Feedback Best Practices</p>
-                    <p className="text-sm text-muted-foreground">10 min read</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm">Feedback Best Practices</p>
+                    <p className="text-xs text-muted-foreground">10 min read</p>
                   </div>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" className="text-xs px-3 h-7 ml-3 flex-shrink-0">
                     Read
                     <ExternalLink className="h-3 w-3 ml-1" />
                   </Button>
                 </div>
                 <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium">Integration Examples</p>
-                    <p className="text-sm text-muted-foreground">15 min read</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-sm">Integration Examples</p>
+                    <p className="text-xs text-muted-foreground">15 min read</p>
                   </div>
-                  <Button size="sm" variant="outline">
+                  <Button size="sm" variant="outline" className="text-xs px-3 h-7 ml-3 flex-shrink-0">
                     Read
                     <ExternalLink className="h-3 w-3 ml-1" />
                   </Button>

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useMemo, useCallback } from 'react';
 import {
   Home,
   BarChart3,
@@ -41,7 +42,7 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarProps) {
   const pathname = usePathname();
 
-  const mainNavItems = [
+  const mainNavItems = useMemo(() => [
     {
       title: "Dashboard",
       url: "/dashboard",
@@ -63,25 +64,25 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
       url: "/settings",
       icon: Settings,
     },
-  ];
+  ], [projectsCount]);
 
-  const quickActions = [
+  const quickActions = useMemo(() => [
     {
       title: "New Project",
       url: "/projects/new",
       icon: Plus,
     },
-  ];
+  ], []);
 
-  const supportItems = [
+  const supportItems = useMemo(() => [
     {
       title: "Help & Support",
       url: "/help",
       icon: HelpCircle,
     },
-  ];
+  ], []);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
     try {
       await fetch('/api/sign-out', {
         method: 'POST',
@@ -91,7 +92,17 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
     } catch (error) {
       console.error('Sign out error:', error);
     }
-  };
+  }, []);
+
+  const userInitials = useMemo(() => 
+    user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase(),
+    [user.user_metadata?.full_name, user.email]
+  );
+
+  const displayName = useMemo(() => 
+    user.user_metadata?.full_name || 'User',
+    [user.user_metadata?.full_name]
+  );
 
   return (
     <Sidebar variant="inset" className="border-r">
@@ -117,25 +128,29 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainNavItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={pathname === item.url}
-                    className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                  >
-                    <Link href={item.url} className="flex items-center gap-3">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                      {item.badge && (
-                        <Badge variant="secondary" className="ml-auto text-xs">
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {mainNavItems.map((item) => {
+                const IconComponent = item.icon;
+                const isActive = pathname === item.url;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive}
+                      className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-150"
+                    >
+                      <Link href={item.url} className="flex items-center gap-3">
+                        <IconComponent className="h-4 w-4" />
+                        <span>{item.title}</span>
+                        {item.badge && (
+                          <Badge variant="secondary" className="ml-auto text-xs">
+                            {item.badge}
+                          </Badge>
+                        )}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -145,16 +160,19 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
           <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {quickActions.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url} className="flex items-center gap-3 text-primary hover:bg-primary/10">
-                      <item.icon className="h-4 w-4" />
-                      <span className="font-medium">{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {quickActions.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link href={item.url} className="flex items-center gap-3 text-primary hover:bg-primary/10 transition-colors duration-150">
+                        <IconComponent className="h-4 w-4" />
+                        <span className="font-medium">{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -163,16 +181,19 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {supportItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url} className="flex items-center gap-3">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {supportItems.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link href={item.url} className="flex items-center gap-3 transition-colors duration-150">
+                        <IconComponent className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -186,12 +207,12 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.user_metadata?.avatar_url} />
             <AvatarFallback className="bg-primary text-primary-foreground">
-              {user.user_metadata?.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase()}
+              {userInitials}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 text-left text-sm leading-tight">
             <span className="truncate font-medium block">
-              {user.user_metadata?.full_name || 'User'}
+              {displayName}
             </span>
             <span className="truncate text-xs text-muted-foreground block">
               {user.email}
@@ -200,7 +221,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
         </div>
 
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm" asChild className="flex-1">
+          <Button variant="ghost" size="sm" asChild className="flex-1 transition-colors duration-150">
             <Link href="/profile" className="flex items-center gap-2">
               <UserIcon className="h-3 w-3" />
               Profile
@@ -211,7 +232,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
             variant="ghost" 
             size="sm" 
             onClick={handleSignOut}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 transition-colors duration-150"
           >
             <LogOut className="h-3 w-3" />
             Sign Out
@@ -233,7 +254,7 @@ export function DashboardLayout({ children, user, projectsCount }: {
         <DashboardSidebar user={user} projectsCount={projectsCount} />
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <header className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <SidebarTrigger className="lg:hidden h-10 w-10 hover:bg-accent/20 transition-colors" />
+            <SidebarTrigger className="lg:hidden h-10 w-10 hover:bg-accent/20 transition-colors duration-150" />
             <div className="flex items-center gap-4 ml-auto">
               {/* Header content can be added here */}
             </div>
