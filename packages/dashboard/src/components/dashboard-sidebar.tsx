@@ -249,32 +249,30 @@ export function DashboardLayout({ children, user, projectsCount }: {
   user: User;
   projectsCount?: number;
 }) {
+  const pathname = usePathname();
+  const isDashboardPage = pathname === '/dashboard';
+  
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
         <DashboardSidebar user={user} projectsCount={projectsCount} />
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="lg:hidden h-8 w-8 hover:bg-accent/20 transition-colors duration-150" />
-              <Button 
-                asChild 
-                size="sm" 
-                variant="outline" 
-                className="lg:hidden h-8 text-xs px-3 transition-colors duration-150"
-              >
-                <Link href="/dashboard">Dashboard</Link>
-              </Button>
-            </div>
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0 pt-16 lg:pt-0">
+          <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:sticky lg:left-auto">
+            {!isDashboardPage && (
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="lg:hidden h-8 w-8 hover:bg-accent/20 transition-colors duration-150" />
+                <span className="lg:hidden text-sm font-medium text-muted-foreground">Menu</span>
+              </div>
+            )}
             
             {/* Center Branding */}
             <div className="absolute left-1/2 transform -translate-x-1/2">
               <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <div className="h-6 w-6 flex items-center justify-center">
+                <div className="h-8 w-8 flex items-center justify-center">
                   <img 
                     src="/logo.svg" 
                     alt="feedbacks.dev" 
-                    className="h-6 w-6 rounded"
+                    className="h-8 w-8 rounded"
                   />
                 </div>
                 <span className="hidden sm:inline text-sm font-semibold">feedbacks.dev</span>
@@ -286,8 +284,8 @@ export function DashboardLayout({ children, user, projectsCount }: {
               <ThemeToggle />
             </div>
           </header>
-          <main className="flex-1 overflow-auto w-full">
-            <div className="pb-6 sm:pb-8 md:pb-12">
+          <main className="flex-1 overflow-auto w-full bg-background">
+            <div className="pb-8 sm:pb-12 md:pb-16">
               {children}
             </div>
           </main>

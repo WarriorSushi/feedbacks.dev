@@ -181,13 +181,13 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout user={user} projectsCount={projects.length}>
-      <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 page-illumination">
+      <div className="p-6 md:p-6 lg:p-8 space-y-8 md:space-y-8 page-illumination">
         {/* Welcome Section */}
         <div className="animate-fade-in relative rounded-2xl p-4 md:p-6 bg-gradient-to-r from-background via-background to-primary/5">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex-1">
-              <h1 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
-                Welcome back, {user.user_metadata?.full_name || 'Developer'} ✨
+              <h1 className="text-sm md:text-lg font-medium text-muted-foreground">
+                Hi, {user.user_metadata?.full_name || 'Developer'} ✨
               </h1>
               <p className="text-muted-foreground text-sm md:text-lg mt-1 md:mt-2">
                 Ready to collect some amazing feedback today?
@@ -266,7 +266,7 @@ export default function DashboardPage() {
                   {projects.map((project: any, index: number) => (
                     <div 
                       key={project.id} 
-                      className="project-card bg-gradient-to-br from-background to-muted/20 rounded-xl border border-border/50 p-3 md:p-4 lg:p-6 hover:shadow-lg transition-all duration-300 animate-fade-in" 
+                      className="project-card bg-card rounded-xl border border-border p-3 md:p-4 lg:p-6 hover:shadow-lg transition-all duration-300 animate-fade-in" 
                       style={{ animationDelay: `${0.4 + index * 0.05}s` }}
                     >
                       <div className="space-y-3 md:space-y-4">
@@ -298,13 +298,6 @@ export default function DashboardPage() {
                           </div>
                         </div>
                         
-                        {/* API Key - Hidden on mobile */}
-                        <div className="hidden md:block p-3 bg-muted/30 rounded-lg">
-                          <p className="text-xs text-muted-foreground mb-1">API Key</p>
-                          <code className="text-xs font-mono break-all">
-                            {project.api_key?.slice(0, 20)}...
-                          </code>
-                        </div>
                         
                         <div className="flex gap-2 pt-1 md:pt-2">
                           <Button asChild size="sm" variant="outline" className="flex-1 hover-glow h-8">

@@ -68,9 +68,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               Back to Dashboard
             </Link>
           </Button>
-          <Button variant="outline" className="gap-2">
-            <Settings className="h-4 w-4" />
-            Settings
+          <Button variant="outline" className="gap-2" asChild>
+            <Link href="/settings">
+              <Settings className="h-4 w-4" />
+              Settings
+            </Link>
           </Button>
         </div>
 
@@ -178,9 +180,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     <ExternalLink className="h-4 w-4" />
                     View All Feedback
                   </Button>
-                  <Button variant="outline" className="w-full justify-start gap-2">
-                    <Settings className="h-4 w-4" />
-                    Project Settings
+                  <Button variant="outline" className="w-full justify-start gap-2" asChild>
+                    <Link href="/settings">
+                      <Settings className="h-4 w-4" />
+                      Project Settings
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>

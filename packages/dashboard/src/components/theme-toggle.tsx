@@ -29,7 +29,7 @@ export function ThemeToggle() {
       <Switch
         checked={theme === 'dark'}
         onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-        className="data-[state=checked]:bg-slate-800 data-[state=unchecked]:bg-yellow-200"
+        className="data-[state=checked]:bg-slate-800 data-[state=unchecked]:bg-yellow-600"
       />
       <Moon className={`h-4 w-4 transition-colors ${theme === 'dark' ? 'text-blue-400' : 'text-muted-foreground'}`} />
     </div>
