@@ -34,6 +34,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { BackButton } from '@/components/back-button';
+import { BottomBar } from '@/components/bottom-bar';
 import type { User } from '@supabase/supabase-js';
 
 interface DashboardSidebarProps {
@@ -259,16 +260,13 @@ export function DashboardLayout({ children, user, projectsCount }: {
         <DashboardSidebar user={user} projectsCount={projectsCount} />
         <div className="flex-1 flex flex-col overflow-hidden min-w-0 pt-16 lg:pt-0">
           <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:sticky lg:left-auto">
-            {/* Left Side - Hamburger Menu */}
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="lg:hidden h-8 w-8 p-1 hover:bg-accent/20 transition-colors duration-150">
-                <div className="flex flex-col gap-1">
-                  <div className="w-4 h-0.5 bg-foreground rounded"></div>
-                  <div className="w-4 h-0.5 bg-foreground rounded"></div>
-                  <div className="w-4 h-0.5 bg-foreground rounded"></div>
-                </div>
+            {/* Left Side - Menu Button */}
+            <div className="flex items-center ml-8">
+              <SidebarTrigger className="lg:hidden">
+                <Button size="sm" variant="outline" className="h-8 text-xs px-3 transition-colors duration-150">
+                  Menu
+                </Button>
               </SidebarTrigger>
-              <span className="lg:hidden text-sm font-medium text-muted-foreground">Menu</span>
             </div>
             
             {/* Center Branding */}
@@ -291,15 +289,16 @@ export function DashboardLayout({ children, user, projectsCount }: {
             </div>
           </header>
           {!isDashboardPage && (
-            <div className="px-4 pt-2 pb-1 border-b border-border/50">
-              <BackButton />
+            <div className="px-4 py-1 border-b border-border/30">
+              <BackButton className="h-6 text-xs px-2" />
             </div>
           )}
           <main className="flex-1 overflow-auto w-full bg-background prevent-bounce">
-            <div className="pb-8 sm:pb-12 md:pb-16">
+            <div className="pb-4 sm:pb-6 md:pb-8">
               {children}
             </div>
           </main>
+          <BottomBar />
         </div>
       </div>
     </SidebarProvider>

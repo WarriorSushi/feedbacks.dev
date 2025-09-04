@@ -25,9 +25,9 @@ export function BackButton({ fallbackUrl = '/dashboard', className = '' }: BackB
       variant="ghost" 
       size="sm" 
       onClick={handleBack}
-      className={`gap-2 text-muted-foreground hover:text-foreground ${className}`}
+      className={`gap-1 text-muted-foreground hover:text-foreground ${className}`}
     >
-      <ArrowLeft className="h-4 w-4" />
+      <ArrowLeft className="h-3 w-3" />
       Back
     </Button>
   );

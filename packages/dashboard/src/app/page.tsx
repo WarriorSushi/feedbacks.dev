@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { HeroSection } from '@/components/hero-section';
 import { FeaturesSection } from '@/components/features-section';
 import { useEffect, useState } from 'react';
+import { BottomBar } from '@/components/bottom-bar';
 
 interface AuthStatus {
   authenticated: boolean;
@@ -80,7 +81,7 @@ export default function HomePage() {
                 </a>
               </Button>
               
-              <ThemeToggle />
+              <ThemeToggle className="hidden md:flex" />
               
               {authStatus.authenticated ? (
                 <>
@@ -109,6 +110,11 @@ export default function HomePage() {
           </div>
         </div>
       </nav>
+
+      {/* Mobile Theme Toggle */}
+      <div className="md:hidden flex justify-end px-4 sm:px-6 lg:px-8 py-2 border-b">
+        <ThemeToggle />
+      </div>
 
       {/* Hero Section */}
       <HeroSection isAuthenticated={authStatus.authenticated} />
@@ -139,6 +145,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+      <BottomBar />
     </div>
   );
 }

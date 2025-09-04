@@ -193,7 +193,7 @@ export default function DashboardPage() {
                 Ready to collect some amazing feedback today?
               </p>
             </div>
-            <Button asChild size="default" className="bg-gradient-warm hover:opacity-90 hero-glow text-white w-full md:w-auto md:size-lg shrink-0">
+            <Button asChild size="default" className="bg-white text-black hover:bg-gray-50 border border-gray-200 w-full md:w-auto md:size-lg shrink-0">
               <Link href="/projects/new" className="justify-center">
                 <Plus className="h-4 w-4 mr-2" />
                 New Project
@@ -205,7 +205,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Dashboard Tabs */}
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue="overview" className="w-full dark:bg-black dark:p-6 dark:rounded-lg">
 
           <TabsList className="grid w-full grid-cols-2 mb-6 bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20">
             <TabsTrigger 

@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Github, Mail, ArrowLeft, Chrome, MessageSquare, Key } from 'lucide-react';
 import Link from 'next/link';
+import { BottomBar } from '@/components/bottom-bar';
 
 export default function AuthPage() {
   const [email, setEmail] = useState('');
@@ -178,7 +179,7 @@ export default function AuthPage() {
       {/* Header */}
       <div className="container mx-auto px-4 py-6">
         <Button variant="ghost" asChild className="gap-2">
-          <Link href="https://www.feedbacks.dev">
+          <Link href="/">
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Link>
@@ -366,6 +367,7 @@ export default function AuthPage() {
           </Card>
         </div>
       </div>
+      <BottomBar />
     </div>
   );
 }
