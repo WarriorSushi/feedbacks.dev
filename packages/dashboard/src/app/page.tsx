@@ -70,8 +70,8 @@ export default function HomePage() {
             
             <div className="flex items-center gap-3">
               {authStatus.authenticated ? (
-                <Button asChild className="bg-primary hover:bg-primary/90">
-                  <Link href="/dashboard">Go to Dashboard</Link>
+                <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-xs px-3 py-1 h-8">
+                  <Link href="/dashboard">Dashboard</Link>
                 </Button>
               ) : (
                 <>
