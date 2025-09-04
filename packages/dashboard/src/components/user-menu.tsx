@@ -55,7 +55,6 @@ export function UserMenu({ user }: UserMenuProps) {
       }
       
       // We're on the correct domain, proceed with sign-out
-      console.log('=== SIGN OUT: Starting sign out process on app.feedbacks.dev ===');
       
       // Clear server-side session first
       const serverSignOutResponse = await fetch('/api/sign-out', { 
@@ -64,8 +63,6 @@ export function UserMenu({ user }: UserMenuProps) {
       });
       
       if (!serverSignOutResponse.ok) {
-        const errorData = await serverSignOutResponse.json();
-        console.error('SIGN OUT: Server sign-out failed:', errorData);
         throw new Error('Server sign-out failed');
       }
       
@@ -73,7 +70,7 @@ export function UserMenu({ user }: UserMenuProps) {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('SIGN OUT: Client sign out error:', error);
+        console.error('Client sign out error:', error);
       }
       
       toast({
