@@ -97,8 +97,12 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
     <Sidebar variant="inset" className="border-r">
       <SidebarHeader className="p-4">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-            <span className="text-white font-bold text-sm">F</span>
+          <div className="h-8 w-8 flex items-center justify-center">
+            <img 
+              src="/logo.svg" 
+              alt="Feedbacks.dev Logo" 
+              className="h-8 w-8 rounded-lg"
+            />
           </div>
           <div className="grid flex-1 text-left text-sm leading-tight">
             <span className="truncate font-semibold">feedbacks.dev</span>

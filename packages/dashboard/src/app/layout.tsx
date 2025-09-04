@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   description: 'Collect user feedback with a single line of code. Premium feedback widget for developers.',
   keywords: 'feedback widget, user feedback, javascript widget, developer tools',
   authors: [{ name: 'feedbacks.dev' }],
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/favicon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/favicon.png',
+  },
 };
 
 export const viewport: Viewport = {

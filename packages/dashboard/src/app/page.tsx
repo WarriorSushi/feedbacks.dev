@@ -55,8 +55,12 @@ export default function HomePage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <Link href="/" className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">F</span>
+                <div className="h-8 w-8 flex items-center justify-center">
+                  <img 
+                    src="/logo.svg" 
+                    alt="Feedbacks.dev Logo" 
+                    className="h-8 w-8 rounded-lg"
+                  />
                 </div>
                 <span className="font-bold text-lg">feedbacks.dev</span>
               </Link>
