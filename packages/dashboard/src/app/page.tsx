@@ -1,15 +1,35 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
 import { Zap, Code, Rocket, Github, ArrowRight } from 'lucide-react';
-import { createClient } from '@/lib/supabase-server';
 import { UserMenu } from '@/components/user-menu';
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase-client';
 
-export default async function HomePage() {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+export default function HomePage() {
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
   const sampleCode = `<script 
   src="https://cdn.feedbacks.dev/widget-1.0.0.js"
@@ -30,7 +50,9 @@ export default async function HomePage() {
               </Badge>
             </div>
             <div className="flex items-center space-x-4">
-              {user ? (
+              {isLoading ? (
+                <div className="h-8 w-20 bg-muted animate-pulse rounded" />
+              ) : user ? (
                 <>
                   <Button asChild>
                     <Link href="https://app.feedbacks.dev/dashboard">Go to Dashboard</Link>
@@ -73,7 +95,12 @@ export default async function HomePage() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button size="lg" asChild>
-              {user ? (
+              {isLoading ? (
+                <div className="h-11 px-8 bg-muted animate-pulse rounded flex items-center">
+                  <div className="h-4 w-24 bg-muted-foreground/20 rounded" />
+                  <ArrowRight className="ml-2 h-4 w-4 opacity-50" />
+                </div>
+              ) : user ? (
                 <Link href="https://app.feedbacks.dev/dashboard" className="flex items-center">
                   Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
