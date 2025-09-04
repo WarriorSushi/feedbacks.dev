@@ -9,9 +9,10 @@ import { Zap, Code, Rocket, Github, ArrowRight } from 'lucide-react';
 import { UserMenu } from '@/components/user-menu';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase-client';
+import type { User } from '@supabase/supabase-js';
 
 export default function HomePage() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
