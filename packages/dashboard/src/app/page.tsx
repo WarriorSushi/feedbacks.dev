@@ -19,14 +19,7 @@ export default function HomePage() {
     const checkAuth = async () => {
       try {
         const supabase = createClient();
-        
-        // Add timeout to prevent hanging
-        const authPromise = supabase.auth.getUser();
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Auth timeout')), 3000)
-        );
-        
-        const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
+        const { data: { user } } = await supabase.auth.getUser();
         setUser(user);
       } catch (error) {
         console.error('Auth check error:', error);
@@ -36,15 +29,7 @@ export default function HomePage() {
       }
     };
     
-    // Also set a maximum loading time fallback
-    const fallbackTimer = setTimeout(() => {
-      setIsLoading(false);
-      setUser(null);
-    }, 5000);
-    
-    checkAuth().then(() => clearTimeout(fallbackTimer));
-    
-    return () => clearTimeout(fallbackTimer);
+    checkAuth();
   }, []);
 
   const sampleCode = `<script 
@@ -67,7 +52,14 @@ export default function HomePage() {
             </div>
             <div className="flex items-center space-x-4">
               {isLoading ? (
-                <div className="h-8 w-20 bg-muted animate-pulse rounded" />
+                <>
+                  <Button variant="ghost" className="hidden sm:inline-flex" disabled>
+                    <div className="h-4 w-8 bg-muted-foreground/20 animate-pulse rounded" />
+                  </Button>
+                  <Button disabled>
+                    <div className="h-4 w-16 bg-background/20 animate-pulse rounded" />
+                  </Button>
+                </>
               ) : user ? (
                 <>
                   <Button asChild>
@@ -110,22 +102,24 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button size="lg" asChild>
-              {isLoading ? (
-                <div className="h-11 px-8 bg-muted animate-pulse rounded flex items-center">
-                  <div className="h-4 w-24 bg-muted-foreground/20 rounded" />
-                  <ArrowRight className="ml-2 h-4 w-4 opacity-50" />
-                </div>
-              ) : user ? (
-                <Link href="https://app.feedbacks.dev/dashboard" className="flex items-center">
-                  Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              ) : (
-                <Link href="https://app.feedbacks.dev/auth" className="flex items-center">
-                  Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              )}
-            </Button>
+            {isLoading ? (
+              <Button size="lg" disabled className="flex items-center">
+                <div className="h-4 w-24 bg-background/20 animate-pulse rounded" />
+                <ArrowRight className="ml-2 h-4 w-4 opacity-50" />
+              </Button>
+            ) : (
+              <Button size="lg" asChild>
+                {user ? (
+                  <Link href="https://app.feedbacks.dev/dashboard" className="flex items-center">
+                    Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                ) : (
+                  <Link href="https://app.feedbacks.dev/auth" className="flex items-center">
+                    Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                )}
+              </Button>
+            )}
             <Button size="lg" variant="outline" asChild>
               <Link href="https://github.com/feedbacks-dev" className="flex items-center">
                 <Github className="mr-2 h-4 w-4" />
