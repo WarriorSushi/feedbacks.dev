@@ -49,9 +49,9 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen lovable-gradient">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="sticky top-0 z-50 w-full border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:bg-black/90 dark:supports-[backdrop-filter]:bg-black/80">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
@@ -112,7 +112,7 @@ export default function HomePage() {
       </nav>
 
       {/* Mobile Theme Toggle */}
-      <div className="md:hidden flex justify-end px-4 sm:px-6 lg:px-8 py-2 border-b">
+      <div className="md:hidden flex justify-end px-4 sm:px-6 lg:px-8 py-2 border-b bg-white/90 backdrop-blur dark:bg-black/90">
         <ThemeToggle />
       </div>
 
