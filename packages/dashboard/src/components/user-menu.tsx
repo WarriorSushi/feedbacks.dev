@@ -40,7 +40,10 @@ export function UserMenu({ user }: UserMenuProps) {
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
-      await supabase.auth.signOut();
+      
+      // Clear both client and server sessions
+      await supabase.auth.signOut(); // Clear client-side session
+      await fetch('/api/sign-out', { method: 'POST' }); // Clear server-side session
       
       toast({
         title: "Signed out successfully",
