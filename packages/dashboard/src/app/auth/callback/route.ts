@@ -10,26 +10,33 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = createClient();
-    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     
-    console.log('Session exchange - error:', error);
-    console.log('Session exchange - data:', data ? 'present' : 'missing');
-    
-    if (!error) {
-      const forwardedHost = request.headers.get('x-forwarded-host');
-      const isLocalEnv = process.env.NODE_ENV === 'development';
+    try {
+      // Try the standard PKCE flow first
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
       
-      console.log('Redirecting to dashboard');
+      console.log('Session exchange - error:', error);
+      console.log('Session exchange - data:', data ? 'present' : 'missing');
       
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`);
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
+      // If we have data even with error, the session might be valid
+      if (data?.session || !error) {
+        const forwardedHost = request.headers.get('x-forwarded-host');
+        const isLocalEnv = process.env.NODE_ENV === 'development';
+        
+        console.log('Redirecting to dashboard');
+        
+        if (isLocalEnv) {
+          return NextResponse.redirect(`${origin}${next}`);
+        } else if (forwardedHost) {
+          return NextResponse.redirect(`https://${forwardedHost}${next}`);
+        } else {
+          return NextResponse.redirect(`${origin}${next}`);
+        }
       } else {
-        return NextResponse.redirect(`${origin}${next}`);
+        console.log('Session exchange failed:', error?.message);
       }
-    } else {
-      console.log('Session exchange failed:', error.message);
+    } catch (err) {
+      console.log('Auth callback error:', err);
     }
   }
 
