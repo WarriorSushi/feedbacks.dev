@@ -69,25 +69,18 @@ export default function HomePage() {
               </Badge>
             </div>
             <div className="flex items-center space-x-4">
-              {isLoading ? (
-                <>
-                  <Button variant="ghost" className="hidden sm:inline-flex" disabled>
-                    <div className="h-4 w-8 bg-muted-foreground/20 animate-pulse rounded" />
-                  </Button>
-                  <Button disabled>
-                    <div className="h-4 w-16 bg-background/20 animate-pulse rounded" />
-                  </Button>
-                </>
-              ) : authStatus.authenticated ? (
+              {authStatus.authenticated ? (
                 <>
                   <Button asChild>
                     <Link href="https://app.feedbacks.dev/dashboard">Go to Dashboard</Link>
                   </Button>
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-xs font-medium text-primary">
-                      {authStatus.email?.charAt(0).toUpperCase() || 'U'}
-                    </span>
-                  </div>
+                  <UserMenu user={{ 
+                    id: 'user', 
+                    email: authStatus.email,
+                    user_metadata: {
+                      full_name: authStatus.email?.split('@')[0] || 'User'
+                    }
+                  }} />
                 </>
               ) : (
                 <>
@@ -124,24 +117,17 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            {isLoading ? (
-              <Button size="lg" disabled className="flex items-center">
-                <div className="h-4 w-24 bg-background/20 animate-pulse rounded" />
-                <ArrowRight className="ml-2 h-4 w-4 opacity-50" />
-              </Button>
-            ) : (
-              <Button size="lg" asChild>
-                {authStatus.authenticated ? (
-                  <Link href="https://app.feedbacks.dev/dashboard" className="flex items-center">
-                    Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                ) : (
-                  <Link href="https://app.feedbacks.dev/auth" className="flex items-center">
-                    Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                )}
-              </Button>
-            )}
+            <Button size="lg" asChild>
+              {authStatus.authenticated ? (
+                <Link href="https://app.feedbacks.dev/dashboard" className="flex items-center">
+                  Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              ) : (
+                <Link href="https://app.feedbacks.dev/auth" className="flex items-center">
+                  Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              )}
+            </Button>
             <Button size="lg" variant="outline" asChild>
               <Link href="https://github.com/feedbacks-dev" className="flex items-center">
                 <Github className="mr-2 h-4 w-4" />
