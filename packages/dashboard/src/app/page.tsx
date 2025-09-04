@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
 import { Zap, Code, Rocket, Github, ArrowRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase-server';
+import { UserMenu } from '@/components/user-menu';
 
 export default async function HomePage() {
   const supabase = createClient();
@@ -30,9 +31,12 @@ export default async function HomePage() {
             </div>
             <div className="flex items-center space-x-4">
               {user ? (
-                <Button asChild>
-                  <Link href="https://app.feedbacks.dev/dashboard">Go to Dashboard</Link>
-                </Button>
+                <>
+                  <Button asChild>
+                    <Link href="https://app.feedbacks.dev/dashboard">Go to Dashboard</Link>
+                  </Button>
+                  <UserMenu user={user} />
+                </>
               ) : (
                 <>
                   <Button variant="ghost" asChild className="hidden sm:inline-flex">

@@ -47,7 +47,8 @@ export function UserMenu({ user }: UserMenuProps) {
         description: "You have been signed out of your account.",
       });
       
-      router.push('/auth');
+      // Redirect to auth page on the app subdomain
+      window.location.href = 'https://app.feedbacks.dev/auth';
     } catch (error) {
       console.error('Sign out error:', error);
       toast({
