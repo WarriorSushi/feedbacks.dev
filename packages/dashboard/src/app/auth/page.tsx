@@ -28,6 +28,46 @@ export default function AuthPage() {
   useEffect(() => {
     const checkUser = async () => {
       try {
+        // Check if we're here to sign out
+        const urlParams = new URLSearchParams(window.location.search);
+        const shouldSignOut = urlParams.get('signout') === 'true';
+        
+        if (shouldSignOut) {
+          console.log('=== AUTH PAGE: Sign out requested ===');
+          
+          // Clear server-side session
+          const serverSignOutResponse = await fetch('/api/sign-out', { 
+            method: 'POST',
+            credentials: 'include'
+          });
+          
+          if (serverSignOutResponse.ok) {
+            console.log('AUTH PAGE: Server sign-out successful');
+          } else {
+            console.error('AUTH PAGE: Server sign-out failed');
+          }
+          
+          // Clear client-side session
+          const { error } = await supabase.auth.signOut();
+          if (error) {
+            console.error('AUTH PAGE: Client sign-out error:', error);
+          } else {
+            console.log('AUTH PAGE: Client sign-out successful');
+          }
+          
+          // Remove the signout parameter from URL
+          window.history.replaceState({}, document.title, '/auth');
+          
+          toast({
+            title: "Signed out successfully",
+            description: "You have been signed out of your account.",
+          });
+          
+          return; // Don't check for user after sign out
+        }
+        
+        console.log('=== AUTH PAGE: Checking user authentication ===');
+        
         // Add timeout protection
         const authPromise = supabase.auth.getUser();
         const timeoutPromise = new Promise((_, reject) =>
@@ -35,17 +75,27 @@ export default function AuthPage() {
         );
         
         const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
+        
+        console.log('AUTH PAGE: User check result:', {
+          hasUser: !!user,
+          userId: user?.id,
+          userEmail: user?.email,
+          cookies: document.cookie
+        });
+        
         if (user) {
-          console.log('User already authenticated, redirecting to dashboard');
+          console.log('AUTH PAGE: User authenticated, redirecting to dashboard');
           router.push('/dashboard');
+        } else {
+          console.log('AUTH PAGE: No user found, staying on auth page');
         }
       } catch (error) {
-        console.error('Auth check error:', error);
+        console.error('AUTH PAGE: Auth check error:', error);
       }
     };
     
     checkUser();
-  }, [router, supabase]);
+  }, [router, supabase, toast]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();

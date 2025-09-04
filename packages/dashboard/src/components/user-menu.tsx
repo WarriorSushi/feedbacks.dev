@@ -41,6 +41,22 @@ export function UserMenu({ user }: UserMenuProps) {
     try {
       setIsSigningOut(true);
       
+      // Check if we're on the correct domain for sign-out
+      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+      
+      if (currentOrigin !== 'https://app.feedbacks.dev') {
+        // If we're not on app.feedbacks.dev, redirect there with a sign-out parameter
+        toast({
+          title: "Signing out...",
+          description: "Redirecting to complete sign-out.",
+        });
+        window.location.href = 'https://app.feedbacks.dev/auth?signout=true';
+        return;
+      }
+      
+      // We're on the correct domain, proceed with sign-out
+      console.log('=== SIGN OUT: Starting sign out process on app.feedbacks.dev ===');
+      
       // Clear server-side session first
       const serverSignOutResponse = await fetch('/api/sign-out', { 
         method: 'POST',
@@ -48,6 +64,8 @@ export function UserMenu({ user }: UserMenuProps) {
       });
       
       if (!serverSignOutResponse.ok) {
+        const errorData = await serverSignOutResponse.json();
+        console.error('SIGN OUT: Server sign-out failed:', errorData);
         throw new Error('Server sign-out failed');
       }
       
@@ -55,7 +73,7 @@ export function UserMenu({ user }: UserMenuProps) {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('Client sign out error:', error);
+        console.error('SIGN OUT: Client sign out error:', error);
       }
       
       toast({
@@ -63,10 +81,11 @@ export function UserMenu({ user }: UserMenuProps) {
         description: "You have been signed out of your account.",
       });
       
-      // Redirect to auth page on the app subdomain
-      window.location.href = 'https://app.feedbacks.dev/auth';
+      // Redirect to auth page (already on app subdomain)
+      window.location.href = '/auth';
+      
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('SIGN OUT: Error during sign out:', error);
       toast({
         title: "Sign out failed",
         description: "There was an error signing out. Please try again.",
