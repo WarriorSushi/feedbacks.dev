@@ -17,13 +17,29 @@ export async function GET(request: NextRequest) {
       
       console.log('Session exchange - error:', error);
       console.log('Session exchange - data:', data ? 'present' : 'missing');
+      console.log('Session in data:', data?.session ? 'present' : 'missing');
+      console.log('User in data:', data?.user ? 'present' : 'missing');
       
-      // If we have data even with error, the session might be valid
-      if (data?.session || !error) {
+      // Check if we have a valid session regardless of PKCE error
+      if (data?.session && data?.user) {
+        console.log('Valid session found, proceeding to dashboard');
         const forwardedHost = request.headers.get('x-forwarded-host');
         const isLocalEnv = process.env.NODE_ENV === 'development';
         
         console.log('Redirecting to dashboard');
+        
+        if (isLocalEnv) {
+          return NextResponse.redirect(`${origin}${next}`);
+        } else if (forwardedHost) {
+          return NextResponse.redirect(`https://${forwardedHost}${next}`);
+        } else {
+          return NextResponse.redirect(`${origin}${next}`);
+        }
+      } else if (!error) {
+        // No error but no session - redirect to dashboard anyway
+        console.log('No error, redirecting to dashboard');
+        const forwardedHost = request.headers.get('x-forwarded-host');
+        const isLocalEnv = process.env.NODE_ENV === 'development';
         
         if (isLocalEnv) {
           return NextResponse.redirect(`${origin}${next}`);
