@@ -276,7 +276,7 @@ export default function DashboardPage() {
                               {project.name}
                             </h3>
                             <div className="flex flex-wrap gap-1.5 mb-2 md:mb-3">
-                              <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20 text-xs">
+                              <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/50 text-xs">
                                 {project.feedback?.[0]?.count || 0} responses
                               </Badge>
                               <Badge variant="outline" className="text-xs">

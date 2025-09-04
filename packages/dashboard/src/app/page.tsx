@@ -101,7 +101,7 @@ export default function HomePage() {
                   <Button variant="ghost" asChild className="hidden sm:inline-flex">
                     <Link href="/docs">Docs</Link>
                   </Button>
-                  <Button className="bg-gradient-primary hover:opacity-90" asChild>
+                  <Button className="bg-gradient-primary hover:opacity-90 text-sm px-4" asChild>
                     <Link href="https://app.feedbacks.dev/auth">Get Started</Link>
                   </Button>
                 </>

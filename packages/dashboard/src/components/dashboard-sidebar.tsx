@@ -258,7 +258,7 @@ export function DashboardLayout({ children, user, projectsCount }: {
     <SidebarProvider>
       <div className="flex h-screen w-full">
         <DashboardSidebar user={user} projectsCount={projectsCount} />
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0 pt-16 lg:pt-0">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0 pt-16 lg:pt-0 transition-opacity duration-150">
           <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:sticky lg:left-auto">
             {/* Left Side - Menu Button */}
             <div className="flex items-center ml-8">
@@ -294,11 +294,14 @@ export function DashboardLayout({ children, user, projectsCount }: {
             </div>
           )}
           <main className="flex-1 overflow-auto w-full bg-background prevent-bounce">
-            <div className="pb-4 sm:pb-6 md:pb-8">
-              {children}
+            <div className="min-h-full bg-background transition-opacity duration-200 ease-in-out">
+              <div className="pb-8 sm:pb-12 md:pb-16">
+                {children}
+              </div>
+              <div className="h-8"></div>
+              <BottomBar />
             </div>
           </main>
-          <BottomBar />
         </div>
       </div>
     </SidebarProvider>
