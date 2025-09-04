@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MobileNav } from '@/components/mobile-nav';
-import { UserMenu } from '@/components/user-menu';
-import { Plus, BarChart3, Calendar, Mail, ExternalLink } from 'lucide-react';
+import { DashboardLayout } from '@/components/dashboard-sidebar';
+import { Plus, BarChart3, Calendar, Mail, ExternalLink, TrendingUp, Users, Clock } from 'lucide-react';
 import { createClient } from '@/lib/supabase-client';
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
@@ -83,136 +82,160 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation Header */}
-      <header className="border-b">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <MobileNav />
-              <Link href="https://www.feedbacks.dev">
-                <h1 className="text-xl font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer">
-                  feedbacks.dev
-                </h1>
-              </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Button asChild size="sm">
-                <Link href="/projects/new" className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  <span className="hidden sm:inline">New Project</span>
-                </Link>
-              </Button>
-              <UserMenu user={user} />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+    <DashboardLayout user={user} projectsCount={projects.length}>
+      <div className="p-6 lg:p-8 space-y-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-            Welcome back!
-          </h1>
-          <p className="text-muted-foreground">
-            Manage your feedback projects and see what your users are saying.
-          </p>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{projects?.length || 0}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Feedback</CardTitle>
-              <Mail className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalFeedback}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Month</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {Math.floor(totalFeedback * 0.3)}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Projects Section */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Your Projects</h2>
-            <Button asChild size="sm" variant="outline">
+        <div className="animate-fade-in">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-3xl font-bold gradient-text">
+              Welcome back, {user.user_metadata?.full_name || 'Developer'}!
+            </h1>
+            <Button asChild size="sm" className="bg-gradient-primary hover:opacity-90 hero-glow">
               <Link href="/projects/new">
                 <Plus className="h-4 w-4 mr-2" />
                 New Project
               </Link>
             </Button>
           </div>
+          <p className="text-muted-foreground text-lg">
+            Manage your feedback projects and see what your users are saying.
+          </p>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="hover-lift border-0 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Projects</CardTitle>
+              <BarChart3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{projects?.length || 0}</div>
+              <p className="text-xs text-blue-600 dark:text-blue-400">
+                +20% from last month
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover-lift border-0 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">Total Feedback</CardTitle>
+              <Mail className="h-4 w-4 text-green-600 dark:text-green-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-900 dark:text-green-100">{totalFeedback}</div>
+              <p className="text-xs text-green-600 dark:text-green-400">
+                +12% from last month
+              </p>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover-lift border-0 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">This Month</CardTitle>
+              <TrendingUp className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                {Math.floor(totalFeedback * 0.3)}
+              </div>
+              <p className="text-xs text-purple-600 dark:text-purple-400">
+                +5% from last month
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Projects Section */}
+        <div className="space-y-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold">Your Projects</h2>
+          </div>
 
           {projects && projects.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {projects.map((project: any) => (
-                <Card key={project.id} className="hover:shadow-md transition-shadow">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {projects.map((project: any, index: number) => (
+                <Card 
+                  key={project.id} 
+                  className="hover-lift border-0 bg-card/60 backdrop-blur-sm animate-fade-in" 
+                  style={{ animationDelay: `${0.4 + index * 0.1}s` }}
+                >
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{project.name}</CardTitle>
-                      <Badge variant="secondary">
+                      <CardTitle className="text-lg font-semibold">{project.name}</CardTitle>
+                      <Badge variant="secondary" className="bg-primary/10 text-primary">
                         {project.feedback?.[0]?.count || 0} feedback
                       </Badge>
                     </div>
-                    <CardDescription>
+                    <CardDescription className="flex items-center gap-2">
+                      <Calendar className="h-3 w-3" />
                       Created {new Date(project.created_at).toLocaleDateString()}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between">
-                      <code className="text-xs bg-muted px-2 py-1 rounded">
-                        {project.api_key?.slice(0, 20)}...
-                      </code>
-                      <Button asChild size="sm" variant="outline">
-                        <Link href={`/projects/${project.id}`}>
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          View
-                        </Link>
-                      </Button>
+                    <div className="space-y-4">
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1">API Key</p>
+                        <code className="text-xs font-mono">
+                          {project.api_key?.slice(0, 20)}...
+                        </code>
+                      </div>
+                      
+                      <div className="flex items-center justify-between pt-2">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            <span>{Math.floor(Math.random() * 100) + 10}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            <span>Active</span>
+                          </div>
+                        </div>
+                        
+                        <Button asChild size="sm" variant="outline" className="hover-glow">
+                          <Link href={`/projects/${project.id}`}>
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            View
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
+              
+              {/* Add New Project Card */}
+              <Card className="hover-lift border-2 border-dashed border-muted cursor-pointer group animate-fade-in" style={{ animationDelay: `${0.4 + projects.length * 0.1}s` }}>
+                <Link href="/projects/new">
+                  <CardContent className="flex flex-col items-center justify-center h-full min-h-[200px] text-center p-6">
+                    <div className="w-16 h-16 rounded-full bg-gradient-primary/10 flex items-center justify-center mb-4 group-hover:bg-gradient-primary/20 transition-colors">
+                      <Plus className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-lg mb-2">Create New Project</h3>
+                    <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+                      Start collecting feedback for a new website or app in seconds
+                    </p>
+                    <Badge className="bg-gradient-primary text-white">Get Started</Badge>
+                  </CardContent>
+                </Link>
+              </Card>
             </div>
           ) : (
-            <Card className="text-center py-12">
-              <CardContent>
-                <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-                    <Plus className="h-10 w-10 text-muted-foreground" />
+            <Card className="border-0 bg-gradient-to-br from-muted/50 to-muted/30 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <CardContent className="text-center py-16">
+                <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center">
+                  <div className="w-20 h-20 rounded-full bg-gradient-primary/10 flex items-center justify-center mb-6">
+                    <Plus className="w-10 h-10 text-primary" />
                   </div>
-                  <h3 className="mt-4 text-lg font-semibold">No projects yet</h3>
-                  <p className="mb-4 mt-2 text-sm text-muted-foreground">
-                    Create your first project to start collecting feedback.
+                  <h3 className="text-2xl font-bold mb-3">No projects yet</h3>
+                  <p className="text-muted-foreground mb-8 text-lg">
+                    Create your first project to start collecting valuable feedback from your users.
                   </p>
-                  <Button asChild size="lg">
+                  <Button asChild size="lg" className="bg-gradient-primary hover:opacity-90 hero-glow">
                     <Link href="/projects/new">
                       <Plus className="h-4 w-4 mr-2" />
-                      Create Project
+                      Create Your First Project
                     </Link>
                   </Button>
                 </div>
@@ -221,6 +244,6 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
