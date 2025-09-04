@@ -22,7 +22,13 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadDashboard = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        // Add timeout protection
+        const authPromise = supabase.auth.getUser();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 2000)
+        );
+        
+        const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
         
         if (!user) {
           router.push('/auth');

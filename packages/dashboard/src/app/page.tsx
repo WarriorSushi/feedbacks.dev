@@ -19,7 +19,14 @@ export default function HomePage() {
     const checkAuth = async () => {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        
+        // Add timeout protection to prevent hanging
+        const authPromise = supabase.auth.getUser();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 2000)
+        );
+        
+        const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
         setUser(user);
       } catch (error) {
         console.error('Auth check error:', error);

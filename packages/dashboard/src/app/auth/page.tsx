@@ -28,7 +28,13 @@ export default function AuthPage() {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        // Add timeout protection
+        const authPromise = supabase.auth.getUser();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 2000)
+        );
+        
+        const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
         if (user) {
           console.log('User already authenticated, redirecting to dashboard');
           router.push('/dashboard');
