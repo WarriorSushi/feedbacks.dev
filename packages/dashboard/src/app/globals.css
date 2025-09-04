@@ -108,6 +108,8 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -116,6 +118,16 @@
   /* Professional Gradient Text Effect */
   .gradient-text {
     @apply bg-gradient-to-r from-primary via-accent to-primary/80 bg-clip-text text-transparent;
+  }
+  
+  /* Animated Gradient Text */
+  .animated-gradient-text {
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 3s ease infinite;
   }
   
   /* Hero Glow Effect */
@@ -167,7 +179,15 @@
   @supports (-webkit-touch-callout: none) {
     .ios-scroll-fix {
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: none;
+      -webkit-overscroll-behavior: none;
     }
+  }
+  
+  /* iOS scroll bounce fix */
+  .prevent-bounce {
+    overscroll-behavior: none;
+    -webkit-overscroll-behavior: none;
   }
 }
 
@@ -331,5 +351,17 @@
   to {
     opacity: 1;
     height: 200px;
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }

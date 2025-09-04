@@ -106,13 +106,6 @@ export default function ProjectsPage() {
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-3">
-                    {/* API Key - Hidden on mobile, compact on desktop */}
-                    <div className="hidden sm:block p-2 md:p-3 bg-muted/50 rounded-lg">
-                      <p className="text-xs text-muted-foreground mb-1">API Key</p>
-                      <code className="text-xs font-mono break-all">
-                        {project.api_key?.slice(0, 15)}...
-                      </code>
-                    </div>
                     
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">

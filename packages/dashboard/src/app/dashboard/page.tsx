@@ -216,7 +216,7 @@ export default function DashboardPage() {
             </TabsTrigger>
             <TabsTrigger 
               value="recent-feedback" 
-              className="data-[state=active]:bg-gradient-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-sm transition-all duration-200"
+              className="data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all duration-200"
             >
               Recent Feedbacks
             </TabsTrigger>

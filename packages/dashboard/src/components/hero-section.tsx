@@ -29,14 +29,14 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
           {/* Badge */}
-          <Badge variant="secondary" className="mb-6 px-4 py-2 animate-fade-in">
+          <Badge variant="secondary" className="mb-6 px-4 py-2 animate-fade-in bg-white/90 text-gray-900 border-gray-200 dark:bg-gray-900/90 dark:text-gray-100 dark:border-gray-700">
             <Zap className="w-3 h-3 mr-2" />
             Developer-First Feedback Widget
           </Badge>
 
           {/* Main headline */}
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 animate-fade-in">
-            Collect feedback with
+            <span className="animated-gradient-text">Collect feedback with</span>
             <span className="gradient-text block mt-2">one line of code</span>
           </h1>
 
@@ -47,7 +47,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           </p>
 
           {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          <div className="flex flex-col sm:flex-row gap-4 mb-12 px-4 sm:px-0 animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <Button size="lg" className="bg-gradient-primary hover:opacity-90 hero-glow" asChild>
               <Link href={isAuthenticated ? "/dashboard" : "https://app.feedbacks.dev/auth"}>
                 {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
