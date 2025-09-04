@@ -5,20 +5,48 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { X, Cookie } from 'lucide-react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase-client';
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    try {
-      const consent = localStorage.getItem('cookie-consent');
-      if (!consent) {
+    const checkAuthAndConsent = async () => {
+      try {
+        // Reset cookie consent for everyone (fresh start)
+        localStorage.removeItem('cookie-consent');
+        
+        // Check if user is authenticated
+        const supabase = createClient();
+        const authPromise = supabase.auth.getUser();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 1000)
+        );
+        
+        const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
+        
+        if (user) {
+          // User is signed in - assume cookie consent (like major sites)
+          localStorage.setItem('cookie-consent', JSON.stringify({
+            choice: 'accepted',
+            timestamp: Date.now(),
+            reason: 'authenticated-user'
+          }));
+          setIsVisible(false);
+        } else {
+          // User not signed in - show cookie banner
+          setIsVisible(true);
+        }
+      } catch (error) {
+        // If auth check fails, show cookie banner
         setIsVisible(true);
+      } finally {
+        setIsCheckingAuth(false);
       }
-    } catch (error) {
-      // If localStorage is blocked, show the banner
-      setIsVisible(true);
-    }
+    };
+    
+    checkAuthAndConsent();
   }, []);
 
   const acceptCookies = () => {
@@ -45,7 +73,8 @@ export function CookieConsent() {
     setIsVisible(false);
   };
 
-  if (!isVisible) return null;
+  // Don't show banner while checking auth or if not visible
+  if (isCheckingAuth || !isVisible) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 z-50 md:left-auto md:right-4 md:max-w-md">
