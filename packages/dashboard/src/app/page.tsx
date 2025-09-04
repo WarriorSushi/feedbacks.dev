@@ -16,14 +16,24 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
+    const supabase = createClient();
+    
+    // Premium approach: Listen to auth state changes + initial check
     const checkAuth = async () => {
       try {
-        const supabase = createClient();
+        // First check session from localStorage (instant)
+        const { data: { session } } = await supabase.auth.getSession();
         
-        // Add timeout protection to prevent hanging
+        if (session?.user) {
+          setUser(session.user);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Fallback: Check user from server (with timeout)
         const authPromise = supabase.auth.getUser();
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Auth timeout')), 2000)
+          setTimeout(() => reject(new Error('Auth timeout')), 3000)
         );
         
         const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
@@ -35,8 +45,16 @@ export default function HomePage() {
         setIsLoading(false);
       }
     };
-    
+
+    // Listen for auth state changes (premium feature)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
     checkAuth();
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const sampleCode = `<script 
