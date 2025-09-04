@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardLayout } from '@/components/dashboard-sidebar';
 import { Plus, BarChart3, Calendar, Mail, ExternalLink, TrendingUp, Users, Clock, MessageSquare, Star, Globe, User as UserIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase-client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { navCache } from '@/lib/cache';
 import type { User } from '@supabase/supabase-js';
 
 export default function DashboardPage() {
@@ -20,45 +21,64 @@ export default function DashboardPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        // Get the current user session
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        
-        if (authError) {
-          console.error('Auth error:', authError);
-          // Wait a bit and try again in case session is still being established
-          setTimeout(() => router.push('/auth'), 100);
-          return;
-        }
-        
-        if (!user) {
-          console.log('No user found, redirecting to auth');
-          router.push('/auth');
-          return;
-        }
-        
-        console.log('User authenticated:', user.email);
-        setUser(user);
+  const loadDashboard = useCallback(async () => {
+    try {
+      // Get the current user session
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        console.error('Auth error:', authError);
+        // Wait a bit and try again in case session is still being established
+        setTimeout(() => router.push('/auth'), 100);
+        return;
+      }
+      
+      if (!user) {
+        console.log('No user found, redirecting to auth');
+        router.push('/auth');
+        return;
+      }
+      
+      console.log('User authenticated:', user.email);
+      setUser(user);
 
-        // Fetch user's projects with feedback count
-        const { data: projectsData, error: projectsError } = await supabase
-          .from('projects')
-          .select(`
-            *,
-            feedback:feedback(count)
-          `)
-          .eq('owner_user_id', user.id);
+      // Check cache first
+      const cacheKey = navCache.getUserCacheKey(user.id, 'projects');
+      const cachedProjects = navCache.get(cacheKey);
+      
+      if (cachedProjects) {
+        setProjects(cachedProjects);
+        setIsLoading(false);
+        return;
+      }
 
-        if (projectsError) {
-          console.error('Error fetching projects:', projectsError);
-        } else {
-          setProjects(projectsData || []);
-        }
+      // Fetch user's projects with feedback count
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          feedback:feedback(count)
+        `)
+        .eq('owner_user_id', user.id);
 
+      if (projectsError) {
+        console.error('Error fetching projects:', projectsError);
+      } else {
+        const projects = projectsData || [];
+        setProjects(projects);
+        // Cache the results
+        navCache.set(cacheKey, projects);
+      }
+
+      // Check feedback cache
+      const feedbackCacheKey = navCache.getUserCacheKey(user.id, 'recentFeedback');
+      const cachedFeedback = navCache.get(feedbackCacheKey);
+      
+      if (cachedFeedback) {
+        setRecentFeedback(cachedFeedback);
+      } else {
         // Mock recent feedback data - in real app, this would come from Supabase
-        setRecentFeedback([
+        const mockFeedback = [
           {
             id: '1',
             email: 'john@example.com',
@@ -99,18 +119,22 @@ export default function DashboardPage() {
             project_name: 'Website v2',
             status: 'read'
           }
-        ]);
-      } catch (error) {
-        console.error('Dashboard load error:', error);
-        // Give a small delay before redirecting in case of session establishment
-        setTimeout(() => router.push('/auth'), 100);
-      } finally {
-        setIsLoading(false);
+        ];
+        setRecentFeedback(mockFeedback);
+        navCache.set(feedbackCacheKey, mockFeedback);
       }
-    };
-    
-    loadDashboard();
+    } catch (error) {
+      console.error('Dashboard load error:', error);
+      // Give a small delay before redirecting in case of session establishment
+      setTimeout(() => router.push('/auth'), 100);
+    } finally {
+      setIsLoading(false);
+    }
   }, [router, supabase]);
+
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
 
   // Calculate total feedback across all projects
   const totalFeedback = projects.reduce((acc, project) => {
@@ -183,42 +207,52 @@ export default function DashboardPage() {
         {/* Dashboard Tabs */}
         <Tabs defaultValue="overview" className="w-full">
 
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="recent-feedback">Recent Feedbacks</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-6 bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20">
+            <TabsTrigger 
+              value="overview" 
+              className="data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger 
+              value="recent-feedback" 
+              className="data-[state=active]:bg-gradient-accent data-[state=active]:text-accent-foreground data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              Recent Feedbacks
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="overview" className="space-y-6 md:space-y-8">
-            {/* Stats Overview - Gradient Tiles */}
+            {/* Stats Overview - Normal Cards */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
-              <div className="gradient-tile p-3 md:p-4 lg:p-6 relative">
+              <Card className="p-3 md:p-4 lg:p-6 hover:shadow-md transition-shadow duration-200">
                 <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <h3 className="text-xs font-medium opacity-80 leading-tight">Total Projects</h3>
-                  <BarChart3 className="h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 opacity-70 flex-shrink-0" />
+                  <h3 className="text-xs font-medium text-muted-foreground leading-tight">Total Projects</h3>
+                  <BarChart3 className="h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-muted-foreground flex-shrink-0" />
                 </div>
-                <div className="text-lg md:text-2xl lg:text-3xl font-bold mb-1">{projects?.length || 0}</div>
-                <p className="text-xs opacity-70 leading-tight">Active</p>
-              </div>
+                <div className="text-lg md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">{projects?.length || 0}</div>
+                <p className="text-xs text-muted-foreground leading-tight">Active</p>
+              </Card>
               
-              <div className="gradient-tile-warm p-3 md:p-4 lg:p-6 relative">
+              <Card className="p-3 md:p-4 lg:p-6 hover:shadow-md transition-shadow duration-200">
                 <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <h3 className="text-xs font-medium opacity-80 leading-tight">Total Feedback</h3>
-                  <Mail className="h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 opacity-70 flex-shrink-0" />
+                  <h3 className="text-xs font-medium text-muted-foreground leading-tight">Total Feedback</h3>
+                  <Mail className="h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-muted-foreground flex-shrink-0" />
                 </div>
-                <div className="text-lg md:text-2xl lg:text-3xl font-bold mb-1">{totalFeedback}</div>
-                <p className="text-xs opacity-70 leading-tight">Responses</p>
-              </div>
+                <div className="text-lg md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">{totalFeedback}</div>
+                <p className="text-xs text-muted-foreground leading-tight">Responses</p>
+              </Card>
               
-              <div className="gradient-tile-accent p-3 md:p-4 lg:p-6 relative">
+              <Card className="p-3 md:p-4 lg:p-6 hover:shadow-md transition-shadow duration-200">
                 <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <h3 className="text-xs font-medium opacity-80 leading-tight">Recent Activity</h3>
-                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 opacity-70 flex-shrink-0" />
+                  <h3 className="text-xs font-medium text-muted-foreground leading-tight">Recent Activity</h3>
+                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-muted-foreground flex-shrink-0" />
                 </div>
-                <div className="text-lg md:text-2xl lg:text-3xl font-bold mb-1">
+                <div className="text-lg md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">
                   {Math.floor(totalFeedback * 0.3)}
                 </div>
-                <p className="text-xs opacity-70 leading-tight">This month</p>
-              </div>
+                <p className="text-xs text-muted-foreground leading-tight">This month</p>
+              </Card>
             </div>
 
             {/* Projects Section */}

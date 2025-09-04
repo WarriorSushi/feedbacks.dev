@@ -32,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ThemeToggle } from '@/components/theme-toggle';
 import type { User } from '@supabase/supabase-js';
 
 interface DashboardSidebarProps {
@@ -253,14 +254,42 @@ export function DashboardLayout({ children, user, projectsCount }: {
       <div className="flex h-screen w-full">
         <DashboardSidebar user={user} projectsCount={projectsCount} />
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <header className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <SidebarTrigger className="lg:hidden h-10 w-10 hover:bg-accent/20 transition-colors duration-150" />
-            <div className="flex items-center gap-4 ml-auto">
-              {/* Header content can be added here */}
+          <header className="sticky top-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="lg:hidden h-8 w-8 hover:bg-accent/20 transition-colors duration-150" />
+              <Button 
+                asChild 
+                size="sm" 
+                variant="outline" 
+                className="lg:hidden h-8 text-xs px-3 transition-colors duration-150"
+              >
+                <Link href="/dashboard">Dashboard</Link>
+              </Button>
+            </div>
+            
+            {/* Center Branding */}
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <div className="h-6 w-6 flex items-center justify-center">
+                  <img 
+                    src="/logo.svg" 
+                    alt="feedbacks.dev" 
+                    className="h-6 w-6 rounded"
+                  />
+                </div>
+                <span className="hidden sm:inline text-sm font-semibold">feedbacks.dev</span>
+              </Link>
+            </div>
+            
+            {/* Right Side - Theme Toggle */}
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
             </div>
           </header>
           <main className="flex-1 overflow-auto w-full">
-            {children}
+            <div className="pb-6 sm:pb-8 md:pb-12">
+              {children}
+            </div>
           </main>
         </div>
       </div>

@@ -1,49 +1,37 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
+import { Switch } from '@/components/ui/switch';
+import { useEffect, useState } from 'react';
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Check for saved theme preference or default to light
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-    
-    setTheme(initialTheme);
-    document.documentElement.classList.toggle('dark', initialTheme === 'dark');
   }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
-  };
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="sm" className="h-9 w-9 px-0">
-        <div className="h-4 w-4" />
-      </Button>
+      <div className="flex items-center gap-2">
+        <Sun className="h-4 w-4 text-muted-foreground" />
+        <Switch disabled />
+        <Moon className="h-4 w-4 text-muted-foreground" />
+      </div>
     );
   }
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="h-9 w-9 px-0"
-      onClick={toggleTheme}
-      aria-label="Toggle theme"
-    >
-      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-    </Button>
+    <div className="flex items-center gap-2">
+      <Sun className={`h-4 w-4 transition-colors ${theme === 'light' ? 'text-yellow-500' : 'text-muted-foreground'}`} />
+      <Switch
+        checked={theme === 'dark'}
+        onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+        className="data-[state=checked]:bg-slate-800 data-[state=unchecked]:bg-yellow-200"
+      />
+      <Moon className={`h-4 w-4 transition-colors ${theme === 'dark' ? 'text-blue-400' : 'text-muted-foreground'}`} />
+    </div>
   );
 }

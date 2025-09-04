@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { DashboardLayout } from '@/components/dashboard-sidebar';
 import { Plus, BarChart3, Calendar, ExternalLink, Users, Clock } from 'lucide-react';
 import { createClient } from '@/lib/supabase-client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { navCache } from '@/lib/cache';
 import type { User } from '@supabase/supabase-js';
 
 export default function ProjectsPage() {
@@ -16,34 +17,47 @@ export default function ProjectsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        
-        setUser(user);
+  const loadData = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      setUser(user);
 
-        const { data: projectsData, error } = await supabase
-          .from('projects')
-          .select(`
-            *,
-            feedback:feedback(count)
-          `)
-          .eq('owner_user_id', user.id);
-
-        if (!error) {
-          setProjects(projectsData || []);
-        }
-      } catch (error) {
-        console.error('Error loading projects:', error);
-      } finally {
+      // Check cache first
+      const cacheKey = navCache.getUserCacheKey(user.id, 'projects');
+      const cachedProjects = navCache.get(cacheKey);
+      
+      if (cachedProjects) {
+        setProjects(cachedProjects);
         setIsLoading(false);
+        return;
       }
-    };
-    
-    loadData();
+
+      const { data: projectsData, error } = await supabase
+        .from('projects')
+        .select(`
+          *,
+          feedback:feedback(count)
+        `)
+        .eq('owner_user_id', user.id);
+
+      if (!error) {
+        const projects = projectsData || [];
+        setProjects(projects);
+        // Cache the results
+        navCache.set(cacheKey, projects);
+      }
+    } catch (error) {
+      console.error('Error loading projects:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [supabase]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   if (isLoading || !user) {
     return (

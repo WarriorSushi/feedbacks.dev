@@ -23,7 +23,8 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase-client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { navCache } from '@/lib/cache';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface FeedbackItem {
@@ -46,75 +47,89 @@ export default function FeedbackPage() {
   const [filterProject, setFilterProject] = useState('all');
   const supabase = createClient();
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          setUser(user);
-          // Mock feedback data - in real app, this would come from Supabase
-          setFeedback([
-            {
-              id: '1',
-              email: 'john@example.com',
-              message: 'Great product! The interface is very intuitive and easy to use. I love how responsive the feedback widget is.',
-              rating: 5,
-              url: 'https://myapp.com/dashboard',
-              created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-              project_name: 'My App',
-              status: 'new'
-            },
-            {
-              id: '2', 
-              email: 'sarah@company.com',
-              message: 'The loading time could be improved on mobile devices. Also, the submit button sometimes takes a few clicks.',
-              rating: 3,
-              url: 'https://myapp.com/mobile',
-              created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-              project_name: 'My App',
-              status: 'read'
-            },
-            {
-              id: '3',
-              email: 'mike@startup.io',
-              message: 'Fantastic integration! Works perfectly with our React app. The documentation is clear and helpful.',
-              rating: 5,
-              url: 'https://myapp.com/integration',
-              created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-              project_name: 'My App',
-              status: 'archived'
-            },
-            {
-              id: '4',
-              email: 'lisa@design.co',
-              message: 'Would be nice to have more customization options for the widget appearance to match our brand colors.',
-              rating: 4,
-              url: 'https://myapp.com/settings',
-              created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-              project_name: 'Website v2',
-              status: 'read'
-            },
-            {
-              id: '5',
-              email: 'alex@tech.com',
-              message: 'Bug report: The widget crashes on Safari when submitting feedback with special characters in the message.',
-              rating: 2,
-              url: 'https://myapp.com/contact',
-              created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-              project_name: 'Website v2',
-              status: 'new'
-            }
-          ]);
+  const loadData = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUser(user);
+        
+        // Check cache first
+        const cacheKey = navCache.getUserCacheKey(user.id, 'feedback');
+        const cachedFeedback = navCache.get(cacheKey);
+        
+        if (cachedFeedback) {
+          setFeedback(cachedFeedback);
+          setIsLoading(false);
+          return;
         }
-      } catch (error) {
-        console.error('Error loading feedback:', error);
-      } finally {
-        setIsLoading(false);
+        
+        // Mock feedback data - in real app, this would come from Supabase
+        const mockFeedback: FeedbackItem[] = [
+          {
+            id: '1',
+            email: 'john@example.com',
+            message: 'Great product! The interface is very intuitive and easy to use. I love how responsive the feedback widget is.',
+            rating: 5,
+            url: 'https://myapp.com/dashboard',
+            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            project_name: 'My App',
+            status: 'new'
+          },
+          {
+            id: '2', 
+            email: 'sarah@company.com',
+            message: 'The loading time could be improved on mobile devices. Also, the submit button sometimes takes a few clicks.',
+            rating: 3,
+            url: 'https://myapp.com/mobile',
+            created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+            project_name: 'My App',
+            status: 'read'
+          },
+          {
+            id: '3',
+            email: 'mike@startup.io',
+            message: 'Fantastic integration! Works perfectly with our React app. The documentation is clear and helpful.',
+            rating: 5,
+            url: 'https://myapp.com/integration',
+            created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+            project_name: 'My App',
+            status: 'archived'
+          },
+          {
+            id: '4',
+            email: 'lisa@design.co',
+            message: 'Would be nice to have more customization options for the widget appearance to match our brand colors.',
+            rating: 4,
+            url: 'https://myapp.com/settings',
+            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+            project_name: 'Website v2',
+            status: 'read'
+          },
+          {
+            id: '5',
+            email: 'alex@tech.com',
+            message: 'Bug report: The widget crashes on Safari when submitting feedback with special characters in the message.',
+            rating: 2,
+            url: 'https://myapp.com/contact',
+            created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            project_name: 'Website v2',
+            status: 'new'
+          }
+        ];
+        
+        setFeedback(mockFeedback);
+        navCache.set(cacheKey, mockFeedback);
       }
-    };
-    
-    loadData();
+    } catch (error) {
+      console.error('Error loading feedback:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [supabase]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   if (isLoading || !user) {
     return (
@@ -280,23 +295,23 @@ export default function FeedbackPage() {
             </div>
 
             {/* Feedback List */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               {filteredFeedback.length > 0 ? (
                 filteredFeedback.map((item) => (
                   <div key={item.id} className="project-item group overflow-hidden">
-                    <div className="flex items-start gap-3 p-3 md:gap-4 md:p-4">
-                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                        <User className="h-4 w-4 md:h-5 md:w-5 text-accent" />
+                    <div className="flex items-start gap-3 p-3">
+                      <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
+                        <User className="h-4 w-4 text-accent" />
                       </div>
-                      <div className="flex-1 min-w-0 space-y-2">
-                        {/* Header row with email, badges, and time */}
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                          <div className="flex flex-wrap items-center gap-2 min-w-0">
+                      <div className="flex-1 min-w-0">
+                        {/* Single row layout with all info */}
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
                             <p className="font-medium text-sm truncate">{item.email}</p>
                             <Badge className={`text-xs ${getStatusColor(item.status)} flex-shrink-0`}>
                               {item.status}
                             </Badge>
-                            <Badge variant="outline" className="text-xs flex-shrink-0">
+                            <Badge variant="outline" className="text-xs flex-shrink-0 hidden sm:inline-flex">
                               {item.project_name}
                             </Badge>
                           </div>
@@ -306,12 +321,36 @@ export default function FeedbackPage() {
                           </div>
                         </div>
                         
-                        {/* Rating */}
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1">
-                            {getRatingStars(item.rating)}
+                        {/* Compact info row */}
+                        <div className="flex items-center justify-between gap-3 mb-2">
+                          <div className="flex items-center gap-3">
+                            {/* Rating */}
+                            <div className="flex items-center gap-1">
+                              {getRatingStars(item.rating)}
+                              <span className="text-xs text-muted-foreground">({item.rating}/5)</span>
+                            </div>
+                            
+                            {/* URL */}
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0 hidden md:flex">
+                              <Globe className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate max-w-[200px]">{item.url}</span>
+                            </div>
                           </div>
-                          <span className="text-xs text-muted-foreground">({item.rating}/5)</span>
+                          
+                          {/* Actions - always visible on mobile */}
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <Button size="sm" variant="outline" className="h-7 text-xs px-2">
+                              <Reply className="h-3 w-3" />
+                              <span className="hidden sm:inline ml-1">Reply</span>
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 text-xs px-2">
+                              <Archive className="h-3 w-3" />
+                              <span className="hidden sm:inline ml-1">Archive</span>
+                            </Button>
+                            <Button size="sm" variant="outline" className="h-7 w-7 p-0">
+                              <MoreHorizontal className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                         
                         {/* Message */}
@@ -319,25 +358,11 @@ export default function FeedbackPage() {
                           {item.message}
                         </p>
                         
-                        {/* URL and Actions */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
-                            <Globe className="h-3 w-3 flex-shrink-0" />
-                            <span className="truncate">{item.url}</span>
-                          </div>
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 sm:ml-2">
-                            <Button size="sm" variant="outline" className="h-6 text-xs px-2">
-                              <Reply className="h-3 w-3" />
-                              <span className="hidden sm:inline ml-1">Reply</span>
-                            </Button>
-                            <Button size="sm" variant="outline" className="h-6 text-xs px-2">
-                              <Archive className="h-3 w-3" />
-                              <span className="hidden sm:inline ml-1">Archive</span>
-                            </Button>
-                            <Button size="sm" variant="outline" className="h-6 w-6 p-0">
-                              <MoreHorizontal className="h-3 w-3" />
-                            </Button>
-                          </div>
+                        {/* Mobile project name */}
+                        <div className="mt-1 sm:hidden">
+                          <Badge variant="outline" className="text-xs">
+                            {item.project_name}
+                          </Badge>
                         </div>
                       </div>
                     </div>
