@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     console.log('=== SERVER SIGN OUT: Starting ===');
     
     // Log incoming cookies
-    const incomingCookies = [];
+    const incomingCookies: string[] = [];
     request.cookies.forEach((cookie, name) => {
       incomingCookies.push(`${name}=${cookie.value}`);
     });
