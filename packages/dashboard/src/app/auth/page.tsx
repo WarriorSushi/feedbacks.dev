@@ -34,7 +34,7 @@ export default function AuthPage() {
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo: `https://app.feedbacks.dev/auth/callback`,
           },
         });
 
@@ -65,7 +65,7 @@ export default function AuthPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `https://app.feedbacks.dev/auth/callback`,
         },
       });
 
