@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import { CookieConsent } from '@/components/cookie-consent';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
           {children}
         </div>
         <Toaster />
+        <CookieConsent />
       </body>
     </html>
   );
