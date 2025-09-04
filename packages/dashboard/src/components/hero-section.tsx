@@ -41,7 +41,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-xl text-white dark:text-muted-foreground mb-8 max-w-2xl animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <p className="text-xl mb-8 max-w-2xl animate-fade-in" style={{ color: '#1a1a1a', animationDelay: '0.2s' }}>
             Lightweight, embeddable feedback widget that works everywhere. 
             From websites to mobile apps – get user insights without the complexity.
           </p>
@@ -86,7 +86,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
                   <feature.icon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="font-semibold text-sm">{feature.title}</h3>
-                <p className="text-xs text-white/80 dark:text-muted-foreground">{feature.desc}</p>
+                <p className="text-xs" style={{ color: '#1a1a1a' }}>{feature.desc}</p>
               </div>
             ))}
           </div>

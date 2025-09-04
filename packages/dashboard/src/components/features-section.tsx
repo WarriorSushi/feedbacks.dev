@@ -44,7 +44,7 @@ export function FeaturesSection() {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Everything you need to collect feedback
           </h2>
-          <p className="text-xl text-white dark:text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl max-w-2xl mx-auto" style={{ color: '#1a1a1a' }}>
             Built for developers, designed for users. Get the insights you need 
             without compromising on performance or user experience.
           </p>
@@ -64,7 +64,7 @@ export function FeaturesSection() {
                 <CardTitle className="text-xl">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-base text-white/90 dark:text-muted-foreground">
+                <CardDescription className="text-base" style={{ color: '#1a1a1a' }}>
                   {feature.description}
                 </CardDescription>
               </CardContent>
