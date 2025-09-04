@@ -24,39 +24,39 @@ export function CodeSnippet({ code, language = 'html', className = '' }: CodeSni
   };
 
   return (
-    <div className={`relative rounded-lg bg-slate-900 text-slate-50 shadow-2xl border border-slate-800 ${className}`}>
+    <div className={`relative rounded-xl border shadow-2xl bg-background text-foreground dark:bg-slate-950 dark:border-slate-800 ${className}`}>
       {/* macOS Window Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-slate-800 rounded-t-lg border-b border-slate-700">
+      <div className="flex items-center justify-between px-4 py-3 bg-muted/50 dark:bg-slate-900/50 rounded-t-xl border-b border-border dark:border-slate-800 backdrop-blur-sm">
         <div className="flex items-center space-x-2">
           {/* Traffic Light Buttons */}
           <div className="flex space-x-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+            <div className="w-3 h-3 rounded-full bg-[#ff5f57] shadow-sm"></div>
+            <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
+            <div className="w-3 h-3 rounded-full bg-[#28ca42] shadow-sm"></div>
           </div>
         </div>
-        <span className="text-sm font-medium text-slate-300 absolute left-1/2 transform -translate-x-1/2">{language}</span>
+        <span className="text-xs font-medium text-muted-foreground absolute left-1/2 transform -translate-x-1/2">{language}</span>
         <Button
           size="sm"
           variant="ghost"
           onClick={copyToClipboard}
-          className="h-8 px-2 text-slate-400 hover:text-slate-50 hover:bg-slate-700 transition-colors"
+          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           {copied ? (
             <>
               <Check className="h-3 w-3 mr-1" />
-              Copied
+              <span className="text-xs">Copied</span>
             </>
           ) : (
             <>
               <Copy className="h-3 w-3 mr-1" />
-              Copy
+              <span className="text-xs">Copy</span>
             </>
           )}
         </Button>
       </div>
-      <pre className="p-4 overflow-x-auto text-sm text-left bg-slate-900 rounded-b-lg">
-        <code className="text-left">{code}</code>
+      <pre className="p-3 overflow-hidden text-xs leading-relaxed bg-card dark:bg-slate-950 rounded-b-xl">
+        <code className="text-left text-card-foreground dark:text-slate-300 whitespace-pre-wrap break-all">{code}</code>
       </pre>
     </div>
   );
