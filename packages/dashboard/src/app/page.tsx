@@ -19,7 +19,14 @@ export default function HomePage() {
     const checkAuth = async () => {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        
+        // Add timeout to prevent hanging
+        const authPromise = supabase.auth.getUser();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth timeout')), 3000)
+        );
+        
+        const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
         setUser(user);
       } catch (error) {
         console.error('Auth check error:', error);
@@ -29,7 +36,15 @@ export default function HomePage() {
       }
     };
     
-    checkAuth();
+    // Also set a maximum loading time fallback
+    const fallbackTimer = setTimeout(() => {
+      setIsLoading(false);
+      setUser(null);
+    }, 5000);
+    
+    checkAuth().then(() => clearTimeout(fallbackTimer));
+    
+    return () => clearTimeout(fallbackTimer);
   }, []);
 
   const sampleCode = `<script 
