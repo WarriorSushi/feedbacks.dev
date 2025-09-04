@@ -38,7 +38,6 @@ export function createClient() {
         },
       },
       auth: {
-        // Premium: Configure for cross-subdomain support
         detectSessionInUrl: true,
         persistSession: true,
         autoRefreshToken: true,

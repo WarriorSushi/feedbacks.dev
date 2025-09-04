@@ -18,7 +18,7 @@ export default function HomePage() {
   useEffect(() => {
     const supabase = createClient();
     
-    // Premium approach: Listen to auth state changes + initial check
+    // Client-side auth check - simple and reliable
     const checkAuth = async () => {
       try {
         // First check session from localStorage (instant)
@@ -33,7 +33,7 @@ export default function HomePage() {
         // Fallback: Check user from server (with timeout)
         const authPromise = supabase.auth.getUser();
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Auth timeout')), 3000)
+          setTimeout(() => reject(new Error('Auth timeout')), 2000)
         );
         
         const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
