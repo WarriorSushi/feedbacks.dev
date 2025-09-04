@@ -90,7 +90,11 @@ export default function DashboardPage() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <MobileNav />
-              <h1 className="text-xl font-bold text-primary">feedbacks.dev</h1>
+              <Link href="https://www.feedbacks.dev">
+                <h1 className="text-xl font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer">
+                  feedbacks.dev
+                </h1>
+              </Link>
             </div>
             <div className="flex items-center space-x-4">
               <Button asChild size="sm">

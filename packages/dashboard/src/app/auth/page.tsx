@@ -150,7 +150,7 @@ export default function AuthPage() {
       {/* Header */}
       <div className="container mx-auto px-4 py-6">
         <Button variant="ghost" asChild className="gap-2">
-          <Link href="/">
+          <Link href="https://www.feedbacks.dev">
             <ArrowLeft className="h-4 w-4" />
             Back to Home
           </Link>
@@ -161,7 +161,11 @@ export default function AuthPage() {
         <div className="w-full max-w-md">
           <Card className="border-0 shadow-lg bg-background/95 backdrop-blur">
             <CardHeader className="text-center space-y-1">
-              <CardTitle className="text-2xl font-bold">Welcome to feedbacks.dev</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                <Link href="https://www.feedbacks.dev" className="hover:text-primary/80 transition-colors">
+                  Welcome to feedbacks.dev
+                </Link>
+              </CardTitle>
               <CardDescription>
                 Sign in to start collecting feedback in minutes
               </CardDescription>

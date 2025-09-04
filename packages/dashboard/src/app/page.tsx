@@ -70,7 +70,11 @@ export default function HomePage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold text-primary">feedbacks.dev</h1>
+              <Link href="https://www.feedbacks.dev">
+                <h1 className="text-xl font-bold text-primary hover:text-primary/80 transition-colors cursor-pointer">
+                  feedbacks.dev
+                </h1>
+              </Link>
               <Badge variant="secondary" className="hidden sm:inline-flex">
                 Beta
               </Badge>
