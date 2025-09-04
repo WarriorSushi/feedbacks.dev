@@ -36,7 +36,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
 
           {/* Main headline */}
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 animate-fade-in">
-            <span className="animated-gradient-text">Collect feedback with</span>
+            <span className="text-primary">Collect feedback with</span>
             <span className="gradient-text block mt-2">one line of code</span>
           </h1>
 
