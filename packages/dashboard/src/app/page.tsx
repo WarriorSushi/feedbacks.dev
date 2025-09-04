@@ -72,10 +72,10 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="sm" asChild className="h-9 w-9 px-0">
                 <a
-                  href="https://github.com/feedbacksdev"
+                  href="https://github.com/WarriorSushi/feedbacks.dev"
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="GitHub"
+                  aria-label="GitHub Repository"
                 >
                   <Github className="h-4 w-4" />
                 </a>
@@ -108,10 +108,10 @@ export default function HomePage() {
       <div className="md:hidden flex justify-between items-center px-4 sm:px-6 lg:px-8 py-2 bg-transparent">
         <Button variant="ghost" size="sm" asChild className="h-9 w-9 px-0 bg-transparent hover:bg-white/10">
           <a
-            href="https://github.com/feedbacksdev"
+            href="https://github.com/WarriorSushi/feedbacks.dev"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="GitHub"
+            aria-label="GitHub Repository"
           >
             <Github className="h-4 w-4 text-white dark:text-white" />
           </a>
