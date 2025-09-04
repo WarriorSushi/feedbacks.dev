@@ -65,7 +65,7 @@ export default function AuthPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `https://app.feedbacks.dev/auth/callback`,
+          redirectTo: `https://app.feedbacks.dev/dashboard`,
         },
       });
 
