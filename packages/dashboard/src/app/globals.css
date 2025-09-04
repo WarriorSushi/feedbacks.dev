@@ -375,14 +375,15 @@
 
 .lovable-gradient {
   background: linear-gradient(270deg, 
-    #667eea 0%, 
-    #764ba2 25%, 
-    #f093fb 50%, 
-    #f5576c 75%, 
-    #4facfe 100%
+    #6366f1 0%, 
+    #8b5cf6 20%, 
+    #a855f7 40%, 
+    #d946ef 60%, 
+    #ec4899 80%, 
+    #06b6d4 100%
   );
   background-size: 400% 400%;
-  animation: gradientMove 5s ease forwards;
+  animation: gradientMove 8s ease-in-out forwards;
   position: relative;
 }
 
