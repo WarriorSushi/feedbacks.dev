@@ -130,6 +130,30 @@ export default function HomePage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Footer */}
+        <footer className="mt-20 border-t">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col sm:flex-row justify-between items-center">
+              <div className="flex items-center space-x-4 mb-4 sm:mb-0">
+                <p className="text-sm text-muted-foreground">
+                  © 2025 feedbacks.dev. All rights reserved.
+                </p>
+              </div>
+              <div className="flex items-center space-x-6">
+                <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Privacy Policy
+                </Link>
+                <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Terms of Service
+                </Link>
+                <Link href="mailto:support@feedbacks.dev" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Contact
+                </Link>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );

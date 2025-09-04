@@ -166,15 +166,6 @@ export default function AuthPage() {
                   Continue with GitHub
                 </Button>
                 
-                <Button
-                  onClick={() => handleOAuthAuth('discord')}
-                  className="w-full gap-2 h-11"
-                  variant="outline"
-                  type="button"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  Continue with Discord
-                </Button>
               </div>
 
               <div className="relative">

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MobileNav } from '@/components/mobile-nav';
+import { UserMenu } from '@/components/user-menu';
 import { Plus, BarChart3, Calendar, Mail, ExternalLink } from 'lucide-react';
 import { createClient } from '@/lib/supabase-server';
 
@@ -49,6 +50,7 @@ export default async function DashboardPage() {
                   <span className="hidden sm:inline">New Project</span>
                 </Link>
               </Button>
+              <UserMenu user={user} />
             </div>
           </div>
         </div>
