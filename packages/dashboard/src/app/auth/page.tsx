@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { createClient } from '@/lib/supabase-client';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,23 @@ export default function AuthPage() {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
+
+  // Check if user is already authenticated and redirect to dashboard
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          console.log('User already authenticated, redirecting to dashboard');
+          router.push('/dashboard');
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      }
+    };
+    
+    checkUser();
+  }, [router, supabase]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,37 +1,80 @@
+'use client';
+
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MobileNav } from '@/components/mobile-nav';
 import { UserMenu } from '@/components/user-menu';
 import { Plus, BarChart3, Calendar, Mail, ExternalLink } from 'lucide-react';
-import { createClient } from '@/lib/supabase-server';
+import { createClient } from '@/lib/supabase-client';
+import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 
-export default async function DashboardPage() {
+export default function DashboardPage() {
+  const [user, setUser] = useState<User | null>(null);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
   const supabase = createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          router.push('/auth');
+          return;
+        }
+        
+        setUser(user);
 
-  if (!user) {
-    redirect('/auth');
-  }
+        // Fetch user's projects with feedback count
+        const { data: projectsData, error: projectsError } = await supabase
+          .from('projects')
+          .select(`
+            *,
+            feedback:feedback(count)
+          `)
+          .eq('owner_user_id', user.id);
 
-  // Fetch user's projects with feedback count
-  const { data: projects, error: projectsError } = await supabase
-    .from('projects')
-    .select(`
-      *,
-      feedback:feedback(count)
-    `)
-    .eq('owner_user_id', user.id);
+        if (projectsError) {
+          console.error('Error fetching projects:', projectsError);
+        } else {
+          setProjects(projectsData || []);
+        }
+      } catch (error) {
+        console.error('Dashboard load error:', error);
+        router.push('/auth');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadDashboard();
+  }, [router, supabase]);
 
   // Calculate total feedback across all projects
-  const totalFeedback = projects?.reduce((acc, project) => {
+  const totalFeedback = projects.reduce((acc, project) => {
     return acc + (project.feedback?.[0]?.count || 0);
-  }, 0) || 0;
+  }, 0);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect to auth
+  }
 
   return (
     <div className="min-h-screen bg-background">
