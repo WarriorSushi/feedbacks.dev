@@ -85,65 +85,57 @@ export default function DashboardPage() {
     <DashboardLayout user={user} projectsCount={projects.length}>
       <div className="p-6 lg:p-8 space-y-8 page-illumination">
         {/* Welcome Section */}
-        <div className="animate-fade-in">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-3xl font-bold text-foreground">
-              Welcome back, {user.user_metadata?.full_name || 'Developer'}
-            </h1>
-            <Button asChild size="sm" className="bg-gradient-primary hover:opacity-90 hero-glow">
+        <div className="animate-fade-in relative rounded-2xl p-6 bg-gradient-to-r from-background via-background to-primary/5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+                Welcome back, {user.user_metadata?.full_name || 'Developer'} ✨
+              </h1>
+              <p className="text-muted-foreground text-lg mt-2">
+                Ready to collect some amazing feedback today?
+              </p>
+            </div>
+            <Button asChild size="lg" className="bg-gradient-warm hover:opacity-90 hero-glow text-white">
               <Link href="/projects/new">
                 <Plus className="h-4 w-4 mr-2" />
                 New Project
               </Link>
             </Button>
           </div>
-          <p className="text-muted-foreground text-lg">
-            Manage your feedback projects and see what your users are saying.
-          </p>
+          
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-accent/10 to-transparent rounded-full blur-2xl"></div>
         </div>
 
-        {/* Stats Overview */}
+        {/* Stats Overview - Gradient Tiles */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="stat-card hover-lift">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Projects</CardTitle>
-              <BarChart3 className="h-4 w-4 text-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{projects?.length || 0}</div>
-              <p className="text-xs text-muted-foreground">
-                Active projects
-              </p>
-            </CardContent>
-          </Card>
+          <div className="gradient-tile p-6 relative">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-white/80">Total Projects</h3>
+              <BarChart3 className="h-5 w-5 text-accent" />
+            </div>
+            <div className="text-3xl font-bold text-white mb-2">{projects?.length || 0}</div>
+            <p className="text-sm text-white/60">Active projects</p>
+          </div>
           
-          <Card className="stat-card hover-lift">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Feedback</CardTitle>
-              <Mail className="h-4 w-4 text-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{totalFeedback}</div>
-              <p className="text-xs text-muted-foreground">
-                Collected responses
-              </p>
-            </CardContent>
-          </Card>
+          <div className="gradient-tile-warm p-6 relative">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-white/80">Total Feedback</h3>
+              <Mail className="h-5 w-5 text-accent" />
+            </div>
+            <div className="text-3xl font-bold text-white mb-2">{totalFeedback}</div>
+            <p className="text-sm text-white/60">Collected responses</p>
+          </div>
           
-          <Card className="stat-card hover-lift">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Recent Activity</CardTitle>
-              <TrendingUp className="h-4 w-4 text-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
-                {Math.floor(totalFeedback * 0.3)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                This month
-              </p>
-            </CardContent>
-          </Card>
+          <div className="gradient-tile-accent p-6 relative">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-primary/80">Recent Activity</h3>
+              <TrendingUp className="h-5 w-5 text-primary" />
+            </div>
+            <div className="text-3xl font-bold text-primary mb-2">
+              {Math.floor(totalFeedback * 0.3)}
+            </div>
+            <p className="text-sm text-primary/60">This month</p>
+          </div>
         </div>
 
         {/* Projects Section */}
@@ -153,94 +145,96 @@ export default function DashboardPage() {
           </div>
 
           {projects && projects.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-4">
               {projects.map((project: any, index: number) => (
-                <Card 
+                <div 
                   key={project.id} 
-                  className="professional-card hover-lift animate-fade-in" 
-                  style={{ animationDelay: `${0.4 + index * 0.1}s` }}
+                  className="project-item animate-fade-in" 
+                  style={{ animationDelay: `${0.4 + index * 0.05}s` }}
                 >
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg font-semibold">{project.name}</CardTitle>
-                      <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
-                        {project.feedback?.[0]?.count || 0} feedback
-                      </Badge>
-                    </div>
-                    <CardDescription className="flex items-center gap-2">
-                      <Calendar className="h-3 w-3" />
-                      Created {new Date(project.created_at).toLocaleDateString()}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="p-3 bg-muted/50 rounded-lg">
-                        <p className="text-xs text-muted-foreground mb-1">API Key</p>
-                        <code className="text-xs font-mono">
-                          {project.api_key?.slice(0, 20)}...
-                        </code>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-2">
+                        <h3 className="text-lg font-semibold text-foreground">{project.name}</h3>
+                        <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
+                          {project.feedback?.[0]?.count || 0} responses
+                        </Badge>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          <span>Active</span>
+                        </div>
                       </div>
                       
-                      <div className="flex items-center justify-between pt-2">
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Users className="h-3 w-3" />
-                            <span>{Math.floor(Math.random() * 100) + 10}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            <span>Active</span>
-                          </div>
+                      <div className="flex items-center gap-6 text-sm text-muted-foreground mb-3">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
                         </div>
-                        
-                        <Button asChild size="sm" variant="outline" className="hover-glow">
-                          <Link href={`/projects/${project.id}`}>
-                            <ExternalLink className="h-3 w-3 mr-1" />
-                            View
-                          </Link>
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          <span>{Math.floor(Math.random() * 100) + 10} users</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-4">
+                        <div className="text-xs text-muted-foreground">
+                          API Key: <code className="font-mono bg-muted/30 px-2 py-1 rounded text-xs">
+                            {project.api_key?.slice(0, 20)}...
+                          </code>
+                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button asChild size="sm" variant="outline" className="hover-glow">
+                        <Link href={`/projects/${project.id}`}>
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          View
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               ))}
               
-              {/* Add New Project Card */}
-              <Card className="hover-lift border-2 border-dashed border-muted-foreground/30 cursor-pointer group animate-fade-in" style={{ animationDelay: `${0.4 + projects.length * 0.1}s` }}>
-                <Link href="/projects/new">
-                  <CardContent className="flex flex-col items-center justify-center h-full min-h-[200px] text-center p-6">
-                    <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
-                      <Plus className="w-8 h-8 text-accent" />
+              {/* Add New Project Item */}
+              <div className="project-item border-dashed border-2 border-accent/30 cursor-pointer group animate-fade-in" style={{ animationDelay: `${0.4 + projects.length * 0.05}s` }}>
+                <Link href="/projects/new" className="block">
+                  <div className="flex items-center gap-6 py-2">
+                    <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                      <Plus className="w-6 h-6 text-accent" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-2">Create New Project</h3>
-                    <p className="text-sm text-muted-foreground mb-4 max-w-sm">
-                      Start collecting feedback for a new website or app in seconds
-                    </p>
-                    <Badge className="bg-accent text-accent-foreground">Get Started</Badge>
-                  </CardContent>
+                    <div>
+                      <h3 className="font-semibold text-lg mb-1">Create New Project</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Start collecting feedback for a new website or app in seconds
+                      </p>
+                    </div>
+                    <div className="ml-auto">
+                      <Badge className="bg-accent text-accent-foreground">Get Started</Badge>
+                    </div>
+                  </div>
                 </Link>
-              </Card>
+              </div>
             </div>
           ) : (
-            <Card className="professional-card animate-fade-in" style={{ animationDelay: '0.4s' }}>
-              <CardContent className="text-center py-16">
-                <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center">
-                  <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mb-6">
-                    <Plus className="w-10 h-10 text-accent" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-3">No projects yet</h3>
-                  <p className="text-muted-foreground mb-8 text-lg">
-                    Create your first project to start collecting valuable feedback from your users.
-                  </p>
-                  <Button asChild size="lg" className="bg-gradient-primary hover:opacity-90 hero-glow">
-                    <Link href="/projects/new">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Your First Project
-                    </Link>
-                  </Button>
+            <div className="gradient-tile text-center py-16 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+              <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center">
+                <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center mb-6 backdrop-blur">
+                  <Plus className="w-10 h-10 text-accent" />
                 </div>
-              </CardContent>
-            </Card>
+                <h3 className="text-2xl font-bold mb-3 text-white">No projects yet</h3>
+                <p className="text-white/70 mb-8 text-lg">
+                  Create your first project to start collecting valuable feedback from your users.
+                </p>
+                <Button asChild size="lg" className="bg-gradient-accent hover:opacity-90 hero-glow">
+                  <Link href="/projects/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Your First Project
+                  </Link>
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </div>
