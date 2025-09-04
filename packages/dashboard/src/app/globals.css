@@ -27,12 +27,13 @@
     --ring: 215 25% 27%;
     --radius: 0.5rem;
     
-    /* Premium Navy Gradients - Logo Inspired & Sophisticated */
+    /* Premium Gradients - Custom Colors */
     --gradient-primary: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(0, 0%, 0%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 25%) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 25%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(210, 85%, 35%) 0%, hsl(210, 80%, 40%) 100%);
+    --gradient-tiles: linear-gradient(135deg, #cecadf 0%, #d0d8ff 100%);
     --gradient-warm: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 30%) 100%);
+    --text-dashboard: #1a1f3a;
     
     /* Premium Shadows - Navy & Gold */
     --shadow-sm: 0 1px 2px 0 hsl(210 93% 15% / 0.05);
@@ -76,12 +77,13 @@
     --input: 210 20% 18%;
     --ring: 215 25% 27%;
     
-    /* Dark Mode Navy Gradients - Sophisticated */
+    /* Dark Mode Gradients - Sophisticated */
     --gradient-primary: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(0, 0%, 0%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(210, 85%, 25%) 0%, hsl(210, 93%, 15%) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(210, 85%, 25%) 0%, hsl(210, 93%, 15%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(210, 85%, 35%) 0%, hsl(210, 80%, 40%) 100%);
+    --gradient-tiles: linear-gradient(135deg, #2a2641 0%, #1f243a 100%);
     --gradient-warm: linear-gradient(135deg, hsl(210, 85%, 25%) 0%, hsl(210, 93%, 15%) 100%);
+    --text-dashboard: #e8e6f3;
     
     /* Dark Shadows - Navy & Gold */
     --shadow-glow: 0 0 30px hsl(210 85% 35% / 0.4);
@@ -215,40 +217,36 @@
     background: var(--gradient-warm);
   }
   
-  /* Sophisticated Gradient Tiles */
-  .gradient-tile {
+  /* Custom Gradient Tiles with Specified Colors */
+  .gradient-tile,
+  .gradient-tile-warm,
+  .gradient-tile-accent {
     @apply relative overflow-hidden rounded-xl;
-    background: var(--gradient-secondary);
+    background: var(--gradient-tiles);
+    color: var(--text-dashboard);
     border: 1px solid hsl(var(--border) / 0.3);
-    backdrop-filter: blur(20px);
     transition: var(--transition-smooth);
   }
   
-  .gradient-tile:hover {
+  .gradient-tile:hover,
+  .gradient-tile-warm:hover,
+  .gradient-tile-accent:hover {
     box-shadow: var(--shadow-glow);
     transform: translateY(-2px);
   }
   
-  .gradient-tile::before {
+  .gradient-tile::before,
+  .gradient-tile-warm::before,
+  .gradient-tile-accent::before {
     content: '';
     position: absolute;
     top: 0;
     right: 0;
     width: 120px;
     height: 120px;
-    background: radial-gradient(circle, hsl(210, 85%, 45% / 0.08), transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.05), transparent 70%);
     border-radius: 50%;
     transform: translate(40px, -40px);
-  }
-  
-  .gradient-tile-warm {
-    background: var(--gradient-warm);
-    color: white;
-  }
-  
-  .gradient-tile-accent {
-    background: var(--gradient-accent);
-    color: hsl(var(--primary));
   }
   
   /* Clean Project List */

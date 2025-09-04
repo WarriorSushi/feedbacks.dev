@@ -110,31 +110,31 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="gradient-tile p-6 relative">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-white/80">Total Projects</h3>
-              <BarChart3 className="h-5 w-5 text-accent" />
+              <h3 className="text-sm font-medium opacity-80">Total Projects</h3>
+              <BarChart3 className="h-5 w-5 opacity-70" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">{projects?.length || 0}</div>
-            <p className="text-sm text-white/60">Active projects</p>
+            <div className="text-3xl font-bold mb-2">{projects?.length || 0}</div>
+            <p className="text-sm opacity-70">Active projects</p>
           </div>
           
           <div className="gradient-tile-warm p-6 relative">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-white/80">Total Feedback</h3>
-              <Mail className="h-5 w-5 text-accent" />
+              <h3 className="text-sm font-medium opacity-80">Total Feedback</h3>
+              <Mail className="h-5 w-5 opacity-70" />
             </div>
-            <div className="text-3xl font-bold text-white mb-2">{totalFeedback}</div>
-            <p className="text-sm text-white/60">Collected responses</p>
+            <div className="text-3xl font-bold mb-2">{totalFeedback}</div>
+            <p className="text-sm opacity-70">Collected responses</p>
           </div>
           
           <div className="gradient-tile-accent p-6 relative">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-primary/80">Recent Activity</h3>
-              <TrendingUp className="h-5 w-5 text-primary" />
+              <h3 className="text-sm font-medium opacity-80">Recent Activity</h3>
+              <TrendingUp className="h-5 w-5 opacity-70" />
             </div>
-            <div className="text-3xl font-bold text-primary mb-2">
+            <div className="text-3xl font-bold mb-2">
               {Math.floor(totalFeedback * 0.3)}
             </div>
-            <p className="text-sm text-primary/60">This month</p>
+            <p className="text-sm opacity-70">This month</p>
           </div>
         </div>
 
