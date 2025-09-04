@@ -7,56 +7,76 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/dashboard';
 
   console.log('Auth callback - code:', code ? 'present' : 'missing');
+  console.log('Auth callback - origin:', origin);
+  console.log('Auth callback - next:', next);
 
   if (code) {
     const supabase = createClient();
     
     try {
-      // Try the standard PKCE flow first
+      // Exchange code for session
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
       
-      console.log('Session exchange - error:', error);
+      console.log('Session exchange - error:', error?.message || 'none');
       console.log('Session exchange - data:', data ? 'present' : 'missing');
       console.log('Session in data:', data?.session ? 'present' : 'missing');
-      console.log('User in data:', data?.user ? 'present' : 'missing');
+      console.log('User in data:', data?.user ? data.user.email : 'missing');
       
-      // Check if we have a valid session regardless of PKCE error
+      // If we successfully exchanged code for session, redirect to dashboard
       if (data?.session && data?.user) {
-        console.log('Valid session found, proceeding to dashboard');
+        console.log('✅ Valid session established for:', data.user.email);
+        
+        // Build redirect URL
         const forwardedHost = request.headers.get('x-forwarded-host');
         const isLocalEnv = process.env.NODE_ENV === 'development';
         
-        console.log('Redirecting to dashboard');
-        
+        let redirectUrl;
         if (isLocalEnv) {
-          return NextResponse.redirect(`${origin}${next}`);
+          redirectUrl = `${origin}${next}`;
         } else if (forwardedHost) {
-          return NextResponse.redirect(`https://${forwardedHost}${next}`);
+          redirectUrl = `https://${forwardedHost}${next}`;
         } else {
-          return NextResponse.redirect(`${origin}${next}`);
+          redirectUrl = `${origin}${next}`;
         }
-      } else if (!error) {
-        // No error but no session - redirect to dashboard anyway
-        console.log('No error, redirecting to dashboard');
-        const forwardedHost = request.headers.get('x-forwarded-host');
-        const isLocalEnv = process.env.NODE_ENV === 'development';
         
-        if (isLocalEnv) {
-          return NextResponse.redirect(`${origin}${next}`);
-        } else if (forwardedHost) {
-          return NextResponse.redirect(`https://${forwardedHost}${next}`);
-        } else {
-          return NextResponse.redirect(`${origin}${next}`);
-        }
-      } else {
-        console.log('Session exchange failed:', error?.message);
+        console.log('🚀 Redirecting to:', redirectUrl);
+        
+        // Create response with proper redirect
+        const response = NextResponse.redirect(redirectUrl);
+        
+        // Ensure cookies are set properly
+        response.headers.set('Cache-Control', 'no-cache, no-store, max-age=0, must-revalidate');
+        
+        return response;
       }
+      
+      // If exchange failed but we have a code, still try redirecting
+      if (!error || error.message.includes('PKCE')) {
+        console.log('⚠️ Code exchange had issues but attempting redirect anyway');
+        const forwardedHost = request.headers.get('x-forwarded-host');
+        const isLocalEnv = process.env.NODE_ENV === 'development';
+        
+        let redirectUrl;
+        if (isLocalEnv) {
+          redirectUrl = `${origin}${next}`;
+        } else if (forwardedHost) {
+          redirectUrl = `https://${forwardedHost}${next}`;
+        } else {
+          redirectUrl = `${origin}${next}`;
+        }
+        
+        return NextResponse.redirect(redirectUrl);
+      }
+      
+      console.log('❌ Session exchange failed:', error?.message);
     } catch (err) {
-      console.log('Auth callback error:', err);
+      console.log('❌ Auth callback error:', err);
     }
+  } else {
+    console.log('❌ No authorization code provided');
   }
 
-  // Return the user to an error page with instructions
-  console.log('Redirecting to error page');
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  // Return the user to auth page instead of error page
+  console.log('🔄 Redirecting back to auth page');
+  return NextResponse.redirect(`${origin}/auth?error=callback_failed`);
 }

@@ -279,6 +279,16 @@
     animation: illuminate 1.2s ease-out;
     pointer-events: none;
   }
+  
+  /* Project Cards */
+  .project-card {
+    position: relative;
+    transition: var(--transition-smooth);
+  }
+  
+  .project-card:hover {
+    transform: translateY(-2px);
+  }
 }
 
 /* Keyframes */

@@ -233,7 +233,7 @@ export function DashboardLayout({ children, user, projectsCount }: {
         <DashboardSidebar user={user} projectsCount={projectsCount} />
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <header className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <SidebarTrigger className="lg:hidden" />
+            <SidebarTrigger className="lg:hidden h-10 w-10 hover:bg-accent/20 transition-colors" />
             <div className="flex items-center gap-4 ml-auto">
               {/* Header content can be added here */}
             </div>
