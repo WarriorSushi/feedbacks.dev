@@ -9,9 +9,9 @@ export async function POST(request: NextRequest) {
     
     // Log incoming cookies
     const incomingCookies: string[] = [];
-    request.cookies.forEach((cookie, name) => {
+    for (const [name, cookie] of request.cookies) {
       incomingCookies.push(`${name}=${cookie.value}`);
-    });
+    }
     console.log('SERVER SIGN OUT: Incoming cookies:', incomingCookies.join('; '));
     
     // Create Supabase client with proper cookie handling for API routes
