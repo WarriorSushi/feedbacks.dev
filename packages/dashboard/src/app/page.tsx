@@ -18,24 +18,34 @@ export default function HomePage() {
   useEffect(() => {
     const supabase = createClient();
     
-    // EXACT same auth logic as auth page (which works!)
+    // Enhanced auth detection - check session first, then user
     const checkUser = async () => {
       try {
-        // Add timeout protection (same as auth page)
+        console.log('🔍 Landing page: Starting auth check...');
+        
+        // First check session (faster)
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('📦 Session check:', session ? 'Found session' : 'No session');
+        
+        if (session?.user) {
+          console.log('✅ User from session:', session.user.email);
+          setUser(session.user);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Fallback: Check user from server (same as auth page)
+        console.log('🔄 Checking user from server...');
         const authPromise = supabase.auth.getUser();
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Auth timeout')), 2000)
         );
         
         const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
-        if (user) {
-          console.log('User detected on landing page:', user.email);
-          setUser(user);
-        } else {
-          setUser(null);
-        }
+        console.log('👤 User from server:', user ? user.email : 'None');
+        setUser(user);
       } catch (error) {
-        console.error('Auth check error:', error);
+        console.error('❌ Auth check error:', error);
         setUser(null);
       } finally {
         setIsLoading(false);

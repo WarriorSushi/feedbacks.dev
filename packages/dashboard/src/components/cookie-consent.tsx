@@ -6,16 +6,28 @@ import { Card } from '@/components/ui/card';
 import { X, Cookie } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-client';
+import { usePathname } from 'next/navigation';
 
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const pathname = usePathname();
+  
+  // Don't show cookie banner on auth pages
+  if (pathname?.startsWith('/auth')) {
+    return null;
+  }
 
   useEffect(() => {
     const checkAuthAndConsent = async () => {
       try {
-        // Reset cookie consent for everyone (fresh start)
-        localStorage.removeItem('cookie-consent');
+        // First check if user already has cookie consent
+        const existingConsent = localStorage.getItem('cookie-consent');
+        if (existingConsent) {
+          setIsVisible(false);
+          setIsCheckingAuth(false);
+          return;
+        }
         
         // Check if user is authenticated
         const supabase = createClient();
