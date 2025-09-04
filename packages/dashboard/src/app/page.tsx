@@ -8,38 +8,42 @@ import { CodeSnippet } from '@/components/code-snippet';
 import { Zap, Code, Rocket, Github, ArrowRight } from 'lucide-react';
 import { UserMenu } from '@/components/user-menu';
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase-client';
-import type { User } from '@supabase/supabase-js';
+
+interface AuthStatus {
+  authenticated: boolean;
+  email?: string;
+}
 
 export default function HomePage() {
-  const [user, setUser] = useState<User | null>(null);
+  const [authStatus, setAuthStatus] = useState<AuthStatus>({ authenticated: false });
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    const supabase = createClient();
-    
-    const checkUser = async () => {
+    const checkAuthStatus = async () => {
       try {
-        const authPromise = supabase.auth.getUser();
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Auth timeout')), 2000)
-        );
+        const response = await fetch('https://app.feedbacks.dev/api/auth-status', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
         
-        const { data: { user } } = await Promise.race([authPromise, timeoutPromise]) as any;
-        if (user) {
-          setUser(user);
+        if (response.ok) {
+          const data: AuthStatus = await response.json();
+          setAuthStatus(data);
         } else {
-          setUser(null);
+          setAuthStatus({ authenticated: false });
         }
       } catch (error) {
-        console.error('Auth check error:', error);
-        setUser(null);
+        console.error('Auth status check error:', error);
+        setAuthStatus({ authenticated: false });
       } finally {
         setIsLoading(false);
       }
     };
     
-    checkUser();
+    checkAuthStatus();
   }, []);
 
   const sampleCode = `<script 
@@ -74,12 +78,16 @@ export default function HomePage() {
                     <div className="h-4 w-16 bg-background/20 animate-pulse rounded" />
                   </Button>
                 </>
-              ) : user ? (
+              ) : authStatus.authenticated ? (
                 <>
                   <Button asChild>
                     <Link href="https://app.feedbacks.dev/dashboard">Go to Dashboard</Link>
                   </Button>
-                  <UserMenu user={user} />
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-xs font-medium text-primary">
+                      {authStatus.email?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
                 </>
               ) : (
                 <>
@@ -123,7 +131,7 @@ export default function HomePage() {
               </Button>
             ) : (
               <Button size="lg" asChild>
-                {user ? (
+                {authStatus.authenticated ? (
                   <Link href="https://app.feedbacks.dev/dashboard" className="flex items-center">
                     Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
