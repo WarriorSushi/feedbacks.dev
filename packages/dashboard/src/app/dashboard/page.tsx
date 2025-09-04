@@ -205,9 +205,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Dashboard Tabs */}
-        <Tabs defaultValue="overview" className="w-full dark:bg-black dark:p-6 dark:rounded-lg">
+        <Tabs defaultValue="overview" className="w-full">
 
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20">
+          <TabsList className="grid w-full grid-cols-2 mb-6 bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20 dark:bg-black dark:border-gray-700">
             <TabsTrigger 
               value="overview" 
               className="data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all duration-200"

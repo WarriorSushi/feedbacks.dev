@@ -122,12 +122,12 @@
   
   /* Animated Gradient Text */
   .animated-gradient-text {
-    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
-    background-size: 400% 400%;
+    background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb);
+    background-size: 300% 300%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: gradient-shift 3s ease infinite;
+    animation: gradient-shift 8s ease-in-out infinite;
   }
   
   /* Hero Glow Effect */

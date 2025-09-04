@@ -49,7 +49,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen lovable-gradient">
+    <div className="min-h-screen lovable-gradient flex flex-col">
       {/* Navigation */}
       <nav className="sticky top-0 z-50 w-full border-b bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:bg-black/90 dark:supports-[backdrop-filter]:bg-black/80">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -116,14 +116,16 @@ export default function HomePage() {
         <ThemeToggle />
       </div>
 
-      {/* Hero Section */}
-      <HeroSection isAuthenticated={authStatus.authenticated} />
+      <div className="flex-1">
+        {/* Hero Section */}
+        <HeroSection isAuthenticated={authStatus.authenticated} />
 
-      {/* Features Section */}
-      <FeaturesSection />
+        {/* Features Section */}
+        <FeaturesSection />
+      </div>
 
       {/* Footer */}
-      <footer className="border-t bg-background/60 backdrop-blur-sm">
+      <footer className="border-t bg-background/60 backdrop-blur-sm mt-auto">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center">
             <div className="flex items-center space-x-4 mb-4 sm:mb-0">
