@@ -382,7 +382,7 @@
     #4facfe 100%
   );
   background-size: 400% 400%;
-  animation: gradientMove 15s ease infinite;
+  animation: gradientMove 5s ease forwards;
   position: relative;
 }
 
