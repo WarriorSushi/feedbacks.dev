@@ -18,8 +18,8 @@
     --secondary-foreground: 210 40% 98%;
     --muted: 210 20% 95%;
     --muted-foreground: 210 15% 45%;
-    --accent: 45 90% 60%;
-    --accent-foreground: 210 93% 15%;
+    --accent: 210 85% 35%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 65% 50%;
     --destructive-foreground: 210 40% 98%;
     --border: 210 20% 90%;
@@ -27,18 +27,18 @@
     --ring: 215 25% 27%;
     --radius: 0.5rem;
     
-    /* Premium Navy & Gold Gradients - Logo Inspired */
+    /* Premium Navy Gradients - Logo Inspired & Sophisticated */
     --gradient-primary: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(0, 0%, 0%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 25%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 25%) 50%, hsl(45, 90%, 60%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(45, 90%, 60%) 0%, hsl(45, 85%, 55%) 100%);
-    --gradient-warm: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(45, 90%, 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 25%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(210, 85%, 35%) 0%, hsl(210, 80%, 40%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 30%) 100%);
     
     /* Premium Shadows - Navy & Gold */
     --shadow-sm: 0 1px 2px 0 hsl(210 93% 15% / 0.05);
     --shadow-md: 0 4px 6px -1px hsl(210 93% 15% / 0.08), 0 2px 4px -2px hsl(210 93% 15% / 0.05);
     --shadow-lg: 0 10px 15px -3px hsl(210 93% 15% / 0.08), 0 4px 6px -4px hsl(210 93% 15% / 0.05);
-    --shadow-glow: 0 0 30px hsl(45 90% 60% / 0.2);
+    --shadow-glow: 0 0 30px hsl(210 85% 35% / 0.3);
     --shadow-lift: 0 8px 15px -3px hsl(210 93% 15% / 0.08), 0 4px 6px -4px hsl(210 93% 15% / 0.05);
     --shadow-navy: 0 0 40px hsl(210 93% 15% / 0.3);
     
@@ -68,23 +68,23 @@
     --secondary-foreground: 210 40% 98%;
     --muted: 210 20% 12%;
     --muted-foreground: 210 15% 65%;
-    --accent: 45 90% 60%;
-    --accent-foreground: 210 93% 15%;
+    --accent: 210 85% 35%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 65% 50%;
     --destructive-foreground: 210 40% 98%;
     --border: 210 20% 18%;
     --input: 210 20% 18%;
     --ring: 215 25% 27%;
     
-    /* Dark Mode Navy & Gold Gradients - Logo Inspired */
+    /* Dark Mode Navy Gradients - Sophisticated */
     --gradient-primary: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(0, 0%, 0%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(210, 85%, 25%) 0%, hsl(210, 93%, 15%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(210, 85%, 25%) 0%, hsl(210, 93%, 15%) 50%, hsl(45, 90%, 60%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(45, 90%, 60%) 0%, hsl(45, 85%, 55%) 100%);
-    --gradient-warm: linear-gradient(135deg, hsl(210, 85%, 25%) 0%, hsl(45, 90%, 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(210, 85%, 25%) 0%, hsl(210, 93%, 15%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(210, 85%, 35%) 0%, hsl(210, 80%, 40%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(210, 85%, 25%) 0%, hsl(210, 93%, 15%) 100%);
     
     /* Dark Shadows - Navy & Gold */
-    --shadow-glow: 0 0 30px hsl(45 90% 60% / 0.3);
+    --shadow-glow: 0 0 30px hsl(210 85% 35% / 0.4);
     --shadow-lift: 0 8px 15px -3px hsl(0 0% 0% / 0.2), 0 4px 6px -4px hsl(0 0% 0% / 0.15);
     --shadow-navy: 0 0 40px hsl(210 93% 15% / 0.4);
     --sidebar-background: 240 5.9% 10%;
@@ -236,7 +236,7 @@
     right: 0;
     width: 120px;
     height: 120px;
-    background: radial-gradient(circle, hsl(var(--accent) / 0.1), transparent 70%);
+    background: radial-gradient(circle, hsl(210, 85%, 45% / 0.08), transparent 70%);
     border-radius: 50%;
     transform: translate(40px, -40px);
   }
