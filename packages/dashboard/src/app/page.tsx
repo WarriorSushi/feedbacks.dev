@@ -50,48 +50,32 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen lovable-gradient flex flex-col">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 w-full bg-transparent">
+      {/* Immovable Frosted Glass Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/30 dark:bg-black/30 border-b border-white/20 dark:border-gray-700/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="h-8 w-8 flex items-center justify-center">
-                  <img 
-                    src="/logo.svg" 
-                    alt="Feedbacks.dev Logo" 
-                    className="h-8 w-8 rounded-lg"
-                  />
-                </div>
-                <span className="font-bold text-lg">feedbacks.dev</span>
-              </Link>
-              <Badge variant="secondary" className="hidden sm:inline-flex">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="h-8 w-8 flex items-center justify-center">
+                <img 
+                  src="/logo.svg" 
+                  alt="Feedbacks.dev Logo" 
+                  className="h-8 w-8 rounded-lg"
+                />
+              </div>
+              <span className="font-bold text-lg text-gray-900 dark:text-white">feedbacks.dev</span>
+              <Badge variant="secondary" className="hidden sm:inline-flex ml-2">
                 Beta
               </Badge>
-            </div>
+            </Link>
+            
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" asChild className="h-9 w-9 px-0">
-                <a
-                  href="https://github.com/WarriorSushi/feedbacks.dev"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="GitHub Repository"
-                >
-                  <Github className="h-4 w-4" />
-                </a>
-              </Button>
-              
-              <ThemeToggle className="hidden md:flex" />
-              
               {authStatus.authenticated ? (
-                <>
-                  <Button asChild>
-                    <Link href="/dashboard">Go to Dashboard</Link>
-                  </Button>
-                </>
+                <Button asChild className="bg-primary hover:bg-primary/90">
+                  <Link href="/dashboard">Go to Dashboard</Link>
+                </Button>
               ) : (
                 <>
-                  <Button variant="ghost" asChild className="hidden sm:inline-flex">
+                  <Button variant="ghost" asChild className="hidden sm:inline-flex text-gray-900 dark:text-white hover:bg-white/20 dark:hover:bg-gray-800/50">
                     <Link href="/docs">Docs</Link>
                   </Button>
                   <Button className="bg-gradient-primary hover:opacity-90 text-sm px-4" asChild>
@@ -102,24 +86,27 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* Mobile Theme Toggle */}
-      <div className="md:hidden flex justify-between items-center px-4 sm:px-6 lg:px-8 py-2 bg-transparent">
-        <Button variant="ghost" size="sm" asChild className="h-9 w-9 px-0 bg-transparent hover:bg-white/10">
-          <a
-            href="https://github.com/WarriorSushi/feedbacks.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="GitHub Repository"
-          >
-            <Github className="h-4 w-4 text-white dark:text-white" />
-          </a>
-        </Button>
-        <ThemeToggle />
-      </div>
-
-      <div className="flex-1">
+      <div className="flex-1 pt-16">
+        {/* Top Corner Controls */}
+        <div className="absolute top-20 left-4 z-40">
+          <Button variant="ghost" size="sm" asChild className="h-10 w-10 px-0 bg-white/20 hover:bg-white/30 dark:bg-black/20 dark:hover:bg-black/30 backdrop-blur-sm rounded-full">
+            <a
+              href="https://github.com/WarriorSushi/feedbacks.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub Repository"
+            >
+              <Github className="h-5 w-5 text-gray-900 dark:text-white" />
+            </a>
+          </Button>
+        </div>
+        <div className="absolute top-20 right-4 z-40">
+          <div className="bg-white/20 hover:bg-white/30 dark:bg-black/20 dark:hover:bg-black/30 backdrop-blur-sm rounded-full p-2">
+            <ThemeToggle />
+          </div>
+        </div>
         {/* Hero Section */}
         <HeroSection isAuthenticated={authStatus.authenticated} />
 
