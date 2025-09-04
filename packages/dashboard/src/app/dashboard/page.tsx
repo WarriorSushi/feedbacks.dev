@@ -83,12 +83,12 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout user={user} projectsCount={projects.length}>
-      <div className="p-6 lg:p-8 space-y-8">
+      <div className="p-6 lg:p-8 space-y-8 page-illumination">
         {/* Welcome Section */}
         <div className="animate-fade-in">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-3xl font-bold gradient-text">
-              Welcome back, {user.user_metadata?.full_name || 'Developer'}!
+            <h1 className="text-3xl font-bold text-foreground">
+              Welcome back, {user.user_metadata?.full_name || 'Developer'}
             </h1>
             <Button asChild size="sm" className="bg-gradient-primary hover:opacity-90 hero-glow">
               <Link href="/projects/new">
@@ -104,43 +104,43 @@ export default function DashboardPage() {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="hover-lift border-0 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+          <Card className="stat-card hover-lift">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Projects</CardTitle>
-              <BarChart3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Projects</CardTitle>
+              <BarChart3 className="h-4 w-4 text-accent" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">{projects?.length || 0}</div>
-              <p className="text-xs text-blue-600 dark:text-blue-400">
-                +20% from last month
+              <div className="text-2xl font-bold text-foreground">{projects?.length || 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Active projects
               </p>
             </CardContent>
           </Card>
           
-          <Card className="hover-lift border-0 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+          <Card className="stat-card hover-lift">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300">Total Feedback</CardTitle>
-              <Mail className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Feedback</CardTitle>
+              <Mail className="h-4 w-4 text-accent" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-900 dark:text-green-100">{totalFeedback}</div>
-              <p className="text-xs text-green-600 dark:text-green-400">
-                +12% from last month
+              <div className="text-2xl font-bold text-foreground">{totalFeedback}</div>
+              <p className="text-xs text-muted-foreground">
+                Collected responses
               </p>
             </CardContent>
           </Card>
           
-          <Card className="hover-lift border-0 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+          <Card className="stat-card hover-lift">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300">This Month</CardTitle>
-              <TrendingUp className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              <CardTitle className="text-sm font-medium text-muted-foreground">Recent Activity</CardTitle>
+              <TrendingUp className="h-4 w-4 text-accent" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+              <div className="text-2xl font-bold text-foreground">
                 {Math.floor(totalFeedback * 0.3)}
               </div>
-              <p className="text-xs text-purple-600 dark:text-purple-400">
-                +5% from last month
+              <p className="text-xs text-muted-foreground">
+                This month
               </p>
             </CardContent>
           </Card>
@@ -157,13 +157,13 @@ export default function DashboardPage() {
               {projects.map((project: any, index: number) => (
                 <Card 
                   key={project.id} 
-                  className="hover-lift border-0 bg-card/60 backdrop-blur-sm animate-fade-in" 
+                  className="professional-card hover-lift animate-fade-in" 
                   style={{ animationDelay: `${0.4 + index * 0.1}s` }}
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg font-semibold">{project.name}</CardTitle>
-                      <Badge variant="secondary" className="bg-primary/10 text-primary">
+                      <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20">
                         {project.feedback?.[0]?.count || 0} feedback
                       </Badge>
                     </div>
@@ -206,27 +206,27 @@ export default function DashboardPage() {
               ))}
               
               {/* Add New Project Card */}
-              <Card className="hover-lift border-2 border-dashed border-muted cursor-pointer group animate-fade-in" style={{ animationDelay: `${0.4 + projects.length * 0.1}s` }}>
+              <Card className="hover-lift border-2 border-dashed border-muted-foreground/30 cursor-pointer group animate-fade-in" style={{ animationDelay: `${0.4 + projects.length * 0.1}s` }}>
                 <Link href="/projects/new">
                   <CardContent className="flex flex-col items-center justify-center h-full min-h-[200px] text-center p-6">
-                    <div className="w-16 h-16 rounded-full bg-gradient-primary/10 flex items-center justify-center mb-4 group-hover:bg-gradient-primary/20 transition-colors">
-                      <Plus className="w-8 h-8 text-primary" />
+                    <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
+                      <Plus className="w-8 h-8 text-accent" />
                     </div>
                     <h3 className="font-semibold text-lg mb-2">Create New Project</h3>
                     <p className="text-sm text-muted-foreground mb-4 max-w-sm">
                       Start collecting feedback for a new website or app in seconds
                     </p>
-                    <Badge className="bg-gradient-primary text-white">Get Started</Badge>
+                    <Badge className="bg-accent text-accent-foreground">Get Started</Badge>
                   </CardContent>
                 </Link>
               </Card>
             </div>
           ) : (
-            <Card className="border-0 bg-gradient-to-br from-muted/50 to-muted/30 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <Card className="professional-card animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <CardContent className="text-center py-16">
                 <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center">
-                  <div className="w-20 h-20 rounded-full bg-gradient-primary/10 flex items-center justify-center mb-6">
-                    <Plus className="w-10 h-10 text-primary" />
+                  <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mb-6">
+                    <Plus className="w-10 h-10 text-accent" />
                   </div>
                   <h3 className="text-2xl font-bold mb-3">No projects yet</h3>
                   <p className="text-muted-foreground mb-8 text-lg">

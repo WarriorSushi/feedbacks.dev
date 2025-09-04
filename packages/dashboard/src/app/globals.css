@@ -12,32 +12,34 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 262 83% 58%;
+    --primary: 215 25% 27%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 215 25% 27%;
+    --muted: 210 20% 95%;
+    --muted-foreground: 215 15% 45%;
+    --accent: 25 35% 35%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 65% 50%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 262 83% 58%;
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 215 25% 27%;
     --radius: 0.5rem;
     
-    /* Premium Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(262, 83%, 58%) 0%, hsl(270, 100%, 70%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(240, 100%, 98%) 0%, hsl(240, 20%, 96%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(262, 83%, 58%) 0%, hsl(280, 90%, 65%) 50%, hsl(300, 85%, 70%) 100%);
+    /* Premium Gradients - Professional */
+    --gradient-primary: linear-gradient(135deg, hsl(215, 25%, 27%) 0%, hsl(25, 35%, 35%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(210, 20%, 98%) 0%, hsl(210, 20%, 95%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(215, 25%, 27%) 0%, hsl(210, 20%, 35%) 50%, hsl(25, 35%, 35%) 100%);
+    --gradient-subtle: linear-gradient(135deg, hsl(210, 20%, 98%) 0%, hsl(215, 25%, 95%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(25, 35%, 35%) 0%, hsl(35, 25%, 45%) 100%);
     
-    /* Premium Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(240 10% 3.9% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(240 10% 3.9% / 0.1), 0 2px 4px -2px hsl(240 10% 3.9% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(240 10% 3.9% / 0.1), 0 4px 6px -4px hsl(240 10% 3.9% / 0.1);
-    --shadow-glow: 0 0 40px hsl(262 83% 58% / 0.3);
-    --shadow-lift: 0 20px 25px -5px hsl(240 10% 3.9% / 0.1), 0 8px 10px -6px hsl(240 10% 3.9% / 0.1);
+    /* Premium Shadows - Professional */
+    --shadow-sm: 0 1px 2px 0 hsl(215 25% 27% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(215 25% 27% / 0.08), 0 2px 4px -2px hsl(215 25% 27% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(215 25% 27% / 0.08), 0 4px 6px -4px hsl(215 25% 27% / 0.05);
+    --shadow-glow: 0 0 30px hsl(25 35% 35% / 0.15);
+    --shadow-lift: 0 8px 15px -3px hsl(215 25% 27% / 0.08), 0 4px 6px -4px hsl(215 25% 27% / 0.05);
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -59,28 +61,30 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 262 83% 58%;
+    --primary: 215 25% 27%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 210 20% 15%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --muted: 210 20% 12%;
+    --muted-foreground: 215 15% 65%;
+    --accent: 25 35% 35%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 65% 50%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 262 83% 58%;
+    --border: 210 20% 18%;
+    --input: 210 20% 18%;
+    --ring: 215 25% 27%;
     
-    /* Dark Mode Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(262, 83%, 58%) 0%, hsl(270, 100%, 70%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(240, 10%, 3.9%) 0%, hsl(240, 15%, 10%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(262, 83%, 58%) 0%, hsl(280, 90%, 65%) 50%, hsl(300, 85%, 70%) 100%);
+    /* Dark Mode Gradients - Professional */
+    --gradient-primary: linear-gradient(135deg, hsl(215, 25%, 27%) 0%, hsl(25, 35%, 35%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(210, 20%, 8%) 0%, hsl(210, 20%, 12%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(215, 25%, 27%) 0%, hsl(210, 20%, 25%) 50%, hsl(25, 35%, 35%) 100%);
+    --gradient-subtle: linear-gradient(135deg, hsl(210, 20%, 8%) 0%, hsl(215, 25%, 12%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(25, 35%, 35%) 0%, hsl(35, 25%, 45%) 100%);
     
-    /* Dark Shadows */
-    --shadow-glow: 0 0 40px hsl(262 83% 58% / 0.5);
-    --shadow-lift: 0 20px 25px -5px hsl(0 0% 0% / 0.25), 0 8px 10px -6px hsl(0 0% 0% / 0.25);
+    /* Dark Shadows - Professional */
+    --shadow-glow: 0 0 30px hsl(25 35% 35% / 0.2);
+    --shadow-lift: 0 8px 15px -3px hsl(0 0% 0% / 0.2), 0 4px 6px -4px hsl(0 0% 0% / 0.15);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -105,9 +109,9 @@
 
 /* Premium Component Classes */
 @layer components {
-  /* Gradient Text Effect */
+  /* Professional Gradient Text Effect */
   .gradient-text {
-    @apply bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary via-accent to-primary/80 bg-clip-text text-transparent;
   }
   
   /* Hero Glow Effect */
@@ -120,9 +124,13 @@
     @apply backdrop-blur-lg bg-white/10 border border-white/20;
   }
   
-  /* Hover Effects */
+  /* Professional Hover Effects */
   .hover-lift {
-    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+    @apply transition-all duration-300 hover:-translate-y-0.5;
+  }
+  
+  .hover-lift:hover {
+    box-shadow: var(--shadow-lift);
   }
   
   .hover-glow {
@@ -192,6 +200,55 @@
   .bg-gradient-hero {
     background: var(--gradient-hero);
   }
+  
+  .bg-gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+  
+  .bg-gradient-accent {
+    background: var(--gradient-accent);
+  }
+  
+  /* Professional Card Styles */
+  .professional-card {
+    @apply bg-card border border-border;
+    border-left: 3px solid hsl(var(--accent));
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .stat-card {
+    @apply bg-card border border-border relative overflow-hidden;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 80px;
+    background: hsl(var(--accent) / 0.05);
+    border-radius: 50%;
+    transform: translate(30px, -30px);
+  }
+  
+  /* Page Illumination Effect */
+  .page-illumination {
+    position: relative;
+  }
+
+  .page-illumination::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(to top, hsl(var(--accent) / 0.03), transparent);
+    animation: illuminate 1.2s ease-out;
+    pointer-events: none;
+  }
 }
 
 /* Keyframes */
@@ -223,5 +280,16 @@
   }
   50% {
     transform: translateY(-10px);
+  }
+}
+
+@keyframes illuminate {
+  from {
+    opacity: 0;
+    height: 0px;
+  }
+  to {
+    opacity: 1;
+    height: 200px;
   }
 }

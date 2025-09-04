@@ -96,7 +96,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
   return (
     <Sidebar variant="inset" className="border-r">
       <SidebarHeader className="p-4">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="h-8 w-8 rounded-lg bg-gradient-primary flex items-center justify-center">
             <span className="text-white font-bold text-sm">F</span>
           </div>
@@ -104,7 +104,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
             <span className="truncate font-semibold">feedbacks.dev</span>
             <span className="truncate text-xs text-muted-foreground">Dashboard</span>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
       
       <SidebarContent>
