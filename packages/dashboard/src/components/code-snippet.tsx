@@ -55,8 +55,8 @@ export function CodeSnippet({ code, language = 'html', className = '' }: CodeSni
           )}
         </Button>
       </div>
-      <pre className="p-4 overflow-hidden text-sm leading-relaxed bg-card dark:bg-slate-950 rounded-b-xl">
-        <code className="text-left text-card-foreground dark:text-slate-300 whitespace-pre-wrap">{code}</code>
+      <pre className="p-4 overflow-hidden text-sm leading-relaxed bg-card dark:bg-slate-950 rounded-b-xl text-left">
+        <code className="block text-left text-card-foreground dark:text-slate-300 whitespace-pre-wrap font-mono">{code}</code>
       </pre>
     </div>
   );
