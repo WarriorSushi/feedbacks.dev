@@ -220,7 +220,7 @@ export function PlatformIntegration() {
 
         {/* Sidebar Layout */}
         <div className="max-w-5xl mx-auto">
-          <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl overflow-hidden">
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-premium-xl overflow-hidden">
             <div className="grid lg:grid-cols-[280px_1fr] min-h-[500px]">
               {/* Left Sidebar - Platform Tabs */}
               <div className="border-r border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">

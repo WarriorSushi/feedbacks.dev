@@ -71,11 +71,38 @@ export default function HomePage() {
             
             <div className="flex items-center gap-3">
               {authStatus.authenticated ? (
-                <Button asChild size="sm" className="premium-button text-xs px-3 py-1 h-8">
-                  <Link href="/dashboard">Dashboard</Link>
-                </Button>
+                <>
+                  <Button variant="ghost" asChild className="hidden sm:inline-flex text-gray-900 dark:text-white hover:bg-white/20 dark:hover:bg-gray-800/50 transition-all duration-300">
+                    <a
+                      href="https://github.com/WarriorSushi/feedbacks.dev"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2"
+                    >
+                      <Github className="h-4 w-4" />
+                      GitHub
+                    </a>
+                  </Button>
+                  <Button variant="ghost" asChild className="hidden sm:inline-flex text-gray-900 dark:text-white hover:bg-white/20 dark:hover:bg-gray-800/50 transition-all duration-300">
+                    <Link href="/docs">Docs</Link>
+                  </Button>
+                  <Button asChild size="sm" className="premium-button text-xs px-3 py-1 h-8">
+                    <Link href="/dashboard">Dashboard</Link>
+                  </Button>
+                </>
               ) : (
                 <>
+                  <Button variant="ghost" asChild className="hidden sm:inline-flex text-gray-900 dark:text-white hover:bg-white/20 dark:hover:bg-gray-800/50 transition-all duration-300">
+                    <a
+                      href="https://github.com/WarriorSushi/feedbacks.dev"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2"
+                    >
+                      <Github className="h-4 w-4" />
+                      GitHub
+                    </a>
+                  </Button>
                   <Button variant="ghost" asChild className="hidden sm:inline-flex text-gray-900 dark:text-white hover:bg-white/20 dark:hover:bg-gray-800/50 transition-all duration-300">
                     <Link href="/docs">Docs</Link>
                   </Button>
