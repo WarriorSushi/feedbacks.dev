@@ -25,13 +25,13 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <Sun className={`h-4 w-4 transition-colors ${theme === 'light' ? 'text-yellow-500' : 'text-muted-foreground'}`} />
+      <Sun className={`h-4 w-4 transition-colors ${theme === 'light' ? 'text-orange-500' : 'text-muted-foreground/50'}`} />
       <Switch
         checked={theme === 'dark'}
         onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-        className="data-[state=checked]:bg-blue-500 data-[state=unchecked]:bg-blue-500"
+        className="data-[state=checked]:bg-slate-700 data-[state=unchecked]:bg-orange-400"
       />
-      <Moon className={`h-4 w-4 transition-colors ${theme === 'dark' ? 'text-blue-400' : 'text-muted-foreground'}`} />
+      <Moon className={`h-4 w-4 transition-colors ${theme === 'dark' ? 'text-slate-300' : 'text-muted-foreground/50'}`} />
     </div>
   );
 }

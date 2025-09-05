@@ -198,6 +198,22 @@
     text-wrap: balance;
   }
   
+  /* Premium Smooth Scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) transparent;
+  }
+
+  body {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   /* Mobile navigation fix */
   @supports (-webkit-touch-callout: none) {
     .ios-scroll-fix {
@@ -465,6 +481,11 @@
 }
 
 /* Animated gradient background like lovable.dev */
+@keyframes subtleGradientMove {
+  0% { background-position: 50% 100%; }
+  100% { background-position: 50% 0%; }
+}
+
 @keyframes gradientShift {
   0%, 100% { background-position: 0% 50%; }
   25% { background-position: 100% 50%; }
@@ -522,26 +543,26 @@
 }
 
 .lovable-gradient {
-  background: linear-gradient(-45deg, 
-    #667eea 0%, 
-    #764ba2 25%, 
-    #f093fb 50%, 
-    #f5576c 75%, 
-    #4facfe 100%
+  background: radial-gradient(circle at bottom center, 
+    #f8fafc 0%,
+    #e2e8f0 25%,
+    #cbd5e1 50%,
+    #f1f5f9 100%
   );
-  background-size: 400% 400%;
-  animation: gradientShift 8s ease-in-out infinite;
+  background-size: 200% 200%;
+  animation: subtleGradientMove 4s ease-out forwards;
   position: relative;
 }
 
 .dark .lovable-gradient {
-  background: linear-gradient(270deg, 
-    hsl(0, 0%, 12%) 0%, 
-    hsl(220, 8%, 15%) 25%, 
-    hsl(240, 6%, 13%) 50%, 
-    hsl(260, 8%, 16%) 75%, 
-    hsl(280, 6%, 14%) 100%
+  background: radial-gradient(circle at bottom center,
+    #0f172a 0%,
+    #1e293b 25%,
+    #334155 50%,
+    #1e293b 100%
   );
+  background-size: 200% 200%;
+  animation: subtleGradientMove 4s ease-out forwards;
 }
 
 .lovable-gradient::before {

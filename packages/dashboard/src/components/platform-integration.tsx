@@ -218,139 +218,77 @@ export function PlatformIntegration() {
           </p>
         </div>
 
-        {/* Redesigned Layout - Connected Platform Selection */}
-        <div className="max-w-4xl mx-auto">
-          {/* Mobile Platform Tabs */}
-          <div className="lg:hidden mb-8">
-            <div className="flex flex-wrap gap-2 justify-center">
-              {visiblePlatforms.map((platform) => {
-                const Icon = platform.icon;
-                const isActive = activeTab === platform.id;
+        {/* Sidebar Layout */}
+        <div className="max-w-5xl mx-auto">
+          <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-xl overflow-hidden">
+            <div className="grid lg:grid-cols-[280px_1fr] min-h-[500px]">
+              {/* Left Sidebar - Platform Tabs */}
+              <div className="border-r border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
+                  <h3 className="font-semibold text-foreground">Choose Platform</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Select your framework</p>
+                </div>
                 
-                return (
-                  <button
-                    key={platform.id}
-                    onClick={() => setActiveTab(platform.id)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all duration-300 text-sm ${
-                      isActive 
-                        ? 'bg-primary text-primary-foreground border-primary shadow-md' 
-                        : 'bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80 border-gray-200/50 dark:border-gray-700/50'
-                    }`}
-                  >
-                    <Icon className={`w-4 h-4 ${
-                      isActive ? 'text-primary-foreground' : 'text-primary'
-                    }`} />
-                    <span className="font-medium">
-                      {platform.name.length > 6 ? platform.name.slice(0,4) + '.' : platform.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Desktop Connected Layout */}
-          <div className="hidden lg:block">
-            <div className="relative">
-              {/* Platform Selector Row */}
-              <div className="flex justify-center items-center gap-6 mb-8 relative">
-                {visiblePlatforms.map((platform, index) => {
-                  const Icon = platform.icon;
-                  const isActive = activeTab === platform.id;
-                  
-                  return (
-                    <div key={platform.id} className="relative">
+                <div className="p-2">
+                  {platforms.map((platform) => {
+                    const Icon = platform.icon;
+                    const isActive = activeTab === platform.id;
+                    
+                    return (
                       <button
+                        key={platform.id}
                         onClick={() => setActiveTab(platform.id)}
-                        className={`relative flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-300 min-w-[100px] ${
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 mb-2 text-left ${
                           isActive 
-                            ? 'bg-primary text-primary-foreground border-primary shadow-lg scale-105' 
-                            : 'bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80 border-gray-200/50 dark:border-gray-700/50 hover:scale-102'
+                            ? 'bg-primary text-primary-foreground border-primary shadow-sm' 
+                            : 'bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80 border-gray-200/30 dark:border-gray-700/30 hover:border-primary/30'
                         }`}
                       >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                           isActive 
                             ? 'bg-primary-foreground/20' 
                             : 'bg-primary/10'
                         }`}>
-                          <Icon className={`w-5 h-5 ${
+                          <Icon className={`w-4 h-4 ${
                             isActive ? 'text-primary-foreground' : 'text-primary'
                           }`} />
                         </div>
-                        <span className={`text-sm font-medium transition-colors duration-300 ${
-                          isActive ? 'text-primary-foreground' : 'text-foreground'
-                        }`}>
-                          {platform.name}
-                        </span>
-                        {platform.isPrimary && (
-                          <Badge className="absolute -top-2 -right-2 text-xs bg-orange-500 text-white">
-                            Popular
-                          </Badge>
-                        )}
-                      </button>
-                      
-                      {/* Connection Line */}
-                      {isActive && (
-                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-px h-8 bg-primary animate-fade-in">
-                          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-primary rounded-full"></div>
+                        <div className="flex-1 min-w-0">
+                          <div className={`font-medium text-sm ${
+                            isActive ? 'text-primary-foreground' : 'text-foreground'
+                          }`}>
+                            {platform.name}
+                          </div>
+                          <div className={`text-xs ${
+                            isActive ? 'text-primary-foreground/80' : 'text-gray-600 dark:text-gray-400'
+                          }`}>
+                            {platform.badge}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Show More Button */}
-          {secondaryPlatforms.length > 0 && (
-            <div className="flex justify-center mb-8">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowAllPlatforms(!showAllPlatforms)}
-                className="border-dashed border-gray-200/50 dark:border-gray-700/50 hover:border-primary/30 text-gray-600 dark:text-gray-400 hover:text-foreground transition-all duration-200"
-              >
-                {showAllPlatforms ? (
-                  <>
-                    <ChevronUp className="w-4 h-4 mr-2" />
-                    Show Less Platforms
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="w-4 h-4 mr-2" />
-                    Show {secondaryPlatforms.length} More Platforms
-                  </>
-                )}
-              </Button>
-            </div>
-          )}
-
-          {/* Code Display - Centered */}
-          <div className="flex justify-center">
-            <Card className="w-full max-w-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-xl transition-all duration-500 ease-out" key={activePlatform.id}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                      <activePlatform.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-foreground">
-                        {activePlatform.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {activePlatform.description}
-                      </p>
-                    </div>
+              {/* Right Side - Code Display */}
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
+                    <activePlatform.icon className="w-5 h-5 text-primary" />
                   </div>
-                  <Badge variant="outline" className="bg-primary/10 border-primary/20 text-primary">
-                    {activePlatform.badge}
-                  </Badge>
+                  <div>
+                    <h3 className="font-bold text-foreground text-lg">
+                      {activePlatform.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {activePlatform.description}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="relative">
                     <CodeSnippet 
                       code={activePlatform.code} 
@@ -370,8 +308,8 @@ export function PlatformIntegration() {
                     with your actual project key from the dashboard.
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
         </div>
         
