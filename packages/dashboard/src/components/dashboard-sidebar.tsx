@@ -290,8 +290,8 @@ export function DashboardLayout({ children, user, projectsCount }: {
             </div>
             
             {/* Right Side - Theme Toggle */}
-            <div className="flex items-center">
-              <ThemeToggle />
+            <div className="flex items-center relative z-10">
+              <ThemeToggle className="opacity-100" />
             </div>
           </header>
           {!isDashboardPage && (
