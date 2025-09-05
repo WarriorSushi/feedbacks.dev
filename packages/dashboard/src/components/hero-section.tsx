@@ -59,20 +59,20 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           <div className="w-full max-w-xl animate-slide-up" style={{ animationDelay: '0.3s' }}>
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <div className="relative bg-gray-900 rounded-xl overflow-hidden border border-gray-800 shadow-2xl">
+              <div className="relative bg-gray-900 dark:bg-gray-900 bg-white/95 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-2xl backdrop-blur-sm">
                 {/* macOS Window Header */}
-                <div className="flex items-center gap-2 px-4 py-3 bg-gray-800 border-b border-gray-700">
+                <div className="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                   <div className="flex gap-2">
                     <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                     <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
                     <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                   </div>
-                  <div className="flex-1 text-center text-gray-400 text-sm font-mono">
+                  <div className="flex-1 text-center text-gray-600 dark:text-gray-400 text-sm font-mono">
                     index.html
                   </div>
                 </div>
                 {/* Code Content */}
-                <div className="p-4">
+                <div className="p-4 bg-white dark:bg-gray-900">
                   <CodeSnippet code={sampleCode} className="text-sm" />
                 </div>
               </div>

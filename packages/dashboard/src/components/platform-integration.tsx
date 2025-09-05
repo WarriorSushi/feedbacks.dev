@@ -229,7 +229,7 @@ export function PlatformIntegration() {
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Select your framework</p>
                 </div>
                 
-                <div className="p-2">
+                <div className="p-1">
                   {platforms.map((platform) => {
                     const Icon = platform.icon;
                     const isActive = activeTab === platform.id;
@@ -238,28 +238,28 @@ export function PlatformIntegration() {
                       <button
                         key={platform.id}
                         onClick={() => setActiveTab(platform.id)}
-                        className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 mb-2 text-left ${
+                        className={`w-full flex items-center gap-2 p-2 rounded-lg border transition-all duration-200 mb-1 text-left ${
                           isActive 
                             ? 'bg-primary text-primary-foreground border-primary shadow-sm' 
                             : 'bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80 border-gray-200/30 dark:border-gray-700/30 hover:border-primary/30'
                         }`}
                       >
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                        <div className={`w-6 h-6 rounded flex items-center justify-center transition-colors ${
                           isActive 
                             ? 'bg-primary-foreground/20' 
                             : 'bg-primary/10'
                         }`}>
-                          <Icon className={`w-4 h-4 ${
+                          <Icon className={`w-3 h-3 ${
                             isActive ? 'text-primary-foreground' : 'text-primary'
                           }`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className={`font-medium text-sm ${
+                          <div className={`font-medium text-xs ${
                             isActive ? 'text-primary-foreground' : 'text-foreground'
                           }`}>
                             {platform.name}
                           </div>
-                          <div className={`text-xs ${
+                          <div className={`text-[10px] leading-tight ${
                             isActive ? 'text-primary-foreground/80' : 'text-gray-600 dark:text-gray-400'
                           }`}>
                             {platform.badge}
@@ -272,7 +272,7 @@ export function PlatformIntegration() {
               </div>
 
               {/* Right Side - Code Display */}
-              <div className="p-6">
+              <div className="p-6 flex flex-col h-full">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
                     <activePlatform.icon className="w-5 h-5 text-primary" />
@@ -287,7 +287,7 @@ export function PlatformIntegration() {
                   </div>
                 </div>
 
-                <div className="relative group">
+                <div className="relative group flex-1">
                   <div className="absolute -inset-1 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="relative">
                     <CodeSnippet 
@@ -298,14 +298,10 @@ export function PlatformIntegration() {
                   </div>
                 </div>
                 
-                {/* Quick tip */}
-                <div className="mt-4 p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/50">
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    <span className="font-medium text-foreground">💡 Quick tip:</span> Replace{' '}
-                    <code className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-mono text-sm">
-                      pk_live_abc123
-                    </code>{' '}
-                    with your actual project key from the dashboard.
+                {/* Quick tip - Sticky to bottom */}
+                <div className="mt-4 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/50">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-tight">
+                    💡 Key will be automatically replaced with your personalized key in the dashboard.
                   </p>
                 </div>
               </div>
