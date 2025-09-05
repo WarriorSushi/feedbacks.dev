@@ -159,28 +159,38 @@
   
   /* Enhanced Animation Classes */
   .animate-fade-in {
-    animation: fade-in 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: fade-in 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     opacity: 0;
   }
   
   .animate-slide-up {
-    animation: slide-up 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: slide-up 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
     opacity: 0;
   }
   
   .animate-float {
-    animation: float 6s ease-in-out infinite;
+    animation: float 8s ease-in-out infinite;
   }
   
   .animate-scale-in {
-    animation: scale-in 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: scale-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.95);
   }
   
   .animate-bounce-in {
-    animation: bounce-in 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: bounce-in 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     opacity: 0;
+  }
+  
+  .hover-scale-105:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease-out;
+  }
+  
+  .hover-scale-102:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease-out;
   }
   
   /* Mobile-first responsive typography */
@@ -455,6 +465,13 @@
 }
 
 /* Animated gradient background like lovable.dev */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  25% { background-position: 100% 50%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+}
+
 @keyframes premiumGradientMove {
   0% { background-position: 0% 50%; }
   100% { background-position: 100% 50%; }
@@ -505,17 +522,15 @@
 }
 
 .lovable-gradient {
-  background: linear-gradient(135deg, 
-    #ffecd2 0%, 
-    #fcb69f 15%, 
-    #ff9a9e 30%, 
-    #fecfef 45%, 
-    #fecfef 60%, 
-    #a8edea 75%, 
-    #fed6e3 100%
+  background: linear-gradient(-45deg, 
+    #667eea 0%, 
+    #764ba2 25%, 
+    #f093fb 50%, 
+    #f5576c 75%, 
+    #4facfe 100%
   );
   background-size: 400% 400%;
-  animation: premiumGradientMove 6s ease-in-out forwards, premiumGradientPause 6s ease-in-out 6s infinite;
+  animation: gradientShift 8s ease-in-out infinite;
   position: relative;
 }
 
