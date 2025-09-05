@@ -29,7 +29,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
           {/* Badge */}
-          <Badge variant="secondary" className="mb-6 px-4 py-2 animate-fade-in bg-white/90 text-gray-900 border-gray-200 dark:bg-gray-900/90 dark:text-gray-100 dark:border-gray-700">
+          <Badge variant="secondary" className="mb-6 px-4 py-2 animate-fade-in bg-white/90 text-gray-900 border-gray-200 dark:bg-gray-900/90 dark:text-gray-100 dark:border-gray-700 transition-none hover:bg-white/90 hover:dark:bg-gray-900/90">
             <Zap className="w-3 h-3 mr-2" />
             Developer-First Feedback Widget
           </Badge>
@@ -42,13 +42,12 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
 
           {/* Subtitle */}
           <p className="text-xl mb-8 max-w-2xl animate-fade-in text-[#1a1a1a] dark:text-gray-300" style={{ animationDelay: '0.2s' }}>
-            Ultra-lightweight, copy-paste feedback infrastructure. 
-            Websites, mobile apps – blazing fast, future-ready.
+            From feedback to feature requests, the entire ecosystem in one tiny snippet
           </p>
 
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mb-12 px-4 sm:px-0 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <Button size={isAuthenticated ? "sm" : "lg"} className={`bg-gradient-primary hover:opacity-90 hero-glow ${isAuthenticated ? 'text-sm px-4 py-2' : ''}`} asChild>
+            <Button size={isAuthenticated ? "sm" : "lg"} className={`premium-button ${isAuthenticated ? 'text-sm px-4 py-2' : ''}`} asChild>
               <Link href={isAuthenticated ? "/dashboard" : "https://app.feedbacks.dev/auth"}>
                 {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
                 <ArrowRight className={`ml-2 h-3 w-3 ${isAuthenticated ? '' : 'h-4 w-4'}`} />
@@ -70,7 +69,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           </div>
 
           {/* Feature highlights */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 w-full max-w-4xl">
+          <div className="flex flex-wrap justify-center items-center gap-8 mt-16 w-full max-w-4xl">
             {[
               { icon: Code, title: "One Line", desc: "Simple integration" },
               { icon: Zap, title: "<20KB", desc: "Lightning fast" },
@@ -79,14 +78,16 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
             ].map((feature, index) => (
               <div 
                 key={feature.title} 
-                className="text-center animate-fade-in hover-lift" 
+                className="text-center animate-fade-in group cursor-default" 
                 style={{ animationDelay: `${0.8 + index * 0.1}s` }}
               >
-                <div className="w-12 h-12 rounded-lg bg-gradient-primary/10 flex items-center justify-center mx-auto mb-3">
-                  <feature.icon className="w-6 h-6 text-primary" />
+                <div className="inline-flex items-center gap-3 px-4 py-3 rounded-full bg-gradient-primary/10 border border-primary/20 group-hover:bg-gradient-primary/15 group-hover:border-primary/30 transition-all duration-300">
+                  <feature.icon className="w-5 h-5 text-primary flex-shrink-0" />
+                  <div className="text-left">
+                    <h3 className="font-semibold text-sm leading-tight">{feature.title}</h3>
+                    <p className="text-xs text-[#1a1a1a] dark:text-gray-400 leading-tight">{feature.desc}</p>
+                  </div>
                 </div>
-                <h3 className="font-semibold text-sm">{feature.title}</h3>
-                <p className="text-xs text-[#1a1a1a] dark:text-gray-400">{feature.desc}</p>
               </div>
             ))}
           </div>

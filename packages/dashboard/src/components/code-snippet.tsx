@@ -24,7 +24,7 @@ export function CodeSnippet({ code, language = 'html', className = '' }: CodeSni
   };
 
   return (
-    <div className={`relative rounded-xl border shadow-2xl bg-background text-foreground dark:bg-slate-950 dark:border-slate-800 ${className}`}>
+    <div className={`relative rounded-xl border shadow-lg bg-background text-foreground dark:bg-slate-950 dark:border-slate-800 ${className}`}>
       {/* macOS Window Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-muted/50 dark:bg-slate-900/50 rounded-t-xl border-b border-border dark:border-slate-800 backdrop-blur-sm">
         <div className="flex items-center space-x-2">
@@ -35,12 +35,12 @@ export function CodeSnippet({ code, language = 'html', className = '' }: CodeSni
             <div className="w-3 h-3 rounded-full bg-[#28ca42] shadow-sm"></div>
           </div>
         </div>
-        <span className="text-xs font-medium text-muted-foreground absolute left-1/2 transform -translate-x-1/2">{language}</span>
+        <span className="text-xs font-medium text-muted-foreground ml-4">{language}</span>
         <Button
           size="sm"
           variant="ghost"
           onClick={copyToClipboard}
-          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 transition-colors"
         >
           {copied ? (
             <>
@@ -55,8 +55,8 @@ export function CodeSnippet({ code, language = 'html', className = '' }: CodeSni
           )}
         </Button>
       </div>
-      <pre className="p-3 overflow-hidden text-xs leading-relaxed bg-card dark:bg-slate-950 rounded-b-xl">
-        <code className="text-left text-card-foreground dark:text-slate-300 whitespace-pre-wrap break-all">{code}</code>
+      <pre className="p-4 overflow-hidden text-sm leading-relaxed bg-card dark:bg-slate-950 rounded-b-xl">
+        <code className="text-left text-card-foreground dark:text-slate-300 whitespace-pre-wrap">{code}</code>
       </pre>
     </div>
   );

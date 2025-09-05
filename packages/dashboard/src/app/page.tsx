@@ -8,6 +8,7 @@ import { UserMenu } from '@/components/user-menu';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { HeroSection } from '@/components/hero-section';
 import { FeaturesSection } from '@/components/features-section';
+import { PlatformIntegration } from '@/components/platform-integration';
 import { useEffect, useState } from 'react';
 import { BottomBar } from '@/components/bottom-bar';
 
@@ -70,15 +71,15 @@ export default function HomePage() {
             
             <div className="flex items-center gap-3">
               {authStatus.authenticated ? (
-                <Button asChild size="sm" className="bg-primary hover:bg-primary/90 text-xs px-3 py-1 h-8">
+                <Button asChild size="sm" className="premium-button text-xs px-3 py-1 h-8">
                   <Link href="/dashboard">Dashboard</Link>
                 </Button>
               ) : (
                 <>
-                  <Button variant="ghost" asChild className="hidden sm:inline-flex text-gray-900 dark:text-white hover:bg-white/20 dark:hover:bg-gray-800/50">
+                  <Button variant="ghost" asChild className="hidden sm:inline-flex text-gray-900 dark:text-white hover:bg-white/20 dark:hover:bg-gray-800/50 transition-all duration-300">
                     <Link href="/docs">Docs</Link>
                   </Button>
-                  <Button className="bg-gradient-primary hover:opacity-90 text-sm px-4" asChild>
+                  <Button className="premium-button text-sm px-4" asChild>
                     <Link href="https://app.feedbacks.dev/auth">Get Started</Link>
                   </Button>
                 </>
@@ -112,6 +113,9 @@ export default function HomePage() {
 
         {/* Features Section */}
         <FeaturesSection />
+        
+        {/* Platform Integration */}
+        <PlatformIntegration />
       </div>
 
       {/* Footer */}
