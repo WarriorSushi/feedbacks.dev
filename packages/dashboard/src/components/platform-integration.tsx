@@ -300,6 +300,8 @@ export function PlatformIntegration() {
                 })}
               </div>
             </div>
+          </div>
+
           {/* Show More Button */}
           {secondaryPlatforms.length > 0 && (
             <div className="flex justify-center mb-8">
