@@ -194,7 +194,7 @@ export function PlatformIntegration() {
 
         <div className="max-w-6xl mx-auto">
           {/* Platform Tabs */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-12 px-4">
             {platforms.map((platform) => {
               const Icon = platform.icon;
               const isActive = activeTab === platform.id;
@@ -203,23 +203,28 @@ export function PlatformIntegration() {
                 <button
                   key={platform.id}
                   onClick={() => setActiveTab(platform.id)}
-                  className={`group relative flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all duration-300 hover:scale-105 ${
+                  className={`group relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl border transition-all duration-300 hover:scale-105 text-xs sm:text-sm flex-shrink-0 ${
                     isActive 
                       ? 'bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25' 
                       : 'bg-background/60 hover:bg-background border-border hover:border-primary/30 backdrop-blur-sm'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 transition-colors duration-300 ${
+                  <Icon className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-300 flex-shrink-0 ${
                     isActive ? 'text-primary-foreground' : 'text-primary group-hover:text-primary'
                   }`} />
-                  <span className={`font-medium transition-colors duration-300 ${
+                  <span className={`font-medium transition-colors duration-300 hidden sm:inline ${
                     isActive ? 'text-primary-foreground' : 'text-foreground'
                   }`}>
                     {platform.name}
                   </span>
+                  <span className={`font-medium transition-colors duration-300 sm:hidden ${
+                    isActive ? 'text-primary-foreground' : 'text-foreground'
+                  }`}>
+                    {platform.name.length > 6 ? platform.name.slice(0,4) + '.' : platform.name}
+                  </span>
                   <Badge 
                     variant="secondary" 
-                    className={`text-xs transition-all duration-300 ${
+                    className={`text-xs transition-all duration-300 hidden sm:inline-flex ${
                       isActive 
                         ? 'bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30' 
                         : 'bg-primary/10 text-primary border-primary/20'
@@ -239,22 +244,22 @@ export function PlatformIntegration() {
 
           {/* Code Display */}
           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background via-background to-muted/30 backdrop-blur-sm shadow-2xl">
-            <CardContent className="p-8">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                    <activePlatform.icon className="w-6 h-6 text-primary" />
+            <CardContent className="p-4 sm:p-6 lg:p-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-4 sm:mb-6">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center flex-shrink-0">
+                    <activePlatform.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-foreground">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
                       {activePlatform.name}
                     </h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-sm sm:text-base text-muted-foreground">
                       {activePlatform.description}
                     </p>
                   </div>
                 </div>
-                <Badge variant="outline" className="bg-background/50 border-primary/20 text-primary">
+                <Badge variant="outline" className="bg-background/50 border-primary/20 text-primary self-start sm:self-auto">
                   {activePlatform.badge}
                 </Badge>
               </div>
@@ -271,12 +276,12 @@ export function PlatformIntegration() {
               </div>
               
               {/* Additional info */}
-              <div className="mt-6 p-4 rounded-xl bg-primary/5 border border-primary/10">
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
-                  <p className="text-sm text-muted-foreground">
+              <div className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-xl bg-primary/5 border border-primary/10">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="w-2 h-2 rounded-full bg-primary mt-1.5 sm:mt-2 flex-shrink-0" />
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     <span className="font-medium text-foreground">Quick tip:</span> Replace{' '}
-                    <code className="px-2 py-1 rounded bg-muted text-muted-foreground font-mono text-xs">
+                    <code className="px-1.5 sm:px-2 py-0.5 sm:py-1 rounded bg-muted text-muted-foreground font-mono text-xs">
                       pk_live_abc123
                     </code>{' '}
                     with your actual project key from the dashboard.

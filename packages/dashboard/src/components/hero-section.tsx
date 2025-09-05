@@ -31,18 +31,17 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           {/* Badge */}
           <Badge variant="secondary" className="mb-6 px-4 py-2 animate-fade-in bg-white/90 text-gray-900 border-gray-200 dark:bg-gray-900/90 dark:text-gray-100 dark:border-gray-700 transition-none hover:bg-white/90 hover:dark:bg-gray-900/90">
             <Zap className="w-3 h-3 mr-2" />
-            Developer-First Feedback Widget
+            Lightning fast, ultra light
           </Badge>
 
           {/* Main headline */}
           <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 animate-fade-in">
-            <span className="text-primary">Collect feedback with</span>
-            <span className="gradient-text block mt-2">one line of code</span>
+            <span className="gradient-text">From feedback to feature requests, the entire ecosystem in one tiny snippet</span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-xl mb-8 max-w-2xl animate-fade-in text-[#1a1a1a] dark:text-gray-300" style={{ animationDelay: '0.2s' }}>
-            From feedback to feature requests, the entire ecosystem in one tiny snippet
+            One copy-paste, Get updates everywhere, GitHub, Slack, inbox, fridge magnet—we got you.
           </p>
 
           {/* CTA buttons */}
@@ -69,7 +68,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           </div>
 
           {/* Feature highlights */}
-          <div className="flex flex-wrap justify-center items-center gap-8 mt-16 w-full max-w-4xl">
+          <div className="flex flex-wrap justify-center items-center gap-6 mt-16 w-full max-w-4xl">
             {[
               { icon: Code, title: "One Line", desc: "Simple integration" },
               { icon: Zap, title: "<20KB", desc: "Lightning fast" },
@@ -78,14 +77,14 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
             ].map((feature, index) => (
               <div 
                 key={feature.title} 
-                className="text-center animate-fade-in group cursor-default" 
+                className="text-center animate-fade-in group cursor-default flex-shrink-0" 
                 style={{ animationDelay: `${0.8 + index * 0.1}s` }}
               >
-                <div className="inline-flex items-center gap-3 px-4 py-3 rounded-full bg-gradient-primary/10 border border-primary/20 group-hover:bg-gradient-primary/15 group-hover:border-primary/30 transition-all duration-300">
+                <div className="flex items-center gap-3 px-5 py-3 rounded-full bg-gradient-primary/10 border border-primary/20 group-hover:bg-gradient-primary/15 group-hover:border-primary/30 transition-all duration-300 min-w-[140px] justify-center">
                   <feature.icon className="w-5 h-5 text-primary flex-shrink-0" />
-                  <div className="text-left">
-                    <h3 className="font-semibold text-sm leading-tight">{feature.title}</h3>
-                    <p className="text-xs text-[#1a1a1a] dark:text-gray-400 leading-tight">{feature.desc}</p>
+                  <div className="text-center">
+                    <h3 className="font-semibold text-sm leading-tight whitespace-nowrap">{feature.title}</h3>
+                    <p className="text-xs text-[#1a1a1a] dark:text-gray-400 leading-tight whitespace-nowrap">{feature.desc}</p>
                   </div>
                 </div>
               </div>
