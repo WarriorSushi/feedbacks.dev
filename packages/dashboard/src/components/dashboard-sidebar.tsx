@@ -261,8 +261,9 @@ export function DashboardLayout({ children, user, projectsCount }: {
         <DashboardSidebar user={user} projectsCount={projectsCount} />
         <div className="flex-1 flex flex-col overflow-hidden min-w-0 pt-16 lg:pt-0 transition-opacity duration-150">
           <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:sticky lg:left-auto">
-            {/* Left Side - Menu Button */}
-            <div className="flex items-center ml-8">
+            {/* Left Side - Theme Toggle & Menu Button */}
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
               <SidebarTrigger className="lg:hidden">
                 <Button variant="ghost" className="flex items-center gap-2 px-3 py-2 h-auto bg-white/10 hover:bg-white/20 dark:bg-black/10 dark:hover:bg-black/20 backdrop-blur-sm rounded-xl transition-all duration-300">
                   <div className="flex flex-col gap-1">
@@ -289,10 +290,8 @@ export function DashboardLayout({ children, user, projectsCount }: {
               </Link>
             </div>
             
-            {/* Right Side - Theme Toggle */}
-            <div className="flex items-center">
-              <ThemeToggle />
-            </div>
+            {/* Right Side - Empty for balance */}
+            <div className="w-8"></div>
           </header>
           {!isDashboardPage && (
             <div className="px-4 py-1 border-b border-border/30">
