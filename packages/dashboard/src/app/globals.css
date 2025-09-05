@@ -451,16 +451,16 @@
 }
 
 .lovable-gradient {
-  background: linear-gradient(270deg, 
-    hsl(220, 40%, 88%) 0%, 
-    hsl(280, 35%, 90%) 15%, 
-    hsl(320, 45%, 87%) 30%, 
-    hsl(340, 40%, 89%) 45%, 
-    hsl(20, 35%, 88%) 60%, 
-    hsl(60, 40%, 90%) 75%, 
-    hsl(200, 45%, 87%) 100%
+  background: linear-gradient(135deg, 
+    #ffecd2 0%, 
+    #fcb69f 15%, 
+    #ff9a9e 30%, 
+    #fecfef 45%, 
+    #fecfef 60%, 
+    #a8edea 75%, 
+    #fed6e3 100%
   );
-  background-size: 600% 600%;
+  background-size: 400% 400%;
   animation: premiumGradientMove 6s ease-in-out forwards, premiumGradientPause 6s ease-in-out 6s infinite;
   position: relative;
 }
@@ -482,10 +482,10 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.5' numOctaves='5' stitchTiles='stitch' seed='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.12'/%3E%3C/svg%3E");
-  background-size: 30px 30px;
-  background-repeat: repeat;
-  mix-blend-mode: multiply;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -496,9 +496,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='turbulence' baseFrequency='3.0' numOctaves='1' stitchTiles='stitch' seed='5'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.08'/%3E%3C/svg%3E");
-  background-size: 20px 20px;
+  background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='4' numOctaves='4' stitchTiles='stitch' seed='8'/%3E%3CfeColorMatrix in='SourceGraphic' type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.25'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
   background-repeat: repeat;
-  mix-blend-mode: overlay;
+  mix-blend-mode: multiply;
   pointer-events: none;
 }

@@ -11,7 +11,8 @@ import {
   Plus,
   LogOut,
   User as UserIcon,
-  HelpCircle
+  HelpCircle,
+  Menu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -263,8 +264,13 @@ export function DashboardLayout({ children, user, projectsCount }: {
             {/* Left Side - Menu Button */}
             <div className="flex items-center ml-8">
               <SidebarTrigger className="lg:hidden">
-                <Button size="sm" variant="outline" className="h-8 text-xs px-3 transition-colors duration-150">
-                  Menu
+                <Button variant="ghost" className="flex items-center gap-2 px-3 py-2 h-auto bg-white/10 hover:bg-white/20 dark:bg-black/10 dark:hover:bg-black/20 backdrop-blur-sm rounded-xl transition-all duration-300">
+                  <div className="flex flex-col gap-1">
+                    <div className="w-4 h-0.5 bg-foreground rounded-full transition-all duration-300"></div>
+                    <div className="w-4 h-0.5 bg-foreground rounded-full transition-all duration-300"></div>
+                    <div className="w-4 h-0.5 bg-foreground rounded-full transition-all duration-300"></div>
+                  </div>
+                  <span className="text-xs font-medium">Menu</span>
                 </Button>
               </SidebarTrigger>
             </div>

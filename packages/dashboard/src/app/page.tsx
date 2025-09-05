@@ -91,18 +91,7 @@ export default function HomePage() {
 
       <div className="flex-1 pt-16">
         {/* Sticky Corner Controls */}
-        <div className="fixed top-20 left-4 z-40 sm:hidden">
-          <Button variant="ghost" className="flex items-center gap-2 px-4 py-3 h-auto bg-white/20 hover:bg-white/30 dark:bg-black/20 dark:hover:bg-black/30 backdrop-blur-sm rounded-2xl transition-all duration-300">
-            <div className="flex flex-col gap-1">
-              <div className="w-5 h-0.5 bg-gray-900 dark:bg-white rounded-full transition-all duration-300"></div>
-              <div className="w-5 h-0.5 bg-gray-900 dark:bg-white rounded-full transition-all duration-300"></div>
-              <div className="w-5 h-0.5 bg-gray-900 dark:bg-white rounded-full transition-all duration-300"></div>
-            </div>
-            <span className="text-sm font-medium text-gray-900 dark:text-white">Menu</span>
-          </Button>
-        </div>
-        {/* GitHub link moved to desktop only */}
-        <div className="fixed top-20 left-4 z-40 hidden sm:block">
+        <div className="fixed top-20 left-4 z-40">
           <Button variant="ghost" size="sm" asChild className="h-10 w-10 px-0 bg-white/20 hover:bg-white/30 dark:bg-black/20 dark:hover:bg-black/30 backdrop-blur-sm rounded-full">
             <a
               href="https://github.com/WarriorSushi/feedbacks.dev"

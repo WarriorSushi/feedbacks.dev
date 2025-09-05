@@ -31,25 +31,25 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           {/* Badge */}
           <Badge variant="secondary" className="mb-6 px-4 py-2 animate-fade-in bg-white/90 text-gray-900 border-gray-200 dark:bg-gray-900/90 dark:text-gray-100 dark:border-gray-700 transition-none hover:bg-white/90 hover:dark:bg-gray-900/90">
             <Zap className="w-3 h-3 mr-2" />
-            Lightning fast, ultra light
+            Lightning fast, Open source, No Credit card required
           </Badge>
 
           {/* Main headline */}
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6 animate-fade-in">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6 animate-fade-in max-w-4xl">
             <span className="gradient-text">From feedback to feature requests, the entire ecosystem in one tiny snippet</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-xl mb-8 max-w-2xl animate-fade-in text-[#1a1a1a] dark:text-gray-300" style={{ animationDelay: '0.2s' }}>
-            One copy-paste, Get updates everywhere, GitHub, Slack, inbox, fridge magnet—we got you.
+          <p className="text-lg md:text-xl mb-8 max-w-3xl animate-fade-in text-[#1a1a1a] dark:text-gray-300" style={{ animationDelay: '0.2s' }}>
+            One copy-paste, get updates everywhere—we got you.
           </p>
 
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mb-12 px-4 sm:px-0 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <Button size={isAuthenticated ? "sm" : "lg"} className={`premium-button ${isAuthenticated ? 'text-sm px-4 py-2' : ''}`} asChild>
+            <Button size="lg" className="premium-button" asChild>
               <Link href={isAuthenticated ? "/dashboard" : "https://app.feedbacks.dev/auth"}>
                 {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
-                <ArrowRight className={`ml-2 h-3 w-3 ${isAuthenticated ? '' : 'h-4 w-4'}`} />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="hover-lift" asChild>
