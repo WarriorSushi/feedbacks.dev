@@ -117,20 +117,6 @@ export function FeaturesSection() {
             </Card>
           ))}
         </div>
-        
-        {/* Bottom CTA */}
-        <div className="text-center mt-20">
-          <p className="text-muted-foreground mb-6">
-            Join thousands of developers building better products with user feedback
-          </p>
-          <div className="flex items-center justify-center gap-6">
-            {['Next.js', 'React', 'Vue', 'WordPress', 'Shopify'].map((tech, i) => (
-              <Badge key={tech} variant="outline" className="bg-background/50 hover:bg-primary/10 transition-colors duration-300 cursor-default">
-                {tech}
-              </Badge>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
