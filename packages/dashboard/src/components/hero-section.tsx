@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Code, Zap, Globe, Shield } from 'lucide-react';
+import { ArrowRight, Code, Zap, Globe, Shield, Users, Star, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
@@ -19,12 +19,12 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
 
   return (
     <section className="relative overflow-hidden py-24 lg:py-32">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-background" />
+      {/* Enhanced Mesh Background */}
+      <div className="absolute inset-0 mesh-gradient-hero" />
       
-      {/* Floating elements */}
-      <div className="absolute top-20 left-1/4 w-64 h-64 bg-gradient-primary rounded-full opacity-10 blur-3xl animate-float" />
-      <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-10 blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+      {/* Additional floating elements for depth */}
+      <div className="absolute top-20 left-1/4 w-64 h-64 bg-gradient-primary rounded-full opacity-5 blur-3xl animate-float" />
+      <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-5 blur-3xl animate-float" style={{ animationDelay: '1s' }} />
       
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
@@ -89,6 +89,95 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Social Proof */}
+          <div className="mt-20 w-full max-w-5xl animate-fade-in" style={{ animationDelay: '1.2s' }}>
+            {/* Stats */}
+            <div className="flex flex-wrap justify-center items-center gap-8 mb-12">
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Users className="w-5 h-5 text-primary" />
+                  <span className="text-2xl font-bold gradient-text">10,000+</span>
+                </div>
+                <p className="text-sm text-muted-foreground">Active Users</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                  <span className="text-2xl font-bold gradient-text">500K+</span>
+                </div>
+                <p className="text-sm text-muted-foreground">Feedback Collected</p>
+              </div>
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                  <span className="text-2xl font-bold gradient-text">4.8</span>
+                </div>
+                <p className="text-sm text-muted-foreground">Developer Rating</p>
+              </div>
+            </div>
+
+            {/* Company Logos */}
+            <div className="text-center mb-8">
+              <p className="text-sm text-muted-foreground mb-6">
+                Trusted by developers at top companies
+              </p>
+              <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">V</span>
+                  </div>
+                  <span className="font-semibold text-foreground">Vercel</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">N</span>
+                  </div>
+                  <span className="font-semibold text-foreground">Next.js</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-600 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">S</span>
+                  </div>
+                  <span className="font-semibold text-foreground">Supabase</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-600 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">F</span>
+                  </div>
+                  <span className="font-semibold text-foreground">Framer</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-600 rounded flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">S</span>
+                  </div>
+                  <span className="font-semibold text-foreground">Stripe</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick testimonial */}
+            <div className="mesh-gradient-card rounded-2xl p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-semibold">JS</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1 mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                    ))}
+                  </div>
+                  <p className="text-foreground italic mb-2">
+                    "Setup took literally 2 minutes. Our conversion rate increased by 23% in the first week!"
+                  </p>
+                  <div className="text-sm text-muted-foreground">
+                    <span className="font-semibold">Jake Smith</span> • Senior Developer at TechCorp
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

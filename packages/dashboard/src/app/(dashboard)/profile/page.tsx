@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { DashboardLayout } from '@/components/dashboard-sidebar';
 import { 
   User, 
   Calendar, 
@@ -22,14 +21,12 @@ import {
   BarChart3,
   MessageSquare
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase-client';
-import { useEffect, useState } from 'react';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useDashboard } from '@/components/dashboard-client-layout';
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useDashboard();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -39,32 +36,8 @@ export default function ProfilePage() {
     website: '',
     company: ''
   });
-  const supabase = createClient();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          setUser(user);
-          setProfileData({
-            fullName: user.user_metadata?.full_name || '',
-            bio: user.user_metadata?.bio || 'Frontend developer passionate about user experience and feedback.',
-            location: user.user_metadata?.location || '',
-            website: user.user_metadata?.website || '',
-            company: user.user_metadata?.company || ''
-          });
-        }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadUser();
-  }, [supabase]);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -87,16 +60,6 @@ export default function ProfilePage() {
     }
   };
 
-  if (isLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -110,8 +73,7 @@ export default function ProfilePage() {
   ];
 
   return (
-    <DashboardLayout user={user} projectsCount={0}>
-      <div className="p-6 lg:p-8 space-y-8">
+    <div className="p-6 lg:p-8 space-y-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
             <User className="h-6 w-6 text-accent" />
@@ -368,7 +330,6 @@ export default function ProfilePage() {
             </Card>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

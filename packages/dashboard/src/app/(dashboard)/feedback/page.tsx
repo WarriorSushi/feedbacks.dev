@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DashboardLayout } from '@/components/dashboard-sidebar';
 import { 
   MessageSquare, 
   Search, 
@@ -22,10 +21,8 @@ import {
   Reply,
   MoreHorizontal
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase-client';
-import { useEffect, useState, useCallback } from 'react';
-import { navCache } from '@/lib/cache';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react';
+import { useDashboard } from '@/components/dashboard-client-layout';
 
 interface FeedbackItem {
   id: string;
@@ -39,108 +36,69 @@ interface FeedbackItem {
 }
 
 export default function FeedbackPage() {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const { user, projects } = useDashboard();
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterProject, setFilterProject] = useState('all');
-  const supabase = createClient();
-
-  const loadData = useCallback(async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUser(user);
-        
-        // Check cache first
-        const cacheKey = navCache.getUserCacheKey(user.id, 'feedback');
-        const cachedFeedback = navCache.get(cacheKey);
-        
-        if (cachedFeedback) {
-          setFeedback(cachedFeedback);
-          setIsLoading(false);
-          return;
-        }
-        
-        // Mock feedback data - in real app, this would come from Supabase
-        const mockFeedback: FeedbackItem[] = [
-          {
-            id: '1',
-            email: 'john@example.com',
-            message: 'Great product! The interface is very intuitive and easy to use. I love how responsive the feedback widget is.',
-            rating: 5,
-            url: 'https://myapp.com/dashboard',
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            project_name: 'My App',
-            status: 'new'
-          },
-          {
-            id: '2', 
-            email: 'sarah@company.com',
-            message: 'The loading time could be improved on mobile devices. Also, the submit button sometimes takes a few clicks.',
-            rating: 3,
-            url: 'https://myapp.com/mobile',
-            created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-            project_name: 'My App',
-            status: 'read'
-          },
-          {
-            id: '3',
-            email: 'mike@startup.io',
-            message: 'Fantastic integration! Works perfectly with our React app. The documentation is clear and helpful.',
-            rating: 5,
-            url: 'https://myapp.com/integration',
-            created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-            project_name: 'My App',
-            status: 'archived'
-          },
-          {
-            id: '4',
-            email: 'lisa@design.co',
-            message: 'Would be nice to have more customization options for the widget appearance to match our brand colors.',
-            rating: 4,
-            url: 'https://myapp.com/settings',
-            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            project_name: 'Website v2',
-            status: 'read'
-          },
-          {
-            id: '5',
-            email: 'alex@tech.com',
-            message: 'Bug report: The widget crashes on Safari when submitting feedback with special characters in the message.',
-            rating: 2,
-            url: 'https://myapp.com/contact',
-            created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            project_name: 'Website v2',
-            status: 'new'
-          }
-        ];
-        
-        setFeedback(mockFeedback);
-        navCache.set(cacheKey, mockFeedback);
-      }
-    } catch (error) {
-      console.error('Error loading feedback:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [supabase]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  if (isLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading feedback...</p>
-        </div>
-      </div>
-    );
-  }
+    // Mock feedback data - in real app, this would come from Supabase
+    const mockFeedback: FeedbackItem[] = [
+      {
+        id: '1',
+        email: 'john@example.com',
+        message: 'Great product! The interface is very intuitive and easy to use. I love how responsive the feedback widget is.',
+        rating: 5,
+        url: 'https://myapp.com/dashboard',
+        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        project_name: 'My App',
+        status: 'new'
+      },
+      {
+        id: '2', 
+        email: 'sarah@company.com',
+        message: 'The loading time could be improved on mobile devices. Also, the submit button sometimes takes a few clicks.',
+        rating: 3,
+        url: 'https://myapp.com/mobile',
+        created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+        project_name: 'My App',
+        status: 'read'
+      },
+      {
+        id: '3',
+        email: 'mike@startup.io',
+        message: 'Fantastic integration! Works perfectly with our React app. The documentation is clear and helpful.',
+        rating: 5,
+        url: 'https://myapp.com/integration',
+        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        project_name: 'My App',
+        status: 'archived'
+      },
+      {
+        id: '4',
+        email: 'lisa@design.co',
+        message: 'Would be nice to have more customization options for the widget appearance to match our brand colors.',
+        rating: 4,
+        url: 'https://myapp.com/settings',
+        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        project_name: 'Website v2',
+        status: 'read'
+      },
+      {
+        id: '5',
+        email: 'alex@tech.com',
+        message: 'Bug report: The widget crashes on Safari when submitting feedback with special characters in the message.',
+        rating: 2,
+        url: 'https://myapp.com/contact',
+        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        project_name: 'Website v2',
+        status: 'new'
+      }
+    ];
+    
+    setFeedback(mockFeedback);
+  }, []);
 
   const filteredFeedback = feedback.filter(item => {
     const matchesSearch = item.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -150,7 +108,7 @@ export default function FeedbackPage() {
     return matchesSearch && matchesStatus && matchesProject;
   });
 
-  const projects = Array.from(new Set(feedback.map(f => f.project_name)));
+  const feedbackProjects = Array.from(new Set(feedback.map(f => f.project_name)));
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -185,8 +143,7 @@ export default function FeedbackPage() {
   };
 
   return (
-    <DashboardLayout user={user} projectsCount={projects.length}>
-      <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
+    <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
             <MessageSquare className="h-6 w-6 text-accent" />
@@ -287,7 +244,7 @@ export default function FeedbackPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Projects</SelectItem>
-                  {projects.map(project => (
+                  {feedbackProjects.map(project => (
                     <SelectItem key={project} value={project}>{project}</SelectItem>
                   ))}
                 </SelectContent>
@@ -382,7 +339,6 @@ export default function FeedbackPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

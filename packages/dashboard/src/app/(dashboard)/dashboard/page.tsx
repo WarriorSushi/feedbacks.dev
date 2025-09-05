@@ -1,140 +1,64 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DashboardLayout } from '@/components/dashboard-sidebar';
 import { Plus, BarChart3, Calendar, Mail, ExternalLink, TrendingUp, Users, Clock, MessageSquare, Star, Globe, User as UserIcon } from 'lucide-react';
-import { createClient } from '@/lib/supabase-client';
-import { useEffect, useState, useCallback } from 'react';
-import { navCache } from '@/lib/cache';
-import type { User } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react';
+import { useDashboard } from '@/components/dashboard-client-layout';
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [projects, setProjects] = useState<any[]>([]);
+  const { user, projects } = useDashboard();
   const [recentFeedback, setRecentFeedback] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-  const supabase = createClient();
-
-  const loadDashboard = useCallback(async () => {
-    try {
-      // Get the current user session
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError) {
-        console.error('Auth error:', authError);
-        // Wait a bit and try again in case session is still being established
-        setTimeout(() => router.push('/auth'), 100);
-        return;
-      }
-      
-      if (!user) {
-        console.log('No user found, redirecting to auth');
-        router.push('/auth');
-        return;
-      }
-      
-      console.log('User authenticated:', user.email);
-      setUser(user);
-
-      // Check cache first
-      const cacheKey = navCache.getUserCacheKey(user.id, 'projects');
-      const cachedProjects = navCache.get(cacheKey);
-      
-      if (cachedProjects) {
-        setProjects(cachedProjects);
-        setIsLoading(false);
-        return;
-      }
-
-      // Fetch user's projects with feedback count
-      const { data: projectsData, error: projectsError } = await supabase
-        .from('projects')
-        .select(`
-          *,
-          feedback:feedback(count)
-        `)
-        .eq('owner_user_id', user.id);
-
-      if (projectsError) {
-        console.error('Error fetching projects:', projectsError);
-      } else {
-        const projects = projectsData || [];
-        setProjects(projects);
-        // Cache the results
-        navCache.set(cacheKey, projects);
-      }
-
-      // Check feedback cache
-      const feedbackCacheKey = navCache.getUserCacheKey(user.id, 'recentFeedback');
-      const cachedFeedback = navCache.get(feedbackCacheKey);
-      
-      if (cachedFeedback) {
-        setRecentFeedback(cachedFeedback);
-      } else {
-        // Mock recent feedback data - in real app, this would come from Supabase
-        const mockFeedback = [
-          {
-            id: '1',
-            email: 'john@example.com',
-            message: 'Great product! The interface is very intuitive.',
-            rating: 5,
-            url: 'https://myapp.com/dashboard',
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            project_name: 'My App',
-            status: 'new'
-          },
-          {
-            id: '2',
-            email: 'sarah@company.com',
-            message: 'The loading time could be improved on mobile devices.',
-            rating: 3,
-            url: 'https://myapp.com/mobile',
-            created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-            project_name: 'My App',
-            status: 'read'
-          },
-          {
-            id: '3',
-            email: 'mike@startup.io',
-            message: 'Fantastic integration! Works perfectly with our React app.',
-            rating: 5,
-            url: 'https://myapp.com/integration',
-            created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-            project_name: 'Website v2',
-            status: 'archived'
-          },
-          {
-            id: '4',
-            email: 'lisa@design.co',
-            message: 'Would be nice to have more customization options.',
-            rating: 4,
-            url: 'https://myapp.com/settings',
-            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            project_name: 'Website v2',
-            status: 'read'
-          }
-        ];
-        setRecentFeedback(mockFeedback);
-        navCache.set(feedbackCacheKey, mockFeedback);
-      }
-    } catch (error) {
-      console.error('Dashboard load error:', error);
-      // Give a small delay before redirecting in case of session establishment
-      setTimeout(() => router.push('/auth'), 100);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [router, supabase]);
 
   useEffect(() => {
-    loadDashboard();
-  }, [loadDashboard]);
+    // Mock recent feedback data - in real app, this would come from Supabase
+    const mockFeedback = [
+      {
+        id: '1',
+        email: 'john@example.com',
+        message: 'Great product! The interface is very intuitive.',
+        rating: 5,
+        url: 'https://myapp.com/dashboard',
+        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+        project_name: 'My App',
+        status: 'new'
+      },
+      {
+        id: '2',
+        email: 'sarah@company.com',
+        message: 'The loading time could be improved on mobile devices.',
+        rating: 3,
+        url: 'https://myapp.com/mobile',
+        created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+        project_name: 'My App',
+        status: 'read'
+      },
+      {
+        id: '3',
+        email: 'mike@startup.io',
+        message: 'Fantastic integration! Works perfectly with our React app.',
+        rating: 5,
+        url: 'https://myapp.com/integration',
+        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        project_name: 'Website v2',
+        status: 'archived'
+      },
+      {
+        id: '4',
+        email: 'lisa@design.co',
+        message: 'Would be nice to have more customization options.',
+        rating: 4,
+        url: 'https://myapp.com/settings',
+        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        project_name: 'Website v2',
+        status: 'read'
+      }
+    ];
+    setRecentFeedback(mockFeedback);
+  }, []);
 
   // Calculate total feedback across all projects
   const totalFeedback = projects.reduce((acc, project) => {
@@ -164,24 +88,8 @@ export default function DashboardPage() {
     ));
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null; // Will redirect to auth
-  }
-
   return (
-    <DashboardLayout user={user} projectsCount={projects.length}>
-      <div className="p-6 md:p-6 lg:p-8 space-y-8 md:space-y-8 page-illumination">
+    <div className="p-6 md:p-6 lg:p-8 space-y-8 md:space-y-8 page-illumination">
         {/* Welcome Section */}
         <div className="animate-fade-in relative rounded-2xl p-4 md:p-6 bg-gradient-to-r from-background via-background to-primary/5">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -422,7 +330,6 @@ export default function DashboardPage() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

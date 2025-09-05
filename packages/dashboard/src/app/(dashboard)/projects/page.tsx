@@ -4,75 +4,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { DashboardLayout } from '@/components/dashboard-sidebar';
 import { Plus, BarChart3, Calendar, ExternalLink, Users, Clock } from 'lucide-react';
-import { createClient } from '@/lib/supabase-client';
-import { useEffect, useState, useCallback } from 'react';
-import { navCache } from '@/lib/cache';
-import type { User } from '@supabase/supabase-js';
+import { useDashboard } from '@/components/dashboard-client-layout';
 
 export default function ProjectsPage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
-
-  const loadData = useCallback(async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      setUser(user);
-
-      // Check cache first
-      const cacheKey = navCache.getUserCacheKey(user.id, 'projects');
-      const cachedProjects = navCache.get(cacheKey);
-      
-      if (cachedProjects) {
-        setProjects(cachedProjects);
-        setIsLoading(false);
-        return;
-      }
-
-      const { data: projectsData, error } = await supabase
-        .from('projects')
-        .select(`
-          *,
-          feedback:feedback(count)
-        `)
-        .eq('owner_user_id', user.id);
-
-      if (!error) {
-        const projects = projectsData || [];
-        setProjects(projects);
-        // Cache the results
-        navCache.set(cacheKey, projects);
-      }
-    } catch (error) {
-      console.error('Error loading projects:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [supabase]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  if (isLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading projects...</p>
-        </div>
-      </div>
-    );
-  }
+  const { user, projects } = useDashboard();
 
   return (
-    <DashboardLayout user={user} projectsCount={projects.length}>
-      <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
+    <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">Your Projects</h1>
@@ -150,7 +89,6 @@ export default function ProjectsPage() {
             </div>
           </div>
         )}
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { CodeSnippet } from '@/components/code-snippet';
-import { Globe, Smartphone, Code, Layers, Zap, Cpu } from 'lucide-react';
+import { Globe, Smartphone, Code, Layers, Zap, Cpu, ChevronDown, ChevronUp, Star } from 'lucide-react';
 
 interface Platform {
   id: string;
@@ -14,6 +15,8 @@ interface Platform {
   code: string;
   description: string;
   language: string;
+  isPrimary: boolean;
+  popularity: number;
 }
 
 const platforms: Platform[] = [
@@ -24,6 +27,8 @@ const platforms: Platform[] = [
     badge: 'Universal',
     description: 'Works with any website, framework, or CMS',
     language: 'html',
+    isPrimary: true,
+    popularity: 95,
     code: `<script 
   src="https://cdn.feedbacks.dev/widget-1.0.0.js"
   data-project="pk_live_abc123"
@@ -37,6 +42,8 @@ const platforms: Platform[] = [
     badge: 'Pure JS',
     description: 'Zero dependencies, maximum compatibility',
     language: 'javascript',
+    isPrimary: false,
+    popularity: 60,
     code: `import { initFeedback } from 'https://cdn.feedbacks.dev/widget-1.0.0.js';
 
 initFeedback({
@@ -52,6 +59,8 @@ initFeedback({
     badge: 'Component',
     description: 'Native React component with TypeScript support',
     language: 'jsx',
+    isPrimary: true,
+    popularity: 90,
     code: `import { FeedbackWidget } from '@feedbacks/react';
 
 function App() {
@@ -73,6 +82,8 @@ function App() {
     badge: 'SSR Ready',
     description: 'Server-side rendering compatible',
     language: 'jsx',
+    isPrimary: true,
+    popularity: 85,
     code: `import dynamic from 'next/dynamic';
 
 const FeedbackWidget = dynamic(
@@ -96,6 +107,8 @@ export default function Layout({ children }) {
     badge: 'Composition',
     description: 'Vue 3 composition API support',
     language: 'vue',
+    isPrimary: false,
+    popularity: 70,
     code: `<script setup>
 import { FeedbackWidget } from '@feedbacks/vue';
 
@@ -120,6 +133,8 @@ const config = {
     badge: 'Mobile',
     description: 'Native mobile app integration',
     language: 'jsx',
+    isPrimary: false,
+    popularity: 45,
     code: `import { FeedbackModal } from '@feedbacks/react-native';
 import { useState } from 'react';
 
@@ -148,6 +163,8 @@ export default function App() {
     badge: 'Cross Platform',
     description: 'Dart package for iOS and Android',
     language: 'dart',
+    isPrimary: false,
+    popularity: 35,
     code: `import 'package:feedbacks_dev/feedbacks_dev.dart';
 
 class MyApp extends StatelessWidget {
@@ -169,12 +186,23 @@ class MyApp extends StatelessWidget {
 
 export function PlatformIntegration() {
   const [activeTab, setActiveTab] = useState('html');
+  const [showAllPlatforms, setShowAllPlatforms] = useState(false);
+  
+  // Sort platforms by popularity and separate primary from secondary
+  const sortedPlatforms = platforms.sort((a, b) => b.popularity - a.popularity);
+  const primaryPlatforms = sortedPlatforms.filter(p => p.isPrimary);
+  const secondaryPlatforms = sortedPlatforms.filter(p => !p.isPrimary);
+  
+  const visiblePlatforms = showAllPlatforms 
+    ? sortedPlatforms 
+    : primaryPlatforms;
+    
   const activePlatform = platforms.find(p => p.id === activeTab) || platforms[0];
 
   return (
     <section className="py-20 relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-muted/10 via-background to-muted/10" />
+      {/* Enhanced Background */}
+      <div className="absolute inset-0 mesh-gradient-subtle" />
       
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
         <div className="text-center mb-12">
@@ -197,7 +225,7 @@ export function PlatformIntegration() {
           <div className="space-y-3">
             <div className="lg:hidden mb-6">
               <div className="flex flex-wrap gap-2 justify-center">
-                {platforms.map((platform) => {
+                {visiblePlatforms.map((platform) => {
                   const Icon = platform.icon;
                   const isActive = activeTab === platform.id;
                   
@@ -225,8 +253,18 @@ export function PlatformIntegration() {
             
             {/* Desktop Tab List */}
             <div className="hidden lg:block space-y-2">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">Platforms</h3>
-              {platforms.map((platform, index) => {
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                  Popular Platforms
+                </h3>
+                {primaryPlatforms.length > 0 && (
+                  <Badge variant="outline" className="text-xs bg-primary/10 text-primary border-primary/20">
+                    <Star className="w-3 h-3 mr-1" />
+                    Most Used
+                  </Badge>
+                )}
+              </div>
+              {visiblePlatforms.map((platform, index) => {
                 const Icon = platform.icon;
                 const isActive = activeTab === platform.id;
                 
@@ -280,13 +318,59 @@ export function PlatformIntegration() {
                   </button>
                 );
               })}
+              
+              {/* Show More/Less Button */}
+              {secondaryPlatforms.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAllPlatforms(!showAllPlatforms)}
+                  className="w-full mt-4 border-dashed border-border/50 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all duration-200"
+                >
+                  {showAllPlatforms ? (
+                    <>
+                      <ChevronUp className="w-4 h-4 mr-2" />
+                      Show Less Platforms
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4 mr-2" />
+                      Show All Platforms (+{secondaryPlatforms.length} more)
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+            
+            {/* Mobile Show More Button */}
+            <div className="lg:hidden flex justify-center">
+              {secondaryPlatforms.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAllPlatforms(!showAllPlatforms)}
+                  className="border-dashed border-border/50 hover:border-primary/30 text-muted-foreground hover:text-foreground transition-all duration-200"
+                >
+                  {showAllPlatforms ? (
+                    <>
+                      <ChevronUp className="w-4 h-4 mr-2" />
+                      Show Less
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4 mr-2" />
+                      +{secondaryPlatforms.length} More
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
 
           {/* Right Side - Code Display */}
           <div className="relative">
             <div className="sticky top-8">
-              <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-background via-background to-muted/20 backdrop-blur-sm shadow-xl transition-all duration-700 ease-out" key={activePlatform.id}>
+              <Card className="mesh-gradient-card relative overflow-hidden shadow-xl transition-all duration-700 ease-out" key={activePlatform.id}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">

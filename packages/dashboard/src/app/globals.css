@@ -350,6 +350,21 @@
   .project-card:hover {
     transform: translateY(-2px);
   }
+  
+  /* Mobile safe area utilities */
+  .pb-safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .h-safe-area-bottom {
+    height: env(safe-area-inset-bottom);
+  }
+  
+  @supports (padding: max(0px)) {
+    .pb-safe-area-inset-bottom {
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+    }
+  }
 }
 
 /* Keyframes */
@@ -450,6 +465,45 @@
   50% { background-position: 80% 50%; }
 }
 
+/* Mesh Gradient Animations */
+@keyframes meshMove {
+  0%, 100% { 
+    background-position: 0% 50%, 100% 50%, 50% 0%;
+  }
+  33% { 
+    background-position: 30% 70%, 70% 30%, 80% 20%;
+  }
+  66% { 
+    background-position: 70% 30%, 30% 70%, 20% 80%;
+  }
+}
+
+@keyframes meshFloat {
+  0%, 100% { 
+    background-position: 50% 20%, 20% 80%, 80% 60%, 0% 0%;
+  }
+  25% { 
+    background-position: 60% 30%, 30% 70%, 70% 50%, 10% 10%;
+  }
+  50% { 
+    background-position: 40% 40%, 40% 60%, 60% 40%, 20% 20%;
+  }
+  75% { 
+    background-position: 70% 20%, 10% 90%, 90% 70%, 30% 5%;
+  }
+}
+
+@keyframes meshPulse {
+  0%, 100% { 
+    background-position: 25% 25%, 75% 75%, 50% 50%, 0% 0%;
+    opacity: 0.8;
+  }
+  50% { 
+    background-position: 35% 35%, 65% 65%, 60% 40%, 50% 50%;
+    opacity: 1;
+  }
+}
+
 .lovable-gradient {
   background: linear-gradient(135deg, 
     #ffecd2 0%, 
@@ -499,6 +553,77 @@
   background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='4' numOctaves='4' stitchTiles='stitch' seed='8'/%3E%3CfeColorMatrix in='SourceGraphic' type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.25'/%3E%3C/svg%3E");
   background-size: 120px 120px;
   background-repeat: repeat;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* Enhanced Mesh Gradient Variants */
+.mesh-gradient {
+  position: relative;
+  background: radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.3) 0%, transparent 50%),
+              linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+  background-size: 400% 400%;
+  animation: meshMove 8s ease-in-out infinite;
+}
+
+.mesh-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='mesh'%3E%3CfeTurbulence baseFrequency='0.02' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23mesh)' opacity='0.4'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.mesh-gradient-hero {
+  position: relative;
+  background: 
+    radial-gradient(ellipse 800px 600px at 50% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 600px 400px at 20% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 400px 300px at 80% 60%, rgba(34, 197, 94, 0.15) 0%, transparent 50%),
+    linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)/0.5) 100%);
+  background-size: 100% 100%, 80% 80%, 60% 60%, 100% 100%;
+  animation: meshFloat 12s ease-in-out infinite;
+}
+
+.mesh-gradient-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='heroMesh'%3E%3CfeTurbulence baseFrequency='0.04' numOctaves='4' stitchTiles='stitch' seed='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23heroMesh)' opacity='0.3'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+.mesh-gradient-subtle {
+  position: relative;
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(139, 92, 246, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 75% 75%, rgba(244, 63, 94, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.1) 0%, transparent 40%),
+    linear-gradient(90deg, hsl(var(--background)) 0%, hsl(var(--muted)/0.3) 50%, hsl(var(--background)) 100%);
+  background-size: 300% 300%, 250% 250%, 200% 200%, 100% 100%;
+  animation: meshPulse 10s ease-in-out infinite;
+}
+
+.mesh-gradient-card {
+  position: relative;
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+    linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)/0.2) 100%);
+  border: 1px solid hsl(var(--border)/0.5);
+}
+
+.mesh-gradient-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='cardMesh'%3E%3CfeTurbulence baseFrequency='0.03' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23cardMesh)' opacity='0.2'/%3E%3C/svg%3E");
+  border-radius: inherit;
   mix-blend-mode: multiply;
   pointer-events: none;
 }

@@ -6,16 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { DashboardLayout } from '@/components/dashboard-sidebar';
 import { Settings, User, Bell, Shield, Palette, Key, Save } from 'lucide-react';
-import { createClient } from '@/lib/supabase-client';
-import { useEffect, useState } from 'react';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useDashboard } from '@/components/dashboard-client-layout';
 
 export default function SettingsPage() {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useDashboard();
   const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState({
     emailNotifications: true,
@@ -23,25 +20,8 @@ export default function SettingsPage() {
     darkMode: false,
     publicProfile: false
   });
-  const supabase = createClient();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          setUser(user);
-        }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadUser();
-  }, [supabase]);
 
   const handleSaveSettings = async () => {
     setIsSaving(true);
@@ -63,20 +43,9 @@ export default function SettingsPage() {
     }
   };
 
-  if (isLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading settings...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <DashboardLayout user={user} projectsCount={0}>
-      <div className="p-6 lg:p-8 space-y-8">
+    <div className="p-6 lg:p-8 space-y-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
             <Settings className="h-6 w-6 text-accent" />
@@ -246,7 +215,6 @@ export default function SettingsPage() {
             {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

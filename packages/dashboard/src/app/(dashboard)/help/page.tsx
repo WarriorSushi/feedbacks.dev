@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { DashboardLayout } from '@/components/dashboard-sidebar';
 import { 
   HelpCircle, 
   Book, 
@@ -19,43 +18,12 @@ import {
   Video,
   Search
 } from 'lucide-react';
-import { createClient } from '@/lib/supabase-client';
-import { useEffect, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
 import Link from 'next/link';
+import { useDashboard } from '@/components/dashboard-client-layout';
 
 export default function HelpPage() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
+  const { user } = useDashboard();
 
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          setUser(user);
-        }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadUser();
-  }, [supabase]);
-
-  if (isLoading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading help center...</p>
-        </div>
-      </div>
-    );
-  }
 
   const quickLinks = [
     {
@@ -109,8 +77,7 @@ export default function HelpPage() {
   ];
 
   return (
-    <DashboardLayout user={user} projectsCount={0}>
-      <div className="p-6 lg:p-8 space-y-8">
+    <div className="p-6 lg:p-8 space-y-8">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
             <HelpCircle className="h-6 w-6 text-accent" />
@@ -296,7 +263,6 @@ export default function HelpPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }
