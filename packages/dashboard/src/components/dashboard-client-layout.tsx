@@ -16,6 +16,7 @@ export interface Project {
   created_at: string;
   updated_at: string;
   owner_user_id: string;
+  feedback?: Array<{ count: number }>;
 }
 
 interface DashboardContextType {
@@ -49,7 +50,7 @@ export function DashboardClientLayout({
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">
           <RouteLoading />
-          <DashboardSidebar />
+          <DashboardSidebar user={user} projectsCount={initialProjects.length} />
           <main className="flex-1 flex flex-col overflow-hidden">
             {children}
           </main>

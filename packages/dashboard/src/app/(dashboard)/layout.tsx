@@ -20,7 +20,10 @@ export default async function DashboardLayout({
     // Server-side data fetching prevents loading states
     const { data: projects } = await supabase
       .from('projects')
-      .select('*')
+      .select(`
+        *,
+        feedback:feedback(count)
+      `)
       .eq('owner_user_id', user.id);
 
     return (
