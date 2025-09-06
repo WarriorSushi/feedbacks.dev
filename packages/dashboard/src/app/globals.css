@@ -615,7 +615,7 @@
       #f8fafc 50%,
       #f1f5f9 100%
     );
-  background-position: 50% 0%, 0% 0%;
+  background-position: 50% 30%, 0% 0%;
   animation: premiumGlowOut 4s ease-out forwards;
   position: relative;
 }
@@ -634,7 +634,7 @@
       #1e293b 50%, 
       #334155 100%
     );
-  background-position: 50% 0%, 0% 0%;
+  background-position: 50% 30%, 0% 0%;
   animation: premiumGlowOut 4s ease-out forwards;
 }
 
