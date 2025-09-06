@@ -50,7 +50,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen lovable-gradient flex flex-col">
+    <div className="min-h-screen hero-illumination flex flex-col">
       {/* Immovable Frosted Glass Header */}
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-white/30 dark:bg-black/30 border-b border-white/20 dark:border-gray-700/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
