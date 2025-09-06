@@ -29,11 +29,21 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
       
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
-          {/* Badge */}
-          <Badge variant="secondary" className="mb-4 px-3 py-1 animate-fade-in bg-white/90 text-gray-900 border-gray-200 dark:bg-gray-900/90 dark:text-gray-100 dark:border-gray-700">
-            <Zap className="w-3 h-3 mr-1.5" />
-            Lightning fast • Open source • No credit card
-          </Badge>
+          {/* Three Badge Capsules */}
+          <div className="flex flex-wrap justify-center gap-2 mb-4 animate-fade-in">
+            <Badge variant="secondary" className="px-3 py-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700/30">
+              <Zap className="w-3 h-3 mr-1.5" />
+              Lightning fast
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700/30">
+              <Code className="w-3 h-3 mr-1.5" />
+              Open source
+            </Badge>
+            <Badge variant="secondary" className="px-3 py-1 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700/30">
+              <Shield className="w-3 h-3 mr-1.5" />
+              No credit card
+            </Badge>
+          </div>
 
           {/* Main headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 animate-fade-in max-w-4xl">
