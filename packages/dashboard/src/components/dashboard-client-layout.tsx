@@ -95,8 +95,8 @@ export function DashboardClientLayout({
               </div>
             </header>
             
-            <main className="flex-1 overflow-auto w-full bg-background prevent-bounce pt-16">
-              <div className="min-h-screen bg-background transition-opacity duration-200 ease-in-out flex flex-col">
+            <main className="flex-1 overflow-auto w-full bg-background prevent-bounce">
+              <div className="min-h-screen bg-background transition-opacity duration-200 ease-in-out flex flex-col pt-16">
                 <div className="flex-1 pb-8 sm:pb-12 md:pb-16">
                   <RouteLoading />
                   {children}
