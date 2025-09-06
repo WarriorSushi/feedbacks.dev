@@ -535,9 +535,13 @@
   100% { background-position: 50% 0%; }
 }
 
-@keyframes gradientMove {
-  0% { background-position: 50% 50%; }
-  100% { background-position: 20% 20%; }
+@keyframes illuminationGrow {
+  0% { 
+    background-size: 0% 0%;
+  }
+  100% { 
+    background-size: 200% 200%;
+  }
 }
 
 @keyframes gradientShift {
@@ -596,17 +600,15 @@
   }
 }
 
-.lovable-gradient {
-  background: linear-gradient(135deg, 
-    #a5b4fc 0%, 
-    #c4b5fd 8%, 
-    #ddd6fe 16%, 
-    #f3f4f6 22%,
-    #fafafa 28%,
-    #fdfdfd 35%
+.hero-illumination {
+  background: radial-gradient(ellipse at 50% 100%, 
+    #fefefe 0%,
+    #f8fafc 30%,
+    #e2e8f0 60%,
+    #cbd5e1 100%
   );
-  background-size: 200% 200%;
-  animation: gradientMove 5s ease forwards;
+  background-size: 0% 0%;
+  animation: illuminationGrow 4s ease-out forwards;
   position: relative;
 }
 
