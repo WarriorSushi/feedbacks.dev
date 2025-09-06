@@ -120,6 +120,14 @@
     @apply bg-gradient-to-r from-primary via-accent to-primary/80 bg-clip-text text-transparent;
   }
   
+  /* Enhanced Dark Mode Gradient Text */
+  .dark .gradient-text {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
   /* Animated Gradient Text */
   .animated-gradient-text {
     background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb);
@@ -598,11 +606,11 @@
 
 .dark .lovable-gradient {
   background: linear-gradient(135deg,
-    #1e1b4b 0%,
-    #312e81 25%,
-    #1e293b 50%,
-    #0f172a 75%,
-    #000000 100%
+    #0f0f23 0%,
+    #1e1b4b 25%,
+    #312e81 50%,
+    #4338ca 75%,
+    #1e1b4b 100%
   );
   background-size: 200% 200%;
   animation: subtleGradientMove 4s ease-out forwards;
