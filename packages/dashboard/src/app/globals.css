@@ -546,13 +546,13 @@
 
 @keyframes premiumGlowOut {
   0% { 
-    background-position: 50% 80%, 0% 0%;
+    background-position: 50% 100%, 0% 0%;
   }
   50% { 
-    background-position: 50% 20%, 0% 0%;
+    background-position: 50% 0%, 0% 0%;
   }
   100% { 
-    background-position: 50% -40%, 0% 0%;
+    background-position: 50% -100%, 0% 0%;
   }
 }
 
@@ -637,30 +637,30 @@
 
 .lovable-gradient {
   background: 
-    radial-gradient(ellipse 1200px 600px at 50% 0%, 
-      rgba(99, 102, 241, 0.25) 0%,
-      rgba(168, 85, 247, 0.20) 25%,
-      rgba(236, 72, 153, 0.15) 50%,
-      rgba(251, 146, 60, 0.10) 75%,
+    radial-gradient(ellipse 800px 400px at 50% 0%, 
+      rgba(99, 102, 241, 0.6) 0%,
+      rgba(168, 85, 247, 0.4) 30%,
+      rgba(236, 72, 153, 0.3) 60%,
+      rgba(251, 146, 60, 0.2) 80%,
       transparent 100%
     ),
     linear-gradient(135deg, 
-      #fefefe 0%,
+      #ffffff 0%,
       #f8fafc 50%,
       #f1f5f9 100%
     );
-  background-position: 50% 80%, 0% 0%;
-  animation: premiumGlowOut 5s ease-out forwards;
+  background-position: 50% 50%, 0% 0%;
+  animation: premiumGlowOut 3s ease-in-out infinite;
   position: relative;
 }
 
 .dark .lovable-gradient {
   background: 
-    radial-gradient(ellipse 1200px 600px at 50% 0%, 
-      rgba(79, 70, 229, 0.35) 0%,
-      rgba(139, 92, 246, 0.28) 25%,
-      rgba(168, 85, 247, 0.20) 50%,
-      rgba(236, 72, 153, 0.12) 75%,
+    radial-gradient(ellipse 800px 400px at 50% 0%, 
+      rgba(79, 70, 229, 0.8) 0%,
+      rgba(139, 92, 246, 0.6) 30%,
+      rgba(168, 85, 247, 0.4) 60%,
+      rgba(236, 72, 153, 0.3) 80%,
       transparent 100%
     ),
     linear-gradient(135deg, 
@@ -668,8 +668,8 @@
       #1e293b 50%, 
       #334155 100%
     );
-  background-position: 50% 80%, 0% 0%;
-  animation: premiumGlowOut 5s ease-out forwards;
+  background-position: 50% 50%, 0% 0%;
+  animation: premiumGlowOut 3s ease-in-out infinite;
 }
 
 
