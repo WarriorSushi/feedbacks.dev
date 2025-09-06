@@ -20,7 +20,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden py-16 lg:py-20">
       {/* Subtle background elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-white/30 to-transparent dark:from-black/20 dark:via-black/10 dark:to-transparent" />
+      <div className="absolute inset-0" />
       <div className="absolute top-10 left-1/4 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl animate-float" />
       <div className="absolute bottom-10 right-1/4 w-48 h-48 bg-purple-400/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
       

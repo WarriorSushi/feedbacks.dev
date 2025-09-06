@@ -584,11 +584,12 @@
 }
 
 .lovable-gradient {
-  background: radial-gradient(circle at bottom center, 
-    #f3e8ff 0%,
-    #dbeafe 30%,
-    #fef3c7 60%,
-    #f8fafc 100%
+  background: linear-gradient(135deg, 
+    #fdf2f8 0%,
+    #fce7f3 25%,
+    #e0e7ff 50%,
+    #ddd6fe 75%,
+    #f0f9ff 100%
   );
   background-size: 200% 200%;
   animation: subtleGradientMove 4s ease-out forwards;
@@ -596,10 +597,11 @@
 }
 
 .dark .lovable-gradient {
-  background: radial-gradient(circle at bottom center,
+  background: linear-gradient(135deg,
     #1e1b4b 0%,
-    #0f172a 30%,
-    #451a03 60%,
+    #312e81 25%,
+    #1e293b 50%,
+    #0f172a 75%,
     #000000 100%
   );
   background-size: 200% 200%;

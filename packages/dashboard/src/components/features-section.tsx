@@ -53,8 +53,8 @@ export function FeaturesSection() {
   return (
     <section className="py-32 relative overflow-hidden">
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-background" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_200px,hsl(var(--primary)/0.05),transparent)]" />
+      <div className="absolute inset-0" />
+      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_800px_at_50%_200px,hsl(var(--primary)/0.05),transparent)]" />
       
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-20">
