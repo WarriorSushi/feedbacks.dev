@@ -115,22 +115,13 @@
 
 /* Premium Component Classes */
 @layer components {
-  /* Professional Gradient Text Effect */
+  /* Simple visible text - no fancy effects */
   .gradient-text {
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: #1f2937; /* fallback for browsers that don't support bg-clip */
+    color: #1f2937;
   }
   
-  /* Enhanced Dark Mode Gradient Text */
   .dark .gradient-text {
-    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #ec4899 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    color: #f9fafb; /* fallback for dark mode */
+    color: #f9fafb;
   }
   
   /* Animated Gradient Text */
@@ -413,21 +404,9 @@
     transform: translateX(4px);
   }
   
-  /* Page Illumination Effect */
+  /* Page Illumination Effect - DISABLED */
   .page-illumination {
     position: relative;
-  }
-
-  .page-illumination::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 200px;
-    background: linear-gradient(to top, hsl(var(--accent) / 0.03), transparent);
-    animation: illuminate 1.2s ease-out;
-    pointer-events: none;
   }
   
   /* Project Cards */
@@ -520,16 +499,6 @@
   }
 }
 
-@keyframes illuminate {
-  from {
-    opacity: 0;
-    height: 0px;
-  }
-  to {
-    opacity: 1;
-    height: 200px;
-  }
-}
 
 @keyframes gradient-shift {
   0% {
@@ -549,17 +518,6 @@
   100% { background-position: 50% 0%; }
 }
 
-@keyframes premiumGlowOut {
-  0% {
-    background-position: 50% 100%;
-  }
-  50% {
-    background-position: 50% 0%;
-  }
-  100% {
-    background-position: 50% -100%;
-  }
-}
 
 @keyframes rotateTextIn {
   0% {
