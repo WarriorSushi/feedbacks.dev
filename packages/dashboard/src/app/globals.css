@@ -536,8 +536,7 @@
 }
 
 @keyframes gradientMove {
-  0% { background-position: 0% 0%; }
-  50% { background-position: 100% 100%; }
+  0% { background-position: 50% 50%; }
   100% { background-position: 0% 0%; }
 }
 
@@ -600,14 +599,13 @@
 .lovable-gradient {
   background: linear-gradient(135deg, 
     #667eea 0%, 
-    #764ba2 15%, 
-    #f093fb 25%, 
-    #f5576c 35%, 
-    #4facfe 45%, 
-    #e8f4fd 70%, 
-    #f8fbff 85%,
+    #f093fb 18%, 
+    #4facfe 35%, 
+    #f8fafc 70%,
     #ffffff 100%
   );
+  background-size: 200% 200%;
+  animation: gradientMove 5s ease forwards;
   position: relative;
 }
 
