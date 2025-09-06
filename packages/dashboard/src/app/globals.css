@@ -547,15 +547,12 @@
 @keyframes premiumGlowOut {
   0% { 
     background-position: 50% 80%, 0% 0%;
-    opacity: 0.8;
   }
   50% { 
     background-position: 50% 20%, 0% 0%;
-    opacity: 1;
   }
   100% { 
     background-position: 50% -40%, 0% 0%;
-    opacity: 0.3;
   }
 }
 
