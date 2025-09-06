@@ -49,7 +49,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl mb-8 max-w-2xl animate-fade-in text-gray-700 dark:text-gray-300" style={{ animationDelay: '0.1s' }}>
-            Copy, paste, done. Get user feedback everywhere instantly.
+            Copy - Paste - Done
           </p>
 
           {/* CTA buttons */}
