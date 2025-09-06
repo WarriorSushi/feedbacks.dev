@@ -536,9 +536,9 @@
 }
 
 @keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
 }
 
 @keyframes gradientShift {
@@ -598,12 +598,13 @@
 }
 
 .lovable-gradient {
-  background: linear-gradient(270deg, 
+  background: linear-gradient(135deg, 
     #667eea 0%, 
-    #764ba2 25%, 
-    #f093fb 50%, 
-    #f5576c 75%, 
-    #4facfe 100%
+    #764ba2 20%, 
+    #f093fb 40%, 
+    #f5576c 60%, 
+    #4facfe 80%, 
+    #f0f8ff 100%
   );
   background-size: 400% 400%;
   animation: gradientMove 5s ease forwards;
@@ -622,35 +623,6 @@
   animation: gradientMove 5s ease forwards;
 }
 
-.lovable-gradient::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.15'/%3E%3C/svg%3E");
-  background-size: 100px 100px;
-  background-repeat: repeat;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
-
-.lovable-gradient::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(ellipse 800px 600px at 80% 80%, rgba(255, 255, 255, 0.4) 0%, transparent 60%),
-    radial-gradient(ellipse 600px 400px at 20% 20%, rgba(255, 255, 255, 0.2) 0%, transparent 50%),
-    radial-gradient(ellipse 400px 300px at 60% 40%, rgba(255, 255, 255, 0.1) 0%, transparent 40%);
-  background-size: 100% 100%, 80% 80%, 60% 60%;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
 
 /* Enhanced Mesh Gradient Variants */
 .mesh-gradient {
