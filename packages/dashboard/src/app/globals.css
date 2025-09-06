@@ -641,28 +641,24 @@
 }
 
 .lovable-gradient {
-  background: linear-gradient(0deg, 
+  background: linear-gradient(-45deg, 
     #ffffff 0%,
-    rgba(99, 102, 241, 0.05) 25%,
-    rgba(168, 85, 247, 0.04) 50%,
-    rgba(236, 72, 153, 0.03) 75%,
-    #fafafa 100%
+    rgba(99, 102, 241, 0.12) 25%,
+    rgba(168, 85, 247, 0.10) 50%,
+    rgba(236, 72, 153, 0.08) 75%,
+    #f8fafc 100%
   );
-  background-size: 100% 400%;
-  animation: premiumGlowOut 6s ease infinite;
   position: relative;
 }
 
 .dark .lovable-gradient {
-  background: linear-gradient(0deg, 
+  background: linear-gradient(-45deg, 
     #0f172a 0%,
-    rgba(79, 70, 229, 0.08) 25%,
-    rgba(139, 92, 246, 0.06) 50%,
-    rgba(168, 85, 247, 0.05) 75%,
+    rgba(79, 70, 229, 0.18) 25%,
+    rgba(139, 92, 246, 0.15) 50%,
+    rgba(168, 85, 247, 0.12) 75%,
     #1e293b 100%
   );
-  background-size: 100% 400%;
-  animation: premiumGlowOut 6s ease infinite;
 }
 
 
