@@ -30,7 +30,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
           {/* Three Badge Capsules */}
-          <div className="flex flex-wrap justify-center gap-2 mb-6 mt-4 animate-fade-in">
+          <div className="flex flex-wrap justify-center gap-2 mb-6 mt-8 animate-fade-in">
             <Badge variant="secondary" className="px-2 py-1 text-xs md:px-3 md:text-sm bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700/30">
               <Zap className="w-2.5 h-2.5 mr-1 md:w-3 md:h-3 md:mr-1.5" />
               Lightning fast
@@ -85,8 +85,8 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
             </div>
           </div>
 
-          {/* Feature highlights - Compact */}
-          <div className="flex flex-wrap justify-center items-center gap-4 mt-12 w-full max-w-3xl animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          {/* Feature highlights - macOS Style */}
+          <div className="flex flex-wrap justify-center items-center gap-1.5 md:gap-3 mt-12 w-full max-w-4xl animate-fade-in" style={{ animationDelay: '0.4s' }}>
             {[
               { icon: Code, title: "One Line" },
               { icon: Zap, title: "<20KB" },
@@ -95,10 +95,10 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
             ].map((feature, index) => (
               <div 
                 key={feature.title} 
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 dark:bg-gray-800/70 border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-sm hover:bg-white/90 dark:hover:bg-gray-800/90 shadow-premium-sm hover:shadow-premium transition-all duration-300"
+                className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200/60 dark:border-gray-700/60 backdrop-blur-sm hover:bg-gray-100 dark:hover:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200"
               >
-                <feature.icon className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">{feature.title}</span>
+                <feature.icon className="w-3 h-3 md:w-4 md:h-4 text-gray-600 dark:text-gray-400" />
+                <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">{feature.title}</span>
               </div>
             ))}
           </div>
