@@ -102,9 +102,9 @@ export default function DashboardPage() {
               </p>
             </div>
             <Button asChild size="default" className="bg-white text-black hover:bg-gray-50 border border-gray-200 w-full md:w-auto md:size-lg shrink-0">
-              <Link href="/projects/new" className="justify-center">
-                <Plus className="h-4 w-4 mr-2" />
-                New Project
+              <Link href="/projects/new" className="flex items-center justify-center gap-2 w-full h-full">
+                <Plus className="h-4 w-4" />
+                <span>New Project</span>
               </Link>
             </Button>
           </div>
