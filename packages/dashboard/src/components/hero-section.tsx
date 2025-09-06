@@ -18,7 +18,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
   defer>
 </script>`;
 
-  const rotatingWords = ['feedback', 'feature requests', 'reviews', 'ideas', 'ratings'];
+  const rotatingWords = ['Feedback', 'Feature Requests', 'Reviews', 'Ideas', 'Ratings'];
 
   return (
     <section className="relative overflow-hidden py-16 lg:py-20">
@@ -38,10 +38,10 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           {/* Main headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 animate-fade-in max-w-4xl">
             <span className="gradient-text">
-              <span className="block">
-                Collect <RotatingText words={rotatingWords} />
+              <span className="block text-center">
+                <RotatingText words={rotatingWords} className="text-5xl md:text-6xl lg:text-7xl" />
               </span>
-              <span className="block mt-1">
+              <span className="block mt-1 text-center">
                 with one line of code
               </span>
             </span>

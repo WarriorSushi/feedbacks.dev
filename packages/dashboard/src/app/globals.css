@@ -124,15 +124,6 @@
     color: #f9fafb;
   }
   
-  /* Animated Gradient Text */
-  .animated-gradient-text {
-    background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb);
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: gradient-shift 8s ease-in-out infinite;
-  }
   
   /* Hero Glow Effect */
   .hero-glow {
@@ -512,155 +503,44 @@
   }
 }
 
-/* Animated gradient background like lovable.dev */
-@keyframes subtleGradientMove {
-  0% { background-position: 50% 100%; }
-  100% { background-position: 50% 0%; }
-}
 
 
-@keyframes rotateTextIn {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0px) scale(1);
-  }
-}
 
-@keyframes rotateTextOut {
-  0% {
-    opacity: 1;
-    transform: translateY(0px) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.9);
-  }
-}
-
-
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  25% { background-position: 100% 50%; }
-  50% { background-position: 100% 100%; }
-  75% { background-position: 0% 100%; }
-}
-
-@keyframes premiumGradientMove {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
-}
-
-@keyframes premiumGradientPause {
-  0%, 100% { background-position: 100% 50%; }
-  50% { background-position: 80% 50%; }
-}
-
-/* Mesh Gradient Animations */
-@keyframes meshMove {
-  0%, 100% { 
-    background-position: 0% 50%, 100% 50%, 50% 0%;
-  }
-  33% { 
-    background-position: 30% 70%, 70% 30%, 80% 20%;
-  }
-  66% { 
-    background-position: 70% 30%, 30% 70%, 20% 80%;
-  }
-}
-
-@keyframes meshFloat {
-  0%, 100% { 
-    background-position: 50% 20%, 20% 80%, 80% 60%, 0% 0%;
-  }
-  25% { 
-    background-position: 60% 30%, 30% 70%, 70% 50%, 10% 10%;
-  }
-  50% { 
-    background-position: 40% 40%, 40% 60%, 60% 40%, 20% 20%;
-  }
-  75% { 
-    background-position: 70% 20%, 10% 90%, 90% 70%, 30% 5%;
-  }
-}
-
-@keyframes meshPulse {
-  0%, 100% { 
-    background-position: 25% 25%, 75% 75%, 50% 50%, 0% 0%;
-    opacity: 0.8;
-  }
-  50% { 
-    background-position: 35% 35%, 65% 65%, 60% 40%, 50% 50%;
-    opacity: 1;
-  }
-}
 
 .lovable-gradient {
-  background: linear-gradient(-45deg, 
-    #ffffff 0%,
-    rgba(99, 102, 241, 0.12) 25%,
-    rgba(168, 85, 247, 0.10) 50%,
-    rgba(236, 72, 153, 0.08) 75%,
-    #f8fafc 100%
-  );
+  background: 
+    radial-gradient(ellipse 1400px 300px at 50% 0%, 
+      rgba(99, 102, 241, 0.15) 0%,
+      rgba(168, 85, 247, 0.12) 30%,
+      rgba(236, 72, 153, 0.08) 60%,
+      transparent 100%
+    ),
+    linear-gradient(-45deg, 
+      #ffffff 0%,
+      rgba(99, 102, 241, 0.05) 25%,
+      rgba(168, 85, 247, 0.04) 50%,
+      rgba(236, 72, 153, 0.03) 75%,
+      #f8fafc 100%
+    );
   position: relative;
 }
 
 .dark .lovable-gradient {
-  background: linear-gradient(-45deg, 
-    #0f172a 0%,
-    rgba(79, 70, 229, 0.18) 25%,
-    rgba(139, 92, 246, 0.15) 50%,
-    rgba(168, 85, 247, 0.12) 75%,
-    #1e293b 100%
-  );
-}
-
-
-/* Enhanced Mesh Gradient Variants */
-.mesh-gradient {
-  position: relative;
-  background: radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-              radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-              radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.3) 0%, transparent 50%),
-              linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
-  background-size: 400% 400%;
-  animation: meshMove 8s ease-in-out infinite;
-}
-
-
-.mesh-gradient-hero {
-  position: relative;
   background: 
-    radial-gradient(ellipse 800px 600px at 50% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse 600px 400px at 20% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse 400px 300px at 80% 60%, rgba(34, 197, 94, 0.15) 0%, transparent 50%),
-    linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)/0.5) 100%);
-  background-size: 100% 100%, 80% 80%, 60% 60%, 100% 100%;
-  animation: meshFloat 12s ease-in-out infinite;
+    radial-gradient(ellipse 1400px 300px at 50% 0%, 
+      rgba(79, 70, 229, 0.25) 0%,
+      rgba(139, 92, 246, 0.20) 30%,
+      rgba(168, 85, 247, 0.15) 60%,
+      transparent 100%
+    ),
+    linear-gradient(-45deg, 
+      #0f172a 0%,
+      rgba(79, 70, 229, 0.08) 25%,
+      rgba(139, 92, 246, 0.06) 50%,
+      rgba(168, 85, 247, 0.05) 75%,
+      #1e293b 100%
+    );
 }
 
 
-.mesh-gradient-subtle {
-  position: relative;
-  background: 
-    radial-gradient(circle at 25% 25%, rgba(139, 92, 246, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 75% 75%, rgba(244, 63, 94, 0.1) 0%, transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.1) 0%, transparent 40%),
-    linear-gradient(90deg, hsl(var(--background)) 0%, hsl(var(--muted)/0.3) 50%, hsl(var(--background)) 100%);
-  background-size: 300% 300%, 250% 250%, 200% 200%, 100% 100%;
-  animation: meshPulse 10s ease-in-out infinite;
-}
-
-.mesh-gradient-card {
-  position: relative;
-  background: 
-    radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 70% 70%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
-    linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)/0.2) 100%);
-  border: 1px solid hsl(var(--border)/0.5);
-}
 
