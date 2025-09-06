@@ -592,12 +592,11 @@
 }
 
 .lovable-gradient {
-  background: linear-gradient(135deg, 
-    #fdf2f8 0%,
-    #fce7f3 25%,
-    #e0e7ff 50%,
-    #ddd6fe 75%,
-    #f0f9ff 100%
+  background: radial-gradient(circle at bottom center, 
+    #f8fafc 0%,
+    #e2e8f0 25%,
+    #cbd5e1 50%,
+    #f1f5f9 100%
   );
   background-size: 200% 200%;
   animation: subtleGradientMove 4s ease-out forwards;

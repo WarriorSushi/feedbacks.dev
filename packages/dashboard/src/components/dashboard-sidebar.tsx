@@ -33,6 +33,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ThemeToggle } from '@/components/theme-toggle';
 import type { User } from '@supabase/supabase-js';
 
 interface DashboardSidebarProps {
@@ -202,6 +203,11 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
       
       <SidebarFooter className="p-4">
         <Separator className="mb-4" />
+        
+        {/* Theme Toggle - Desktop Only */}
+        <div className="hidden lg:flex justify-center mb-4">
+          <ThemeToggle />
+        </div>
         
         {/* User Profile */}
         <div className="flex items-center gap-3 mb-3">
