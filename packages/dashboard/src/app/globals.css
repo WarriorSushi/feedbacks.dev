@@ -600,11 +600,13 @@
 .lovable-gradient {
   background: linear-gradient(135deg, 
     #667eea 0%, 
-    #764ba2 20%, 
-    #f093fb 40%, 
-    #f5576c 60%, 
-    #4facfe 80%, 
-    #f0f8ff 100%
+    #764ba2 15%, 
+    #f093fb 25%, 
+    #f5576c 35%, 
+    #4facfe 45%, 
+    #e8f4fd 70%, 
+    #f8fbff 85%,
+    #ffffff 100%
   );
   background-size: 400% 400%;
   animation: gradientMove 5s ease forwards;
