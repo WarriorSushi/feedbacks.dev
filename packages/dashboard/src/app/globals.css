@@ -537,7 +537,7 @@
 
 @keyframes gradientMove {
   0% { background-position: 50% 50%; }
-  100% { background-position: 100% 0%; }
+  100% { background-position: 20% 20%; }
 }
 
 @keyframes gradientShift {
@@ -603,7 +603,7 @@
     #ddd6fe 16%, 
     #f3f4f6 22%,
     #fafafa 28%,
-    #ffffff 35%
+    #fdfdfd 35%
   );
   background-size: 200% 200%;
   animation: gradientMove 5s ease forwards;
