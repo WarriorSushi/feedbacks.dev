@@ -18,7 +18,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
   defer>
 </script>`;
 
-  const rotatingWords = ['Feedback', 'Feature Requests', 'Reviews', 'Ideas', 'Ratings'];
+  const rotatingWords = ['Feedbacks', 'Feature Requests', 'Reviews', 'Ideas', 'Ratings'];
 
   return (
     <section className="relative overflow-hidden py-16 lg:py-20">

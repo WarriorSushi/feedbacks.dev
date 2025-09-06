@@ -8,7 +8,7 @@ interface RotatingTextProps {
   interval?: number;
 }
 
-export function RotatingText({ words, className = '', interval = 1000 }: RotatingTextProps) {
+export function RotatingText({ words, className = '', interval = 1300 }: RotatingTextProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayText, setDisplayText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -22,7 +22,7 @@ export function RotatingText({ words, className = '', interval = 1000 }: Rotatin
       if (displayText.length < currentWord.length) {
         timeout = setTimeout(() => {
           setDisplayText(currentWord.slice(0, displayText.length + 1));
-        }, 30); // Typing speed - much faster
+        }, 39); // Typing speed - reduced by 30%
       } else {
         // Pause before deleting
         timeout = setTimeout(() => {
@@ -34,7 +34,7 @@ export function RotatingText({ words, className = '', interval = 1000 }: Rotatin
       if (displayText.length > 0) {
         timeout = setTimeout(() => {
           setDisplayText(displayText.slice(0, -1));
-        }, 15); // Deleting speed - ultra fast
+        }, 20); // Deleting speed - reduced by 30%
       } else {
         // Move to next word
         setIsDeleting(false);
