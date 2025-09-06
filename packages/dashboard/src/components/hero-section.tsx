@@ -30,17 +30,17 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
           {/* Three Badge Capsules */}
-          <div className="flex flex-wrap justify-center gap-2 mb-4 animate-fade-in">
-            <Badge variant="secondary" className="px-3 py-1 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700/30">
-              <Zap className="w-3 h-3 mr-1.5" />
+          <div className="flex flex-wrap justify-center gap-2 mb-6 mt-4 animate-fade-in">
+            <Badge variant="secondary" className="px-2 py-1 text-xs md:px-3 md:text-sm bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700/30">
+              <Zap className="w-2.5 h-2.5 mr-1 md:w-3 md:h-3 md:mr-1.5" />
               Lightning fast
             </Badge>
-            <Badge variant="secondary" className="px-3 py-1 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700/30">
-              <Code className="w-3 h-3 mr-1.5" />
+            <Badge variant="secondary" className="px-2 py-1 text-xs md:px-3 md:text-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700/30">
+              <Code className="w-2.5 h-2.5 mr-1 md:w-3 md:h-3 md:mr-1.5" />
               Open source
             </Badge>
-            <Badge variant="secondary" className="px-3 py-1 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700/30">
-              <Shield className="w-3 h-3 mr-1.5" />
+            <Badge variant="secondary" className="px-2 py-1 text-xs md:px-3 md:text-sm bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700/30">
+              <Shield className="w-2.5 h-2.5 mr-1 md:w-3 md:h-3 md:mr-1.5" />
               No credit card
             </Badge>
           </div>
@@ -49,7 +49,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 animate-fade-in max-w-4xl">
             <span className="gradient-text">
               <span className="block text-center">
-                <RotatingText words={rotatingWords} className="text-5xl md:text-6xl lg:text-7xl" />
+                <RotatingText words={rotatingWords} className="text-4xl md:text-6xl lg:text-7xl" />
               </span>
               <span className="block mt-1 text-center">
                 with one line of code
@@ -63,14 +63,14 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           </p>
 
           {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-10 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <Button size="lg" className="premium-button px-8" asChild>
+          <div className="flex flex-row gap-3 mb-10 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <Button size="sm" className="premium-button px-4 md:px-8 text-sm md:text-base md:size-lg" asChild>
               <Link href={isAuthenticated ? "/dashboard" : "https://app.feedbacks.dev/auth"}>
                 {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4" />
               </Link>
             </Button>
-            <Button size="lg" variant="outline" className="hover-lift px-6" asChild>
+            <Button size="sm" variant="outline" className="hover-lift px-4 md:px-6 text-sm md:text-base md:size-lg" asChild>
               <Link href="/docs">View Docs</Link>
             </Button>
           </div>
