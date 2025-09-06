@@ -535,10 +535,6 @@
   100% { background-position: 50% 0%; }
 }
 
-@keyframes gradientMove {
-  0% { background-position: 50% 50%; }
-  100% { background-position: 0% 0%; }
-}
 
 @keyframes gradientShift {
   0%, 100% { background-position: 0% 50%; }
@@ -598,27 +594,23 @@
 
 .lovable-gradient {
   background: linear-gradient(135deg, 
-    #667eea 0%, 
-    #f093fb 18%, 
-    #4facfe 35%, 
-    #f8fafc 70%,
-    #ffffff 100%
+    #fefefe 0%,
+    #f8fafc 25%, 
+    #f1f5f9 50%,
+    #e2e8f0 75%,
+    #f8fafc 100%
   );
-  background-size: 200% 200%;
-  animation: gradientMove 5s ease forwards;
   position: relative;
 }
 
 .dark .lovable-gradient {
-  background: linear-gradient(270deg, 
-    #1a1a1a 0%, 
-    #2a2a3e 25%, 
-    #3b4b6b 50%, 
-    #2d3748 75%, 
-    #1f1f1f 100%
+  background: linear-gradient(135deg, 
+    #0f172a 0%, 
+    #1e293b 25%, 
+    #334155 50%, 
+    #475569 75%, 
+    #1e293b 100%
   );
-  background-size: 400% 400%;
-  animation: gradientMove 5s ease forwards;
 }
 
 
