@@ -31,15 +31,15 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
         <div className="flex flex-col items-center text-center max-w-5xl mx-auto">
           {/* Three Badge Capsules */}
           <div className="flex flex-wrap justify-center gap-2 mb-6 mt-8 animate-fade-in">
-            <Badge variant="secondary" className="px-2 py-1 text-xs md:px-3 md:text-sm bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700/30">
+            <Badge variant="secondary" className="px-2 py-1 text-xs md:px-3 md:text-sm bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700/30 dark:hover:bg-blue-800/30 dark:hover:border-blue-600/50 transition-all duration-200">
               <Zap className="w-2.5 h-2.5 mr-1 md:w-3 md:h-3 md:mr-1.5" />
               Lightning fast
             </Badge>
-            <Badge variant="secondary" className="px-2 py-1 text-xs md:px-3 md:text-sm bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700/30">
+            <Badge variant="secondary" className="px-2 py-1 text-xs md:px-3 md:text-sm bg-green-50 text-green-700 border-green-200 hover:bg-green-100 hover:border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700/30 dark:hover:bg-green-800/30 dark:hover:border-green-600/50 transition-all duration-200">
               <Code className="w-2.5 h-2.5 mr-1 md:w-3 md:h-3 md:mr-1.5" />
               Open source
             </Badge>
-            <Badge variant="secondary" className="px-2 py-1 text-xs md:px-3 md:text-sm bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700/30">
+            <Badge variant="secondary" className="px-2 py-1 text-xs md:px-3 md:text-sm bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100 hover:border-purple-300 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700/30 dark:hover:bg-purple-800/30 dark:hover:border-purple-600/50 transition-all duration-200">
               <Shield className="w-2.5 h-2.5 mr-1 md:w-3 md:h-3 md:mr-1.5" />
               No credit card
             </Badge>
@@ -95,10 +95,10 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
             ].map((feature, index) => (
               <div 
                 key={feature.title} 
-                className="flex items-center gap-0.5 md:gap-2 px-1.5 py-0.5 md:px-3 md:py-1.5 rounded-full bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200/60 dark:border-gray-700/60 backdrop-blur-sm hover:bg-gray-100 dark:hover:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200"
+                className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-gray-100/80 dark:bg-gray-800/80 border border-gray-200/60 dark:border-gray-700/60 backdrop-blur-sm hover:bg-gray-100 dark:hover:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-200"
               >
-                <feature.icon className="w-2.5 h-2.5 md:w-4 md:h-4 text-gray-600 dark:text-gray-400" />
-                <span className="text-[10px] md:text-sm font-medium text-gray-700 dark:text-gray-300">{feature.title}</span>
+                <feature.icon className="w-3 h-3 md:w-4 md:h-4 text-gray-600 dark:text-gray-400" />
+                <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">{feature.title}</span>
               </div>
             ))}
           </div>
