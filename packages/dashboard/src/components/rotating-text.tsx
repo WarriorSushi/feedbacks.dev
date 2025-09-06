@@ -45,8 +45,11 @@ export function RotatingText({ words, className = '', interval = 3000 }: Rotatin
     return () => clearTimeout(timeout);
   }, [displayText, isDeleting, currentIndex, words, interval]);
 
+  // Calculate the width needed for the longest word to prevent layout shift
+  const longestWord = words.reduce((a, b) => a.length > b.length ? a : b, '');
+  
   return (
-    <span className={`inline-block min-w-[1px] ${className}`}>
+    <span className={`inline-block ${className}`} style={{ minWidth: `${longestWord.length * 0.6}em` }}>
       <span className="text-primary dark:text-amber-400 font-bold">
         {displayText}
         <span className="animate-pulse text-primary dark:text-amber-400">|</span>
