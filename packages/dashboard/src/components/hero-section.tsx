@@ -38,7 +38,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           {/* Main headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 animate-fade-in max-w-4xl">
             <span className="gradient-text">
-              Collect <RotatingText words={rotatingWords} className="text-primary dark:text-yellow-400" /> with one line of code
+              Collect <RotatingText words={rotatingWords} /> with one line of code
             </span>
           </h1>
 

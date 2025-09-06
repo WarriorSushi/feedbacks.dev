@@ -8,35 +8,48 @@ interface RotatingTextProps {
   interval?: number;
 }
 
-export function RotatingText({ words, className = '', interval = 2500 }: RotatingTextProps) {
+export function RotatingText({ words, className = '', interval = 3000 }: RotatingTextProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [displayText, setDisplayText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setIsAnimating(true);
-      
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % words.length);
-        setIsAnimating(false);
-      }, 200); // Half of transition duration
-      
-    }, interval);
+    const currentWord = words[currentIndex];
+    let timeout: NodeJS.Timeout;
 
-    return () => clearInterval(timer);
-  }, [words.length, interval]);
+    if (!isDeleting) {
+      // Typing effect
+      if (displayText.length < currentWord.length) {
+        timeout = setTimeout(() => {
+          setDisplayText(currentWord.slice(0, displayText.length + 1));
+        }, 80); // Typing speed
+      } else {
+        // Pause before deleting
+        timeout = setTimeout(() => {
+          setIsDeleting(true);
+        }, interval);
+      }
+    } else {
+      // Deleting effect
+      if (displayText.length > 0) {
+        timeout = setTimeout(() => {
+          setDisplayText(displayText.slice(0, -1));
+        }, 50); // Deleting speed
+      } else {
+        // Move to next word
+        setIsDeleting(false);
+        setCurrentIndex((prev) => (prev + 1) % words.length);
+      }
+    }
+
+    return () => clearTimeout(timeout);
+  }, [displayText, isDeleting, currentIndex, words, interval]);
 
   return (
-    <span className={`inline-block transition-all duration-400 ${className}`}>
-      <span 
-        className={`inline-block transition-all duration-400 ${
-          isAnimating 
-            ? 'opacity-0 transform -translate-y-2' 
-            : 'opacity-100 transform translate-y-0'
-        }`}
-        key={currentIndex}
-      >
-        {words[currentIndex]}
+    <span className={`inline-block min-w-[1px] ${className}`}>
+      <span className="text-primary dark:text-amber-400 font-bold">
+        {displayText}
+        <span className="animate-pulse text-primary dark:text-amber-400">|</span>
       </span>
     </span>
   );
