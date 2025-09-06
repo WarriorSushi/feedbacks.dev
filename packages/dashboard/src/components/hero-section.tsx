@@ -5,6 +5,7 @@ import { ArrowRight, Code, Zap, Globe, Shield, Users, Star, TrendingUp } from 'l
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
+import { RotatingText } from '@/components/rotating-text';
 
 interface HeroSectionProps {
   isAuthenticated?: boolean;
@@ -16,6 +17,8 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
   data-project="pk_live_abc123"
   defer>
 </script>`;
+
+  const rotatingWords = ['feedback', 'feature requests', 'reviews', 'ideas', 'ratings'];
 
   return (
     <section className="relative overflow-hidden py-16 lg:py-20">
@@ -34,7 +37,9 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
 
           {/* Main headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 animate-fade-in max-w-4xl">
-            <span className="gradient-text">Collect feedback with one line of code</span>
+            <span className="gradient-text">
+              Collect <RotatingText words={rotatingWords} className="text-primary dark:text-yellow-400" /> with one line of code
+            </span>
           </h1>
 
           {/* Subtitle */}
