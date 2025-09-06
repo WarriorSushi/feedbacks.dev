@@ -608,8 +608,6 @@
     #f8fbff 85%,
     #ffffff 100%
   );
-  background-size: 400% 400%;
-  animation: gradientMove 5s ease forwards;
   position: relative;
 }
 
