@@ -12,11 +12,7 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
-  const sampleCode = `<script 
-  src="https://cdn.feedbacks.dev/widget-1.0.0.js"
-  data-project="pk_live_abc123"
-  defer>
-</script>`;
+  const sampleCode = `<script src="https://cdn.feedbacks.dev/widget.js" data-project="pk_live_abc123" defer></script>`;
 
   const rotatingWords = ['Feedbacks', 'Feature Requests', 'Reviews', 'Ideas', 'Ratings'];
 
@@ -75,12 +71,12 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
             </Button>
           </div>
 
-          {/* Code Window - Clean */}
-          <div className="w-full max-w-xl animate-slide-up" style={{ animationDelay: '0.3s' }}>
+          {/* Code Window - Compact */}
+          <div className="w-full max-w-sm md:max-w-lg animate-slide-up" style={{ animationDelay: '0.3s' }}>
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-premium-lg border border-gray-200/60 dark:border-gray-800 backdrop-blur-sm">
-                <CodeSnippet code={sampleCode} className="text-sm" />
+                <CodeSnippet code={sampleCode} className="text-xs md:text-sm" />
               </div>
             </div>
           </div>
