@@ -206,6 +206,11 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
       <SidebarFooter className="p-4">
         <Separator className="mb-4" />
         
+        {/* Theme Toggle */}
+        <div className="flex justify-center mb-4">
+          <ThemeToggle />
+        </div>
+        
         {/* User Profile */}
         <div className="flex items-center gap-3 mb-3">
           <Avatar className="h-8 w-8">
