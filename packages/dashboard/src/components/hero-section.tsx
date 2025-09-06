@@ -12,7 +12,11 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
-  const sampleCode = `<script src="https://cdn.feedbacks.dev/widget.js" data-project="pk_live_abc123" defer></script>`;
+  const sampleCode = `<script 
+  src="https://cdn.feedbacks.dev/widget.js" 
+  data-project="pk_live_abc123" 
+  defer>
+</script>`;
 
   const rotatingWords = ['Feedbacks', 'Feature Requests', 'Reviews', 'Ideas', 'Ratings'];
 
