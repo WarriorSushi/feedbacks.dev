@@ -69,7 +69,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
               containerClassName="rounded-full"
               className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-4 md:px-8 text-sm md:text-base"
             >
-              <Link href={isAuthenticated ? "/dashboard" : "https://app.feedbacks.dev/auth"} className="flex items-center space-x-2">
+              <Link href={isAuthenticated ? "/dashboard" : "/auth"} className="flex items-center space-x-2">
                 <span>{isAuthenticated ? "Go to Dashboard" : "Get Started Free"}</span>
                 <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
               </Link>

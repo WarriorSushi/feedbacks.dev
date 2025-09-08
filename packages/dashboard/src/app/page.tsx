@@ -106,7 +106,7 @@ export default function HomePage() {
                     <Link href="/docs">Docs</Link>
                   </Button>
                   <Button className="premium-button text-sm px-4" asChild>
-                    <Link href="https://app.feedbacks.dev/auth">Get Started</Link>
+                    <Link href="/auth">Get Started</Link>
                   </Button>
                 </>
               )}
