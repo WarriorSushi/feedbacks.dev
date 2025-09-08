@@ -6,25 +6,30 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --background: 48 33.3333% 97.0588%;
+    --foreground: 48 19.6078% 20%;
+    --card: 48 33.3333% 97.0588%;
+    --card-foreground: 60 2.5641% 7.6471%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 210 93% 15%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 8%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 210 20% 95%;
-    --muted-foreground: 210 15% 45%;
-    --accent: 210 85% 35%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 65% 50%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 210 20% 90%;
-    --input: 210 20% 90%;
-    --ring: 215 25% 27%;
+    --popover-foreground: 50.7692 19.4030% 13.1373%;
+    --primary: 15.1111 55.5556% 52.3529%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 46.1538 22.8070% 88.8235%;
+    --secondary-foreground: 50.7692 8.4967% 30.0000%;
+    --muted: 44.0000 29.4118% 90%;
+    --muted-foreground: 50.0000 2.3622% 50.1961%;
+    --accent: 46.1538 22.8070% 88.8235%;
+    --accent-foreground: 50.7692 19.4030% 13.1373%;
+    --destructive: 60 2.5641% 7.6471%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 50 7.5000% 84.3137%;
+    --input: 50.7692 7.9755% 68.0392%;
+    --ring: 15.1111 55.5556% 52.3529%;
+    --chart-1: 18.2813 57.1429% 43.9216%;
+    --chart-2: 251.4545 84.6154% 74.5098%;
+    --chart-3: 46.1538 28.2609% 81.9608%;
+    --chart-4: 256.5517 49.1525% 88.4314%;
+    --chart-5: 17.7778 60% 44.1176%;
     --radius: 0.5rem;
     
     /* Premium Gradients - Custom Colors */
@@ -46,36 +51,41 @@
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar: 51.4286 25.9259% 94.7059%;
+    --sidebar-foreground: 60 2.5210% 23.3333%;
+    --sidebar-primary: 15.1111 55.5556% 52.3529%;
+    --sidebar-primary-foreground: 0 0% 98.4314%;
+    --sidebar-accent: 46.1538 22.8070% 88.8235%;
+    --sidebar-accent-foreground: 0 0% 20.3922%;
+    --sidebar-border: 0 0% 92.1569%;
+    --sidebar-ring: 0 0% 70.9804%;
   }
 
   .dark {
-    --background: 0 0% 11%;
-    --foreground: 0 0% 95%;
-    --card: 0 0% 14%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 11%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 95%;
-    --secondary: 0 0% 18%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 75%;
-    --accent: 217 91% 65%;
-    --accent-foreground: 0 0% 95%;
-    --destructive: 0 65% 50%;
-    --destructive-foreground: 0 0% 95%;
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 215 25% 40%;
+    --background: 60 2.7027% 14.5098%;
+    --foreground: 46.1538 9.7744% 73.9216%;
+    --card: 60 2.7027% 14.5098%;
+    --card-foreground: 48 33.3333% 97.0588%;
+    --popover: 60 2.1277% 18.4314%;
+    --popover-foreground: 60 5.4545% 89.2157%;
+    --primary: 14.7692 63.1068% 59.6078%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 48 33.3333% 97.0588%;
+    --secondary-foreground: 60 2.1277% 18.4314%;
+    --muted: 60 3.8462% 10.1961%;
+    --muted-foreground: 51.4286 8.8608% 69.0196%;
+    --accent: 48 10.6383% 9.2157%;
+    --accent-foreground: 51.4286 25.9259% 94.7059%;
+    --destructive: 0 84.2365% 60.1961%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 60 5.0847% 23.1373%;
+    --input: 52.5000 5.1282% 30.5882%;
+    --ring: 14.7692 63.1068% 59.6078%;
+    --chart-1: 18.2813 57.1429% 43.9216%;
+    --chart-2: 251.4545 84.6154% 74.5098%;
+    --chart-3: 48 10.6383% 9.2157%;
+    --chart-4: 248.2759 25.2174% 22.5490%;
+    --chart-5: 17.7778 60% 44.1176%;
     
     /* Dark Mode Gradients - Material Design Inspired */
     --gradient-primary: linear-gradient(135deg, hsl(210, 85%, 35%) 0%, hsl(0, 0%, 14%) 100%);
@@ -89,14 +99,14 @@
     --shadow-glow: 0 0 30px hsl(210 85% 40% / 0.4);
     --shadow-lift: 0 8px 15px -3px hsl(0 0% 0% / 0.4), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
     --shadow-navy: 0 0 40px hsl(210 85% 35% / 0.4);
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar: 30 3.3333% 11.7647%;
+    --sidebar-foreground: 46.1538 9.7744% 73.9216%;
+    --sidebar-primary: 0 0% 20.3922%;
+    --sidebar-primary-foreground: 0 0% 98.4314%;
+    --sidebar-accent: 60 3.4483% 5.6863%;
+    --sidebar-accent-foreground: 46.1538 9.7744% 73.9216%;
+    --sidebar-border: 0 0% 92.1569%;
+    --sidebar-ring: 0 0% 70.9804%;
   }
 }
 
