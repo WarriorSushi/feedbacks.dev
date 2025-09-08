@@ -10,6 +10,7 @@ import { Settings, User, Bell, Shield, Palette, Key, Save } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useDashboard } from '@/components/dashboard-client-layout';
+import { ThemeSelector } from '@/components/theme-selector';
 
 export default function SettingsPage() {
   const { user } = useDashboard();
@@ -59,6 +60,22 @@ export default function SettingsPage() {
         </div>
 
         <div className="grid gap-4 md:gap-6 sm:grid-cols-2">
+          {/* Theme Customization */}
+          <Card className="hover-lift sm:col-span-2">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-accent" />
+                <CardTitle className="text-lg">Theme Customization</CardTitle>
+              </div>
+              <CardDescription className="text-sm">
+                Personalize your dashboard with beautiful color themes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <ThemeSelector />
+            </CardContent>
+          </Card>
+
           {/* Profile Settings */}
           <Card className="hover-lift">
             <CardHeader className="pb-3">

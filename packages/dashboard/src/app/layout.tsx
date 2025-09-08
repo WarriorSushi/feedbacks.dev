@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { CookieConsent } from '@/components/cookie-consent';
 import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeInitializer } from '@/components/theme-initializer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -46,6 +47,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <ThemeInitializer />
           <div className="min-h-screen bg-background">
             {children}
           </div>
