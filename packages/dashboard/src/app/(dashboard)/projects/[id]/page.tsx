@@ -12,12 +12,11 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 interface ProjectPageProps {
-  params: {
-    id: string;
-  };
+  params: { id: string };
+  searchParams?: { page?: string; type?: string; rating?: string };
 }
 
-export default async function ProjectPage({ params }: ProjectPageProps) {
+export default async function ProjectPage({ params, searchParams }: ProjectPageProps) {
   const supabase = createServerSupabaseClient();
   
   const { data: { user } } = await supabase.auth.getUser();
@@ -36,12 +35,27 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     redirect('/dashboard');
   }
 
-  const { data: feedbacks } = await supabase
+  const page = Math.max(1, parseInt(searchParams?.page || '1', 10) || 1);
+  const pageSize = 20;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const typeFilter = (searchParams?.type || '').toLowerCase();
+  const ratingFilter = searchParams?.rating ? parseInt(searchParams.rating, 10) : undefined;
+
+  let query = supabase
     .from('feedback')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('project_id', params.id)
-    .order('created_at', { ascending: false })
-    .limit(20);
+    .order('created_at', { ascending: false });
+
+  if (['bug', 'idea', 'praise'].includes(typeFilter)) {
+    query = query.eq('type', typeFilter);
+  }
+  if (ratingFilter && ratingFilter >= 1 && ratingFilter <= 5) {
+    query = query.eq('rating', ratingFilter);
+  }
+
+  const { data: feedbacks, count } = await query.range(from, to);
 
   const WIDGET_VERSION = '1.0'; // Update this when widget version changes
   const widgetCode = `<!-- Feedbacks Widget -->
@@ -128,6 +142,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                   From: {feedback.email}
                                 </p>
                               )}
+                              {typeof feedback.rating === 'number' && (
+                                <p className="text-sm text-gray-600 mt-1">Rating: {feedback.rating}/5</p>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -141,6 +158,19 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   )}
                 </CardContent>
               </Card>
+              <div className="flex items-center justify-between">
+                <div className="space-x-2">
+                  <Link href={`/projects/${params.id}?${new URLSearchParams({ ...(typeFilter ? { type: typeFilter } : {}), ...(ratingFilter ? { rating: String(ratingFilter) } : {}), page: String(Math.max(1, page - 1)) }).toString()}`} className="text-sm px-3 py-1 border rounded disabled:opacity-50" aria-disabled={page <= 1}>
+                    Previous
+                  </Link>
+                  <Link href={`/projects/${params.id}?${new URLSearchParams({ ...(typeFilter ? { type: typeFilter } : {}), ...(ratingFilter ? { rating: String(ratingFilter) } : {}), page: String(page + 1) }).toString()}`} className="text-sm px-3 py-1 border rounded">
+                    Next
+                  </Link>
+                </div>
+                <div className="text-sm text-gray-500">
+                  Page {page}{typeof count === 'number' ? ` of ${Math.max(1, Math.ceil(count / pageSize))}` : ''}
+                </div>
+              </div>
             </div>
             
             {/* Project Stats Sidebar */}
@@ -199,11 +229,18 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Code className="h-5 w-5" />
-                    Widget Installation
+                  <Code className="h-5 w-5" />
+                  Widget Installation
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {['all','bug','idea','praise'].map(t => (
+                      <Link key={t} href={`/projects/${params.id}?${new URLSearchParams({ ...(t !== 'all' ? { type: t } : {}), page: '1' }).toString()}`} className={`text-xs px-3 py-1 rounded border ${typeFilter === t || (t==='all' && !typeFilter) ? 'bg-primary text-white' : ''}`}>
+                        {t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
+                      </Link>
+                    ))}
+                  </div>
                   <div>
                     <Label>API Key</Label>
                     <div className="flex gap-2 mt-1">

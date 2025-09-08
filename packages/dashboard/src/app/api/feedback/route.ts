@@ -7,27 +7,6 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Rate limiting storage (in-memory for MVP)
-const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const key = ip;
-  const limit = rateLimitMap.get(key);
-  
-  if (!limit || now > limit.resetTime) {
-    rateLimitMap.set(key, { count: 1, resetTime: now + 60000 }); // 1 minute window
-    return true;
-  }
-  
-  if (limit.count >= 10) { // 10 requests per minute per IP
-    return false;
-  }
-  
-  limit.count++;
-  return true;
-}
-
 function isValidEmail(email?: string): boolean {
   if (!email) return true;
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -41,15 +20,6 @@ const corsHeaders = {
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting
-    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
-    if (!checkRateLimit(ip)) {
-      return NextResponse.json(
-        { success: false, error: 'Rate limit exceeded' },
-        { status: 429, headers: corsHeaders }
-      );
-    }
-
     const body = await request.json();
     const { apiKey, message, email, url, userAgent, type, rating } = body;
 

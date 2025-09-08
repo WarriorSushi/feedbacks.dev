@@ -25,7 +25,7 @@
 - **🔒 Secure**: Rate limiting, input validation, and privacy-focused
 - **🌍 Cross-Platform**: Works with React, Vue, vanilla HTML, and mobile apps
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Add the widget to your site
 
@@ -41,7 +41,7 @@
 
 That's it! Users can now submit feedback directly from your website.
 
-## 📦 What's in the box?
+## What's in the box?
 
 ### Widget
 - Vanilla TypeScript implementation
@@ -61,7 +61,7 @@ That's it! Users can now submit feedback directly from your website.
 - Input validation and sanitization
 - Supabase backend with RLS
 
-## 🛠️ Development
+## Development
 
 ### Prerequisites
 - Node.js 18+ 
@@ -223,3 +223,10 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 [Website](https://feedbacks.dev) • [Twitter](https://twitter.com/feedbacksdev) • [Discord](https://discord.gg/feedbacksdev)
 
 </div>
+
+## Documentation
+
+- Main guide: `guide.md`
+- Security, SRI and CSP: `docs/SECURITY_AND_CSP.md`
+- Database migrations: `docs/MIGRATIONS.md`
+- Rate limiting options: `docs/RATE_LIMITING.md`
