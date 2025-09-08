@@ -5,9 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
+import { BackgroundLines } from '@/components/ui/background-lines';
+import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
 import { Plus, BarChart3, Calendar, Mail, ExternalLink, TrendingUp, Users, Clock, MessageSquare, Star, Globe, User as UserIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDashboard } from '@/components/dashboard-client-layout';
+import { AnimatePresence, motion } from 'motion/react';
 
 export default function DashboardPage() {
   const { user, projects } = useDashboard();
@@ -101,12 +105,15 @@ export default function DashboardPage() {
                 Ready to collect some amazing feedback today?
               </p>
             </div>
-            <Button asChild size="default" className="bg-card text-card-foreground hover:bg-secondary border border-border w-full md:w-auto md:size-lg shrink-0">
-              <Link href="/projects/new" className="justify-center">
-                <Plus className="h-4 w-4 mr-2" />
-                New Project
+            <HoverBorderGradient
+              containerClassName="rounded-full w-full md:w-auto shrink-0"
+              className="dark:bg-black bg-white text-black dark:text-white flex items-center justify-center space-x-2 px-4 py-2"
+            >
+              <Link href="/projects/new" className="flex items-center space-x-2">
+                <Plus className="h-4 w-4" />
+                <span>New Project</span>
               </Link>
-            </Button>
+            </HoverBorderGradient>
           </div>
           
           <div className="absolute top-0 right-0 w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-accent/10 to-transparent rounded-full blur-2xl"></div>
@@ -131,37 +138,29 @@ export default function DashboardPage() {
           </TabsList>
           
           <TabsContent value="overview" className="space-y-6 md:space-y-8">
-            {/* Stats Overview - Normal Cards */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
-              <Card className="p-3 md:p-4 lg:p-6 hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <h3 className="text-xs font-medium text-muted-foreground leading-tight">Total Projects</h3>
-                  <BarChart3 className="h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-muted-foreground flex-shrink-0" />
-                </div>
-                <div className="text-lg md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">{projects?.length || 0}</div>
-                <p className="text-xs text-muted-foreground leading-tight">Active</p>
-              </Card>
+            {/* Stats Overview - Bento Grid with Card Hover Effects */}
+            <BentoGrid className="grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 md:gap-6 max-w-none">
+              <BentoGridItem 
+                className="hover:shadow-lg transition-all duration-300 bg-card border-border hover:border-primary/20 p-3 md:p-4 lg:p-6 min-h-[120px] md:min-h-[140px]"
+                icon={<BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+                title={<span className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">{projects?.length || 0}</span>}
+                description={<div className="space-y-1"><p className="text-xs font-medium text-muted-foreground">Total Projects</p><p className="text-xs text-muted-foreground">Active</p></div>}
+              />
               
-              <Card className="p-3 md:p-4 lg:p-6 hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <h3 className="text-xs font-medium text-muted-foreground leading-tight">Total Feedback</h3>
-                  <Mail className="h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-muted-foreground flex-shrink-0" />
-                </div>
-                <div className="text-lg md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">{totalFeedback}</div>
-                <p className="text-xs text-muted-foreground leading-tight">Responses</p>
-              </Card>
+              <BentoGridItem 
+                className="hover:shadow-lg transition-all duration-300 bg-card border-border hover:border-primary/20 p-3 md:p-4 lg:p-6 min-h-[120px] md:min-h-[140px]"
+                icon={<Mail className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+                title={<span className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">{totalFeedback}</span>}
+                description={<div className="space-y-1"><p className="text-xs font-medium text-muted-foreground">Total Feedback</p><p className="text-xs text-muted-foreground">Responses</p></div>}
+              />
               
-              <Card className="p-3 md:p-4 lg:p-6 hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-center justify-between mb-2 md:mb-3">
-                  <h3 className="text-xs font-medium text-muted-foreground leading-tight">Recent Activity</h3>
-                  <TrendingUp className="h-3 w-3 md:h-4 md:w-4 lg:h-5 lg:w-5 text-muted-foreground flex-shrink-0" />
-                </div>
-                <div className="text-lg md:text-2xl lg:text-3xl font-bold mb-1 text-foreground">
-                  {Math.floor(totalFeedback * 0.3)}
-                </div>
-                <p className="text-xs text-muted-foreground leading-tight">This month</p>
-              </Card>
-            </div>
+              <BentoGridItem 
+                className="hover:shadow-lg transition-all duration-300 bg-card border-border hover:border-primary/20 p-3 md:p-4 lg:p-6 min-h-[120px] md:min-h-[140px]"
+                icon={<TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
+                title={<span className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">{Math.floor(totalFeedback * 0.3)}</span>}
+                description={<div className="space-y-1"><p className="text-xs font-medium text-muted-foreground">Recent Activity</p><p className="text-xs text-muted-foreground">This month</p></div>}
+              />
+            </BentoGrid>
 
             {/* Projects Section */}
             <div className="space-y-4 md:space-y-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
@@ -238,8 +237,8 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ) : (
-                <div className="gradient-tile text-center py-12 md:py-16 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                  <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center">
+                <BackgroundLines className="flex h-[400px] w-full flex-col items-center justify-center px-4">
+                  <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
                     <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-accent/20 flex items-center justify-center mb-6 backdrop-blur">
                       <Plus className="w-8 h-8 md:w-10 md:h-10 text-accent" />
                     </div>
@@ -247,14 +246,17 @@ export default function DashboardPage() {
                     <p className="mb-6 md:mb-8 text-sm md:text-lg opacity-70">
                       Create your first project to start collecting valuable feedback from your users.
                     </p>
-                    <Button asChild size="default" className="bg-gradient-accent hover:opacity-90 hero-glow w-full md:w-auto">
-                      <Link href="/projects/new">
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create Your First Project
+                    <HoverBorderGradient
+                      containerClassName="rounded-full w-full md:w-auto"
+                      className="dark:bg-black bg-white text-black dark:text-white flex items-center justify-center space-x-2 px-6 py-3"
+                    >
+                      <Link href="/projects/new" className="flex items-center space-x-2">
+                        <Plus className="h-4 w-4" />
+                        <span>Create Your First Project</span>
                       </Link>
-                    </Button>
+                    </HoverBorderGradient>
                   </div>
-                </div>
+                </BackgroundLines>
               )}
             </div>
           </TabsContent>
@@ -274,10 +276,17 @@ export default function DashboardPage() {
             </div>
             
             {recentFeedback.length > 0 ? (
-              <div className="space-y-3">
-                {recentFeedback.map((feedback) => (
-                  <div key={feedback.id} className="project-item p-4 rounded-lg">
-                    <div className="flex items-start gap-3">
+              <div className="space-y-4">
+                {recentFeedback.map((feedback, index) => (
+                  <motion.div 
+                    key={feedback.id} 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className="project-item p-4 rounded-lg relative"
+                  >
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary via-accent to-primary rounded-l-lg"></div>
+                    <div className="flex items-start gap-3 pl-4">
                       <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
                         <UserIcon className="h-4 w-4 text-accent" />
                       </div>
@@ -312,12 +321,12 @@ export default function DashboardPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             ) : (
-              <div className="gradient-tile text-center py-12">
-                <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center">
+              <BackgroundLines className="flex h-[300px] w-full flex-col items-center justify-center px-4">
+                <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
                   <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mb-6">
                     <MessageSquare className="w-8 h-8 text-accent" />
                   </div>
@@ -326,7 +335,7 @@ export default function DashboardPage() {
                     When users submit feedback through your widgets, the most recent ones will appear here.
                   </p>
                 </div>
-              </div>
+              </BackgroundLines>
             )}
           </TabsContent>
         </Tabs>

@@ -5,7 +5,8 @@ import { ArrowRight, Code, Zap, Globe, Shield, Users, Star, TrendingUp } from 'l
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
-import { RotatingText } from '@/components/rotating-text';
+import { FlipWords } from '@/components/ui/flip-words';
+import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
 
 interface HeroSectionProps {
   isAuthenticated?: boolean;
@@ -49,7 +50,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 animate-fade-in max-w-4xl">
             <span className="gradient-text">
               <span className="block text-center">
-                <RotatingText words={rotatingWords} className="text-4xl md:text-6xl lg:text-7xl" />
+                <FlipWords words={rotatingWords} className="text-4xl md:text-6xl lg:text-7xl font-bold text-primary dark:text-primary" duration={2000} />
               </span>
               <span className="block mt-1 text-center">
                 with one line of code
@@ -64,12 +65,15 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
 
           {/* CTA buttons */}
           <div className="flex flex-row gap-3 mb-10 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <Button size="sm" className="premium-button px-4 md:px-8 text-sm md:text-base md:size-lg" asChild>
-              <Link href={isAuthenticated ? "/dashboard" : "https://app.feedbacks.dev/auth"}>
-                {isAuthenticated ? "Go to Dashboard" : "Get Started Free"}
-                <ArrowRight className="ml-1 md:ml-2 h-3 w-3 md:h-4 md:w-4" />
+            <HoverBorderGradient
+              containerClassName="rounded-full"
+              className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-4 md:px-8 text-sm md:text-base"
+            >
+              <Link href={isAuthenticated ? "/dashboard" : "https://app.feedbacks.dev/auth"} className="flex items-center space-x-2">
+                <span>{isAuthenticated ? "Go to Dashboard" : "Get Started Free"}</span>
+                <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
               </Link>
-            </Button>
+            </HoverBorderGradient>
             <Button size="sm" variant="outline" className="hover-lift px-4 md:px-6 text-sm md:text-base md:size-lg" asChild>
               <Link href="/docs">View Docs</Link>
             </Button>

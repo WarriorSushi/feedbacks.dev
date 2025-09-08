@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
+import { BackgroundLines } from '@/components/ui/background-lines';
 import { Plus, BarChart3, Calendar, ExternalLink, Users, Clock } from 'lucide-react';
 import { useDashboard } from '@/components/dashboard-client-layout';
 
@@ -19,12 +21,15 @@ export default function ProjectsPage() {
               Manage all your feedback collection projects in one place.
             </p>
           </div>
-          <Button asChild size="default" className="bg-primary hover:bg-primary/90 transition-opacity duration-150 w-full sm:w-auto">
-            <Link href="/projects/new">
-              <Plus className="h-4 w-4 mr-2" />
-              New Project
+          <HoverBorderGradient
+            containerClassName="rounded-full w-full sm:w-auto"
+            className="dark:bg-black bg-white text-black dark:text-white flex items-center justify-center space-x-2 px-4 py-2"
+          >
+            <Link href="/projects/new" className="flex items-center space-x-2">
+              <Plus className="h-4 w-4" />
+              <span>New Project</span>
             </Link>
-          </Button>
+          </HoverBorderGradient>
         </div>
 
         {projects.length > 0 ? (
@@ -71,8 +76,8 @@ export default function ProjectsPage() {
             ))}
           </div>
         ) : (
-          <div className="gradient-tile text-center py-16">
-            <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center">
+          <BackgroundLines className="flex h-[500px] w-full flex-col items-center justify-center px-4">
+            <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
               <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center mb-6">
                 <Plus className="w-10 h-10 opacity-70" />
               </div>
@@ -80,14 +85,17 @@ export default function ProjectsPage() {
               <p className="mb-8 text-lg opacity-70">
                 Create your first project to start collecting valuable feedback from your users.
               </p>
-              <Button asChild size="lg" className="bg-gradient-accent hover:opacity-90">
-                <Link href="/projects/new">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Project
+              <HoverBorderGradient
+                containerClassName="rounded-full"
+                className="dark:bg-black bg-white text-black dark:text-white flex items-center justify-center space-x-2 px-6 py-3"
+              >
+                <Link href="/projects/new" className="flex items-center space-x-2">
+                  <Plus className="h-4 w-4" />
+                  <span>Create Your First Project</span>
                 </Link>
-              </Button>
+              </HoverBorderGradient>
             </div>
-          </div>
+          </BackgroundLines>
         )}
     </div>
   );
