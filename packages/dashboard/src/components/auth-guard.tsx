@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase-client';
+import { createBrowserSupabaseClient } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 
 interface AuthGuardProps {
@@ -14,7 +14,7 @@ export function AuthGuard({ children, redirectTo = '/auth' }: AuthGuardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
   const { toast } = useToast();
 
   useEffect(() => {

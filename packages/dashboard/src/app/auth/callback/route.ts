@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase-server';
+import { createServerSupabaseClient } from '@/lib/supabase';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (code) {
-    const supabase = createClient();
+    const supabase = createServerSupabaseClient();
 
     try {
       // Exchange code for session
@@ -85,4 +85,3 @@ export async function GET(request: NextRequest) {
   if (isDev) console.log('Redirecting back to auth page');
   return NextResponse.redirect(`${origin}/auth?error=callback_failed`);
 }
-

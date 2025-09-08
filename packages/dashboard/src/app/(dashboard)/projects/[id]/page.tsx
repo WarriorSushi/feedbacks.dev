@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase-server';
+import { createServerSupabaseClient } from '@/lib/supabase';
 import { redirect } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CopyButton } from '@/components/copy-button';
 import { ArrowLeft, ExternalLink, Settings, MessageSquare, Code } from 'lucide-react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 interface ProjectPageProps {
   params: {
@@ -17,7 +18,7 @@ interface ProjectPageProps {
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
-  const supabase = createClient();
+  const supabase = createServerSupabaseClient();
   
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -240,6 +241,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     <Button variant="outline" asChild className="flex-1">
                       <Link href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html" target="_blank">
                         View Demo
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild className="flex-1">
+                      <Link href={`/api/projects/${params.id}/feedback.csv`} target="_blank">
+                        Export CSV
                       </Link>
                     </Button>
                   </div>

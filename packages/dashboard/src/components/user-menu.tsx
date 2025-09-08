@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase-client';
+import { createBrowserSupabaseClient } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -30,7 +30,7 @@ interface UserMenuProps {
 export function UserMenu({ user }: UserMenuProps) {
   const [isSigningOut, setIsSigningOut] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
   const { toast } = useToast();
 
   const displayName = user.user_metadata?.full_name || user.user_metadata?.name || 'User';
