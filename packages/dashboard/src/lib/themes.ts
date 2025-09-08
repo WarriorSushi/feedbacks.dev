@@ -8,6 +8,11 @@ export interface Theme {
     accent: string;
     background: string;
   };
+  fonts?: {
+    sans: string;
+    serif?: string;
+    mono?: string;
+  };
   css: {
     light: Record<string, string>;
     dark: Record<string, string>;
@@ -24,6 +29,11 @@ export const themes: Theme[] = [
       secondary: '#E8DFC7',
       accent: '#E8DFC7',
       background: '#F7F4EE'
+    },
+    fonts: {
+      sans: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+      serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+      mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
     },
     css: {
       light: {
@@ -106,6 +116,11 @@ export const themes: Theme[] = [
       accent: '#F59E0B',
       background: '#F5F5F0'
     },
+    fonts: {
+      sans: 'DM Sans, sans-serif',
+      serif: 'DM Sans, sans-serif',
+      mono: 'Space Mono, monospace'
+    },
     css: {
       light: {
         '--background': '80.0000 33.3333% 96.4706%',
@@ -176,6 +191,92 @@ export const themes: Theme[] = [
         '--sidebar-ring': '234.4538 89.4737% 73.9216%'
       }
     }
+  },
+  {
+    id: 'supabase',
+    name: 'Supabase',
+    description: 'Clean green accents with modern typography',
+    preview: {
+      primary: '#10B981',
+      secondary: '#F3F4F6',
+      accent: '#F3F4F6',
+      background: '#FCFCFC'
+    },
+    fonts: {
+      sans: 'Outfit, sans-serif',
+      serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+      mono: 'monospace'
+    },
+    css: {
+      light: {
+        '--background': '0 0% 98.8235%',
+        '--foreground': '0 0% 9.0196%',
+        '--card': '0 0% 98.8235%',
+        '--card-foreground': '0 0% 9.0196%',
+        '--popover': '0 0% 98.8235%',
+        '--popover-foreground': '0 0% 32.1569%',
+        '--primary': '151.3274 66.8639% 66.8627%',
+        '--primary-foreground': '153.3333 13.0435% 13.5294%',
+        '--secondary': '0 0% 99.2157%',
+        '--secondary-foreground': '0 0% 9.0196%',
+        '--muted': '0 0% 92.9412%',
+        '--muted-foreground': '0 0% 12.5490%',
+        '--accent': '0 0% 92.9412%',
+        '--accent-foreground': '0 0% 12.5490%',
+        '--destructive': '9.8901 81.9820% 43.5294%',
+        '--destructive-foreground': '0 100% 99.4118%',
+        '--border': '0 0% 87.4510%',
+        '--input': '0 0% 96.4706%',
+        '--ring': '151.3274 66.8639% 66.8627%',
+        '--chart-1': '151.3274 66.8639% 66.8627%',
+        '--chart-2': '217.2193 91.2195% 59.8039%',
+        '--chart-3': '258.3117 89.5349% 66.2745%',
+        '--chart-4': '37.6923 92.1260% 50.1961%',
+        '--chart-5': '160.1183 84.0796% 39.4118%',
+        '--sidebar': '0 0% 98.8235%',
+        '--sidebar-foreground': '0 0% 43.9216%',
+        '--sidebar-primary': '151.3274 66.8639% 66.8627%',
+        '--sidebar-primary-foreground': '153.3333 13.0435% 13.5294%',
+        '--sidebar-accent': '0 0% 92.9412%',
+        '--sidebar-accent-foreground': '0 0% 12.5490%',
+        '--sidebar-border': '0 0% 87.4510%',
+        '--sidebar-ring': '151.3274 66.8639% 66.8627%'
+      },
+      dark: {
+        '--background': '0 0% 7.0588%',
+        '--foreground': '214.2857 31.8182% 91.3725%',
+        '--card': '0 0% 9.0196%',
+        '--card-foreground': '214.2857 31.8182% 91.3725%',
+        '--popover': '0 0% 14.1176%',
+        '--popover-foreground': '0 0% 66.2745%',
+        '--primary': '154.8980 100.0000% 19.2157%',
+        '--primary-foreground': '152.7273 19.2982% 88.8235%',
+        '--secondary': '0 0% 14.1176%',
+        '--secondary-foreground': '0 0% 98.0392%',
+        '--muted': '0 0% 12.1569%',
+        '--muted-foreground': '0 0% 63.5294%',
+        '--accent': '0 0% 19.2157%',
+        '--accent-foreground': '0 0% 98.0392%',
+        '--destructive': '6.6667 60.0000% 20.5882%',
+        '--destructive-foreground': '12.0000 12.1951% 91.9608%',
+        '--border': '0 0% 16.0784%',
+        '--input': '0 0% 14.1176%',
+        '--ring': '141.8919 69.1589% 58.0392%',
+        '--chart-1': '141.8919 69.1589% 58.0392%',
+        '--chart-2': '213.1169 93.9024% 67.8431%',
+        '--chart-3': '255.1351 91.7355% 76.2745%',
+        '--chart-4': '43.2558 96.4126% 56.2745%',
+        '--chart-5': '172.4551 66.0079% 50.3922%',
+        '--sidebar': '0 0% 7.0588%',
+        '--sidebar-foreground': '0 0% 53.7255%',
+        '--sidebar-primary': '154.8980 100.0000% 19.2157%',
+        '--sidebar-primary-foreground': '152.7273 19.2982% 88.8235%',
+        '--sidebar-accent': '0 0% 19.2157%',
+        '--sidebar-accent-foreground': '0 0% 98.0392%',
+        '--sidebar-border': '0 0% 16.0784%',
+        '--sidebar-ring': '141.8919 69.1589% 58.0392%'
+      }
+    }
   }
 ];
 
@@ -189,6 +290,13 @@ export function applyTheme(themeId: string, isDark: boolean = false) {
   Object.entries(cssVars).forEach(([key, value]) => {
     root.style.setProperty(key, value);
   });
+
+  // Apply theme-specific fonts
+  if (theme.fonts) {
+    root.style.setProperty('--font-sans', theme.fonts.sans);
+    if (theme.fonts.serif) root.style.setProperty('--font-serif', theme.fonts.serif);
+    if (theme.fonts.mono) root.style.setProperty('--font-mono', theme.fonts.mono);
+  }
 
   // Update theme-specific gradients
   if (themeId === 'claude') {
@@ -206,6 +314,14 @@ export function applyTheme(themeId: string, isDark: boolean = false) {
     } else {
       root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(243.3962, 75.3555%, 58.6275%) 0%, hsl(173.4146, 80.3922%, 40%) 100%)');
       root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(243.3962, 75.3555%, 58.6275%) 0%, hsl(37.6923, 92.1260%, 50.1961%) 100%)');
+    }
+  } else if (themeId === 'supabase') {
+    if (isDark) {
+      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(154.8980, 100.0000%, 19.2157%) 0%, hsl(0, 0%, 7.0588%) 100%)');
+      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(141.8919, 69.1589%, 58.0392%) 0%, hsl(0, 0%, 9.0196%) 100%)');
+    } else {
+      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(151.3274, 66.8639%, 66.8627%) 0%, hsl(0, 0%, 92.9412%) 100%)');
+      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(151.3274, 66.8639%, 66.8627%) 0%, hsl(0, 0%, 99.2157%) 100%)');
     }
   }
   
