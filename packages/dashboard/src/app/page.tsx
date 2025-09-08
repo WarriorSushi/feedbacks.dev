@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Github } from 'lucide-react';
-import { UserMenu } from '@/components/user-menu';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { HeroSection } from '@/components/hero-section';
 import { FeaturesSection } from '@/components/features-section';
@@ -24,7 +23,7 @@ export default function HomePage() {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await fetch('https://app.feedbacks.dev/api/auth-status', {
+        const response = await fetch('/api/auth-status', {
           method: 'GET',
           credentials: 'include',
           headers: {

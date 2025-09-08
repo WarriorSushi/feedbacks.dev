@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { apiKey, message, email, url, userAgent } = body;
+    const { apiKey, message, email, url, userAgent, type, rating } = body;
 
     // Validate required fields
     if (!apiKey || !message || !url) {
@@ -88,6 +88,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate optional type
+    const allowedTypes = new Set(['bug', 'idea', 'praise']);
+    if (typeof type !== 'undefined' && type !== null && !allowedTypes.has(String(type))) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid feedback type' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // Validate optional rating
+    const numericRating = typeof rating === 'string' ? parseInt(rating, 10) : rating;
+    if (
+      typeof numericRating !== 'undefined' && numericRating !== null &&
+      (!Number.isInteger(numericRating) || numericRating < 1 || numericRating > 5)
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid rating value' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     // Find project by API key
     const { data: project, error: projectError } = await supabaseAdmin
       .from('projects')
@@ -111,6 +132,8 @@ export async function POST(request: NextRequest) {
         email: email?.trim() || null,
         url: url.trim(),
         user_agent: userAgent || request.headers.get('user-agent') || 'Unknown',
+        type: type ? String(type) : null,
+        rating: typeof numericRating === 'number' ? numericRating : null,
       })
       .select('id')
       .single();

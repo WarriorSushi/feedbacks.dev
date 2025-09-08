@@ -39,7 +39,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     .from('feedback')
     .select('*')
     .eq('project_id', params.id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(20);
 
   const WIDGET_VERSION = '1.0'; // Update this when widget version changes
   const widgetCode = `<!-- Feedbacks Widget -->
@@ -114,7 +115,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <Badge variant={feedback.type === 'bug' ? 'destructive' : 'default'}>
-                                  {feedback.type}
+                                  {feedback.type || 'general'}
                                 </Badge>
                                 <span className="text-sm text-gray-500">
                                   {new Date(feedback.created_at).toLocaleDateString()}
