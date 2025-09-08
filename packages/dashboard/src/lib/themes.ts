@@ -296,6 +296,9 @@ export function applyTheme(themeId: string, isDark: boolean = false) {
     root.style.setProperty('--font-sans', theme.fonts.sans);
     if (theme.fonts.serif) root.style.setProperty('--font-serif', theme.fonts.serif);
     if (theme.fonts.mono) root.style.setProperty('--font-mono', theme.fonts.mono);
+    
+    // Apply font directly to body element
+    document.body.style.fontFamily = theme.fonts.sans;
   }
 
   // Update theme-specific gradients
