@@ -73,7 +73,7 @@ export default function DashboardPage() {
   return (
     <div className="p-6 md:p-6 lg:p-8 space-y-8 md:space-y-8 page-illumination">
         {/* Welcome Section */}
-        <div className="animate-fade-in relative rounded-2xl p-4 md:p-6 bg-gradient-to-r from-background via-background to-primary/5">
+        <div className="relative rounded-2xl p-4 md:p-6 bg-gradient-to-r from-background via-background to-primary/5">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex-1">
               <h1 className="text-sm md:text-lg font-medium text-muted-foreground">
@@ -200,7 +200,7 @@ export default function DashboardPage() {
                   ))}
                   
                   {/* Add New Project Card */}
-                  <div className="project-card border-dashed border-2 border-accent/30 rounded-xl p-3 md:p-4 lg:p-6 cursor-pointer group animate-fade-in hover:border-accent/50 transition-colors" style={{ animationDelay: `${0.4 + projects.length * 0.05}s` }}>
+                  <div className="project-card border-dashed border-2 border-accent/30 rounded-xl p-3 md:p-4 lg:p-6 cursor-pointer group">
                     <Link href="/projects/new" className="block h-full">
                       <div className="flex flex-col items-center justify-center text-center h-full min-h-[160px] md:min-h-[200px] space-y-3 md:space-y-4">
                         <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">

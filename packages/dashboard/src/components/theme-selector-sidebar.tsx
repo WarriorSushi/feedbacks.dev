@@ -37,7 +37,7 @@ export function ThemeSelectorSidebar() {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-between h-auto px-3 py-2 transition-colors duration-150"
+          className="w-full justify-between h-auto px-3 py-2"
         >
           <div className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
@@ -79,8 +79,8 @@ function ThemeOption({ theme, isSelected, onClick }: ThemeOptionProps) {
   return (
     <div
       className={cn(
-        "relative cursor-pointer rounded-lg border p-3 transition-all hover:shadow-sm",
-        isSelected ? 'ring-2 ring-primary ring-offset-2 bg-accent/50' : 'hover:border-primary/50'
+        "relative cursor-pointer rounded-lg border p-3",
+        isSelected ? 'ring-2 ring-primary ring-offset-2 bg-accent/50' : ''
       )}
       onClick={onClick}
     >

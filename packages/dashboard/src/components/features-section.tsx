@@ -75,10 +75,9 @@ export function FeaturesSection() {
           {features.map((feature, index) => (
             <Card 
               key={feature.title} 
-              className={`group relative border-0 bg-gradient-to-br from-background via-background to-muted/30 backdrop-blur-sm hover:shadow-xl transition-all duration-500 animate-fade-in overflow-hidden ${
-                feature.highlight ? 'ring-1 ring-primary/20 hover:ring-primary/30' : ''
+              className={`group relative overflow-hidden ${
+                feature.highlight ? 'ring-1 ring-primary/20' : ''
               }`}
-              style={{ animationDelay: `${index * 0.1}s` }}
             >
               {feature.highlight && (
                 <div className="absolute -top-px left-6 right-6 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
@@ -86,34 +85,25 @@ export function FeaturesSection() {
               
               <CardHeader className="relative">
                 <div className="flex items-center justify-between mb-4">
-                  <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${
+                  <div className={`relative w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center ${
                     feature.highlight ? 'ring-2 ring-primary/20' : ''
                   }`}>
                     <feature.icon className="w-7 h-7 text-primary" />
-                    {feature.highlight && (
-                      <div className="absolute inset-0 bg-primary/5 rounded-2xl animate-pulse" />
-                    )}
                   </div>
-                  <Badge variant="secondary" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">
+                  <Badge variant="secondary" className="text-xs font-medium">
                     {feature.badge}
                   </Badge>
                 </div>
-                <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors duration-300">
+                <CardTitle className="text-xl font-bold">
                   {feature.title}
                 </CardTitle>
               </CardHeader>
               <CardContent className="relative">
-                <CardDescription className="text-base leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors duration-300">
+                <CardDescription className="text-base leading-relaxed text-muted-foreground">
                   {feature.description}
                 </CardDescription>
-                <div className="flex items-center mt-4 text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  Learn more
-                  <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform duration-300" />
-                </div>
               </CardContent>
               
-              {/* Hover Effect Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </Card>
           ))}
         </div>

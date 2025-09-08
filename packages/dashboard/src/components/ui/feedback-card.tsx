@@ -1,6 +1,5 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { motion } from "motion/react";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Globe, User as UserIcon, Star } from "lucide-react";
 
@@ -46,40 +45,30 @@ export function FeedbackCard({
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ 
-        duration: 0.4, 
-        delay: index * 0.1,
-        type: "spring",
-        stiffness: 100
-      }}
+    <div 
       className={cn(
-        "group relative bg-card border border-border rounded-lg p-4 transition-all duration-300 hover:shadow-md hover:border-primary/20 hover:bg-accent/5",
+        "group relative bg-card border rounded-lg p-4",
         className,
       )}
     >
       {/* Timeline line */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary via-accent to-primary/50 rounded-l-lg opacity-60 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary via-accent to-primary/50 rounded-l-lg" />
       
       {/* Content */}
       <div className="flex items-start gap-3 pl-4">
-        <motion.div 
-          className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0 group-hover:bg-accent/20 transition-colors"
-          whileHover={{ scale: 1.1 }}
-          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        <div 
+          className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0"
         >
           <UserIcon className="h-4 w-4 text-accent" />
-        </motion.div>
+        </div>
         
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2 min-w-0">
-              <p className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+              <p className="font-medium text-sm truncate">
                 {feedback.email}
               </p>
-              <Badge variant="outline" className="text-xs flex-shrink-0 group-hover:border-primary/30">
+              <Badge variant="outline" className="text-xs flex-shrink-0">
                 {feedback.project_name}
               </Badge>
             </div>
@@ -96,22 +85,19 @@ export function FeedbackCard({
             <span className="text-xs text-muted-foreground">({feedback.rating}/5)</span>
           </div>
           
-          <motion.p 
-            className="text-sm text-muted-foreground line-clamp-2 leading-relaxed group-hover:text-foreground/80 transition-colors"
-            initial={{ height: "auto" }}
+          <p 
+            className="text-sm text-muted-foreground line-clamp-2 leading-relaxed"
           >
             {feedback.message}
-          </motion.p>
+          </p>
           
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Globe className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate group-hover:text-muted-foreground/80 transition-colors">{feedback.url}</span>
+            <span className="truncate">{feedback.url}</span>
           </div>
         </div>
       </div>
 
-      {/* Hover glow effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-    </motion.div>
+    </div>
   );
 }

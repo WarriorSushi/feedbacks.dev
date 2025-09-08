@@ -35,7 +35,7 @@ export default function ProjectsPage() {
         {projects.length > 0 ? (
           <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {projects.map((project: any, index: number) => (
-              <Card key={project.id} className="hover-lift animate-fade-in transition-all duration-200" style={{ animationDelay: `${index * 0.05}s` }}>
+              <Card key={project.id} className="">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base lg:text-lg truncate">{project.name}</CardTitle>

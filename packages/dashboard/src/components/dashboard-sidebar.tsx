@@ -110,7 +110,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
   return (
     <Sidebar variant="inset" className="border-r">
       <SidebarHeader className="p-4">
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <Link href="/" className="flex items-center gap-2">
           <div className="h-8 w-8 flex items-center justify-center">
             <img 
               src="/logo.svg" 
@@ -139,7 +139,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
                     <SidebarMenuButton 
                       asChild 
                       isActive={isActive}
-                      className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-150"
+                      className=""
                     >
                       <Link href={item.url} className="flex items-center gap-3">
                         <IconComponent className="h-4 w-4" />
@@ -168,7 +168,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <Link href={item.url} className="flex items-center gap-3 text-primary hover:bg-primary/10 transition-colors duration-150">
+                      <Link href={item.url} className="flex items-center gap-3 text-primary">
                         <IconComponent className="h-4 w-4" />
                         <span className="font-medium">{item.title}</span>
                       </Link>
@@ -189,7 +189,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <Link href={item.url} className="flex items-center gap-3 transition-colors duration-150">
+                      <Link href={item.url} className="flex items-center gap-3">
                         <IconComponent className="h-4 w-4" />
                         <span>{item.title}</span>
                       </Link>
@@ -232,7 +232,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
         </div>
 
         <div className="flex gap-2">
-          <Button variant="ghost" size="sm" asChild className="flex-1 transition-colors duration-150">
+          <Button variant="ghost" size="sm" asChild className="flex-1">
             <Link href="/profile" className="flex items-center gap-2">
               <UserIcon className="h-3 w-3" />
               Profile
@@ -243,7 +243,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
             variant="ghost" 
             size="sm" 
             onClick={handleSignOut}
-            className="flex items-center gap-2 transition-colors duration-150"
+            className="flex items-center gap-2"
           >
             <LogOut className="h-3 w-3" />
             Sign Out
