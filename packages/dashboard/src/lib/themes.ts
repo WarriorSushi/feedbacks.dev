@@ -189,6 +189,25 @@ export function applyTheme(themeId: string, isDark: boolean = false) {
   Object.entries(cssVars).forEach(([key, value]) => {
     root.style.setProperty(key, value);
   });
+
+  // Update theme-specific gradients
+  if (themeId === 'claude') {
+    if (isDark) {
+      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(14.7692, 63.1068%, 59.6078%) 0%, hsl(60, 2.7027%, 14.5098%) 100%)');
+      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(14.7692, 63.1068%, 59.6078%) 0%, hsl(60, 3.8462%, 10.1961%) 100%)');
+    } else {
+      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(15.1111, 55.5556%, 52.3529%) 0%, hsl(46.1538, 22.8070%, 88.8235%) 100%)');
+      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(15.1111, 55.5556%, 52.3529%) 0%, hsl(44.0000, 29.4118%, 90%) 100%)');
+    }
+  } else if (themeId === 'soft-pop') {
+    if (isDark) {
+      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(234.4538, 89.4737%, 73.9216%) 0%, hsl(0, 0%, 0%) 100%)');
+      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(172.4551, 66.0079%, 50.3922%) 0%, hsl(215.2941, 24.6377%, 13.5294%) 100%)');
+    } else {
+      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(243.3962, 75.3555%, 58.6275%) 0%, hsl(173.4146, 80.3922%, 40%) 100%)');
+      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(243.3962, 75.3555%, 58.6275%) 0%, hsl(37.6923, 92.1260%, 50.1961%) 100%)');
+    }
+  }
   
   // Store theme preference
   localStorage.setItem('feedbacks-theme', themeId);

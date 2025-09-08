@@ -19,7 +19,7 @@ export default function ProjectsPage() {
               Manage all your feedback collection projects in one place.
             </p>
           </div>
-          <Button asChild size="default" className="bg-gradient-primary hover:opacity-90 transition-opacity duration-150 w-full sm:w-auto">
+          <Button asChild size="default" className="bg-primary hover:bg-primary/90 transition-opacity duration-150 w-full sm:w-auto">
             <Link href="/projects/new">
               <Plus className="h-4 w-4 mr-2" />
               New Project

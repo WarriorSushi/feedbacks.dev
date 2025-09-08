@@ -208,7 +208,7 @@ export default function FeedbackPage() {
                 <CardTitle>Feedback Management</CardTitle>
                 <CardDescription>Filter and search through your feedback</CardDescription>
               </div>
-              <Button className="bg-gradient-primary hover:opacity-90">
+              <Button className="bg-primary hover:bg-primary/90">
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>

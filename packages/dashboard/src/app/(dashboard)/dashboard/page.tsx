@@ -83,7 +83,7 @@ export default function DashboardPage() {
     return Array.from({ length: 5 }, (_, i) => (
       <Star 
         key={i} 
-        className={`h-3 w-3 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
+        className={`h-3 w-3 ${i < rating ? 'text-accent fill-accent' : 'text-muted-foreground'}`} 
       />
     ));
   };
@@ -101,7 +101,7 @@ export default function DashboardPage() {
                 Ready to collect some amazing feedback today?
               </p>
             </div>
-            <Button asChild size="default" className="bg-white text-black hover:bg-gray-50 border border-gray-200 w-full md:w-auto md:size-lg shrink-0">
+            <Button asChild size="default" className="bg-card text-card-foreground hover:bg-secondary border border-border w-full md:w-auto md:size-lg shrink-0">
               <Link href="/projects/new" className="justify-center">
                 <Plus className="h-4 w-4 mr-2" />
                 New Project
@@ -115,16 +115,16 @@ export default function DashboardPage() {
         {/* Dashboard Tabs */}
         <Tabs defaultValue="overview" className="w-full">
 
-          <TabsList className="grid w-full grid-cols-2 mb-6 bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20 dark:bg-black dark:border-gray-700">
+          <TabsList className="grid w-full grid-cols-2 mb-6 bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20">
             <TabsTrigger 
               value="overview" 
-              className="data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all duration-200"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all duration-200"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger 
               value="recent-feedback" 
-              className="data-[state=active]:bg-gradient-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all duration-200"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm transition-all duration-200"
             >
               Recent Feedbacks
             </TabsTrigger>

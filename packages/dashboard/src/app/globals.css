@@ -36,9 +36,9 @@
     --gradient-primary: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(0, 0%, 0%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 25%) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 25%) 100%);
-    --gradient-tiles: linear-gradient(135deg, #cecadf 0%, #d0d8ff 100%);
+    --gradient-tiles: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--accent)) 100%);
     --gradient-warm: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 30%) 100%);
-    --text-dashboard: #1a1f3a;
+    --text-dashboard: hsl(var(--foreground));
     
     /* Premium Shadows - Navy & Gold */
     --shadow-sm: 0 1px 2px 0 hsl(210 93% 15% / 0.05);
@@ -91,9 +91,9 @@
     --gradient-primary: linear-gradient(135deg, hsl(210, 85%, 35%) 0%, hsl(0, 0%, 14%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(210, 85%, 35%) 0%, hsl(0, 0%, 18%) 100%);
     --gradient-hero: linear-gradient(135deg, hsl(210, 85%, 35%) 0%, hsl(0, 0%, 18%) 100%);
-    --gradient-tiles: linear-gradient(135deg, hsl(0, 0%, 18%) 0%, hsl(0, 0%, 22%) 100%);
+    --gradient-tiles: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--accent)) 100%);
     --gradient-warm: linear-gradient(135deg, hsl(210, 85%, 35%) 0%, hsl(0, 0%, 18%) 100%);
-    --text-dashboard: #f5f5f5;
+    --text-dashboard: hsl(var(--foreground));
     
     /* Dark Shadows - Material Design */
     --shadow-glow: 0 0 30px hsl(210 85% 40% / 0.4);
@@ -127,11 +127,7 @@
 @layer components {
   /* Simple visible text - no fancy effects */
   .gradient-text {
-    color: #1f2937;
-  }
-  
-  .dark .gradient-text {
-    color: #f9fafb;
+    color: hsl(var(--foreground));
   }
   
   
@@ -271,9 +267,9 @@
   
   /* Premium Button Styles */
   .premium-button {
-    background: linear-gradient(135deg, hsl(210, 93%, 15%) 0%, hsl(210, 85%, 25%) 100%);
-    color: hsl(210, 40%, 98%);
-    border: 1px solid hsl(210, 85%, 25%);
+    background: var(--gradient-primary);
+    color: hsl(var(--primary-foreground));
+    border: 1px solid hsl(var(--primary));
     box-shadow: 
       0 1px 3px 0 rgb(0 0 0 / 0.1),
       0 1px 2px -1px rgb(0 0 0 / 0.1),
@@ -282,7 +278,7 @@
   }
   
   .premium-button:hover {
-    background: linear-gradient(135deg, hsl(210, 85%, 25%) 0%, hsl(210, 93%, 15%) 100%);
+    background: var(--gradient-secondary);
     box-shadow: 
       0 4px 6px -1px rgb(0 0 0 / 0.1),
       0 2px 4px -2px rgb(0 0 0 / 0.1),
@@ -325,18 +321,6 @@
       0 0 0 1px rgb(0 0 0 / 0.05);
   }
   
-  .dark .premium-button {
-    background: linear-gradient(135deg, hsl(45, 100%, 60%) 0%, hsl(35, 100%, 55%) 100%);
-    color: hsl(220, 14%, 8%);
-    border: 1px solid hsl(40, 100%, 58%);
-    box-shadow: 0 2px 8px hsl(45, 100%, 60% / 0.4);
-  }
-  
-  .dark .premium-button:hover {
-    background: linear-gradient(135deg, hsl(40, 100%, 58%) 0%, hsl(45, 100%, 65%) 100%);
-    box-shadow: 0 4px 16px hsl(45, 100%, 60% / 0.5);
-    transform: translateY(-1px);
-  }
   
   /* Background Gradients */
   .bg-gradient-primary {

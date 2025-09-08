@@ -226,7 +226,7 @@ export default function SettingsPage() {
           <Button 
             onClick={handleSaveSettings} 
             disabled={isSaving}
-            className="bg-gradient-primary hover:opacity-90 h-9"
+            className="bg-primary hover:bg-primary/90 h-9"
           >
             <Save className="h-4 w-4 mr-2" />
             {isSaving ? 'Saving...' : 'Save Changes'}
