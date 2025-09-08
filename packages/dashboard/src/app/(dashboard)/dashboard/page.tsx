@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BentoGrid, BentoGridItem } from '@/components/ui/bento-grid';
 import { BackgroundLines } from '@/components/ui/background-lines';
 import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
-import { Plus, BarChart3, Calendar, Mail, ExternalLink, TrendingUp, Users, Clock, MessageSquare, Star, Globe, User as UserIcon } from 'lucide-react';
+import { StatsCard } from '@/components/ui/stats-card';
+import { FeedbackCard } from '@/components/ui/feedback-card';
+import { Plus, BarChart3, Calendar, Mail, ExternalLink, TrendingUp, Users, Clock, MessageSquare } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useDashboard } from '@/components/dashboard-client-layout';
-import { AnimatePresence, motion } from 'motion/react';
 
 export default function DashboardPage() {
   const { user, projects } = useDashboard();
@@ -69,28 +69,6 @@ export default function DashboardPage() {
     return acc + (project.feedback?.[0]?.count || 0);
   }, 0);
 
-  const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    return `${minutes}m ago`;
-  };
-
-  const getRatingStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star 
-        key={i} 
-        className={`h-3 w-3 ${i < rating ? 'text-accent fill-accent' : 'text-muted-foreground'}`} 
-      />
-    ));
-  };
 
   return (
     <div className="p-6 md:p-6 lg:p-8 space-y-8 md:space-y-8 page-illumination">
@@ -138,29 +116,32 @@ export default function DashboardPage() {
           </TabsList>
           
           <TabsContent value="overview" className="space-y-6 md:space-y-8">
-            {/* Stats Overview - Bento Grid with Card Hover Effects */}
-            <BentoGrid className="grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 md:gap-6 max-w-none">
-              <BentoGridItem 
-                className="hover:shadow-lg transition-all duration-300 bg-card border-border hover:border-primary/20 p-3 md:p-4 lg:p-6 min-h-[120px] md:min-h-[140px]"
-                icon={<BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
-                title={<span className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">{projects?.length || 0}</span>}
-                description={<div className="space-y-1"><p className="text-xs font-medium text-muted-foreground">Total Projects</p><p className="text-xs text-muted-foreground">Active</p></div>}
+            {/* Stats Overview - Enhanced Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
+              <StatsCard
+                title="Total Projects"
+                value={projects?.length || 0}
+                description="Active projects"
+                icon={<BarChart3 className="h-4 w-4 md:h-5 md:w-5" />}
+                className="animate-fade-in"
               />
               
-              <BentoGridItem 
-                className="hover:shadow-lg transition-all duration-300 bg-card border-border hover:border-primary/20 p-3 md:p-4 lg:p-6 min-h-[120px] md:min-h-[140px]"
-                icon={<Mail className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
-                title={<span className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">{totalFeedback}</span>}
-                description={<div className="space-y-1"><p className="text-xs font-medium text-muted-foreground">Total Feedback</p><p className="text-xs text-muted-foreground">Responses</p></div>}
+              <StatsCard
+                title="Total Feedback"
+                value={totalFeedback}
+                description="Total responses"
+                icon={<Mail className="h-4 w-4 md:h-5 md:w-5" />}
+                className="animate-fade-in"
               />
               
-              <BentoGridItem 
-                className="hover:shadow-lg transition-all duration-300 bg-card border-border hover:border-primary/20 p-3 md:p-4 lg:p-6 min-h-[120px] md:min-h-[140px]"
-                icon={<TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />}
-                title={<span className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">{Math.floor(totalFeedback * 0.3)}</span>}
-                description={<div className="space-y-1"><p className="text-xs font-medium text-muted-foreground">Recent Activity</p><p className="text-xs text-muted-foreground">This month</p></div>}
+              <StatsCard
+                title="Recent Activity"
+                value={Math.floor(totalFeedback * 0.3)}
+                description="This month"
+                icon={<TrendingUp className="h-4 w-4 md:h-5 md:w-5" />}
+                className="animate-fade-in"
               />
-            </BentoGrid>
+            </div>
 
             {/* Projects Section */}
             <div className="space-y-4 md:space-y-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
@@ -276,52 +257,13 @@ export default function DashboardPage() {
             </div>
             
             {recentFeedback.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {recentFeedback.map((feedback, index) => (
-                  <motion.div 
-                    key={feedback.id} 
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="project-item p-4 rounded-lg relative"
-                  >
-                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary via-accent to-primary rounded-l-lg"></div>
-                    <div className="flex items-start gap-3 pl-4">
-                      <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
-                        <UserIcon className="h-4 w-4 text-accent" />
-                      </div>
-                      <div className="flex-1 min-w-0 space-y-2">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                          <div className="flex flex-wrap items-center gap-2 min-w-0">
-                            <p className="font-medium text-sm truncate">{feedback.email}</p>
-                            <Badge variant="outline" className="text-xs flex-shrink-0">
-                              {feedback.project_name}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
-                            <Clock className="h-3 w-3" />
-                            <span className="whitespace-nowrap">{formatTimeAgo(feedback.created_at)}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1">
-                            {getRatingStars(feedback.rating)}
-                          </div>
-                          <span className="text-xs text-muted-foreground">({feedback.rating}/5)</span>
-                        </div>
-                        
-                        <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                          {feedback.message}
-                        </p>
-                        
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Globe className="h-3 w-3 flex-shrink-0" />
-                          <span className="truncate">{feedback.url}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                  <FeedbackCard 
+                    key={feedback.id}
+                    feedback={feedback}
+                    index={index}
+                  />
                 ))}
               </div>
             ) : (

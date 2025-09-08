@@ -1,6 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
-
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 
@@ -35,17 +34,24 @@ export function HoverBorderGradient({
     return directions[nextIndex];
   };
 
-  const movingMap: Record<Direction, string> = {
-    TOP: "radial-gradient(20.7% 50% at 50% 0%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)",
-    LEFT: "radial-gradient(16.6% 43.1% at 0% 50%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)",
-    BOTTOM:
-      "radial-gradient(20.7% 50% at 50% 100%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)",
-    RIGHT:
-      "radial-gradient(16.2% 41.199999999999996% at 100% 50%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)",
+  // Light mode gradients (darker colors for visibility)
+  const lightModeGradients: Record<Direction, string> = {
+    TOP: "radial-gradient(20.7% 50% at 50% 0%, hsl(var(--primary)) 0%, rgba(0, 0, 0, 0) 100%)",
+    LEFT: "radial-gradient(16.6% 43.1% at 0% 50%, hsl(var(--primary)) 0%, rgba(0, 0, 0, 0) 100%)",
+    BOTTOM: "radial-gradient(20.7% 50% at 50% 100%, hsl(var(--primary)) 0%, rgba(0, 0, 0, 0) 100%)",
+    RIGHT: "radial-gradient(16.2% 41.199999999999996% at 100% 50%, hsl(var(--primary)) 0%, rgba(0, 0, 0, 0) 100%)",
   };
 
-  const highlight =
-    "radial-gradient(75% 181.15942028985506% at 50% 50%, #3275F8 0%, rgba(255, 255, 255, 0) 100%)";
+  // Dark mode gradients (white colors for visibility)
+  const darkModeGradients: Record<Direction, string> = {
+    TOP: "radial-gradient(20.7% 50% at 50% 0%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)",
+    LEFT: "radial-gradient(16.6% 43.1% at 0% 50%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)",
+    BOTTOM: "radial-gradient(20.7% 50% at 50% 100%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)",
+    RIGHT: "radial-gradient(16.2% 41.199999999999996% at 100% 50%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)",
+  };
+
+  const lightHighlight = "radial-gradient(75% 181.15942028985506% at 50% 50%, hsl(var(--primary)) 0%, rgba(0, 0, 0, 0) 100%)";
+  const darkHighlight = "radial-gradient(75% 181.15942028985506% at 50% 50%, #3275F8 0%, rgba(255, 255, 255, 0) 100%)";
 
   useEffect(() => {
     if (!hovered) {
@@ -54,46 +60,65 @@ export function HoverBorderGradient({
       }, duration * 1000);
       return () => clearInterval(interval);
     }
-  }, [hovered]);
+  }, [hovered, duration, clockwise]);
+
   return (
     <Tag
-      onMouseEnter={(event: React.MouseEvent<HTMLDivElement>) => {
-        setHovered(true);
-      }}
+      onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className={cn(
-        "relative flex rounded-full border  content-center bg-black/20 hover:bg-black/10 transition duration-500 dark:bg-white/20 items-center flex-col flex-nowrap gap-10 h-min justify-center overflow-visible p-px decoration-clone w-fit",
+        "relative flex rounded-full border border-border content-center bg-background/50 hover:bg-accent/20 transition duration-500 items-center flex-col flex-nowrap gap-10 h-min justify-center overflow-visible p-px decoration-clone w-fit",
         containerClassName
       )}
       {...props}
     >
       <div
         className={cn(
-          "w-auto text-white z-10 bg-black px-4 py-2 rounded-[inherit]",
+          "w-auto z-10 bg-background text-foreground px-4 py-2 rounded-[inherit] border border-transparent",
           className
         )}
       >
         {children}
       </div>
+      
+      {/* Light mode gradient */}
       <motion.div
-        className={cn(
-          "flex-none inset-0 overflow-hidden absolute z-0 rounded-[inherit]"
-        )}
+        className="flex-none inset-0 overflow-hidden absolute z-0 rounded-[inherit] dark:hidden"
         style={{
-          filter: "blur(2px)",
+          filter: "blur(1px)",
           position: "absolute",
           width: "100%",
           height: "100%",
         }}
-        initial={{ background: movingMap[direction] }}
+        initial={{ background: lightModeGradients[direction] }}
         animate={{
           background: hovered
-            ? [movingMap[direction], highlight]
-            : movingMap[direction],
+            ? [lightModeGradients[direction], lightHighlight]
+            : lightModeGradients[direction],
         }}
         transition={{ ease: "linear", duration: duration ?? 1 }}
       />
-      <div className="bg-black absolute z-1 flex-none inset-[2px] rounded-[100px]" />
+
+      {/* Dark mode gradient */}
+      <motion.div
+        className="flex-none inset-0 overflow-hidden absolute z-0 rounded-[inherit] hidden dark:block"
+        style={{
+          filter: "blur(1px)",
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+        }}
+        initial={{ background: darkModeGradients[direction] }}
+        animate={{
+          background: hovered
+            ? [darkModeGradients[direction], darkHighlight]
+            : darkModeGradients[direction],
+        }}
+        transition={{ ease: "linear", duration: duration ?? 1 }}
+      />
+
+      {/* Inner background */}
+      <div className="bg-background/95 absolute z-1 flex-none inset-[2px] rounded-[inherit]" />
     </Tag>
   );
 }
