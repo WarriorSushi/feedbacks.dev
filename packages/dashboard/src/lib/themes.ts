@@ -277,6 +277,94 @@ export const themes: Theme[] = [
         '--sidebar-ring': '141.8919 69.1589% 58.0392%'
       }
     }
+  },
+  {
+    id: 'claymorphism',
+    name: 'Claymorphism',
+    description: 'Soft clay textures with purple accents',
+    preview: {
+      primary: '#6366F1',
+      secondary: '#F3F4F6',
+      accent: '#F0E6FF',
+      background: '#F5F5F0'
+    },
+    fonts: {
+      sans: 'Plus Jakarta Sans, sans-serif',
+      serif: 'Lora, serif',
+      mono: 'Roboto Mono, monospace'
+    },
+    css: {
+      light: {
+        '--background': '20 5.8824% 90%',
+        '--foreground': '217.2414 32.5843% 17.4510%',
+        '--card': '60 4.7619% 95.8824%',
+        '--card-foreground': '217.2414 32.5843% 17.4510%',
+        '--popover': '60 4.7619% 95.8824%',
+        '--popover-foreground': '217.2414 32.5843% 17.4510%',
+        '--primary': '238.7324 83.5294% 66.6667%',
+        '--primary-foreground': '0 0% 100%',
+        '--secondary': '24.0000 5.7471% 82.9412%',
+        '--secondary-foreground': '215 13.7931% 34.1176%',
+        '--muted': '20 5.8824% 90%',
+        '--muted-foreground': '220 8.9362% 46.0784%',
+        '--accent': '292.5000 44.4444% 92.9412%',
+        '--accent-foreground': '216.9231 19.1176% 26.6667%',
+        '--destructive': '0 84.2365% 60.1961%',
+        '--destructive-foreground': '0 0% 100%',
+        '--border': '24.0000 5.7471% 82.9412%',
+        '--input': '24.0000 5.7471% 82.9412%',
+        '--ring': '238.7324 83.5294% 66.6667%',
+        '--chart-1': '238.7324 83.5294% 66.6667%',
+        '--chart-2': '243.3962 75.3555% 58.6275%',
+        '--chart-3': '244.5205 57.9365% 50.5882%',
+        '--chart-4': '243.6522 54.5024% 41.3725%',
+        '--chart-5': '242.1687 47.4286% 34.3137%',
+        '--sidebar': '24.0000 5.7471% 82.9412%',
+        '--sidebar-foreground': '217.2414 32.5843% 17.4510%',
+        '--sidebar-primary': '238.7324 83.5294% 66.6667%',
+        '--sidebar-primary-foreground': '0 0% 100%',
+        '--sidebar-accent': '292.5000 44.4444% 92.9412%',
+        '--sidebar-accent-foreground': '216.9231 19.1176% 26.6667%',
+        '--sidebar-border': '24.0000 5.7471% 82.9412%',
+        '--sidebar-ring': '238.7324 83.5294% 66.6667%',
+        '--radius': '1.25rem'
+      },
+      dark: {
+        '--background': '30 11.1111% 10.5882%',
+        '--foreground': '214.2857 31.8182% 91.3725%',
+        '--card': '25.7143 8.6420% 15.8824%',
+        '--card-foreground': '214.2857 31.8182% 91.3725%',
+        '--popover': '25.7143 8.6420% 15.8824%',
+        '--popover-foreground': '214.2857 31.8182% 91.3725%',
+        '--primary': '234.4538 89.4737% 73.9216%',
+        '--primary-foreground': '30 11.1111% 10.5882%',
+        '--secondary': '25.7143 6.4220% 21.3725%',
+        '--secondary-foreground': '216.0000 12.1951% 83.9216%',
+        '--muted': '25.7143 8.6420% 15.8824%',
+        '--muted-foreground': '217.8947 10.6145% 64.9020%',
+        '--accent': '25.7143 5.1095% 26.8627%',
+        '--accent-foreground': '216.0000 12.1951% 83.9216%',
+        '--destructive': '0 84.2365% 60.1961%',
+        '--destructive-foreground': '30 11.1111% 10.5882%',
+        '--border': '25.7143 6.4220% 21.3725%',
+        '--input': '25.7143 6.4220% 21.3725%',
+        '--ring': '234.4538 89.4737% 73.9216%',
+        '--chart-1': '234.4538 89.4737% 73.9216%',
+        '--chart-2': '238.7324 83.5294% 66.6667%',
+        '--chart-3': '243.3962 75.3555% 58.6275%',
+        '--chart-4': '244.5205 57.9365% 50.5882%',
+        '--chart-5': '243.6522 54.5024% 41.3725%',
+        '--sidebar': '25.7143 6.4220% 21.3725%',
+        '--sidebar-foreground': '214.2857 31.8182% 91.3725%',
+        '--sidebar-primary': '234.4538 89.4737% 73.9216%',
+        '--sidebar-primary-foreground': '30 11.1111% 10.5882%',
+        '--sidebar-accent': '25.7143 5.1095% 26.8627%',
+        '--sidebar-accent-foreground': '216.0000 12.1951% 83.9216%',
+        '--sidebar-border': '25.7143 6.4220% 21.3725%',
+        '--sidebar-ring': '234.4538 89.4737% 73.9216%',
+        '--radius': '1.25rem'
+      }
+    }
   }
 ];
 
@@ -325,6 +413,14 @@ export function applyTheme(themeId: string, isDark: boolean = false) {
     } else {
       root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(151.3274, 66.8639%, 66.8627%) 0%, hsl(0, 0%, 92.9412%) 100%)');
       root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(151.3274, 66.8639%, 66.8627%) 0%, hsl(0, 0%, 99.2157%) 100%)');
+    }
+  } else if (themeId === 'claymorphism') {
+    if (isDark) {
+      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(234.4538, 89.4737%, 73.9216%) 0%, hsl(30, 11.1111%, 10.5882%) 100%)');
+      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(234.4538, 89.4737%, 73.9216%) 0%, hsl(25.7143, 8.6420%, 15.8824%) 100%)');
+    } else {
+      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(238.7324, 83.5294%, 66.6667%) 0%, hsl(20, 5.8824%, 90%) 100%)');
+      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(238.7324, 83.5294%, 66.6667%) 0%, hsl(292.5000, 44.4444%, 92.9412%) 100%)');
     }
   }
   

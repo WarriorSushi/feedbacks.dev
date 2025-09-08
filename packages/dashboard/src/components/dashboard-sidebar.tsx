@@ -34,6 +34,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { ThemeSelectorSidebar } from '@/components/theme-selector-sidebar';
 import type { User } from '@supabase/supabase-js';
 
 interface DashboardSidebarProps {
@@ -204,9 +205,12 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
       <SidebarFooter className="p-4">
         <Separator className="mb-4" />
         
-        {/* Theme Toggle - Desktop Only */}
-        <div className="hidden lg:flex justify-center mb-4">
-          <ThemeToggle />
+        {/* Theme Controls - Desktop Only */}
+        <div className="hidden lg:block mb-4 space-y-2">
+          <div className="flex justify-center">
+            <ThemeToggle />
+          </div>
+          <ThemeSelectorSidebar />
         </div>
         
         {/* User Profile */}
