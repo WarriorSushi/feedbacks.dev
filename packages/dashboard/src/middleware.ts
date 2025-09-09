@@ -17,7 +17,7 @@ export async function middleware(req: NextRequest) {
 
   const ip =
     req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    // @ts-expect-error - not standard in edge
+    // @ts-ignore - non-standard on edge runtime
     (req as any).ip ||
     'unknown';
 
