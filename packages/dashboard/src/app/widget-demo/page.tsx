@@ -1,9 +1,22 @@
 'use client';
 
 import Script from 'next/script';
+import { useCallback } from 'react';
 
 export default function WidgetDemo({ searchParams }: { searchParams?: { apiKey?: string } }) {
   const apiKey = searchParams?.apiKey || 'feedbacks_dev_api_key_demo123';
+  const init = useCallback(() => {
+    const Widget: any = (window as any).FeedbacksWidget;
+    if (!Widget) return;
+    try {
+      // Inline example
+      new Widget({ projectKey: apiKey, target: '#feedback-widget', embedMode: 'inline' });
+      // Trigger example
+      new Widget({ projectKey: apiKey, target: '#feedback-btn', embedMode: 'trigger' });
+      // Floating button (modal) example
+      new Widget({ projectKey: apiKey });
+    } catch {}
+  }, [apiKey]);
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -29,32 +42,12 @@ export default function WidgetDemo({ searchParams }: { searchParams?: { apiKey?:
         </div>
       </div>
 
-      {/* Inline instance via auto-init */}
+      {/* Load the widget once, then instantiate all 3 modes */}
       <Script
         src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-latest.js"
         strategy="afterInteractive"
-        data-project={apiKey}
-        data-embed-mode="inline"
-        data-target="#feedback-widget"
+        onLoad={init}
       />
-
-      {/* Trigger instance via auto-init */}
-      <Script
-        src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-latest.js"
-        strategy="afterInteractive"
-        data-project={apiKey}
-        data-embed-mode="trigger"
-        data-target="#feedback-btn"
-      />
-
-      {/* Floating button instance via auto-init (modal) */}
-      <Script
-        src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-latest.js"
-        strategy="afterInteractive"
-        data-project={apiKey}
-      />
-
-      {/* Styles */}
       <link
         rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-latest.css"
