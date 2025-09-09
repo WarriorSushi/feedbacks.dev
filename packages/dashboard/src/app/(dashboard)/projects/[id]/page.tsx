@@ -268,14 +268,14 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Button asChild className="flex-1">
                       <Link 
-                        href={process.env.NODE_ENV === 'development' ? "http://localhost:8080" : "https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html"} 
+                        href={`/widget-demo?apiKey=${encodeURIComponent(project.api_key)}`}
                         target="_blank"
                       >
                         Test Widget
                       </Link>
                     </Button>
                     <Button variant="outline" asChild className="flex-1">
-                      <Link href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html" target="_blank">
+                      <Link href="/widget-demo" target="_blank">
                         View Demo
                       </Link>
                     </Button>
