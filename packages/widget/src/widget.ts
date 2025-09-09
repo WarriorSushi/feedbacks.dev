@@ -15,6 +15,11 @@ class FeedbacksWidget {
     this.init();
   }
 
+  // Backwards-compatible initializer for CDN demos and simple usage
+  static init(config: WidgetConfig): FeedbacksWidget {
+    return new FeedbacksWidget(config);
+  }
+
   private init(): void {
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
@@ -25,6 +30,8 @@ class FeedbacksWidget {
   }
 
   private setup(): void {
+    // Attempt to adapt font and colors from host page if not explicitly provided
+    this.adaptLookAndFeel();
     if (this.config.embedMode === 'inline') {
       this.createInlineForm();
     } else if (this.config.embedMode === 'trigger') {
@@ -34,6 +41,25 @@ class FeedbacksWidget {
       this.attachEventListeners();
     }
     this.log('Widget initialized successfully');
+  }
+
+  // Try to inherit font-family and a reasonable primary color from host
+  private adaptLookAndFeel(): void {
+    try {
+      const body = document.body;
+      const style = getComputedStyle(body);
+      const fontFamily = style.fontFamily || '';
+      const link = document.querySelector('a');
+      const linkColor = link ? getComputedStyle(link).color : '';
+      const primary = this.config.primaryColor || linkColor || '';
+      // Apply font to document-level CSS variable used by our styles (if present)
+      if (fontFamily) {
+        document.documentElement.style.setProperty('--feedbacks-font-family', fontFamily);
+      }
+      if (primary) {
+        document.documentElement.style.setProperty('--feedbacks-primary', primary);
+      }
+    } catch {}
   }
 
   private log(message: string): void {
