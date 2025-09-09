@@ -73,7 +73,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 </script>`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -93,8 +93,8 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
         {/* Project Header */}
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{project.name}</h1>
-          <p className="text-gray-600 mt-2">Manage your feedback collection</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.name}</h1>
+          <p className="text-muted-foreground mt-2">Manage your feedback collection</p>
         </div>
 
         {/* Project Tabs */}
@@ -131,18 +131,18 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                                 <Badge variant={feedback.type === 'bug' ? 'destructive' : 'default'}>
                                   {feedback.type || 'general'}
                                 </Badge>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-sm text-muted-foreground">
                                   {new Date(feedback.created_at).toLocaleDateString()}
                                 </span>
                               </div>
-                              <p className="text-gray-900">{feedback.message}</p>
+                              <p className="text-foreground">{feedback.message}</p>
                               {feedback.email && (
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-sm text-muted-foreground mt-1">
                                   From: {feedback.email}
                                 </p>
                               )}
                               {typeof feedback.rating === 'number' && (
-                                <p className="text-sm text-gray-600 mt-1">Rating: {feedback.rating}/5</p>
+                                <p className="text-sm text-muted-foreground mt-1">Rating: {feedback.rating}/5</p>
                               )}
                             </div>
                           </div>
@@ -150,7 +150,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       <p>No feedback yet.</p>
                       <p className="text-sm mt-1">Install the widget to start collecting feedback!</p>
                     </div>
@@ -166,7 +166,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                     Next
                   </Link>
                 </div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-muted-foreground">
                   Page {page}{typeof count === 'number' ? ` of ${Math.max(1, Math.ceil(count / pageSize))}` : ''}
                 </div>
               </div>
@@ -188,13 +188,13 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                     </div>
                     <div>
                       <Label>Project ID</Label>
-                      <p className="text-sm font-mono text-gray-600">
+                      <p className="text-sm font-mono text-muted-foreground">
                         {project.id}
                       </p>
                     </div>
                     <div>
                       <Label>Created</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {new Date(project.created_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -299,15 +299,15 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                   <div className="space-y-3 text-sm">
                     <div>
                       <p className="font-medium">Step 1:</p>
-                      <p className="text-gray-600">Copy your API key</p>
+                      <p className="text-muted-foreground">Copy your API key</p>
                     </div>
                     <div>
                       <p className="font-medium">Step 2:</p>
-                      <p className="text-gray-600">Copy the widget code</p>
+                      <p className="text-muted-foreground">Copy the widget code</p>
                     </div>
                     <div>
                       <p className="font-medium">Step 3:</p>
-                      <p className="text-gray-600">Paste before closing &lt;/body&gt; tag</p>
+                      <p className="text-muted-foreground">Paste before closing &lt;/body&gt; tag</p>
                     </div>
                   </div>
                 </CardContent>
@@ -321,13 +321,13 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                   <div className="space-y-4">
                     <div>
                       <Label>Project ID</Label>
-                      <p className="text-sm font-mono text-gray-600">
+                      <p className="text-sm font-mono text-muted-foreground">
                         {project.id}
                       </p>
                     </div>
                     <div>
                       <Label>Created</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {new Date(project.created_at).toLocaleDateString()}
                       </p>
                     </div>
