@@ -142,7 +142,7 @@ language plpgsql
 security definer
 as $$
 begin
-    return 'pk_live_' || encode(gen_random_bytes(20), 'hex');
+    return 'feedbacks_dev_api_key_' || encode(gen_random_bytes(20), 'hex');
 end;
 $$;
 ```
@@ -1451,7 +1451,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function generateApiKey(): string {
   const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = 'pk_live_';
+  let result = 'feedbacks_dev_api_key_';
   
   for (let i = 0; i < 32; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -1727,7 +1727,7 @@ export default async function HomePage() {
               <CodeSnippet 
                 code={`<script
   src="https://cdn.feedbacks.dev/widget-1.0.0.js"
-  data-project="pk_live_abc123"
+  data-project="feedbacks_dev_api_key_abc123"
   defer>
 </script>`}
                 language="html"

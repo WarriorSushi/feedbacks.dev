@@ -8,10 +8,16 @@ class FeedbacksWidget {
   private overlay: HTMLElement | null = null;
   private retryCount = 0;
   private maxRetries = 3;
+  private lastFocusedElement: HTMLElement | null = null;
 
   constructor(config: WidgetConfig) {
     this.config = { position: 'bottom-right', embedMode: 'modal', ...config };
     this.init();
+  }
+
+  // Backwards-compatible initializer for CDN demos and simple usage
+  static init(config: WidgetConfig): FeedbacksWidget {
+    return new FeedbacksWidget(config);
   }
 
   private init(): void {
@@ -24,6 +30,8 @@ class FeedbacksWidget {
   }
 
   private setup(): void {
+    // Attempt to adapt font and colors from host page if not explicitly provided
+    this.adaptLookAndFeel();
     if (this.config.embedMode === 'inline') {
       this.createInlineForm();
     } else if (this.config.embedMode === 'trigger') {
@@ -33,6 +41,25 @@ class FeedbacksWidget {
       this.attachEventListeners();
     }
     this.log('Widget initialized successfully');
+  }
+
+  // Try to inherit font-family and a reasonable primary color from host
+  private adaptLookAndFeel(): void {
+    try {
+      const body = document.body;
+      const style = getComputedStyle(body);
+      const fontFamily = style.fontFamily || '';
+      const link = document.querySelector('a');
+      const linkColor = link ? getComputedStyle(link).color : '';
+      const primary = this.config.primaryColor || linkColor || '';
+      // Apply font to document-level CSS variable used by our styles (if present)
+      if (fontFamily) {
+        document.documentElement.style.setProperty('--feedbacks-font-family', fontFamily);
+      }
+      if (primary) {
+        document.documentElement.style.setProperty('--feedbacks-primary', primary);
+      }
+    } catch {}
   }
 
   private log(message: string): void {
@@ -110,6 +137,26 @@ class FeedbacksWidget {
               ></textarea>
               <div class="feedbacks-char-count">0/2000</div>
             </div>
+            <div class=\"feedbacks-field\">
+              <label for=\"feedbacks-type${idSuffix}\" class=\"feedbacks-label\">Category (optional)</label>
+              <select id=\"feedbacks-type${idSuffix}\" class=\"feedbacks-input\">
+                <option value=\"\">Select a category</option>
+                <option value=\"bug\">Bug</option>
+                <option value=\"idea\">Idea</option>
+                <option value=\"praise\">Praise</option>
+              </select>
+            </div>
+            <div class=\"feedbacks-field\">
+              <label for=\"feedbacks-rating${idSuffix}\" class=\"feedbacks-label\">Rating (optional)</label>
+              <select id=\"feedbacks-rating${idSuffix}\" class=\"feedbacks-input\">
+                <option value=\"\">No rating</option>
+                <option value=\"1\">1</option>
+                <option value=\"2\">2</option>
+                <option value=\"3\">3</option>
+                <option value=\"4\">4</option>
+                <option value=\"5\">5</option>
+              </select>
+            </div>
             <div class="feedbacks-field">
               <label for="feedbacks-email${idSuffix}" class="feedbacks-label">Email (optional)</label>
               <input
@@ -145,6 +192,7 @@ class FeedbacksWidget {
     if (this.isOpen) return;
     
     this.isOpen = true;
+    this.lastFocusedElement = (document.activeElement as HTMLElement) || null;
     this.createModal();
     this.log('Modal opened');
     
@@ -163,6 +211,12 @@ class FeedbacksWidget {
     
     // Restore body scroll
     document.body.style.overflow = '';
+    // Restore focus back to trigger/button
+    if (this.lastFocusedElement && typeof this.lastFocusedElement.focus === 'function') {
+      this.lastFocusedElement.focus();
+    } else if (this.button && typeof (this.button as any).focus === 'function') {
+      (this.button as any).focus();
+    }
     this.log('Modal closed');
   }
 
@@ -189,6 +243,38 @@ class FeedbacksWidget {
     const textarea = modal.querySelector('#feedbacks-message-modal') as HTMLTextAreaElement;
     setTimeout(() => textarea?.focus(), 100);
 
+    // Focus trap within modal
+    const focusableSelectors = [
+      'a[href]',
+      'button:not([disabled])',
+      'textarea:not([disabled])',
+      'input[type=\"text\"]:not([disabled])',
+      'input[type=\"email\"]:not([disabled])',
+      'select:not([disabled])',
+      '[tabindex]:not([tabindex=\"-1\"])'
+    ].join(',');
+    const getFocusable = () => Array.from(modal.querySelectorAll<HTMLElement>(focusableSelectors));
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const focusables = getFocusable();
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (!active || active === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (!active || active === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    modal.addEventListener('keydown', handleKeydown);
+
     // Attach handlers
     this.attachFormHandlers(modal, true);
   }
@@ -198,6 +284,8 @@ class FeedbacksWidget {
     const form = container.querySelector('form') as HTMLFormElement;
     const textarea = container.querySelector(`#feedbacks-message${idSuffix}`) as HTMLTextAreaElement;
     const emailInput = container.querySelector(`#feedbacks-email${idSuffix}`) as HTMLInputElement;
+    const typeSelect = container.querySelector(`#feedbacks-type${idSuffix}`) as HTMLSelectElement | null;
+    const ratingSelect = container.querySelector(`#feedbacks-rating${idSuffix}`) as HTMLSelectElement | null;
     const cancelBtn = container.querySelector('.feedbacks-btn-secondary') as HTMLButtonElement;
     const closeBtn = container.querySelector('.feedbacks-close') as HTMLButtonElement;
     const submitBtn = container.querySelector('.feedbacks-btn-primary') as HTMLButtonElement;
@@ -250,6 +338,8 @@ class FeedbacksWidget {
           email: email || undefined,
           url: window.location.href,
           userAgent: navigator.userAgent,
+          type: typeSelect && typeSelect.value ? typeSelect.value : undefined,
+          rating: ratingSelect && ratingSelect.value ? parseInt(ratingSelect.value, 10) : undefined,
         });
         
         if (isModal) {

@@ -3,8 +3,7 @@
 import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@/lib/supabase-client';
-import { generateApiKey } from '@/lib/utils';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +18,7 @@ export default function NewProjectPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const { toast } = useToast();
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -51,13 +50,10 @@ export default function NewProjectPage() {
           return;
         }
 
-        const apiKey = generateApiKey();
-        
         const { data: project, error: createError } = await supabase
           .from('projects')
           .insert({
             name: trimmedName,
-            api_key: apiKey,
             owner_user_id: user.id,
           })
           .select()

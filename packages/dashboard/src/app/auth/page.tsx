@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import { createClient } from '@/lib/supabase-client';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +23,7 @@ export default function AuthPage() {
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   const router = useRouter();
   const { toast } = useToast();
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
 
   // Check if user is already authenticated and redirect to dashboard
   useEffect(() => {

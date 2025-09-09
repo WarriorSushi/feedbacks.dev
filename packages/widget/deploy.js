@@ -175,7 +175,7 @@ const demoHtml = `<!DOCTYPE html>
     <script src="${CDN_CONFIG.jsdelivr.baseUrl}/widget-${version}.js"></script>
     <script>
         // Replace 'your-api-key' with your actual API key
-        const API_KEY = 'pk_live_demo123'; // Demo key - replace with real one
+        const API_KEY = 'feedbacks_dev_api_key_demo123'; // Demo key - replace with real one
         
         // Initialize inline widget
         FeedbacksWidget.init({

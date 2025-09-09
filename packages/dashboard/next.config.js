@@ -5,30 +5,10 @@ const nextConfig = {
       allowedOrigins: ['localhost:3000', 'app.feedbacks.dev', 'www.feedbacks.dev', 'feedbacks.dev'],
     },
   },
-  async headers() {
-    return [
-      {
-        source: '/widget/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
-        ],
-      },
-    ];
-  },
-  async rewrites() {
-    return [
-      {
-        source: '/widget/:path*',
-        destination: '/api/widget/:path*',
-      },
-    ];
+  eslint: {
+    // Avoid CI/build failures due to workspace hoisting of eslint-config-next parser.
+    // We still run lint in CI separately.
+    ignoreDuringBuilds: true,
   },
 };
 

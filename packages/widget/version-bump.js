@@ -11,8 +11,8 @@ if (!versionType || !['minor', 'major'].includes(versionType)) {
   console.log('Usage: node version-bump.js [minor|major]');
   console.log('');
   console.log('Examples:');
-  console.log('  node version-bump.js minor  # 1.0 → 1.1 (new features)');
-  console.log('  node version-bump.js major  # 1.0 → 2.0 (breaking changes)');
+  console.log('  node version-bump.js minor  # 1.0 -> 1.1 (new features)');
+  console.log('  node version-bump.js major  # 1.0 -> 2.0 (breaking changes)');
   process.exit(1);
 }
 
@@ -37,17 +37,22 @@ packageJson.version = newVersion;
 fs.writeFileSync(packagePath, JSON.stringify(packageJson, null, 2) + '\n');
 
 // Update dashboard version constant
-const dashboardPath = path.join(__dirname, '../dashboard/src/app/projects/[id]/page.tsx');
+const dashboardPath = path.join(
+  __dirname,
+  '../dashboard/src/app/(dashboard)/projects/[id]/page.tsx'
+);
 let dashboardContent = fs.readFileSync(dashboardPath, 'utf8');
+
 dashboardContent = dashboardContent.replace(
-  /const WIDGET_VERSION = '[^']+'/,
+  /const WIDGET_VERSION = '[^']+'/, 
   `const WIDGET_VERSION = '${newVersion}'`
 );
 fs.writeFileSync(dashboardPath, dashboardContent);
 
-console.log(`🚀 Version bumped: ${currentVersion} → ${newVersion}`);
+console.log(`🚀 Version bumped: ${currentVersion} -> ${newVersion}`);
 console.log('');
 console.log('Next steps:');
 console.log('1. npm run build');
-console.log('2. git add -A && git commit -m "Release widget v' + newVersion + '"');
+console.log(`2. git add -A && git commit -m "Release widget v${newVersion}"`);
 console.log('3. git push origin main');
+

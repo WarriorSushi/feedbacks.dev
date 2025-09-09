@@ -1,5 +1,4 @@
-import { createServerComponentClient } from '@/lib/supabase';
-import { cookies } from 'next/headers';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
 import { DashboardClientLayout } from '@/components/dashboard-client-layout';
 
@@ -8,7 +7,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createServerComponentClient();
+  const supabase = createServerSupabaseClient();
   
   try {
     const { data: { user }, error } = await supabase.auth.getUser();

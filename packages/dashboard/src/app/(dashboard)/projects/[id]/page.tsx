@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase-server';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,13 +11,12 @@ import { ArrowLeft, ExternalLink, Settings, MessageSquare, Code } from 'lucide-r
 import Link from 'next/link';
 
 interface ProjectPageProps {
-  params: {
-    id: string;
-  };
+  params: { id: string };
+  searchParams?: { page?: string; type?: string; rating?: string };
 }
 
-export default async function ProjectPage({ params }: ProjectPageProps) {
-  const supabase = createClient();
+export default async function ProjectPage({ params, searchParams }: ProjectPageProps) {
+  const supabase = createServerSupabaseClient();
   
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -35,11 +34,27 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     redirect('/dashboard');
   }
 
-  const { data: feedbacks } = await supabase
+  const page = Math.max(1, parseInt(searchParams?.page || '1', 10) || 1);
+  const pageSize = 20;
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  const typeFilter = (searchParams?.type || '').toLowerCase();
+  const ratingFilter = searchParams?.rating ? parseInt(searchParams.rating, 10) : undefined;
+
+  let query = supabase
     .from('feedback')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('project_id', params.id)
     .order('created_at', { ascending: false });
+
+  if (['bug', 'idea', 'praise'].includes(typeFilter)) {
+    query = query.eq('type', typeFilter);
+  }
+  if (ratingFilter && ratingFilter >= 1 && ratingFilter <= 5) {
+    query = query.eq('rating', ratingFilter);
+  }
+
+  const { data: feedbacks, count } = await query.range(from, to);
 
   const WIDGET_VERSION = '1.0'; // Update this when widget version changes
   const widgetCode = `<!-- Feedbacks Widget -->
@@ -58,7 +73,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 </script>`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -78,8 +93,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
         {/* Project Header */}
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{project.name}</h1>
-          <p className="text-gray-600 mt-2">Manage your feedback collection</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.name}</h1>
+          <p className="text-muted-foreground mt-2">Manage your feedback collection</p>
         </div>
 
         {/* Project Tabs */}
@@ -114,17 +129,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <Badge variant={feedback.type === 'bug' ? 'destructive' : 'default'}>
-                                  {feedback.type}
+                                  {feedback.type || 'general'}
                                 </Badge>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-sm text-muted-foreground">
                                   {new Date(feedback.created_at).toLocaleDateString()}
                                 </span>
                               </div>
-                              <p className="text-gray-900">{feedback.message}</p>
+                              <p className="text-foreground">{feedback.message}</p>
                               {feedback.email && (
-                                <p className="text-sm text-gray-600 mt-1">
+                                <p className="text-sm text-muted-foreground mt-1">
                                   From: {feedback.email}
                                 </p>
+                              )}
+                              {typeof feedback.rating === 'number' && (
+                                <p className="text-sm text-muted-foreground mt-1">Rating: {feedback.rating}/5</p>
                               )}
                             </div>
                           </div>
@@ -132,13 +150,26 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       <p>No feedback yet.</p>
                       <p className="text-sm mt-1">Install the widget to start collecting feedback!</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
+              <div className="flex items-center justify-between">
+                <div className="space-x-2">
+                  <Link href={`/projects/${params.id}?${new URLSearchParams({ ...(typeFilter ? { type: typeFilter } : {}), ...(ratingFilter ? { rating: String(ratingFilter) } : {}), page: String(Math.max(1, page - 1)) }).toString()}`} className="text-sm px-3 py-1 border rounded disabled:opacity-50" aria-disabled={page <= 1}>
+                    Previous
+                  </Link>
+                  <Link href={`/projects/${params.id}?${new URLSearchParams({ ...(typeFilter ? { type: typeFilter } : {}), ...(ratingFilter ? { rating: String(ratingFilter) } : {}), page: String(page + 1) }).toString()}`} className="text-sm px-3 py-1 border rounded">
+                    Next
+                  </Link>
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Page {page}{typeof count === 'number' ? ` of ${Math.max(1, Math.ceil(count / pageSize))}` : ''}
+                </div>
+              </div>
             </div>
             
             {/* Project Stats Sidebar */}
@@ -157,13 +188,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     </div>
                     <div>
                       <Label>Project ID</Label>
-                      <p className="text-sm font-mono text-gray-600">
+                      <p className="text-sm font-mono text-muted-foreground">
                         {project.id}
                       </p>
                     </div>
                     <div>
                       <Label>Created</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {new Date(project.created_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -197,11 +228,18 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Code className="h-5 w-5" />
-                    Widget Installation
+                  <Code className="h-5 w-5" />
+                  Widget Installation
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {['all','bug','idea','praise'].map(t => (
+                      <Link key={t} href={`/projects/${params.id}?${new URLSearchParams({ ...(t !== 'all' ? { type: t } : {}), page: '1' }).toString()}`} className={`text-xs px-3 py-1 rounded border ${typeFilter === t || (t==='all' && !typeFilter) ? 'bg-primary text-white' : ''}`}>
+                        {t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
+                      </Link>
+                    ))}
+                  </div>
                   <div>
                     <Label>API Key</Label>
                     <div className="flex gap-2 mt-1">
@@ -230,15 +268,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Button asChild className="flex-1">
                       <Link 
-                        href={process.env.NODE_ENV === 'development' ? "http://localhost:8080" : "https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html"} 
+                        href={`/widget-demo?apiKey=${encodeURIComponent(project.api_key)}`}
                         target="_blank"
                       >
                         Test Widget
                       </Link>
                     </Button>
                     <Button variant="outline" asChild className="flex-1">
-                      <Link href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/demo.html" target="_blank">
+                      <Link href="/widget-demo" target="_blank">
                         View Demo
+                      </Link>
+                    </Button>
+                    <Button variant="outline" asChild className="flex-1">
+                      <Link href={`/api/projects/${params.id}/feedback.csv`} target="_blank">
+                        Export CSV
                       </Link>
                     </Button>
                   </div>
@@ -256,15 +299,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <div className="space-y-3 text-sm">
                     <div>
                       <p className="font-medium">Step 1:</p>
-                      <p className="text-gray-600">Copy your API key</p>
+                      <p className="text-muted-foreground">Copy your API key</p>
                     </div>
                     <div>
                       <p className="font-medium">Step 2:</p>
-                      <p className="text-gray-600">Copy the widget code</p>
+                      <p className="text-muted-foreground">Copy the widget code</p>
                     </div>
                     <div>
                       <p className="font-medium">Step 3:</p>
-                      <p className="text-gray-600">Paste before closing &lt;/body&gt; tag</p>
+                      <p className="text-muted-foreground">Paste before closing &lt;/body&gt; tag</p>
                     </div>
                   </div>
                 </CardContent>
@@ -278,13 +321,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <div className="space-y-4">
                     <div>
                       <Label>Project ID</Label>
-                      <p className="text-sm font-mono text-gray-600">
+                      <p className="text-sm font-mono text-muted-foreground">
                         {project.id}
                       </p>
                     </div>
                     <div>
                       <Label>Created</Label>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted-foreground">
                         {new Date(project.created_at).toLocaleDateString()}
                       </p>
                     </div>

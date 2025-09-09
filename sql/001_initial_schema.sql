@@ -1,11 +1,12 @@
 -- Enable necessary extensions
 create extension if not exists "uuid-ossp";
+create extension if not exists pgcrypto;
 
 -- Projects table
 create table public.projects (
     id uuid default uuid_generate_v4() primary key,
     name text not null check (length(trim(name)) >= 1 and length(trim(name)) <= 100),
-    api_key text unique not null,
+    api_key text unique not null default generate_api_key(),
     owner_user_id uuid references auth.users(id) on delete cascade not null,
     created_at timestamptz default now() not null,
     updated_at timestamptz default now() not null
@@ -19,6 +20,8 @@ create table public.feedback (
     email text check (email is null or email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
     url text not null check (url ~* '^https?://'),
     user_agent text not null,
+    type text check (type is null or type in ('bug','idea','praise')),
+    rating integer check (rating is null or (rating >= 1 and rating <= 5)),
     is_read boolean default false not null,
     created_at timestamptz default now() not null
 );
@@ -48,6 +51,6 @@ language plpgsql
 security definer
 as $$
 begin
-    return 'pk_live_' || encode(gen_random_bytes(20), 'hex');
+    return 'feedbacks_dev_api_key_' || encode(gen_random_bytes(20), 'hex');
 end;
 $$;

@@ -64,21 +64,10 @@ jobs:
       run: cd packages/widget && npm run build
       continue-on-error: true # Widget build has known webpack issues
       
-    - name: Check bundle size
+    - name: Check gzipped bundle size
       run: |
-        if [ -f packages/widget/dist/widget-1.0.0.js ]; then
-          size=$(stat -c%s "packages/widget/dist/widget-1.0.0.js")
-          echo "Widget bundle size: $size bytes"
-          if [ $size -gt 20480 ]; then
-            echo "⚠️ Bundle size exceeds 20KB limit"
-            exit 1
-          else
-            echo "✅ Bundle size within 20KB limit"
-          fi
-        else
-          echo "⚠️ Widget build failed, skipping size check"
-        fi
-      continue-on-error: true
+        node scripts/check-bundle-size.mjs
+      continue-on-error: false
 
   build-dashboard:
     name: Build Dashboard
