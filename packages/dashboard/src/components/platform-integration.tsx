@@ -31,7 +31,7 @@ const platforms: Platform[] = [
     popularity: 95,
     code: `<script 
   src="https://cdn.feedbacks.dev/widget-1.0.0.js"
-  data-project="pk_live_abc123"
+  data-project="feedbacks_dev_api_key_abc123"
   defer>
 </script>`
   },
@@ -47,7 +47,7 @@ const platforms: Platform[] = [
     code: `import { initFeedback } from 'https://cdn.feedbacks.dev/widget-1.0.0.js';
 
 initFeedback({
-  projectKey: 'pk_live_abc123',
+  projectKey: 'feedbacks_dev_api_key_abc123',
   position: 'bottom-right',
   theme: 'auto'
 });`
@@ -95,7 +95,7 @@ export default function Layout({ children }) {
   return (
     <>
       {children}
-      <FeedbackWidget projectKey="pk_live_abc123" />
+      <FeedbackWidget projectKey="feedbacks_dev_api_key_abc123" />
     </>
   );
 }`
@@ -113,7 +113,7 @@ export default function Layout({ children }) {
 import { FeedbackWidget } from '@feedbacks/vue';
 
 const config = {
-  projectKey: 'pk_live_abc123',
+  projectKey: 'feedbacks_dev_api_key_abc123',
   position: 'bottom-right',
   theme: 'auto'
 };
@@ -148,7 +148,7 @@ export default function App() {
       </TouchableOpacity>
       
       <FeedbackModal
-        projectKey="pk_live_abc123"
+        projectKey="feedbacks_dev_api_key_abc123"
         visible={showFeedback}
         onClose={() => setShowFeedback(false)}
       />
@@ -174,7 +174,7 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         body: YourContent(),
         floatingActionButton: FeedbackButton(
-          projectKey: 'pk_live_abc123',
+          projectKey: 'feedbacks_dev_api_key_abc123',
           theme: FeedbackTheme.auto,
         ),
       ),

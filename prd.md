@@ -85,7 +85,7 @@ feedback (
 ```html
 <script 
   src="https://cdn.feedbacks.dev/widget-1.0.0.js"
-  data-project="pk_live_abc123"
+  data-project="feedbacks_dev_api_key_abc123"
   defer>
 </script>
 ```
@@ -93,7 +93,7 @@ feedback (
 **React/Next.js:**
 ```javascript
 import { FeedbackWidget } from '@feedbacks/react'
-<FeedbackWidget projectKey="pk_live_abc123" />
+<FeedbackWidget projectKey="feedbacks_dev_api_key_abc123" />
 ```
 
 **Mobile Apps (React Native):**
@@ -105,7 +105,7 @@ import { FeedbackModal } from '@feedbacks/react-native'
 **Flutter:**
 ```dart
 // WebView integration or platform-specific implementation
-FeedbackWidget(projectKey: 'pk_live_abc123')
+FeedbackWidget(projectKey: 'feedbacks_dev_api_key_abc123')
 ```
 
 ### API Endpoints

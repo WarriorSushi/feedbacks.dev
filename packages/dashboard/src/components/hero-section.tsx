@@ -15,7 +15,7 @@ interface HeroSectionProps {
 export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
   const sampleCode = `<script 
   src="https://cdn.feedbacks.dev/widget.js" 
-  data-project="pk_live_abc123" 
+  data-project="feedbacks_dev_api_key_abc123" 
   defer>
 </script>`;
 

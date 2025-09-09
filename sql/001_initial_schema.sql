@@ -51,6 +51,6 @@ language plpgsql
 security definer
 as $$
 begin
-    return 'pk_live_' || encode(gen_random_bytes(20), 'hex');
+    return 'feedbacks_dev_api_key_' || encode(gen_random_bytes(20), 'hex');
 end;
 $$;

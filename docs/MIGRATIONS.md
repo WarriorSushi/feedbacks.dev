@@ -17,7 +17,7 @@ language plpgsql
 security definer
 as $$
 begin
-  return 'pk_live_' || encode(gen_random_bytes(20), 'hex');
+  return 'feedbacks_dev_api_key_' || encode(gen_random_bytes(20), 'hex');
 end;
 $$;
 
@@ -40,4 +40,3 @@ create index if not exists idx_feedback_is_read on public.feedback(project_id, i
 ```
 
 RLS is already defined in `sql/002_rls_policies.sql`.
-
