@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase';
+import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { redirect } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CopyButton } from '@/components/copy-button';
 import { ArrowLeft, ExternalLink, Settings, MessageSquare, Code } from 'lucide-react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 interface ProjectPageProps {
   params: { id: string };

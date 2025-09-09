@@ -1,12 +1,5 @@
-import { createBrowserClient, createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-
-export function createBrowserSupabaseClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 export function createServerSupabaseClient() {
   const cookieStore = cookies();
@@ -22,7 +15,6 @@ export function createServerSupabaseClient() {
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
-            // Optionally enforce cookie domain for subdomain sharing in prod
             const domainOptions = isProd ? { domain: '.feedbacks.dev' } : {};
             cookieStore.set({ name, value, ...domainOptions, ...options });
           } catch {}
@@ -38,4 +30,3 @@ export function createServerSupabaseClient() {
   );
 }
 
-// Service role client intentionally remains only in API routes using @supabase/supabase-js
