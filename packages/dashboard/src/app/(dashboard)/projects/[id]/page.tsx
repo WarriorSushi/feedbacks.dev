@@ -58,8 +58,8 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
   const WIDGET_VERSION = '1.0'; // Update this when widget version changes
   const widgetCode = `<!-- Feedbacks Widget -->
-<script src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-${WIDGET_VERSION}.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-${WIDGET_VERSION}.css">
+<script src="https://app.feedbacks.dev/cdn/widget/${WIDGET_VERSION}.js"></script>
+<link rel="stylesheet" href="https://app.feedbacks.dev/cdn/widget/${WIDGET_VERSION}.css">
 
 <!-- Inline embed -->
 <div id="feedback-widget"></div>

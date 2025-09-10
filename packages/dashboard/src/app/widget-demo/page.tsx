@@ -44,13 +44,13 @@ export default function WidgetDemo({ searchParams }: { searchParams?: { apiKey?:
 
       {/* Load the widget once, then instantiate all 3 modes */}
       <Script
-        src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-latest.js"
+        src="https://app.feedbacks.dev/cdn/widget/latest.js"
         strategy="afterInteractive"
         onLoad={init}
       />
       <link
         rel="stylesheet"
-        href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-latest.css"
+        href="https://app.feedbacks.dev/cdn/widget/latest.css"
       />
     </div>
   );

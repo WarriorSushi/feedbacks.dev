@@ -36,9 +36,9 @@ git push origin main
 - Commit and push to trigger CDN update
 
 ## CDN URLs
-- **Latest**: `https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-1.0.js`
-- **Specific version**: Pin to exact version for production use
-- **Auto-updating**: Use `@main` branch for development
+- **Exact**: `https://app.feedbacks.dev/cdn/widget/1.0.0.js` (never changes)
+- **Stable**: `https://app.feedbacks.dev/cdn/widget/1.0.js` (auto bug fixes)  
+- **Latest**: `https://app.feedbacks.dev/cdn/widget/latest.js` (cutting edge)
 
 ## Backward Compatibility
 - Old versions remain available forever

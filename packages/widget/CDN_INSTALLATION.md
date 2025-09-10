@@ -5,13 +5,13 @@
 Add this script tag to your HTML:
 
 ```html
-<!-- Load from jsDelivr CDN (recommended) -->
-<script src="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-1.0.0.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/widget-1.0.0.css">
+<!-- Load from Professional CDN (recommended) -->
+<script src="https://app.feedbacks.dev/cdn/widget/1.0.0.js"></script>
+<link rel="stylesheet" href="https://app.feedbacks.dev/cdn/widget/1.0.0.css">
 
-<!-- Alternative: Load from GitHub Raw -->
-<script src="https://raw.githubusercontent.com/WarriorSushi/feedbacks.dev/main/packages/widget/dist/widget-1.0.0.js"></script>
-<link rel="stylesheet" href="https://raw.githubusercontent.com/WarriorSushi/feedbacks.dev/main/packages/widget/dist/widget-1.0.0.css">
+<!-- Alternative: Stable version (auto bug fixes) -->
+<script src="https://app.feedbacks.dev/cdn/widget/1.0.js"></script>
+<link rel="stylesheet" href="https://app.feedbacks.dev/cdn/widget/1.0.css">
 ```
 
 ## Usage Examples
@@ -65,17 +65,20 @@ FeedbacksWidget.init({
 
 ## CDN Information
 
-- **jsDelivr CDN**: https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist/
-- **GitHub Raw**: https://raw.githubusercontent.com/WarriorSushi/feedbacks.dev/main/packages/widget/dist/
+- **Professional CDN**: https://app.feedbacks.dev/cdn/widget/
+- **Documentation**: https://app.feedbacks.dev/cdn/widget (API reference)
 
 Files available:
-- `widget-1.0.0.js` - Main widget JavaScript (minified)
-- `widget-1.0.0.css` - Widget styles  
-- `widget.d.ts` - TypeScript definitions
-- `types.d.ts` - Type definitions
+- `1.0.0.js` - Exact version (never changes, most stable)
+- `1.0.js` - Stable branch (auto bug fixes, stable features)  
+- `latest.js` - Latest features (may have breaking changes)
+- Matching `.css` files for all versions
 
 ## Version
 
 Current version: 1.0.0
 
-The CDN files are automatically updated when changes are pushed to the main branch.
+**Smart Versioning:**
+- Exact versions are cached forever (immutable)
+- Pattern versions get latest compatible updates
+- Professional caching for global performance

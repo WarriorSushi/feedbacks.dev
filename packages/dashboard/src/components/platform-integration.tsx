@@ -30,7 +30,7 @@ const platforms: Platform[] = [
     isPrimary: true,
     popularity: 95,
     code: `<script 
-  src="https://cdn.feedbacks.dev/widget-1.0.0.js"
+  src="https://app.feedbacks.dev/cdn/widget/1.0.0.js"
   data-project="feedbacks_dev_api_key_abc123"
   defer>
 </script>`
@@ -44,7 +44,7 @@ const platforms: Platform[] = [
     language: 'javascript',
     isPrimary: false,
     popularity: 60,
-    code: `import { initFeedback } from 'https://cdn.feedbacks.dev/widget-1.0.0.js';
+    code: `import { initFeedback } from 'https://app.feedbacks.dev/cdn/widget/1.0.0.js';
 
 initFeedback({
   projectKey: 'feedbacks_dev_api_key_abc123',
