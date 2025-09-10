@@ -1,0 +1,190 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Premium Design System for feedbacks.dev */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 262 83% 58%;
+
+    --radius: 0.5rem;
+
+    /* Premium color palette */
+    --gradient-primary: linear-gradient(135deg, hsl(262, 83%, 58%) 0%, hsl(270, 100%, 70%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(240, 100%, 98%) 0%, hsl(240, 20%, 96%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(262, 83%, 58%) 0%, hsl(280, 90%, 65%) 50%, hsl(300, 85%, 70%) 100%);
+    
+    /* Premium shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(240 10% 3.9% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(240 10% 3.9% / 0.1), 0 2px 4px -2px hsl(240 10% 3.9% / 0.1);
+    --shadow-lg: 0 10px 15px -3px hsl(240 10% 3.9% / 0.1), 0 4px 6px -4px hsl(240 10% 3.9% / 0.1);
+    --shadow-glow: 0 0 40px hsl(262 83% 58% / 0.3);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 262 83% 58%;
+    
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(262, 83%, 58%) 0%, hsl(270, 100%, 70%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(240, 10%, 3.9%) 0%, hsl(240, 15%, 10%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(262, 83%, 58%) 0%, hsl(280, 90%, 65%) 50%, hsl(300, 85%, 70%) 100%);
+    
+    /* Dark shadows */
+    --shadow-glow: 0 0 40px hsl(262 83% 58% / 0.5);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+}
+
+@layer components {
+  /* Hero components */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent;
+  }
+  
+  .hero-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
+  .glass-morphism {
+    @apply backdrop-blur-lg bg-white/10 border border-white/20;
+  }
+  
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fade-in 0.6s ease-out;
+  }
+  
+  .animate-slide-up {
+    animation: slide-up 0.6s ease-out;
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  /* Hover effects */
+  .hover-lift {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-lg;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-[0_0_40px_hsl(var(--primary)/0.3)];
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
