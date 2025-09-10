@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New CDN System</title>
+    <style>
+        body { 
+            font-family: system-ui, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 2rem;
+            background: #f5f5f5;
+        }
+        .test-section { 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 8px; 
+            margin: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .widget-container { 
+            border: 2px dashed #ccc; 
+            padding: 2rem; 
+            margin: 1rem 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover { background: #1d4ed8; }
+        code {
+            background: #f1f5f9;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Monaco', monospace;
+        }
+        .status { padding: 0.5rem; border-radius: 4px; margin: 0.5rem 0; }
+        .success { background: #dcfce7; color: #166534; }
+        .error { background: #fee2e2; color: #dc2626; }
+    </style>
+</head>
+<body>
+    <h1>🚀 CDN System Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Modal Widget Test</h2>
+        <p>Should show a floating button that opens feedback modal.</p>
+        <div id="modal-status" class="status">Loading...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Inline Widget Test</h2>
+        <p>Should show inline feedback form below:</p>
+        <div class="widget-container">
+            <div id="inline-feedback"></div>
+        </div>
+        <div id="inline-status" class="status">Loading...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Trigger Widget Test</h2>
+        <p>Click this button to open feedback modal:</p>
+        <button data-feedbacks-trigger>Give Feedback</button>
+        <div id="trigger-status" class="status">Loading...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. CDN Version Test</h2>
+        <p>Testing different CDN endpoints:</p>
+        <ul id="version-tests">
+            <li>Loading version tests...</li>
+        </ul>
+    </div>
+
+    <!-- Test the new CDN system -->
+    <!-- Note: This will work once deployed to Vercel -->
+    <script>
+        // Test URLs - replace with your actual Vercel domain when deployed
+        const CDN_BASE = window.location.origin + '/cdn/widget';
+        
+        function updateStatus(elementId, success, message) {
+            const el = document.getElementById(elementId);
+            el.className = `status ${success ? 'success' : 'error'}`;
+            el.textContent = message;
+        }
+        
+        // Test 1: Modal Widget
+        try {
+            const modalScript = document.createElement('script');
+            modalScript.src = `${CDN_BASE}/1.0.0.js`;
+            modalScript.onload = () => {
+                try {
+                    new window.FeedbacksWidget({
+                        projectKey: 'feedbacks_dev_api_key_test123',
+                        embedMode: 'modal'
+                    });
+                    updateStatus('modal-status', true, '✅ Modal widget loaded successfully');
+                } catch (error) {
+                    updateStatus('modal-status', false, '❌ Modal widget init failed: ' + error.message);
+                }
+            };
+            modalScript.onerror = () => {
+                updateStatus('modal-status', false, '❌ Failed to load modal widget script from CDN');
+            };
+            document.head.appendChild(modalScript);
+            
+            // Load CSS
+            const modalCSS = document.createElement('link');
+            modalCSS.rel = 'stylesheet';
+            modalCSS.href = `${CDN_BASE}/1.0.0.css`;
+            document.head.appendChild(modalCSS);
+            
+        } catch (error) {
+            updateStatus('modal-status', false, '❌ Error: ' + error.message);
+        }
+        
+        // Test CDN versions
+        const versionTests = ['1.0.0', '1.0', '1', 'latest', 'stable'];
+        let testResults = [];
+        
+        Promise.all(versionTests.map(version => 
+            fetch(`${CDN_BASE}/${version}.js`)
+                .then(response => ({ version, success: response.ok, status: response.status }))
+                .catch(error => ({ version, success: false, error: error.message }))
+        )).then(results => {
+            const listEl = document.getElementById('version-tests');
+            listEl.innerHTML = results.map(result => 
+                `<li>${result.success ? '✅' : '❌'} ${result.version}: ${result.success ? 'OK' : (result.error || `HTTP ${result.status}`)}</li>`
+            ).join('');
+        });
+    </script>
+</body>
+</html>

@@ -338,7 +338,7 @@ class FeedbacksWidget {
           email: email || undefined,
           url: window.location.href,
           userAgent: navigator.userAgent,
-          type: typeSelect && typeSelect.value ? typeSelect.value : undefined,
+          type: typeSelect && typeSelect.value ? typeSelect.value as 'bug' | 'idea' | 'praise' : undefined,
           rating: ratingSelect && ratingSelect.value ? parseInt(ratingSelect.value, 10) : undefined,
         });
         

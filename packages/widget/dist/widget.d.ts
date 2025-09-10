@@ -7,9 +7,12 @@ declare class FeedbacksWidget {
     private overlay;
     private retryCount;
     private maxRetries;
+    private lastFocusedElement;
     constructor(config: WidgetConfig);
+    static init(config: WidgetConfig): FeedbacksWidget;
     private init;
     private setup;
+    private adaptLookAndFeel;
     private log;
     private createButton;
     private createInlineForm;

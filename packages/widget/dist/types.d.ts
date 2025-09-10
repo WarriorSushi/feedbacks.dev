@@ -4,6 +4,8 @@ export interface FeedbackData {
     email?: string;
     url: string;
     userAgent: string;
+    type?: 'bug' | 'idea' | 'praise';
+    rating?: number;
 }
 export interface FeedbackResponse {
     id: string;

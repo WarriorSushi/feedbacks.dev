@@ -8,6 +8,7 @@
     "build": "webpack --mode production",
     "type-check": "tsc --noEmit",
     "deploy": "npm run build && node deploy.js",
+    "version:patch": "node version-bump.js patch",
     "version:minor": "node version-bump.js minor",
     "version:major": "node version-bump.js major",
     "release": "npm run build && npm run deploy && git add -A"
