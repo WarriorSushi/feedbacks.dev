@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Exact Widget Code from Dashboard</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f3f4f6;
+        }
+        h1 { color: #111827; }
+        .test-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 15px 0;
+        }
+        .status {
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .status.success { background: #10b981; color: white; }
+        .status.error { background: #ef4444; color: white; }
+        .status.info { background: #3b82f6; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Testing Exact Widget Code from Dashboard</h1>
+
+    <div class="test-section">
+        <h2>Test 1: Modal Mode (Floating Button)</h2>
+        <p>This is the exact code shown in the dashboard for modal mode:</p>
+        <div class="code-block">
+&lt;!-- Include widget assets --&gt;
+&lt;script src="http://localhost:3000/cdn/widget/latest.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="http://localhost:3000/cdn/widget/latest.css"&gt;
+
+&lt;script&gt;
+  new FeedbacksWidget({
+    projectKey: "feedbacks_dev_api_key_5cfc822b3b12ff1a89fd743295f32acc69b8424e",
+    embedMode: "modal",
+    position: "bottom-right",
+  });
+&lt;/script&gt;
+        </div>
+        <div class="status info">Check bottom-right corner for floating button with chat icon</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Inline Mode (Embedded Form)</h2>
+        <p>This is the exact code for inline mode:</p>
+        <div class="code-block">
+&lt;!-- Include widget assets --&gt;
+&lt;script src="http://localhost:3000/cdn/widget/latest.js"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="http://localhost:3000/cdn/widget/latest.css"&gt;
+
+&lt;div id="feedback-widget"&gt;&lt;/div&gt;
+&lt;script&gt;
+  new FeedbacksWidget({
+    projectKey: "feedbacks_dev_api_key_5cfc822b3b12ff1a89fd743295f32acc69b8424e",
+    embedMode: "inline",
+    target: "#feedback-widget",
+  });
+&lt;/script&gt;
+        </div>
+        <div id="feedback-widget" style="min-height: 400px; border: 2px dashed #3b82f6; border-radius: 8px; padding: 20px; background: #f0f9ff;">
+            <!-- Widget will be inserted here -->
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Console Output</h2>
+        <div id="console-output" style="background: #1f2937; color: #10b981; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 12px; min-height: 150px; max-height: 300px; overflow-y: auto;">
+            Monitoring widget initialization...
+        </div>
+    </div>
+
+    <!-- Test 1: Modal Mode (exactly as shown in dashboard) -->
+    <!-- Include widget assets -->
+    <script src="http://localhost:3000/cdn/widget/latest.js"></script>
+    <link rel="stylesheet" href="http://localhost:3000/cdn/widget/latest.css">
+
+    <script>
+        // Console monitoring
+        const consoleOutput = document.getElementById('console-output');
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
+            consoleOutput.innerHTML += `<div style="color: #10b981;">[LOG] ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
+            consoleOutput.innerHTML += `<div style="color: #ef4444;">[ERROR] ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        // Wait for widget to load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, checking FeedbacksWidget availability...');
+            
+            if (typeof FeedbacksWidget !== 'undefined') {
+                console.log('FeedbacksWidget is available!');
+                
+                // Test 1: Initialize modal mode
+                try {
+                    const modalWidget = new FeedbacksWidget({
+                        projectKey: "feedbacks_dev_api_key_5cfc822b3b12ff1a89fd743295f32acc69b8424e",
+                        embedMode: "modal",
+                        position: "bottom-right",
+                        debug: true
+                    });
+                    console.log('Modal widget initialized successfully');
+                } catch (error) {
+                    console.error('Modal widget initialization failed:', error);
+                }
+                
+                // Test 2: Initialize inline mode
+                setTimeout(() => {
+                    try {
+                        const inlineWidget = new FeedbacksWidget({
+                            projectKey: "feedbacks_dev_api_key_5cfc822b3b12ff1a89fd743295f32acc69b8424e",
+                            embedMode: "inline",
+                            target: "#feedback-widget",
+                            debug: true
+                        });
+                        console.log('Inline widget initialized successfully');
+                        
+                        // Check if form was added
+                        const container = document.getElementById('feedback-widget');
+                        if (container && container.querySelector('.feedbacks-widget')) {
+                            console.log('Inline form successfully rendered in container');
+                        } else {
+                            console.error('Inline form not found in container');
+                        }
+                    } catch (error) {
+                        console.error('Inline widget initialization failed:', error);
+                    }
+                }, 500);
+                
+            } else {
+                console.error('FeedbacksWidget is NOT available - script may not have loaded');
+                
+                // Try to check what's on window
+                console.log('Window objects:', Object.keys(window).filter(k => k.toLowerCase().includes('feedback')));
+            }
+        });
+    </script>
+</body>
+</html>
