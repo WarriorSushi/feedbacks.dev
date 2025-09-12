@@ -25,6 +25,10 @@ export interface WidgetConfig {
     apiUrl?: string;
     debug?: boolean;
     requireEmail?: boolean;
+    requireCaptcha?: boolean;
+    captchaProvider?: 'turnstile' | 'hcaptcha';
+    turnstileSiteKey?: string;
+    hcaptchaSiteKey?: string;
     enableType?: boolean;
     enableRating?: boolean;
     enableScreenshot?: boolean;

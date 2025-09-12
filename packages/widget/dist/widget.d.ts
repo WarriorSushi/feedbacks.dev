@@ -23,6 +23,8 @@ declare class FeedbacksWidget {
     private open;
     private close;
     private createModal;
+    private loadScript;
+    private renderCaptcha;
     private attachFormHandlers;
     private submitFeedback;
     private submitWithRetry;
