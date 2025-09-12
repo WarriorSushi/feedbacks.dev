@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Inline Widget</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #f3f4f6;
+        }
+        h1 {
+            color: #111827;
+            margin-bottom: 20px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .info {
+            background: #eff6ff;
+            border: 1px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .info code {
+            background: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Inline Widget Test</h1>
+        
+        <div class="info">
+            <strong>Testing inline mode</strong> - The widget should appear below embedded in this page.
+            <br><br>
+            Using project key: <code>feedbacks_dev_api_key_5cfc822b3b12ff1a89fd743295f32acc69b8424e</code>
+        </div>
+
+        <h2>Inline Widget Container:</h2>
+        <div id="feedback-widget" style="min-height: 400px; border: 2px dashed #d1d5db; border-radius: 8px; padding: 20px; background: #f9fafb;">
+            <!-- Widget will be inserted here -->
+        </div>
+    </div>
+
+    <!-- Load local widget files -->
+    <script src="dist/widget-1.0.0.js"></script>
+    <link rel="stylesheet" href="dist/widget-1.0.0.css">
+
+    <script>
+        // Wait for DOM and widget to be ready
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, checking for FeedbacksWidget...');
+            
+            if (typeof FeedbacksWidget !== 'undefined') {
+                console.log('FeedbacksWidget found, initializing inline mode...');
+                
+                try {
+                    const widget = new FeedbacksWidget({
+                        projectKey: "feedbacks_dev_api_key_5cfc822b3b12ff1a89fd743295f32acc69b8424e",
+                        embedMode: "inline",
+                        target: "#feedback-widget",
+                        debug: true // Enable debug logging
+                    });
+                    
+                    console.log('Widget initialized successfully');
+                } catch (error) {
+                    console.error('Failed to initialize widget:', error);
+                }
+            } else {
+                console.error('FeedbacksWidget not found on window object');
+            }
+        });
+    </script>
+</body>
+</html>
