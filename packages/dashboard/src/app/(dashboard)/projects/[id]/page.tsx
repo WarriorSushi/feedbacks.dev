@@ -64,6 +64,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   const { data: feedbacks, count } = await query.range(from, to);
 
   const WIDGET_VERSION = 'latest';
+  const defaultTab = (typeof count === 'number' && count > 0) ? 'feedback' : 'widget-installation';
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,15 +92,11 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
         </div>
 
         {/* Project Tabs */}
-        <Tabs defaultValue="feedback" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+        <Tabs defaultValue={defaultTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-4">
             <TabsTrigger value="feedback" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               <span className="hidden sm:inline">Feedback</span>
-            </TabsTrigger>
-            <TabsTrigger value="widget-installation" className="flex items-center gap-2">
-              <Code className="h-4 w-4" />
-              <span className="hidden sm:inline">Widget Installation</span>
             </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -108,6 +105,10 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             <TabsTrigger value="integrations" className="flex items-center gap-2">
               <Webhook className="h-4 w-4" />
               <span className="hidden sm:inline">Integrations</span>
+            </TabsTrigger>
+            <TabsTrigger value="widget-installation" className="flex items-center gap-2">
+              <Code className="h-4 w-4" />
+              <span className="hidden sm:inline">Widget Installation</span>
             </TabsTrigger>
           </TabsList>
 
@@ -283,101 +284,80 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             </div>
           </TabsContent>
 
-          <TabsContent value="widget-installation" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Widget Setup */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Code className="h-5 w-5" />
-                    Widget Installation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label>API Key</Label>
-                    <div className="flex gap-2 mt-1">
-                      <Input value={project.api_key} readOnly className="font-mono text-sm" />
-                      <CopyButton text={project.api_key} />
-                    </div>
-                  </div>
-
-                  <WidgetCodeGenerator projectKey={project.api_key} widgetVersion={WIDGET_VERSION} projectId={params.id} />
-
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Button asChild className="flex-1">
-                      <Link href={`/widget-demo?apiKey=${encodeURIComponent(project.api_key)}`} target="_blank">
-                        Test Widget
-                      </Link>
-                    </Button>
-                    <Button variant="outline" asChild className="flex-1">
-                      <Link href="/widget-demo" target="_blank">
-                        View Demo
-                      </Link>
-                    </Button>
-                    <Button variant="outline" asChild className="flex-1">
-                      <Link href={`/api/projects/${params.id}/feedback.csv`} target="_blank">
-                        Export CSV
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Anti‑spam (Captcha)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ProjectAntiSpam projectId={params.id} />
-                </CardContent>
-              </Card>
+          <TabsContent value="widget-installation" className="space-y-4">
+            {/* Slim top guidance */}
+            <div className="text-xs text-muted-foreground border rounded-md px-3 py-2">
+              <span className="font-medium">Install:</span>
+              <span className="ml-2">1) Choose options 2) Copy code 3) Paste before </span>
+              <code className="text-[10px]">&lt;/body&gt;</code>
             </div>
 
-            {/* Project Stats Sidebar for Widget Installation */}
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Installation Guide</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3 text-sm">
-                    <div>
-                      <p className="font-medium">Step 1:</p>
-                      <p className="text-muted-foreground">Copy your API key</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Step 2:</p>
-                      <p className="text-muted-foreground">Copy the tailored snippet</p>
-                    </div>
-                    <div>
-                      <p className="font-medium">Step 3:</p>
-                      <p className="text-muted-foreground">Paste before closing &lt;/body&gt; tag</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Widget Setup (clean, single column) */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Code className="h-5 w-5" />
+                  Widget Installation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <WidgetCodeGenerator projectKey={project.api_key} widgetVersion={WIDGET_VERSION} projectId={params.id} />
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Project Info</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Project ID</Label>
-                      <p className="text-sm font-mono text-muted-foreground">{project.id}</p>
-                    </div>
-                    <div>
-                      <Label>Created</Label>
-                      <p className="text-sm text-muted-foreground">{new Date(project.created_at).toLocaleDateString()}</p>
-                    </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button asChild className="flex-1">
+                    <Link href={`/widget-demo?apiKey=${encodeURIComponent(project.api_key)}`} target="_blank">
+                      Test Widget
+                    </Link>
+                  </Button>
+                  <Button variant="outline" asChild className="flex-1">
+                    <Link href="/widget-demo" target="_blank">
+                      View Demo
+                    </Link>
+                  </Button>
+                  <Button variant="outline" asChild className="flex-1">
+                    <Link href={`/api/projects/${params.id}/feedback.csv`} target="_blank">
+                      Export CSV
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Anti‑spam (Captcha)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProjectAntiSpam projectId={params.id} />
+              </CardContent>
+            </Card>
+
+            {/* Project Info and API Key (moved to bottom, de-emphasized) */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Info</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label>Project ID</Label>
+                  <p className="text-sm font-mono text-muted-foreground">{project.id}</p>
+                </div>
+                <div>
+                  <Label>Created</Label>
+                  <p className="text-sm text-muted-foreground">{new Date(project.created_at).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <Label>API Key</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input value={project.api_key} readOnly className="font-mono text-xs" />
+                    <CopyButton text={project.api_key} />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">

@@ -55,7 +55,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
       title: "Projects",
       url: "/projects",
       icon: BarChart3,
-      badge: projectsCount > 0 ? projectsCount.toString() : undefined,
+      // Removed numeric badge — it’s unnecessary visual noise
     },
     {
       title: "Feedback",
@@ -253,4 +253,3 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
     </Sidebar>
   );
 }
-
