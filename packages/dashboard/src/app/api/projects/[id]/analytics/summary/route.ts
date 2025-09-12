@@ -95,7 +95,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       }
     });
     for (const t of topTags) {
-      for (const [d, c] of tagDayMap[t].entries()) {
+      const entries = Array.from(tagDayMap[t].entries());
+      for (const [d, c] of entries) {
         tagHeatmap.push({ tag: t, date: d, count: c });
       }
     }

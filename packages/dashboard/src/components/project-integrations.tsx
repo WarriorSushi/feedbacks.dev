@@ -185,8 +185,8 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
   };
 
   const curlFor = (key: 'slack'|'discord'|'generic', url?: string) => {
-    if (key === 'slack') return `curl -X POST -H "Content-Type: application/json" -d '{"text":"Hello from feedbacks.dev"}' "${url || cfg.slack?.url || 'https://hooks.slack.com/services/...'}"`;
-    if (key === 'discord') return `curl -X POST -H "Content-Type: application/json" -d '{"content":"Hello from feedbacks.dev","username":"feedbacks.dev"}' "${url || cfg.discord?.url || 'https://discord.com/api/webhooks/...'}"`;
+    if (key === 'slack') return `curl -X POST -H "Content-Type: application/json" -d '{"text":"Hello from feedbacks.dev"}' "${url || (cfg.slack && 'url' in cfg.slack ? cfg.slack.url : undefined) || 'https://hooks.slack.com/services/...'}"`;
+    if (key === 'discord') return `curl -X POST -H "Content-Type: application/json" -d '{"content":"Hello from feedbacks.dev","username":"feedbacks.dev"}' "${url || (cfg.discord && 'url' in cfg.discord ? cfg.discord.url : undefined) || 'https://discord.com/api/webhooks/...'}"`;
     // generic
     const payload = {
       event: 'feedbacks.created',
@@ -194,14 +194,14 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
       project: 'Project Name',
       feedback: { id: 'uuid', created_at: new Date().toISOString(), message: 'message', email: 'user@example.com', url: 'https://example.com', type: 'bug', rating: 2, priority: 'high', tags: ['tag'], screenshot_url: null, attachments: null }
     };
-    return `curl -X POST -H "Content-Type: application/json" -d '${JSON.stringify(payload)}' "${url || (cfg as any).generic?.url || 'https://example.com/webhook'}"`;
+    return `curl -X POST -H "Content-Type: application/json" -d '${JSON.stringify(payload)}' "${url || (cfg.generic && 'url' in cfg.generic ? cfg.generic.url : undefined) || 'https://example.com/webhook'}"`;
   };
 
   const previewFor = (key: 'slack'|'discord') => {
     const text = `${'Project'}: ${'[bug] '}New feedback message (rating 4/5)`;
     return (
       <div className="text-sm border rounded p-3 bg-muted/30">
-        {key === 'slack' ? <div className="font-mono">{{text}}</div> : <div className="font-mono">{{content: text, username: 'feedbacks.dev'}}</div>}
+        {key === 'slack' ? <div className="font-mono">{JSON.stringify({text})}</div> : <div className="font-mono">{JSON.stringify({content: text, username: 'feedbacks.dev'})}</div>}
         <div className="text-xs text-muted-foreground mt-1">Preview</div>
       </div>
     );

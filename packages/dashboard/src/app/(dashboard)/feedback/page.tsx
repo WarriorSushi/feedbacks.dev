@@ -17,6 +17,10 @@ import {
   Archive,
   MoreHorizontal,
   Paperclip,
+  Eye,
+  Calendar,
+  Mail,
+  MonitorSmartphone,
 } from "lucide-react";
 import { ImageLightbox } from "@/components/image-lightbox";
 import { useEffect, useMemo, useState } from "react";
@@ -120,7 +124,7 @@ export default function FeedbackPage() {
         tags: Array.isArray(f.tags) ? f.tags : [],
         screenshot_url: f.screenshot_url || undefined,
         attachments: Array.isArray(f.attachments) ? f.attachments : [],
-        status: f.archived ? 'archived' : (f.is_read ? 'read' : 'new'),
+        status: (f.archived ? 'archived' : (f.is_read ? 'read' : 'new')) as 'new' | 'read' | 'archived',
       }));
       setFeedback(mapped);
     };
@@ -202,6 +206,86 @@ export default function FeedbackPage() {
       });
       if (archive) setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, status: 'archived' } : f));
       else setPage(1);
+      clearSelection();
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  };
+
+  const clearSelection = () => setSelected(new Set());
+
+  const markRead = async (read: boolean) => {
+    if (selectAllFiltered) {
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: read ? 'mark_read' : 'mark_unread',
+          filters: {
+            projectId: selectedProjectId,
+            status: filterStatus,
+            type: filterType,
+            rating: filterRating,
+            searchTerm,
+          },
+        }),
+      });
+      setSelected(new Set()); setSelectAllFiltered(false); setPage(1);
+    } else {
+      if (selected.size === 0) return;
+      const ids = Array.from(selected);
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: read ? 'mark_read' : 'mark_unread', ids }),
+      });
+      setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, status: read ? 'read' : 'new' } : f));
+      clearSelection();
+    }
+  };
+
+  const applyTag = async () => {
+    const tag = bulkTag.trim();
+    if (!tag) return;
+    if (selectAllFiltered) {
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add_tag', filters: { projectId: selectedProjectId, status: filterStatus, type: filterType, rating: filterRating, searchTerm, tag } }),
+      });
+      setBulkTag(""); setSelectAllFiltered(false); setPage(1);
+    } else if (selected.size > 0) {
+      const ids = Array.from(selected);
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add_tag', ids, filters: { tag } }),
+      });
+      setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, tags: Array.from(new Set([...(f.tags || []), tag])) } : f));
+      setBulkTag("");
+      clearSelection();
+    }
+  };
+
+  const removeTag = async () => {
+    const tag = removeTagValue.trim();
+    if (!tag) return;
+    if (selectAllFiltered) {
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'remove_tag', filters: { projectId: selectedProjectId, status: filterStatus, type: filterType, rating: filterRating, searchTerm, tag } }),
+      });
+      setRemoveTagValue(""); setSelectAllFiltered(false); setPage(1);
+    } else if (selected.size > 0) {
+      const ids = Array.from(selected);
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'remove_tag', ids, filters: { tag } }),
+      });
+      setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, tags: (f.tags || []).filter(t => t !== tag) } : f));
+      setRemoveTagValue("");
       clearSelection();
     }
   };
@@ -560,82 +644,3 @@ export default function FeedbackPage() {
     </div>
   );
 }
-  const toggleSelect = (id: string) => {
-    setSelected(prev => {
-      const n = new Set(prev);
-      if (n.has(id)) n.delete(id); else n.add(id);
-      return n;
-    });
-  };
-
-  const clearSelection = () => setSelected(new Set());
-
-  const markRead = async (read: boolean) => {
-    if (selectAllFiltered) {
-      await fetch('/api/feedbacks/bulk', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: read ? 'mark_read' : 'mark_unread',
-          filters: {
-            projectId: selectedProjectId,
-            status: filterStatus,
-            type: filterType,
-            rating: filterRating,
-            searchTerm,
-          },
-        }),
-      });
-      setSelected(new Set()); setSelectAllFiltered(false); setPage(1);
-    } else {
-      if (selected.size === 0) return;
-      const ids = Array.from(selected);
-      await fetch('/api/feedbacks/bulk', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: read ? 'mark_read' : 'mark_unread', ids }),
-      });
-      setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, status: read ? 'read' : 'new' } : f));
-      clearSelection();
-    }
-  };
-
-  const applyTag = async () => {
-    const tag = bulkTag.trim();
-    if (!tag) return;
-    if (selectAllFiltered) {
-      await fetch('/api/feedbacks/bulk', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'add_tag', filters: { projectId: selectedProjectId, status: filterStatus, type: filterType, rating: filterRating, searchTerm, tag } }),
-      });
-      setBulkTag(""); setSelectAllFiltered(false); setPage(1);
-    } else if (selected.size > 0) {
-      const ids = Array.from(selected);
-      await fetch('/api/feedbacks/bulk', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'add_tag', ids, filters: { tag } }),
-      });
-      setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, tags: Array.from(new Set([...(f.tags || []), tag])) } : f));
-      setBulkTag("");
-      clearSelection();
-    }
-  };
-
-  const removeTag = async () => {
-    const tag = removeTagValue.trim();
-    if (!tag) return;
-    if (selectAllFiltered) {
-      await fetch('/api/feedbacks/bulk', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'remove_tag', filters: { projectId: selectedProjectId, status: filterStatus, type: filterType, rating: filterRating, searchTerm, tag } }),
-      });
-      setRemoveTagValue(""); setSelectAllFiltered(false); setPage(1);
-    } else if (selected.size > 0) {
-      const ids = Array.from(selected);
-      await fetch('/api/feedbacks/bulk', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'remove_tag', ids, filters: { tag } }),
-      });
-      setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, tags: (f.tags || []).filter(t => t !== tag) } : f));
-      setRemoveTagValue("");
-      clearSelection();
-    }
-  };

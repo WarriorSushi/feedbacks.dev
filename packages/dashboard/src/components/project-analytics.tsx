@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Sparkline } from "@/components/ui/sparkline";
 
@@ -115,7 +115,7 @@ export function ProjectAnalytics({ projectId }: { projectId: string }) {
           <div className="flex items-end gap-2 h-24">
             {['1','2','3','4','5'].map((r) => {
               const v = data.ratingCounts[r] || 0;
-              const max = Math.max(...Object.values(data.ratingCounts));
+              const max = Math.max(...Object.values(data.ratingCounts as Record<string, number>));
               const h = max ? (v / max) * 80 + 8 : 8;
               return (
                 <div key={r} className="flex flex-col items-center">
@@ -150,7 +150,7 @@ export function ProjectAnalytics({ projectId }: { projectId: string }) {
                 // matrix: tags x dates
                 const tags = Array.from(new Set(data.tagHeatmap.map((x: any) => x.tag)));
                 const maxVal = Math.max(...data.tagHeatmap.map((x: any) => x.count));
-                return tags.map((tag: string) => (
+                return tags.map((tag: any) => (
                   <React.Fragment key={tag}>
                     {data.perDay.map((d: any) => {
                       const cell = data.tagHeatmap.find((x: any) => x.tag === tag && x.date === d.date);

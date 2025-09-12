@@ -187,8 +187,8 @@ onMounted(() => {
 import { WebView } from 'react-native-webview';
 
 export default function FeedbackWidget() {
-  const html = ` + "`" + `<link rel=\"stylesheet\" href=\"${cssHref}\" />
-<script src=\"${jsHref}\"></script>
+  const html = ` + "`" + `<link rel=\"stylesheet\" href=\"${publicCssHref}\" />
+<script src=\"${publicJsHref}\"></script>
 <div id=\"root\"></div>
 <script>new FeedbacksWidget(${configJs});</script>` + "`" + `;
   return <WebView originWhitelist={["*"]} source={{ html }} />;

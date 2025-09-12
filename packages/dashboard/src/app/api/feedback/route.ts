@@ -452,6 +452,7 @@ export async function POST(request: NextRequest) {
       events?: string[]; // e.g., ['created','digest']
       rateLimitPerMin?: number; // cap sends per minute for this endpoint (immediate only)
       redact?: { email?: boolean; url?: boolean };
+      format?: 'compact' | 'full'; // optional format property
     };
     const makeId = (url: string) => 'u-' + crypto.createHash('sha1').update(url).digest('hex').slice(0, 12);
     const toArray = (maybe: any) => Array.isArray(maybe) ? maybe : [];
@@ -498,7 +499,7 @@ export async function POST(request: NextRequest) {
 
     const hasEvent = (ep: Endpoint, name: 'created'|'digest') => Array.isArray(ep.events) ? ep.events.includes(name) : (name === 'created' ? (ep.delivery !== 'digest') : (ep.delivery === 'digest'));
 
-    async function isRateLimited(ep: Endpoint) {
+    const isRateLimited = async (ep: Endpoint) => {
       if (!ep.rateLimitPerMin || ep.rateLimitPerMin <= 0) return false;
       const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
       const res = await supabaseAdmin
@@ -511,7 +512,7 @@ export async function POST(request: NextRequest) {
       return count >= ep.rateLimitPerMin;
     }
 
-    function redactGenericPayload(ep: Endpoint, payload: any) {
+    const redactGenericPayload = (ep: Endpoint, payload: any) => {
       if (!ep.redact) return payload;
       const clone = JSON.parse(JSON.stringify(payload));
       if (ep.redact.email && clone?.feedback) clone.feedback.email = null;
