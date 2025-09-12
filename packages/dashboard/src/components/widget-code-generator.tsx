@@ -559,6 +559,44 @@ export default function FeedbackWidget() {
                 </SelectContent>
               </Select>
             </div>
+            {/* Captcha options */}
+            <div className="space-y-2">
+              <Label>Require Captcha</Label>
+              <Select value={requireCaptcha ? 'yes' : 'no'} onValueChange={(v)=>setRequireCaptcha(v==='yes')}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Require Captcha" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no">No</SelectItem>
+                  <SelectItem value="yes">Yes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Captcha Provider</Label>
+              <Select value={captchaProvider} onValueChange={(v)=>setCaptchaProvider(v as any)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="turnstile">Cloudflare Turnstile</SelectItem>
+                  <SelectItem value="hcaptcha">hCaptcha</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {captchaProvider === 'turnstile' && (
+              <div className="space-y-2 md:col-span-2">
+                <Label>Turnstile Site Key</Label>
+                <Input placeholder="0xAAAA..." value={turnstileSiteKey} onChange={(e)=>setTurnstileSiteKey(e.target.value)} />
+              </div>
+            )}
+            {captchaProvider === 'hcaptcha' && (
+              <div className="space-y-2 md:col-span-2">
+                <Label>hCaptcha Site Key</Label>
+                <Input placeholder="10000000-ffff-ffff-ffff-000000000001" value={hcaptchaSiteKey} onChange={(e)=>setHcaptchaSiteKey(e.target.value)} />
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Category Field</Label>
               <Select value={enableType ? 'on' : 'off'} onValueChange={(v)=>setEnableType(v==='on')}>
@@ -657,41 +695,3 @@ export default function FeedbackWidget() {
     </div>
   );
 }
-            {/* Captcha options */}
-            <div className="space-y-2">
-              <Label>Require Captcha</Label>
-              <Select value={requireCaptcha ? 'yes' : 'no'} onValueChange={(v)=>setRequireCaptcha(v==='yes')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Require Captcha" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no">No</SelectItem>
-                  <SelectItem value="yes">Yes</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Captcha Provider</Label>
-              <Select value={captchaProvider} onValueChange={(v)=>setCaptchaProvider(v as any)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Provider" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="turnstile">Cloudflare Turnstile</SelectItem>
-                  <SelectItem value="hcaptcha">hCaptcha</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {captchaProvider === 'turnstile' && (
-              <div className="space-y-2 md:col-span-2">
-                <Label>Turnstile Site Key</Label>
-                <Input placeholder="0xAAAA..." value={turnstileSiteKey} onChange={(e)=>setTurnstileSiteKey(e.target.value)} />
-              </div>
-            )}
-            {captchaProvider === 'hcaptcha' && (
-              <div className="space-y-2 md:col-span-2">
-                <Label>hCaptcha Site Key</Label>
-                <Input placeholder="10000000-ffff-ffff-ffff-000000000001" value={hcaptchaSiteKey} onChange={(e)=>setHcaptchaSiteKey(e.target.value)} />
-              </div>
-            )}

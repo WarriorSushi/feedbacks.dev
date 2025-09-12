@@ -10,7 +10,6 @@ import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
 import { StatsCard } from '@/components/ui/stats-card';
 import { FeedbackCard } from '@/components/ui/feedback-card';
 import { Plus, BarChart3, Calendar, Mail, ExternalLink, TrendingUp, Users, Clock, MessageSquare, PlayCircle, Settings, BookOpen, Code2, ShieldCheck } from 'lucide-react';
-import { ProjectsComparison } from '@/components/projects-comparison';
 import { OverviewAnalytics } from '@/components/overview-analytics';
 import { ProjectsComparison } from '@/components/projects-comparison';
 import { useEffect, useState } from 'react';
