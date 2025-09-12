@@ -302,13 +302,6 @@ export default function FeedbackWidget() {
   </html>`;
   }, [previewCssHref, previewJsHref]);
 
-  // Push live updates without reloading the iframe
-  useEffect(() => {
-    const win = iframeRef.current?.contentWindow;
-    if (!win) return;
-    try { win.postMessage({ type: 'widget-preview:update', config: currentConfig }, '*'); } catch {}
-  }, [currentConfig]);
-
   const currentConfig = useMemo(() => ({
     projectKey,
     embedMode: mode,
@@ -358,6 +351,13 @@ export default function FeedbackWidget() {
     enableAttachment,
     attachmentMaxMB,
   ]);
+
+  // Push live updates without reloading the iframe
+  useEffect(() => {
+    const win = iframeRef.current?.contentWindow;
+    if (!win) return;
+    try { win.postMessage({ type: 'widget-preview:update', config: currentConfig }, '*'); } catch {}
+  }, [currentConfig]);
 
   const saveDefaults = async () => {
     if (!projectId) return;
