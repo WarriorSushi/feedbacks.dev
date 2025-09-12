@@ -9,6 +9,8 @@ export interface FeedbackData {
     screenshot?: string;
     priority?: 'low' | 'medium' | 'high';
     tags?: string[];
+    turnstileToken?: string;
+    hcaptchaToken?: string;
 }
 export interface FeedbackResponse {
     id: string;

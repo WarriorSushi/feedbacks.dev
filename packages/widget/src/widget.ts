@@ -380,7 +380,8 @@ class FeedbacksWidget {
     const captureBtn = container.querySelector(`#feedbacks-capture${idSuffix}`) as HTMLButtonElement | null;
     const shotStatus = container.querySelector('.feedbacks-screenshot-status') as HTMLElement | null;
     const fileInput = container.querySelector(`#feedbacks-attachment${idSuffix}`) as HTMLInputElement | null;
-    const cancelBtn = container.querySelector('.feedbacks-btn-secondary') as HTMLButtonElement;
+    // Only bind the Cancel button in the footer actions, not other secondary buttons
+    const cancelBtn = container.querySelector('.feedbacks-actions .feedbacks-btn-secondary') as HTMLButtonElement;
     const closeBtn = container.querySelector('.feedbacks-close') as HTMLButtonElement;
     const submitBtn = container.querySelector('.feedbacks-btn-primary') as HTMLButtonElement;
     const charCount = container.querySelector('.feedbacks-char-count') as HTMLElement;
@@ -536,7 +537,7 @@ class FeedbacksWidget {
         this.log('Feedback submitted successfully');
       } catch (error) {
         this.log(`Submission failed: ${error}`);
-        this.showError('Failed to send feedback. Please try again or contact support.');
+        this.showError('Failed to send feedback. Please try again or contact support.', container);
         this.setSubmitState(submitBtn, false);
       }
     });
@@ -550,14 +551,21 @@ class FeedbacksWidget {
     try {
       const apiUrl = this.config.apiUrl || 'https://app.feedbacks.dev/api/feedback';
       let response: Response;
-      if (typeof FormData !== 'undefined' && data instanceof FormData) {
-        response = await fetch(apiUrl, { method: 'POST', body: data });
-      } else {
-        response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6000);
+      try {
+        if (typeof FormData !== 'undefined' && data instanceof FormData) {
+          response = await fetch(apiUrl, { method: 'POST', body: data, signal: controller.signal });
+        } else {
+          response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+            signal: controller.signal,
+          });
+        }
+      } finally {
+        clearTimeout(timeout);
       }
 
       const json = await response.json().catch(() => null);
@@ -659,12 +667,15 @@ class FeedbacksWidget {
     }, 5000);
   }
 
-  private showError(message: string): void {
-    // Remove existing error
-    const existingError = document.querySelector('.feedbacks-error');
+  private showError(message: string, scope?: HTMLElement | Document): void {
+    const root: Document | HTMLElement = scope || document;
+    // Remove existing error within scope
+    const existingError = (root as any).querySelector?.('.feedbacks-error') as HTMLElement | null;
     existingError?.remove();
 
-    const content = document.querySelector('.feedbacks-content') as HTMLElement;
+    const content = (root as any).querySelector?.('.feedbacks-content') as HTMLElement | null;
+    if (!content) return; // Gracefully skip if structure not present
+
     const errorDiv = document.createElement('div');
     errorDiv.className = 'feedbacks-error';
     errorDiv.innerHTML = `
