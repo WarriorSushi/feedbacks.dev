@@ -384,6 +384,8 @@ class FeedbacksWidget {
     const closeBtn = container.querySelector('.feedbacks-close') as HTMLButtonElement;
     const submitBtn = container.querySelector('.feedbacks-btn-primary') as HTMLButtonElement;
     const charCount = container.querySelector('.feedbacks-char-count') as HTMLElement;
+    const turnstileTokenEl = container.querySelector(`#feedbacks-turnstile-token${idSuffix}`) as HTMLInputElement | null;
+    const hcaptchaTokenEl = container.querySelector(`#feedbacks-hcaptcha-token${idSuffix}`) as HTMLInputElement | null;
 
     if (!form || !textarea || !submitBtn) {
       this.log('Required form elements not found');
@@ -448,18 +450,30 @@ class FeedbacksWidget {
         this.showError('Email is required');
         return;
       }
-      if (this.config.requireEmail && !email) {
-        this.showError('Email is required');
-        return;
-      }
       if (email && !this.isValidEmail(email)) {
         this.showError('Please enter a valid email address');
         return;
       }
 
-      if (includeShot && includeShot.checked && !this.screenshotData && this.config.screenshotRequired) {
-        this.showError('Please capture a screenshot');
+    if (includeShot && includeShot.checked && !this.screenshotData && this.config.screenshotRequired) {
+      this.showError('Please capture a screenshot');
+      return;
+    }
+
+      if (!this.config.projectKey) {
+        this.showError('Missing project key');
         return;
+      }
+
+      if (this.config.requireCaptcha) {
+        if (this.config.captchaProvider === 'turnstile' && !(turnstileTokenEl && turnstileTokenEl.value)) {
+          this.showError('Captcha verification required');
+          return;
+        }
+        if (this.config.captchaProvider === 'hcaptcha' && !(hcaptchaTokenEl && hcaptchaTokenEl.value)) {
+          this.showError('Captcha verification required');
+          return;
+        }
       }
 
       this.setSubmitState(submitBtn, true);
@@ -491,6 +505,8 @@ class FeedbacksWidget {
           if (prioritySelect && prioritySelect.value) form.append('priority', prioritySelect.value);
           if (tagsInput && tagsInput.value) form.append('tags', tagsInput.value);
           if (includeShot && includeShot.checked && this.screenshotData) form.append('screenshot', this.screenshotData);
+          if (turnstileTokenEl && turnstileTokenEl.value) form.append('turnstileToken', turnstileTokenEl.value);
+          if (hcaptchaTokenEl && hcaptchaTokenEl.value) form.append('hcaptchaToken', hcaptchaTokenEl.value);
           form.append('attachment', file);
           await this.submitFeedback(form as any);
         } else {
@@ -505,12 +521,16 @@ class FeedbacksWidget {
             priority: prioritySelect && prioritySelect.value ? (prioritySelect.value as any) : undefined,
             tags: tagsInput && tagsInput.value ? tagsInput.value.split(',').map(s => s.trim()).filter(Boolean) : undefined,
             screenshot: includeShot && includeShot.checked && this.screenshotData ? this.screenshotData : undefined,
+            turnstileToken: turnstileTokenEl && turnstileTokenEl.value ? turnstileTokenEl.value : undefined,
+            hcaptchaToken: hcaptchaTokenEl && hcaptchaTokenEl.value ? hcaptchaTokenEl.value : undefined,
           });
         }
         
         if (isModal) {
+          this.setSubmitState(submitBtn, false);
           this.showSuccess();
         } else {
+          this.setSubmitState(submitBtn, false);
           this.showInlineSuccess(container);
         }
         this.log('Feedback submitted successfully');
@@ -540,11 +560,13 @@ class FeedbacksWidget {
         });
       }
 
+      const json = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errMsg = (json && (json.error || json.message)) || `HTTP ${response.status}: ${response.statusText}`;
+        throw new Error(errMsg);
       }
 
-      return await response.json();
+      return json as FeedbackResponse;
     } catch (error) {
       if (attempt < this.maxRetries) {
         this.log(`Attempt ${attempt} failed, retrying...`);
@@ -633,6 +655,7 @@ class FeedbacksWidget {
     setTimeout(() => {
       container.innerHTML = originalHTML;
       this.attachFormHandlers(container, false);
+      this.renderCaptcha(container, false);
     }, 5000);
   }
 
