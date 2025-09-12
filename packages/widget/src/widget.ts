@@ -103,6 +103,12 @@ class FeedbacksWidget {
     container.innerHTML = this.getFormHTML(false);
     
     target.appendChild(container);
+    // Apply scale if configured
+    if (typeof (this.config as any).scale === 'number' && (this.config as any).scale && (this.config as any).scale !== 1) {
+      const s = (this.config as any).scale as number;
+      container.style.transform = `scale(${s})`;
+      container.style.transformOrigin = 'top left';
+    }
     this.attachFormHandlers(container, false);
     this.renderCaptcha(container, false);
   }
@@ -285,6 +291,12 @@ class FeedbacksWidget {
     modal.setAttribute('aria-labelledby', 'feedbacks-title');
     
     modal.innerHTML = this.getFormHTML(true);
+    // Apply scale if configured
+    if (typeof (this.config as any).scale === 'number' && (this.config as any).scale && (this.config as any).scale !== 1) {
+      const s = (this.config as any).scale as number;
+      (modal as HTMLElement).style.transform = `scale(${s})`;
+      (modal as HTMLElement).style.transformOrigin = 'center';
+    }
 
     this.overlay.appendChild(modal);
     document.body.appendChild(this.overlay);
@@ -692,7 +704,7 @@ class FeedbacksWidget {
 }
 
 // Auto-initialization
-function initializeWidget(): void {
+  function initializeWidget(): void {
   const scripts = document.querySelectorAll('script[data-project]');
   
   scripts.forEach((script) => {
@@ -706,6 +718,7 @@ function initializeWidget(): void {
         position: (script.getAttribute('data-position') as any) || 'bottom-right',
         buttonText: script.getAttribute('data-button-text') || undefined,
         primaryColor: script.getAttribute('data-color') || undefined,
+        scale: script.getAttribute('data-scale') ? Number(script.getAttribute('data-scale')) : undefined,
         debug: script.hasAttribute('data-debug'),
         requireEmail: script.hasAttribute('data-require-email') || script.getAttribute('data-require-email') === 'true',
         requireCaptcha: script.hasAttribute('data-require-captcha') || script.getAttribute('data-require-captcha') === 'true',

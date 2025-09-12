@@ -26,6 +26,7 @@ export interface WidgetConfig {
   target?: string; // CSS selector for embed target
   buttonText?: string;
   primaryColor?: string;
+  scale?: number; // overall scale (e.g., 0.8–1.4)
   apiUrl?: string; // Custom API endpoint
   debug?: boolean;
   requireEmail?: boolean;

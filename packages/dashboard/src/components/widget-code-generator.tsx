@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/copy-button";
+import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 type Mode = "modal" | "inline" | "trigger";
 type Platform =
@@ -44,6 +47,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [enableAttachment, setEnableAttachment] = useState<boolean>(false);
   const [attachmentMaxMB, setAttachmentMaxMB] = useState<string>('5');
   const [viewport, setViewport] = useState<'desktop'|'mobile'>("desktop");
+  const [scale, setScale] = useState<number>(1);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
   // Anti-spam (client-side rendering options)
@@ -66,6 +70,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     return Math.round(ratio*100)/100;
   }
   const a11yRatio = useMemo(()=> primaryColor ? contrastRatio(primaryColor) : null, [primaryColor]);
+  const colorPickerValue = useMemo(()=> primaryColor && /^#?[0-9a-f]{6}$/i.test(primaryColor) ? (primaryColor.startsWith('#')?primaryColor:'#'+primaryColor) : '#3b82f6', [primaryColor]);
 
   function adjustColor(hex: string, amount: number): string {
     const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
@@ -92,6 +97,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     ];
     if (mode === "modal") entries.push(["position", position]);
     if (primaryColor) entries.push(["primaryColor", primaryColor]);
+    if (scale && scale !== 1) entries.push(["scale", scale]);
     if (buttonText && mode === "modal") entries.push(["buttonText", buttonText]);
     if (mode === "inline") entries.push(["target", `#${containerId}`]);
     if (mode === "trigger") entries.push(["target", `#${triggerId}`]);
@@ -232,6 +238,7 @@ export default function FeedbackWidget() {
     if (mode === "trigger") attrs.push(`data-target=\"#${triggerId}\"`);
     if (mode === "modal") attrs.push(`data-position=\"${position}\"`);
     if (primaryColor) attrs.push(`data-color=\"${primaryColor}\"`);
+    if (scale && scale !== 1) attrs.push(`data-scale=\"${scale}\"`);
     if (buttonText && mode === "modal") attrs.push(`data-button-text=\"${buttonText}\"`);
     if (requireCaptcha) attrs.push(`data-require-captcha`);
     if (captchaProvider && captchaProvider !== 'none') attrs.push(`data-captcha-provider=\"${captchaProvider}\"`);
@@ -297,6 +304,7 @@ export default function FeedbackWidget() {
     ...(mode === 'inline' ? { target: `#${containerId}` } : {}),
     ...(mode === 'trigger' ? { target: `#${triggerId}` } : {}),
     ...(primaryColor ? { primaryColor } : {}),
+    ...(scale && scale !== 1 ? { scale } : {}),
     ...(buttonText && mode === 'modal' ? { buttonText } : {}),
     ...(requireEmail ? { requireEmail: true } : {}),
     ...(requireCaptcha ? { requireCaptcha: true } : {}),
@@ -344,6 +352,7 @@ export default function FeedbackWidget() {
       if (cfg.embedMode) setMode(cfg.embedMode);
       if (cfg.position) setPosition(cfg.position);
       if (cfg.primaryColor) setPrimaryColor(cfg.primaryColor);
+      if (typeof cfg.scale === 'number') setScale(cfg.scale);
       if (cfg.buttonText) setButtonText(cfg.buttonText);
       if (cfg.requireCaptcha) setRequireCaptcha(!!cfg.requireCaptcha);
       if (cfg.captchaProvider) setCaptchaProvider(cfg.captchaProvider);
@@ -376,23 +385,22 @@ export default function FeedbackWidget() {
   }, [projectId]);
 
   return (
+    <TooltipProvider>
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-sm text-muted-foreground">Presets:</span>
-        <Button size="sm" variant="outline" onClick={() => { setMode('modal'); setPosition('bottom-right'); setPrimaryColor('#3b82f6'); setButtonText('Feedback'); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Classic</Button>
-        <Button size="sm" variant="outline" onClick={() => { setMode('modal'); setPosition('bottom-right'); setPrimaryColor(''); setButtonText('Send'); setRequireEmail(false); setEnableType(false); setEnableRating(false); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Minimal</Button>
-        <Button size="sm" variant="outline" onClick={() => { setMode('modal'); setPosition('bottom-right'); setPrimaryColor('#111827'); setButtonText('Feedback'); setRequireEmail(true); setEnableType(true); setEnableRating(true); setEnableScreenshot(true); setEnablePriority(false); setEnableTags(false); }}>High Contrast</Button>
-        <Button size="sm" variant="outline" onClick={() => { setMode('trigger'); setTriggerId('feedback-btn'); setPrimaryColor('#22c55e'); setButtonText(''); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Trigger</Button>
-        <div className="ml-auto">
-          <Button size="sm" variant="ghost" onClick={() => setShowAdvanced(v => !v)}>{showAdvanced ? 'Hide Advanced' : 'Show Advanced'}</Button>
-        </div>
-      </div>
       {/* Mode and Platform */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Mode</Label>
+              <div className="flex items-center gap-2">
+                <Label>Mode</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>Select how the widget appears</TooltipContent>
+                </Tooltip>
+              </div>
               <Select value={mode} onValueChange={(v) => setMode(v as Mode)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select mode" />
@@ -410,7 +418,15 @@ export default function FeedbackWidget() {
               </p>
             </div>
             <div className="space-y-2">
-              <Label>Platform</Label>
+              <div className="flex items-center gap-2">
+                <Label>Platform</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>Generates code tailored to your stack</TooltipContent>
+                </Tooltip>
+              </div>
               <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select platform" />
@@ -425,6 +441,17 @@ export default function FeedbackWidget() {
                   <SelectItem value="shopify">Shopify</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          {/* Presets (apply without changing current mode) */}
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-sm text-muted-foreground">Presets:</span>
+            <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#3b82f6'); setButtonText('Feedback'); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Classic</Button>
+            <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor(''); setButtonText('Send'); setRequireEmail(false); setEnableType(false); setEnableRating(false); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Minimal</Button>
+            <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#111827'); setButtonText('Feedback'); setRequireEmail(true); setEnableType(true); setEnableRating(true); setEnableScreenshot(true); setEnablePriority(false); setEnableTags(false); }}>High Contrast</Button>
+            <div className="ml-auto">
+              <Button size="sm" variant="ghost" onClick={() => setShowAdvanced(v => !v)}>{showAdvanced ? 'Hide Advanced' : 'Show Advanced'}</Button>
             </div>
           </div>
 
@@ -447,14 +474,41 @@ export default function FeedbackWidget() {
               </div>
             )}
             <div className="space-y-2">
-              <Label>Primary Color (optional)</Label>
-              <Input placeholder="#3b82f6" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} />
+              <div className="flex items-center gap-2">
+                <Label>Background Color</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>Applied as the widget’s primary/background color</TooltipContent>
+                </Tooltip>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input placeholder="#3b82f6" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1" />
+                <input type="color" value={colorPickerValue} onChange={(e)=> setPrimaryColor(e.target.value)} className="h-9 w-10 rounded-md border" />
+              </div>
               {a11yRatio !== null && (
                 <div className={`text-xs ${a11yRatio < 4.5 ? 'text-destructive' : 'text-green-600'}`}>Contrast vs white text: {a11yRatio}:1 {a11yRatio < 4.5 ? '(below AA)' : '(AA ok)'}</div>
               )}
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={()=> primaryColor && setPrimaryColor(adjustColor(primaryColor, -16))}>Darker</Button>
                 <Button size="sm" variant="outline" onClick={()=> primaryColor && setPrimaryColor(adjustColor(primaryColor, 16))}>Lighter</Button>
+              </div>
+            </div>
+            {/* Size / Scale */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label>Size</Label>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>Adjust overall scale of the widget</TooltipContent>
+                </Tooltip>
+              </div>
+              <div className="flex items-center gap-3">
+                <input type="range" min={0.8} max={1.4} step={0.05} value={scale} onChange={(e)=> setScale(parseFloat(e.target.value))} className="w-full" />
+                <span className="text-xs tabular-nums w-10 text-right">{scale.toFixed(2)}x</span>
               </div>
             </div>
             {mode === "modal" && (
@@ -475,54 +529,44 @@ export default function FeedbackWidget() {
                 <Input value={triggerId} onChange={(e) => setTriggerId(e.target.value)} />
               </div>
             )}
-            <div className="space-y-2">
-              <Label>Screenshot Capture</Label>
-              <Select value={enableScreenshot ? (screenshotRequired ? 'required' : 'on') : 'off'} onValueChange={(v)=>{ setEnableScreenshot(v!=='off'); setScreenshotRequired(v==='required'); }}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Screenshot Capture" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="off">Off</SelectItem>
-                  <SelectItem value="on">Optional</SelectItem>
-                  <SelectItem value="required">Required</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Label>Screenshot Capture</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>Allow users to include a page screenshot</TooltipContent>
+                  </Tooltip>
+                </div>
+                <Switch checked={enableScreenshot} onCheckedChange={(v)=> setEnableScreenshot(!!v)} />
+              </div>
+              {enableScreenshot && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Require screenshot</span>
+                  <Switch checked={screenshotRequired} onCheckedChange={(v)=> setScreenshotRequired(!!v)} />
+                </div>
+              )}
             </div>
-            <div className="space-y-2">
-              <Label>Priority Field</Label>
-              <Select value={enablePriority ? 'on' : 'off'} onValueChange={(v)=>setEnablePriority(v==='on')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Priority Field" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="off">Off</SelectItem>
-                  <SelectItem value="on">On</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Label>Priority Field</Label>
+                <Tooltip><TooltipTrigger asChild><Info className="h-3.5 w-3.5 text-muted-foreground" /></TooltipTrigger><TooltipContent>Optional priority selector</TooltipContent></Tooltip>
+              </div>
+              <Switch checked={enablePriority} onCheckedChange={(v)=> setEnablePriority(!!v)} />
             </div>
-            <div className="space-y-2">
-              <Label>Tags Field</Label>
-              <Select value={enableTags ? 'on' : 'off'} onValueChange={(v)=>setEnableTags(v==='on')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Tags Field" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="off">Off</SelectItem>
-                  <SelectItem value="on">On</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Label>Tags Field</Label>
+              </div>
+              <Switch checked={enableTags} onCheckedChange={(v)=> setEnableTags(!!v)} />
             </div>
-            <div className="space-y-2">
-              <Label>Attachment</Label>
-              <Select value={enableAttachment ? 'on' : 'off'} onValueChange={(v)=>setEnableAttachment(v==='on')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Attachment" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="off">Off</SelectItem>
-                  <SelectItem value="on">On</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Label>Attachment</Label>
+              </div>
+              <Switch checked={enableAttachment} onCheckedChange={(v)=> setEnableAttachment(!!v)} />
             </div>
             {enableAttachment && (
               <div className="space-y-2">
@@ -539,21 +583,18 @@ export default function FeedbackWidget() {
                 </Select>
               </div>
             )}
-            <div className="space-y-2">
-              <Label>Require Email</Label>
-              <Select value={requireEmail ? 'yes' : 'no'} onValueChange={(v)=>setRequireEmail(v==='yes')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Require Email" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no">No</SelectItem>
-                  <SelectItem value="yes">Yes</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Label>Require Email</Label>
+              </div>
+              <Switch checked={requireEmail} onCheckedChange={(v)=> setRequireEmail(!!v)} />
             </div>
             {/* Captcha options */}
             <div className="space-y-2">
-              <Label>Require Captcha</Label>
+              <div className="flex items-center gap-2">
+                <Label>Require Captcha</Label>
+                <Tooltip><TooltipTrigger asChild><Info className="h-3.5 w-3.5 text-muted-foreground" /></TooltipTrigger><TooltipContent>Enforce Turnstile or hCaptcha verification</TooltipContent></Tooltip>
+              </div>
               <Select value={requireCaptcha ? 'yes' : 'no'} onValueChange={(v)=>setRequireCaptcha(v==='yes')}>
                 <SelectTrigger>
                   <SelectValue placeholder="Require Captcha" />
@@ -644,7 +685,12 @@ export default function FeedbackWidget() {
           {/* Save Defaults */}
           {projectId && (
             <div className="flex items-center gap-3">
-              <Button size="sm" onClick={saveDefaults} disabled={isSaving}>Save as Project Default</Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="sm" onClick={saveDefaults} disabled={isSaving}>Save as Project Default</Button>
+                </TooltipTrigger>
+                <TooltipContent>Saves these choices as the default config for this project</TooltipContent>
+              </Tooltip>
               {message && <span className="text-xs text-muted-foreground">{message}</span>}
             </div>
           )}
@@ -685,5 +731,6 @@ export default function FeedbackWidget() {
         </div>
       </div>
     </div>
+    </TooltipProvider>
   );
 }

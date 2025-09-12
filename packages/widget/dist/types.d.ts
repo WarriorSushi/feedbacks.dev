@@ -24,6 +24,7 @@ export interface WidgetConfig {
     target?: string;
     buttonText?: string;
     primaryColor?: string;
+    scale?: number;
     apiUrl?: string;
     debug?: boolean;
     requireEmail?: boolean;
