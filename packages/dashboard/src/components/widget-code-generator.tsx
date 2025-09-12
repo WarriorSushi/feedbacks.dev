@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -228,74 +228,86 @@ export default function FeedbackWidget() {
     }
   }, [platform, websiteSnippet, reactSnippet, vueSnippet, rnSnippet, flutterSnippet, wpSnippet, shopifySnippet]);
 
-  const previewSrcDoc = useMemo(() => {
-    const anchor = mode === "inline" ? `<div id="${containerId}"></div>` : mode === "trigger" ? `<button id="${triggerId}">Give Feedback</button>` : "";
-    const attrs: string[] = [
-      `data-project=\"${projectKey}\"`,
-      `data-embed-mode=\"${mode}\"`,
-    ];
-    if (mode === "inline") attrs.push(`data-target=\"#${containerId}\"`);
-    if (mode === "trigger") attrs.push(`data-target=\"#${triggerId}\"`);
-    if (mode === "modal") attrs.push(`data-position=\"${position}\"`);
-    if (primaryColor) attrs.push(`data-color=\"${primaryColor}\"`);
-    if (scale && scale !== 1) attrs.push(`data-scale=\"${scale}\"`);
-    if (buttonText && mode === "modal") attrs.push(`data-button-text=\"${buttonText}\"`);
-    if (requireCaptcha) attrs.push(`data-require-captcha`);
-    if (captchaProvider && captchaProvider !== 'none') attrs.push(`data-captcha-provider=\"${captchaProvider}\"`);
-    if (turnstileSiteKey && captchaProvider === 'turnstile') attrs.push(`data-turnstile-sitekey=\"${turnstileSiteKey}\"`);
-    if (hcaptchaSiteKey && captchaProvider === 'hcaptcha') attrs.push(`data-hcaptcha-sitekey=\"${hcaptchaSiteKey}\"`);
-    if (requireEmail) attrs.push(`data-require-email`);
-    if (!enableType) attrs.push(`data-enable-type=\"false\"`);
-    if (!enableRating) attrs.push(`data-enable-rating=\"false\"`);
-    if (enableScreenshot) attrs.push(`data-enable-screenshot`);
-    if (screenshotRequired) attrs.push(`data-screenshot-required`);
-    if (enablePriority) attrs.push(`data-enable-priority`);
-    if (enableTags) attrs.push(`data-enable-tags`);
-    if (enableAttachment) attrs.push(`data-enable-attachment`);
-    if (enableAttachment && attachmentMaxMB) attrs.push(`data-attachment-maxmb=\"${attachmentMaxMB}\"`);
-    if (successTitle) attrs.push(`data-success-title=\"${successTitle.replace(/"/g,'&quot;')}\"`);
-    if (successDescription) attrs.push(`data-success-description=\"${successDescription.replace(/"/g,'&quot;')}\"`);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
+  const previewSrcDoc = useMemo(() => {
+    const initial = {
+      projectKey,
+      embedMode: mode,
+      ...(mode === 'modal' ? { position } : {}),
+      ...(mode === 'inline' ? { target: '#inline-anchor' } : {}),
+      ...(mode === 'trigger' ? { target: '#trigger-anchor' } : {}),
+      ...(primaryColor ? { primaryColor } : {}),
+      ...(buttonText && mode === 'modal' ? { buttonText } : {}),
+      ...(requireEmail ? { requireEmail: true } : {}),
+      ...(requireCaptcha ? { requireCaptcha: true } : {}),
+      ...(captchaProvider && captchaProvider !== 'none' ? { captchaProvider } : {}),
+      ...(captchaProvider === 'turnstile' && turnstileSiteKey ? { turnstileSiteKey } : {}),
+      ...(captchaProvider === 'hcaptcha' && hcaptchaSiteKey ? { hcaptchaSiteKey } : {}),
+      ...(enableType === false ? { enableType: false } : {}),
+      ...(enableRating === false ? { enableRating: false } : {}),
+      ...(enableScreenshot ? { enableScreenshot: true } : {}),
+      ...(screenshotRequired ? { screenshotRequired: true } : {}),
+      ...(enablePriority ? { enablePriority: true } : {}),
+      ...(enableTags ? { enableTags: true } : {}),
+      ...(enableAttachment ? { enableAttachment: true } : {}),
+      ...(enableAttachment && attachmentMaxMB ? { attachmentMaxMB: Number(attachmentMaxMB) } : {}),
+      ...(successTitle ? { successTitle } : {}),
+      ...(successDescription ? { successDescription } : {}),
+      ...(scale && scale !== 1 ? { scale } : {}),
+    };
+    const initialJson = JSON.stringify(initial).replace(/</g, '\\u003c');
     return `<!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="${previewCssHref}" />
-    <style>body{font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; padding:16px;}</style>
+    <style>body{font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif; padding:16px;} button{all:unset}</style>
   </head>
   <body>
-    ${anchor}
-    <script src="${previewJsHref}" ${attrs.join(" ")}></script>
-    <div id="debug" style="position:fixed;bottom:8px;left:8px;background:#f3f4f6;color:#111;padding:6px 8px;border-radius:6px;font-size:12px;border:1px solid #e5e7eb;">
-      <div><strong>Captcha Debug</strong></div>
-      <div id="dbg-status">waiting…</div>
-      <div id="dbg-token" style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
-    </div>
+    <div id="inline-anchor"></div>
+    <button id="trigger-anchor" data-feedbacks-trigger style="display:none;border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;cursor:pointer">Give Feedback</button>
+    <script src="${previewJsHref}"></script>
     <script>
       (function(){
-        function getToken(){
-          var ids = ['feedbacks-turnstile-token-inline','feedbacks-turnstile-token-modal','feedbacks-hcaptcha-token-inline','feedbacks-hcaptcha-token-modal'];
-          for (var i=0;i<ids.length;i++){ var el = document.getElementById(ids[i]); if (el && el.value) return el.value; }
-          return '';
+        var pending = ${initialJson};
+        function cleanup(){
+          try{document.querySelectorAll('.feedbacks-overlay').forEach(function(e){e.remove()});}catch(e){}
+          try{var btn = document.querySelector('.feedbacks-button'); if (btn) btn.remove();}catch(e){}
+          try{document.querySelectorAll('.feedbacks-inline-container').forEach(function(e){e.remove()});}catch(e){}
         }
-        function captchaReady(){
-          var el = document.getElementById('feedbacks-captcha-inline') || document.getElementById('feedbacks-captcha-modal');
-          return !!(el && el.childNodes && el.childNodes.length);
+        function apply(cfg){
+          cleanup();
+          var inlineEl = document.getElementById('inline-anchor');
+          var triggerEl = document.getElementById('trigger-anchor');
+          if (inlineEl) inlineEl.style.display = cfg.embedMode === 'inline' ? 'block' : 'none';
+          if (triggerEl) triggerEl.style.display = cfg.embedMode === 'trigger' ? 'inline-block' : 'none';
+          if (cfg.embedMode === 'inline') cfg.target = '#inline-anchor';
+          if (cfg.embedMode === 'trigger') cfg.target = '#trigger-anchor';
+          if (cfg.primaryColor) document.documentElement.style.setProperty('--feedbacks-primary', cfg.primaryColor);
+          new FeedbacksWidget(cfg);
         }
-        setInterval(function(){
-          var st = document.getElementById('dbg-status');
-          var tk = document.getElementById('dbg-token');
-          if (!st || !tk) return;
-          st.textContent = 'ready: ' + (captchaReady() ? 'yes' : 'no');
-          var t = getToken();
-          tk.textContent = t ? ('token: ' + t.substring(0,24) + '…') : 'token: (empty)';
-        }, 1000);
+        function ready(){ if (typeof FeedbacksWidget === 'function') { apply(pending); pending = null; } else setTimeout(ready, 30); }
+        ready();
+        window.addEventListener('message', function(ev){
+          if (!ev || !ev.data || ev.data.type !== 'widget-preview:update') return;
+          var cfg = ev.data.config || {};
+          clearTimeout(window.__previewTimer);
+          window.__previewTimer = setTimeout(function(){ apply(cfg); }, 50);
+        });
       })();
     </script>
   </body>
   </html>`;
-  }, [projectKey, mode, containerId, triggerId, position, primaryColor, buttonText, requireEmail, enableType, enableRating, previewCssHref, previewJsHref]);
+  }, [previewCssHref, previewJsHref]);
+
+  // Push live updates without reloading the iframe
+  useEffect(() => {
+    const win = iframeRef.current?.contentWindow;
+    if (!win) return;
+    try { win.postMessage({ type: 'widget-preview:update', config: currentConfig }, '*'); } catch {}
+  }, [currentConfig]);
 
   const currentConfig = useMemo(() => ({
     projectKey,
@@ -321,7 +333,31 @@ export default function FeedbackWidget() {
     ...(successDescription ? { successDescription } : {}),
     ...(enableAttachment ? { enableAttachment: true } : {}),
     ...(enableAttachment && attachmentMaxMB ? { attachmentMaxMB: Number(attachmentMaxMB) } : {}),
-  }), [projectKey, mode, position, containerId, triggerId, primaryColor, buttonText, requireEmail, enableType, enableRating]);
+  }), [
+    projectKey,
+    mode,
+    position,
+    containerId,
+    triggerId,
+    primaryColor,
+    scale,
+    buttonText,
+    requireEmail,
+    requireCaptcha,
+    captchaProvider,
+    turnstileSiteKey,
+    hcaptchaSiteKey,
+    enableType,
+    enableRating,
+    enableScreenshot,
+    screenshotRequired,
+    enablePriority,
+    enableTags,
+    successTitle,
+    successDescription,
+    enableAttachment,
+    attachmentMaxMB,
+  ]);
 
   const saveDefaults = async () => {
     if (!projectId) return;
@@ -396,7 +432,7 @@ export default function FeedbackWidget() {
                 <Label>Mode</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
                   </TooltipTrigger>
                   <TooltipContent>Select how the widget appears</TooltipContent>
                 </Tooltip>
@@ -422,7 +458,7 @@ export default function FeedbackWidget() {
                 <Label>Platform</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
                   </TooltipTrigger>
                   <TooltipContent>Generates code tailored to your stack</TooltipContent>
                 </Tooltip>
@@ -478,7 +514,7 @@ export default function FeedbackWidget() {
                 <Label>Background Color</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
                   </TooltipTrigger>
                   <TooltipContent>Applied as the widget’s primary/background color</TooltipContent>
                 </Tooltip>
@@ -501,7 +537,7 @@ export default function FeedbackWidget() {
                 <Label>Size</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
                   </TooltipTrigger>
                   <TooltipContent>Adjust overall scale of the widget</TooltipContent>
                 </Tooltip>
@@ -535,7 +571,7 @@ export default function FeedbackWidget() {
                   <Label>Screenshot Capture</Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
                     </TooltipTrigger>
                     <TooltipContent>Allow users to include a page screenshot</TooltipContent>
                   </Tooltip>
@@ -552,7 +588,7 @@ export default function FeedbackWidget() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Label>Priority Field</Label>
-                <Tooltip><TooltipTrigger asChild><Info className="h-3.5 w-3.5 text-muted-foreground" /></TooltipTrigger><TooltipContent>Optional priority selector</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span></TooltipTrigger><TooltipContent>Optional priority selector</TooltipContent></Tooltip>
               </div>
               <Switch checked={enablePriority} onCheckedChange={(v)=> setEnablePriority(!!v)} />
             </div>
@@ -593,7 +629,7 @@ export default function FeedbackWidget() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Require Captcha</Label>
-                <Tooltip><TooltipTrigger asChild><Info className="h-3.5 w-3.5 text-muted-foreground" /></TooltipTrigger><TooltipContent>Enforce Turnstile or hCaptcha verification</TooltipContent></Tooltip>
+                <Tooltip><TooltipTrigger asChild><span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span></TooltipTrigger><TooltipContent>Enforce Turnstile or hCaptcha verification</TooltipContent></Tooltip>
               </div>
               <Select value={requireCaptcha ? 'yes' : 'no'} onValueChange={(v)=>setRequireCaptcha(v==='yes')}>
                 <SelectTrigger>
@@ -701,6 +737,7 @@ export default function FeedbackWidget() {
           <Label>Live Preview</Label>
           <div className="rounded-lg border overflow-hidden bg-background">
             <iframe
+              ref={iframeRef}
               title="Widget Preview"
               style={{ width: viewport === 'mobile' ? 390 : '100%', height: viewport === 'mobile' ? 700 : 360, border: "0" }}
               srcDoc={previewSrcDoc}
