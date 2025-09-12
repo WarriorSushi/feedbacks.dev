@@ -144,11 +144,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
                       <Link href={item.url} className="flex items-center gap-3">
                         <IconComponent className="h-4 w-4" />
                         <span>{item.title}</span>
-                        {item.badge && (
-                          <Badge variant="secondary" className="ml-auto text-xs">
-                            {item.badge}
-                          </Badge>
-                        )}
+                        {/* Removed numeric badges for cleaner sidebar */}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
