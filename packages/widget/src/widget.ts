@@ -537,7 +537,8 @@ class FeedbacksWidget {
         this.log('Feedback submitted successfully');
       } catch (error) {
         this.log(`Submission failed: ${error}`);
-        this.showError('Failed to send feedback. Please try again or contact support.', container);
+        const msg = (error as any)?.message ? String((error as any).message) : 'Failed to send feedback. Please try again or contact support.';
+        this.showError(msg, container);
         this.setSubmitState(submitBtn, false);
       }
     });

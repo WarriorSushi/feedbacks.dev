@@ -180,13 +180,16 @@ export async function POST(request: NextRequest) {
       if (!(await rateLimit('feedback', ip, 5, 60_000))) {
         return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429, headers: corsHeaders });
       }
-      // Captcha verification (optional; if secrets set)
-      const needTs = !!process.env.TURNSTILE_SECRET;
-      const needHc = !!process.env.HCAPTCHA_SECRET;
-      if (needTs || needHc) {
-        const okTs = needTs ? await verifyTurnstile(turnstileToken, ip) : true;
-        const okHc = needHc ? await verifyHCaptcha(hcaptchaToken, ip) : true;
-        if (!okTs && !okHc) {
+      // Captcha verification (optional): if tokens are provided, verify them;
+      // otherwise skip here and enforce via per-project settings below.
+      const hasTs = !!turnstileToken;
+      const hasHc = !!hcaptchaToken;
+      const canVerifyTs = !!process.env.TURNSTILE_SECRET && hasTs;
+      const canVerifyHc = !!process.env.HCAPTCHA_SECRET && hasHc;
+      if (canVerifyTs || canVerifyHc) {
+        const okTs = canVerifyTs ? await verifyTurnstile(turnstileToken, ip) : false;
+        const okHc = canVerifyHc ? await verifyHCaptcha(hcaptchaToken, ip) : false;
+        if (!(okTs || okHc)) {
           return NextResponse.json({ success: false, error: 'Captcha failed' }, { status: 400, headers: corsHeaders });
         }
       }
@@ -205,12 +208,15 @@ export async function POST(request: NextRequest) {
       if (!(await rateLimit('feedback', ip, 5, 60_000))) {
         return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429, headers: corsHeaders });
       }
-      const needTs = !!process.env.TURNSTILE_SECRET;
-      const needHc = !!process.env.HCAPTCHA_SECRET;
-      if (needTs || needHc) {
-        const okTs = needTs ? await verifyTurnstile(turnstileToken, ip) : true;
-        const okHc = needHc ? await verifyHCaptcha(hcaptchaToken, ip) : true;
-        if (!okTs && !okHc) {
+      // Captcha verification (optional): verify only if tokens provided
+      const hasTs = !!turnstileToken;
+      const hasHc = !!hcaptchaToken;
+      const canVerifyTs = !!process.env.TURNSTILE_SECRET && hasTs;
+      const canVerifyHc = !!process.env.HCAPTCHA_SECRET && hasHc;
+      if (canVerifyTs || canVerifyHc) {
+        const okTs = canVerifyTs ? await verifyTurnstile(turnstileToken, ip) : false;
+        const okHc = canVerifyHc ? await verifyHCaptcha(hcaptchaToken, ip) : false;
+        if (!(okTs || okHc)) {
           return NextResponse.json({ success: false, error: 'Captcha failed' }, { status: 400, headers: corsHeaders });
         }
       }
