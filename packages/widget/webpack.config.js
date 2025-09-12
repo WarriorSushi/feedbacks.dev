@@ -14,6 +14,7 @@ module.exports = (env, argv) => {
       // Expose as global for CDN consumers (script tag)
       library: 'FeedbacksWidget',
       libraryTarget: 'umd',
+      libraryExport: 'default', // Export the default export as FeedbacksWidget
       globalObject: 'this',
       clean: true,
     },

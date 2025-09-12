@@ -701,8 +701,5 @@ if (document.readyState === 'loading') {
   initializeWidget();
 }
 
-// Export for manual initialization (do this immediately)
-(window as any).FeedbacksWidget = FeedbacksWidget;
-
-// Also export as a module
+// Export as default for webpack to handle UMD properly
 export default FeedbacksWidget;
