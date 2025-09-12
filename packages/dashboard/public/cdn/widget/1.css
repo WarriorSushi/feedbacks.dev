@@ -15,7 +15,7 @@
   width: 56px;
   height: 56px;
   border-radius: 28px;
-  background: #2563eb;
+  background: var(--feedbacks-primary, #2563eb);
   border: none;
   cursor: pointer;
   z-index: 999999;
@@ -33,7 +33,7 @@
 .feedbacks-button:hover {
   transform: scale(1.05);
   box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
-  background: #1d4ed8;
+  background: var(--feedbacks-primary-hover, #1d4ed8);
 }
 
 .feedbacks-button:active {
@@ -233,7 +233,7 @@
 
 .feedbacks-textarea:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: var(--feedbacks-primary, #2563eb);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -249,7 +249,7 @@
 
 .feedbacks-input:focus {
   outline: none;
-  border-color: #2563eb;
+  border-color: var(--feedbacks-primary, #2563eb);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -292,14 +292,14 @@
 }
 
 .feedbacks-btn-primary {
-  background: #2563eb;
+  background: var(--feedbacks-primary, #2563eb);
   color: white;
-  border-color: #2563eb;
+  border-color: var(--feedbacks-primary, #2563eb);
 }
 
 .feedbacks-btn-primary:hover:not(:disabled) {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
+  background: var(--feedbacks-primary-hover, #1d4ed8);
+  border-color: var(--feedbacks-primary-hover, #1d4ed8);
   transform: translateY(-1px);
 }
 
@@ -442,6 +442,9 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+/* Ensure long text wraps inside modal */
+.feedbacks-widget { word-break: break-word; overflow-wrap: anywhere; }
+
 /* Dark Mode Support - Apply to all widget containers */
 @media (prefers-color-scheme: dark) {
   .feedbacks-modal,
@@ -510,3 +513,4 @@
     color: #9ca3af;
   }
 }
+

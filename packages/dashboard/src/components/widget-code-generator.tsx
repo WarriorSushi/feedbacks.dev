@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/copy-button";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Info, Minus, Plus, RotateCcw } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { CodeSnippet } from "@/components/code-snippet";
 
 type Mode = "modal" | "inline" | "trigger";
 type Platform =
@@ -28,7 +31,7 @@ interface WidgetCodeGeneratorProps {
 }
 
 export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", projectId }: WidgetCodeGeneratorProps) {
-  const [mode, setMode] = useState<Mode>("modal");
+  const [mode, setMode] = useState<Mode>("inline");
   const [platform, setPlatform] = useState<Platform>("website");
   const [position, setPosition] = useState("bottom-right");
   const [primaryColor, setPrimaryColor] = useState<string>("");
@@ -50,6 +53,8 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [scale, setScale] = useState<number>(1);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
+  const [ultra, setUltra] = useState(false);
+  const [iframeHeight, setIframeHeight] = useState<number>(360);
   // Anti-spam (client-side rendering options)
   const [requireCaptcha, setRequireCaptcha] = useState<boolean>(false);
   const [captchaProvider, setCaptchaProvider] = useState<'turnstile'|'hcaptcha'|'none'>("none");
@@ -69,8 +74,17 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     const ratio = (1 + 0.05) / (L + 0.05);
     return Math.round(ratio*100)/100;
   }
-  const a11yRatio = useMemo(()=> primaryColor ? contrastRatio(primaryColor) : null, [primaryColor]);
-  const colorPickerValue = useMemo(()=> primaryColor && /^#?[0-9a-f]{6}$/i.test(primaryColor) ? (primaryColor.startsWith('#')?primaryColor:'#'+primaryColor) : '#3b82f6', [primaryColor]);
+  const normalizeHex = (v: string): string => {
+    if (!v) return "";
+    const m = /^#?([0-9a-f]{6})$/i.exec(v);
+    if (m) return `#${m[1].toLowerCase()}`;
+    return v;
+  };
+  const a11yRatio = useMemo(()=> primaryColor ? contrastRatio(normalizeHex(primaryColor)) : null, [primaryColor]);
+  const colorPickerValue = useMemo(()=> {
+    const n = normalizeHex(primaryColor);
+    return n && /^#([0-9a-f]{6})$/i.test(n) ? n : '#3b82f6';
+  }, [primaryColor]);
 
   function adjustColor(hex: string, amount: number): string {
     const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
@@ -96,7 +110,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
       ["embedMode", mode],
     ];
     if (mode === "modal") entries.push(["position", position]);
-    if (primaryColor) entries.push(["primaryColor", primaryColor]);
+    if (primaryColor) entries.push(["primaryColor", normalizeHex(primaryColor)]);
     if (scale && scale !== 1) entries.push(["scale", scale]);
     if (buttonText && mode === "modal") entries.push(["buttonText", buttonText]);
     if (mode === "inline") entries.push(["target", `#${containerId}`]);
@@ -113,7 +127,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     if (enableAttachment) entries.push(["enableAttachment", true]);
     if (enableAttachment && attachmentMaxMB) entries.push(["attachmentMaxMB", Number(attachmentMaxMB)]);
     return entries;
-  }, [projectKey, mode, position, primaryColor, buttonText, containerId, triggerId]);
+  }, [projectKey, mode, position, primaryColor, scale, buttonText, containerId, triggerId, requireEmail, enableType, enableRating, enableScreenshot, screenshotRequired, enablePriority, enableTags, successTitle, successDescription, enableAttachment, attachmentMaxMB]);
 
   const configJs = useMemo(() => {
     const toLine = ([k, v]: [string, string | number | boolean]) =>
@@ -272,6 +286,7 @@ export default function FeedbackWidget() {
     <script>
       (function(){
         var pending = ${initialJson};
+        function postHeight(){ try{ parent.postMessage({ type: 'widget-preview:height', height: document.body.scrollHeight }, '*'); }catch(e){} }
         function cleanup(){
           try{document.querySelectorAll('.feedbacks-overlay').forEach(function(e){e.remove()});}catch(e){}
           try{var btn = document.querySelector('.feedbacks-button'); if (btn) btn.remove();}catch(e){}
@@ -287,6 +302,7 @@ export default function FeedbackWidget() {
           if (cfg.embedMode === 'trigger') cfg.target = '#trigger-anchor';
           if (cfg.primaryColor) document.documentElement.style.setProperty('--feedbacks-primary', cfg.primaryColor);
           new FeedbacksWidget(cfg);
+          setTimeout(postHeight, 50);
         }
         function ready(){ if (typeof FeedbacksWidget === 'function') { apply(pending); pending = null; } else setTimeout(ready, 30); }
         ready();
@@ -296,6 +312,8 @@ export default function FeedbackWidget() {
           clearTimeout(window.__previewTimer);
           window.__previewTimer = setTimeout(function(){ apply(cfg); }, 50);
         });
+        new MutationObserver(function(){ postHeight(); }).observe(document.body, { childList: true, subtree: true });
+        window.addEventListener('load', postHeight);
       })();
     </script>
   </body>
@@ -358,6 +376,19 @@ export default function FeedbackWidget() {
     if (!win) return;
     try { win.postMessage({ type: 'widget-preview:update', config: currentConfig }, '*'); } catch {}
   }, [currentConfig]);
+
+  // Auto-resize iframe to fit widget content
+  useEffect(() => {
+    function onMsg(ev: MessageEvent){
+      if (!ev || !ev.data) return;
+      if (ev.data.type === 'widget-preview:height' && typeof ev.data.height === 'number') {
+        const min = viewport === 'mobile' ? 700 : 360;
+        setIframeHeight(Math.max(ev.data.height, min));
+      }
+    }
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [viewport]);
 
   const saveDefaults = async () => {
     if (!projectId) return;
@@ -423,6 +454,23 @@ export default function FeedbackWidget() {
   return (
     <TooltipProvider>
     <div className="space-y-6">
+      {/* Top bar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Label>Simple Mode</Label>
+          <Switch checked={ultra} onCheckedChange={(v)=> setUltra(!!v)} />
+          <span className="text-xs text-muted-foreground">{ultra ? 'Ultra Customizer' : 'Simple Mode'}</span>
+        </div>
+        <Button variant="outline" size="sm" onClick={()=>{
+          setMode('inline'); setPlatform('website'); setPosition('bottom-right'); setPrimaryColor(''); setScale(1);
+          setButtonText(''); setContainerId('feedback-widget'); setTriggerId('feedback-btn');
+          setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setScreenshotRequired(false);
+          setEnablePriority(false); setEnableTags(false); setEnableAttachment(false); setAttachmentMaxMB('5'); setSuccessTitle(''); setSuccessDescription('');
+          setRequireCaptcha(false); setCaptchaProvider('none'); setTurnstileSiteKey(''); setHcaptchaSiteKey('');
+        }}>
+          <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset
+        </Button>
+      </div>
       {/* Mode and Platform */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
@@ -430,12 +478,12 @@ export default function FeedbackWidget() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Mode</Label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
-                  </TooltipTrigger>
-                  <TooltipContent>Select how the widget appears</TooltipContent>
-                </Tooltip>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </PopoverTrigger>
+                  <PopoverContent className="text-xs max-w-xs">Select how the widget appears on your site. Modal shows a floating button and opens a popup. Inline embeds the form in-place. Trigger attaches to your existing button.</PopoverContent>
+                </Popover>
               </div>
               <Select value={mode} onValueChange={(v) => setMode(v as Mode)}>
                 <SelectTrigger>
@@ -456,12 +504,12 @@ export default function FeedbackWidget() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Platform</Label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
-                  </TooltipTrigger>
-                  <TooltipContent>Generates code tailored to your stack</TooltipContent>
-                </Tooltip>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </PopoverTrigger>
+                  <PopoverContent className="text-xs">Generates code tailored to your stack</PopoverContent>
+                </Popover>
               </div>
               <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
                 <SelectTrigger>
@@ -512,12 +560,12 @@ export default function FeedbackWidget() {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Background Color</Label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
-                  </TooltipTrigger>
-                  <TooltipContent>Applied as the widget’s primary/background color</TooltipContent>
-                </Tooltip>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </PopoverTrigger>
+                  <PopoverContent className="text-xs max-w-xs">Applied as the widget’s primary/background color</PopoverContent>
+                </Popover>
               </div>
               <div className="flex items-center gap-2">
                 <Input placeholder="#3b82f6" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1" />
@@ -527,20 +575,20 @@ export default function FeedbackWidget() {
                 <div className={`text-xs ${a11yRatio < 4.5 ? 'text-destructive' : 'text-green-600'}`}>Contrast vs white text: {a11yRatio}:1 {a11yRatio < 4.5 ? '(below AA)' : '(AA ok)'}</div>
               )}
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={()=> primaryColor && setPrimaryColor(adjustColor(primaryColor, -16))}>Darker</Button>
-                <Button size="sm" variant="outline" onClick={()=> primaryColor && setPrimaryColor(adjustColor(primaryColor, 16))}>Lighter</Button>
+                <Button size="sm" variant="outline" onClick={()=> primaryColor && setPrimaryColor(adjustColor(primaryColor, -16))}><Minus className="h-3 w-3 mr-1"/>Darker</Button>
+                <Button size="sm" variant="outline" onClick={()=> primaryColor && setPrimaryColor(adjustColor(primaryColor, 16))}><Plus className="h-3 w-3 mr-1"/>Lighter</Button>
               </div>
             </div>
             {/* Size / Scale */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Size</Label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
-                  </TooltipTrigger>
-                  <TooltipContent>Adjust overall scale of the widget</TooltipContent>
-                </Tooltip>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </PopoverTrigger>
+                  <PopoverContent className="text-xs">Adjust overall scale of the widget</PopoverContent>
+                </Popover>
               </div>
               <div className="flex items-center gap-3">
                 <input type="range" min={0.8} max={1.4} step={0.05} value={scale} onChange={(e)=> setScale(parseFloat(e.target.value))} className="w-full" />
@@ -553,12 +601,7 @@ export default function FeedbackWidget() {
                 <Input placeholder="Feedback" value={buttonText} onChange={(e) => setButtonText(e.target.value)} />
               </div>
             )}
-            {mode === "inline" && (
-              <div className="space-y-2">
-                <Label>Container ID</Label>
-                <Input value={containerId} onChange={(e) => setContainerId(e.target.value)} />
-              </div>
-            )}
+            {/* Container ID moved to Ultra section */}
             {mode === "trigger" && (
               <div className="space-y-2">
                 <Label>Trigger Button ID</Label>
@@ -569,12 +612,12 @@ export default function FeedbackWidget() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Label>Screenshot Capture</Label>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
-                    </TooltipTrigger>
-                    <TooltipContent>Allow users to include a page screenshot</TooltipContent>
-                  </Tooltip>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                    </PopoverTrigger>
+                    <PopoverContent className="text-xs">Allow users to include a page screenshot</PopoverContent>
+                  </Popover>
                 </div>
                 <Switch checked={enableScreenshot} onCheckedChange={(v)=> setEnableScreenshot(!!v)} />
               </div>
@@ -707,15 +750,26 @@ export default function FeedbackWidget() {
             </div>
           </div>
 
+          {/* Ultra Section */}
+          {ultra && (
+            <>
+              <Separator />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {mode === 'inline' && (
+                  <div className="space-y-2">
+                    <Label>Container ID</Label>
+                    <Input value={containerId} onChange={(e) => setContainerId(e.target.value)} />
+                  </div>
+                )}
+                {/* Future: modal shape, icon options, etc. */}
+              </div>
+            </>
+          )}
+
           {/* Code Snippet */}
           <div className="space-y-2">
             <Label>Installation Code</Label>
-            <div className="relative">
-              <pre className="bg-muted p-4 rounded-lg text-xs md:text-sm overflow-x-auto"><code>{snippet}</code></pre>
-              <div className="absolute top-2 right-2">
-                <CopyButton text={snippet} />
-              </div>
-            </div>
+            <CodeSnippet code={snippet} language="html" />
           </div>
 
           {/* Save Defaults */}

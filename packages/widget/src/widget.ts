@@ -52,13 +52,26 @@ class FeedbacksWidget {
       const fontFamily = style.fontFamily || '';
       const link = document.querySelector('a');
       const linkColor = link ? getComputedStyle(link).color : '';
-      const primary = this.config.primaryColor || linkColor || '';
+      const primary = (this.config.primaryColor as any) || linkColor || '';
       // Apply font to document-level CSS variable used by our styles (if present)
       if (fontFamily) {
         document.documentElement.style.setProperty('--feedbacks-font-family', fontFamily);
       }
       if (primary) {
         document.documentElement.style.setProperty('--feedbacks-primary', primary);
+        // Derive a hover color for better contrast
+        try {
+          const m = /#([0-9a-f]{6})/i.exec(primary);
+          if (m) {
+            const hex = m[1];
+            const r = Math.max(0, parseInt(hex.slice(0,2),16) - 16);
+            const g = Math.max(0, parseInt(hex.slice(2,4),16) - 16);
+            const b = Math.max(0, parseInt(hex.slice(4,6),16) - 16);
+            const toHex = (v:number)=> v.toString(16).padStart(2,'0');
+            const darker = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+            document.documentElement.style.setProperty('--feedbacks-primary-hover', darker);
+          }
+        } catch {}
       }
     } catch {}
   }
