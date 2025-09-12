@@ -7,8 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CopyButton } from '@/components/copy-button';
-import { ArrowLeft, ExternalLink, Settings, MessageSquare, Code } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Settings, MessageSquare, Code, Globe, Mail, MonitorSmartphone, Tag, Paperclip, BarChart3, Webhook } from 'lucide-react';
 import Link from 'next/link';
+import { WidgetCodeGenerator } from '@/components/widget-code-generator';
+import { ProjectAnalytics } from '@/components/project-analytics';
+import { ImageLightbox } from '@/components/image-lightbox';
+import { ProjectIntegrations } from '@/components/project-integrations';
+import { ArchiveFeedbackButton } from '@/components/archive-feedback-button';
+import { Shield } from 'lucide-react';
+import { ProjectAntiSpam } from '@/components/project-anti-spam';
 
 interface ProjectPageProps {
   params: { id: string };
@@ -56,21 +63,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
   const { data: feedbacks, count } = await query.range(from, to);
 
-  const WIDGET_VERSION = '1.0'; // Update this when widget version changes
-  const widgetCode = `<!-- Feedbacks Widget -->
-<script src="https://app.feedbacks.dev/cdn/widget/${WIDGET_VERSION}.js"></script>
-<link rel="stylesheet" href="https://app.feedbacks.dev/cdn/widget/${WIDGET_VERSION}.css">
-
-<!-- Inline embed -->
-<div id="feedback-widget"></div>
-<script>
-  new FeedbacksWidget({
-    projectKey: '${project.api_key}',
-    target: '#feedback-widget',
-    embedMode: 'inline',
-    apiUrl: 'https://app.feedbacks.dev/api/feedback'
-  });
-</script>`;
+  const WIDGET_VERSION = 'latest';
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,7 +92,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
         {/* Project Tabs */}
         <Tabs defaultValue="feedback" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="feedback" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               <span className="hidden sm:inline">Feedback</span>
@@ -107,6 +100,14 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             <TabsTrigger value="widget-installation" className="flex items-center gap-2">
               <Code className="h-4 w-4" />
               <span className="hidden sm:inline">Widget Installation</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              <span className="hidden sm:inline">Analytics</span>
+            </TabsTrigger>
+            <TabsTrigger value="integrations" className="flex items-center gap-2">
+              <Webhook className="h-4 w-4" />
+              <span className="hidden sm:inline">Integrations</span>
             </TabsTrigger>
           </TabsList>
 
@@ -123,30 +124,90 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                 <CardContent>
                   {feedbacks && feedbacks.length > 0 ? (
                     <div className="space-y-4">
-                      {feedbacks.slice(0, 5).map((feedback) => (
-                        <div key={feedback.id} className="border rounded-lg p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge variant={feedback.type === 'bug' ? 'destructive' : 'default'}>
-                                  {feedback.type || 'general'}
-                                </Badge>
-                                <span className="text-sm text-muted-foreground">
-                                  {new Date(feedback.created_at).toLocaleDateString()}
-                                </span>
+                      {feedbacks.slice(0, 5).map((fb) => (
+                        <details key={fb.id} className="border rounded-lg p-4 group">
+                          <summary className="cursor-pointer outline-none list-none">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge variant={fb.type === 'bug' ? 'destructive' : 'default'}>
+                                    {fb.type || 'general'}
+                                  </Badge>
+                                  <span className="text-sm text-muted-foreground">
+                                    {new Date(fb.created_at).toLocaleDateString()}
+                                  </span>
+                                </div>
+                                <p className="text-foreground line-clamp-2">{fb.message}</p>
+                                {fb.email && (
+                                  <p className="text-sm text-muted-foreground mt-1">From: {fb.email}</p>
+                                )}
+                                {typeof fb.rating === 'number' && (
+                                  <p className="text-sm text-muted-foreground mt-1">Rating: {fb.rating}/5</p>
+                                )}
                               </div>
-                              <p className="text-foreground">{feedback.message}</p>
-                              {feedback.email && (
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  From: {feedback.email}
-                                </p>
-                              )}
-                              {typeof feedback.rating === 'number' && (
-                                <p className="text-sm text-muted-foreground mt-1">Rating: {feedback.rating}/5</p>
-                              )}
                             </div>
+                          </summary>
+                          <div className="mt-3 space-y-3">
+                            {fb.screenshot_url && (
+                              <ImageLightbox src={fb.screenshot_url} className="max-h-[85vh] max-w-[95vw]" thumbClassName="w-full h-auto rounded border" />
+                            )}
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Mail className="h-4 w-4" />
+                                <span>{fb.email || 'anonymous'}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Globe className="h-4 w-4" />
+                                <a href={fb.url} target="_blank" rel="noreferrer" className="underline truncate">
+                                  {fb.url}
+                                </a>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <MonitorSmartphone className="h-4 w-4" />
+                                <span className="truncate" title={(fb as any).user_agent}>{(fb as any).user_agent || 'Unknown UA'}</span>
+                              </div>
+                              {fb.priority && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Tag className="h-4 w-4" />
+                                  <span>Priority: {fb.priority}</span>
+                                </div>
+                              )}
+                              {Array.isArray((fb as any).tags) && (fb as any).tags.length > 0 && (
+                                <div className="flex flex-wrap items-center gap-1">
+                                  {(fb as any).tags.map((t: string) => (
+                                    <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
+                                  ))}
+                                </div>
+                              )}
+                              <div className="text-muted-foreground">Created: {new Date(fb.created_at).toLocaleString()}</div>
+                            </div>
+                            <div>
+                              <ArchiveFeedbackButton id={fb.id} />
+                            </div>
+                            <div>
+                              <div className="text-sm font-medium mb-1">Message</div>
+                              <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                                {fb.message}
+                              </p>
+                            </div>
+                            {Array.isArray((fb as any).attachments) && (fb as any).attachments.length > 0 && (
+                              <div className="space-y-2">
+                                <div className="text-sm font-medium">Attachments</div>
+                                <div className="flex flex-wrap gap-2">
+                                  {(fb as any).attachments.map((att: any, idx: number) => (
+                                    att.type?.startsWith('image/') ? (
+                                      <ImageLightbox key={idx} src={att.url} thumbClassName="h-20 w-auto rounded border" />
+                                    ) : (
+                                      <a key={idx} href={att.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm underline">
+                                        <Paperclip className="h-3 w-3" /> {att.name || 'attachment.pdf'}
+                                      </a>
+                                    )
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </div>
+                        </details>
                       ))}
                     </div>
                   ) : (
@@ -228,49 +289,24 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                  <Code className="h-5 w-5" />
-                  Widget Installation
+                    <Code className="h-5 w-5" />
+                    Widget Installation
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex flex-wrap gap-2">
-                    {['all','bug','idea','praise'].map(t => (
-                      <Link key={t} href={`/projects/${params.id}?${new URLSearchParams({ ...(t !== 'all' ? { type: t } : {}), page: '1' }).toString()}`} className={`text-xs px-3 py-1 rounded border ${typeFilter === t || (t==='all' && !typeFilter) ? 'bg-primary text-white' : ''}`}>
-                        {t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
-                      </Link>
-                    ))}
-                  </div>
                   <div>
                     <Label>API Key</Label>
                     <div className="flex gap-2 mt-1">
-                      <Input 
-                        value={project.api_key} 
-                        readOnly 
-                        className="font-mono text-sm"
-                      />
+                      <Input value={project.api_key} readOnly className="font-mono text-sm" />
                       <CopyButton text={project.api_key} />
                     </div>
                   </div>
 
-                  <div>
-                    <Label>Widget Code</Label>
-                    <div className="relative mt-1">
-                      <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-x-auto">
-                        <code>{widgetCode}</code>
-                      </pre>
-                      <CopyButton 
-                        text={widgetCode}
-                        className="absolute top-2 right-2"
-                      />
-                    </div>
-                  </div>
+                  <WidgetCodeGenerator projectKey={project.api_key} widgetVersion={WIDGET_VERSION} projectId={params.id} />
 
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Button asChild className="flex-1">
-                      <Link 
-                        href={`/widget-demo?apiKey=${encodeURIComponent(project.api_key)}`}
-                        target="_blank"
-                      >
+                      <Link href={`/widget-demo?apiKey=${encodeURIComponent(project.api_key)}`} target="_blank">
                         Test Widget
                       </Link>
                     </Button>
@@ -285,6 +321,17 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                       </Link>
                     </Button>
                   </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Anti‑spam (Captcha)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ProjectAntiSpam projectId={params.id} />
                 </CardContent>
               </Card>
             </div>
@@ -303,7 +350,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                     </div>
                     <div>
                       <p className="font-medium">Step 2:</p>
-                      <p className="text-muted-foreground">Copy the widget code</p>
+                      <p className="text-muted-foreground">Copy the tailored snippet</p>
                     </div>
                     <div>
                       <p className="font-medium">Step 3:</p>
@@ -321,20 +368,38 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                   <div className="space-y-4">
                     <div>
                       <Label>Project ID</Label>
-                      <p className="text-sm font-mono text-muted-foreground">
-                        {project.id}
-                      </p>
+                      <p className="text-sm font-mono text-muted-foreground">{project.id}</p>
                     </div>
                     <div>
                       <Label>Created</Label>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(project.created_at).toLocaleDateString()}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{new Date(project.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Summary (last 7 days)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProjectAnalytics projectId={params.id} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="integrations" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Webhooks</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProjectIntegrations projectId={params.id} />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

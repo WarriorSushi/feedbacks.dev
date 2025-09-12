@@ -230,3 +230,70 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 - Security, SRI and CSP: `docs/SECURITY_AND_CSP.md`
 - Database migrations: `docs/MIGRATIONS.md`
 - Rate limiting options: `docs/RATE_LIMITING.md`
+## Webhooks, Digests, and Integrations (Setup Guide)
+
+The dashboard supports per‑project webhooks for Slack, Discord, and Generic HTTP endpoints. You can send notifications on new feedback and/or hourly digests. This guide is copy‑paste ready for collaborators.
+
+### 1) Environment variables
+
+- `APP_BASE_URL` (optional): Base URL used in message links. Example: `https://app.feedbacks.dev`
+- `CRON_SECRET` (recommended): Shared secret to protect the digest runner endpoint.
+
+In Vercel: Project → Settings → Environment Variables → add keys and values.
+
+### 2) Hourly digests via GitHub Actions (recommended)
+
+This repo includes a workflow that runs hourly and calls the digest endpoint securely.
+
+Add two GitHub repo secrets:
+
+- `APP_DOMAIN`: your deployed domain without protocol (e.g. `app.feedbacks.dev`)
+- `CRON_SECRET`: a long random string (used both by the workflow and the app)
+
+Where to add: GitHub → Repo → Settings → Secrets and variables → Actions → New repository secret
+
+The workflow is here:
+
+- `.github/workflows/webhook-digest.yml`
+
+It triggers: `GET https://$APP_DOMAIN/api/webhooks/digest` with header `X-Cron-Secret: $CRON_SECRET`.
+
+Also set `CRON_SECRET` in your hosting platform (Vercel → Project → Settings → Environment Variables).
+
+Manual test (replace domain and secret):
+
+```
+curl -fsS -H "X-Cron-Secret: YOUR_SECRET" "https://YOUR_DOMAIN/api/webhooks/digest"
+```
+
+### 3) Configure endpoints in the UI
+
+In the dashboard → Project → Integrations tab:
+
+- Add one or more endpoints per channel (Slack/Discord/Generic)
+- Choose Events: On new feedback (created) and/or Hourly digest
+- Optional rules: rating ≤ N, only certain types (bug/idea/praise), tags include X
+- Optional redaction (Generic): hide `email` and/or `url` in payloads
+- Optional rate limit: cap sends per minute for that endpoint
+- Test each endpoint and watch health + recent deliveries; use Resend on failures
+
+### 4) Payloads and signing
+
+- Slack: Uses Block Kit and attachments; color and emoji vary by type.
+- Discord: Uses embeds; color varies by type.
+- Generic: JSON payload with `event`, `project`, and `feedback` fields.
+  - If a secret is set, the request is signed with `X-Feedbacks-Timestamp` and `X-Feedbacks-Signature` (HMAC SHA‑256 of `<timestamp>.<body>`).
+
+### 5) Where code lives
+
+- Immediate delivery (created): `packages/dashboard/src/app/api/feedback/route.ts`
+- Hourly digest runner: `packages/dashboard/src/app/api/webhooks/digest/route.ts`
+- Config API: `packages/dashboard/src/app/api/projects/[id]/webhooks/route.ts`
+- Logs API: `packages/dashboard/src/app/api/projects/[id]/webhooks/logs/route.ts`
+- Integrations UI: `packages/dashboard/src/components/project-integrations.tsx`
+
+That’s it — once secrets are set and endpoints are configured, hourly digests and on‑create notifications will flow automatically.
+
+For more details, see `docs/webhooks.md`.
+
+Anti‑spam guide: see `docs/anti-spam.md`.

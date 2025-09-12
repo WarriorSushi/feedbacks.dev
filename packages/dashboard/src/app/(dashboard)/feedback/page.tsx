@@ -1,28 +1,27 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  MessageSquare, 
-  Search, 
-  Filter, 
-  Download, 
-  Calendar,
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  MessageSquare,
+  Search,
+  Download,
   Clock,
   Star,
   User,
   Globe,
-  ChevronRight,
-  Eye,
-  Archive,
   Reply,
-  MoreHorizontal
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useDashboard } from '@/components/dashboard-client-layout';
+  Archive,
+  MoreHorizontal,
+  Paperclip,
+} from "lucide-react";
+import { ImageLightbox } from "@/components/image-lightbox";
+import { useEffect, useMemo, useState } from "react";
+import { useDashboard } from "@/components/dashboard-client-layout";
+import { createBrowserSupabaseClient } from "@/lib/supabase-browser";
 
 interface FeedbackItem {
   id: string;
@@ -32,99 +31,136 @@ interface FeedbackItem {
   url: string;
   created_at: string;
   project_name: string;
-  status: 'new' | 'read' | 'archived';
+  type?: 'bug' | 'idea' | 'praise';
+  priority?: 'low' | 'medium' | 'high';
+  tags?: string[];
+  screenshot_url?: string;
+  project_id?: string;
+  attachments?: Array<{ url: string; name?: string; type?: string; size?: number }>;
+  status: "new" | "read" | "archived";
 }
 
 export default function FeedbackPage() {
-  const { user, projects } = useDashboard();
+  const { projects } = useDashboard();
   const [feedback, setFeedback] = useState<FeedbackItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterProject, setFilterProject] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterProject, setFilterProject] = useState("all");
+  const [filterType, setFilterType] = useState("all");
+  const [filterRating, setFilterRating] = useState("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkTag, setBulkTag] = useState("");
+  const [removeTagValue, setRemoveTagValue] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(20);
+  const [totalCount, setTotalCount] = useState(0);
+  const [selectAllFiltered, setSelectAllFiltered] = useState(false);
+  const supabase = createBrowserSupabaseClient();
+
+  // Compute selected project id from name filter
+  const selectedProjectId = useMemo(() => {
+    if (filterProject === 'all') return null;
+    const match = projects.find((p) => p.name === filterProject);
+    return match?.id || null;
+  }, [filterProject, projects]);
+
+  const buildFilters = (q: any) => {
+    if (selectedProjectId) q = q.eq('project_id', selectedProjectId);
+    else q = q.in('project_id', projects.map(p => p.id));
+    if (filterStatus !== 'all') {
+      if (filterStatus === 'archived') q = q.eq('archived', true);
+      else q = q.eq('is_read', filterStatus === 'read');
+    }
+    if (filterType !== 'all') q = q.eq('type', filterType);
+    if (filterRating !== 'all') q = q.eq('rating', Number(filterRating));
+    if (searchTerm.trim()) {
+      const term = `%${searchTerm.trim()}%`;
+      q = q.or(`message.ilike.${term},email.ilike.${term}`);
+    }
+    return q;
+  };
 
   useEffect(() => {
-    // Mock feedback data - in real app, this would come from Supabase
-    const mockFeedback: FeedbackItem[] = [
-      {
-        id: '1',
-        email: 'john@example.com',
-        message: 'Great product! The interface is very intuitive and easy to use. I love how responsive the feedback widget is.',
-        rating: 5,
-        url: 'https://myapp.com/dashboard',
-        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        project_name: 'My App',
-        status: 'new'
-      },
-      {
-        id: '2', 
-        email: 'sarah@company.com',
-        message: 'The loading time could be improved on mobile devices. Also, the submit button sometimes takes a few clicks.',
-        rating: 3,
-        url: 'https://myapp.com/mobile',
-        created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-        project_name: 'My App',
-        status: 'read'
-      },
-      {
-        id: '3',
-        email: 'mike@startup.io',
-        message: 'Fantastic integration! Works perfectly with our React app. The documentation is clear and helpful.',
-        rating: 5,
-        url: 'https://myapp.com/integration',
-        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        project_name: 'My App',
-        status: 'archived'
-      },
-      {
-        id: '4',
-        email: 'lisa@design.co',
-        message: 'Would be nice to have more customization options for the widget appearance to match our brand colors.',
-        rating: 4,
-        url: 'https://myapp.com/settings',
-        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        project_name: 'Website v2',
-        status: 'read'
-      },
-      {
-        id: '5',
-        email: 'alex@tech.com',
-        message: 'Bug report: The widget crashes on Safari when submitting feedback with special characters in the message.',
-        rating: 2,
-        url: 'https://myapp.com/contact',
-        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        project_name: 'Website v2',
-        status: 'new'
+    const run = async () => {
+      const ids = projects.map((p) => p.id);
+      if (!ids.length) { setFeedback([]); setTotalCount(0); return; }
+      // Count
+      let countQ = supabase
+        .from('feedback')
+        .select('*', { count: 'exact', head: true });
+      countQ = buildFilters(countQ);
+      const { count } = await countQ;
+      setTotalCount(count || 0);
+      // Page data
+      let dataQ = supabase
+        .from('feedback')
+        .select('*')
+        .order('created_at', { ascending: false });
+      dataQ = buildFilters(dataQ);
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+      const { data, error } = await dataQ.range(from, to);
+      if (error) {
+        console.error('Load feedback error:', error);
+        setFeedback([]);
+        return;
       }
-    ];
-    
-    setFeedback(mockFeedback);
-  }, []);
+      const idToName = new Map(projects.map((p) => [p.id, p.name] as const));
+      const mapped = (data || []).map((f: any) => ({
+        id: f.id,
+        email: f.email || 'anonymous',
+        message: f.message,
+        rating: typeof f.rating === 'number' ? f.rating : 0,
+        url: f.url,
+        created_at: f.created_at,
+        project_id: f.project_id,
+        project_name: idToName.get(f.project_id) || 'Project',
+        type: f.type || undefined,
+        priority: f.priority || undefined,
+        tags: Array.isArray(f.tags) ? f.tags : [],
+        screenshot_url: f.screenshot_url || undefined,
+        attachments: Array.isArray(f.attachments) ? f.attachments : [],
+        status: f.archived ? 'archived' : (f.is_read ? 'read' : 'new'),
+      }));
+      setFeedback(mapped);
+    };
+    run();
+  }, [projects, selectedProjectId, filterStatus, filterType, filterRating, searchTerm, page, pageSize]);
 
-  const filteredFeedback = feedback.filter(item => {
-    const matchesSearch = item.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || item.status === filterStatus;
-    const matchesProject = filterProject === 'all' || item.project_name === filterProject;
-    return matchesSearch && matchesStatus && matchesProject;
-  });
+  const filteredFeedback = useMemo(() => {
+    const term = searchTerm.toLowerCase();
+    return feedback.filter((item) => {
+      const matchesSearch =
+        item.message.toLowerCase().includes(term) ||
+        item.email.toLowerCase().includes(term);
+      const matchesStatus = filterStatus === "all" || item.status === filterStatus;
+      const matchesProject = filterProject === "all" || item.project_name === filterProject;
+      const matchesType = filterType === "all" || item.type === filterType;
+      const matchesRating = filterRating === "all" || String(item.rating) === filterRating;
+      return matchesSearch && matchesStatus && matchesProject && matchesType && matchesRating;
+    });
+  }, [feedback, searchTerm, filterStatus, filterProject, filterType, filterRating]);
 
-  const feedbackProjects = Array.from(new Set(feedback.map(f => f.project_name)));
+  const feedbackProjects = useMemo(() => projects.map(p => p.name), [projects]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'new': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'read': return 'bg-green-100 text-green-800 border-green-200';
-      case 'archived': return 'bg-gray-100 text-gray-800 border-gray-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case "new":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      case "read":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "archived":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
   const getRatingStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
-      <Star 
-        key={i} 
-        className={`h-4 w-4 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} 
-      />
+      <Star key={i} className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} />
     ));
   };
 
@@ -140,6 +176,34 @@ export default function FeedbackPage() {
     if (days > 0) return `${days}d ago`;
     if (hours > 0) return `${hours}h ago`;
     return `${minutes}m ago`;
+  };
+
+  const bulkArchive = async (archive: boolean) => {
+    if (selectAllFiltered) {
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: archive ? 'archive' : 'unarchive',
+          filters: {
+            projectId: selectedProjectId,
+            status: filterStatus,
+            type: filterType,
+            rating: filterRating,
+            searchTerm,
+          },
+        }),
+      });
+      setSelected(new Set()); setSelectAllFiltered(false); setPage(1);
+    } else if (selected.size > 0) {
+      const ids = Array.from(selected);
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: archive ? 'archive' : 'unarchive', ids }),
+      });
+      if (archive) setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, status: 'archived' } : f));
+      else setPage(1);
+      clearSelection();
+    }
   };
 
   return (
@@ -208,13 +272,80 @@ export default function FeedbackPage() {
                 <CardTitle>Feedback Management</CardTitle>
                 <CardDescription>Filter and search through your feedback</CardDescription>
               </div>
-              <Button className="bg-primary hover:bg-primary/90">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
+              {selectedProjectId ? (
+                <Button asChild className="bg-primary hover:bg-primary/90">
+                  <a href={`/api/projects/${selectedProjectId}/feedback.csv`} target="_blank" rel="noreferrer">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download CSV
+                  </a>
+                </Button>
+              ) : (
+                <Button className="bg-primary/50 hover:bg-primary/50" disabled>
+                  <Download className="h-4 w-4 mr-2" />
+                  Choose a project
+                </Button>
+              )}
             </div>
           </CardHeader>
           <CardContent>
+            {/* Type distribution bar for current results */}
+            <div className="mb-4">
+              {(() => {
+                const total = filteredFeedback.length || 1;
+                const bug = filteredFeedback.filter(f => f.type === 'bug').length;
+                const idea = filteredFeedback.filter(f => f.type === 'idea').length;
+                const praise = filteredFeedback.filter(f => f.type === 'praise').length;
+                const bugPct = (bug / total) * 100;
+                const ideaPct = (idea / total) * 100;
+                const praisePct = (praise / total) * 100;
+                return (
+                  <div>
+                    <div className="flex h-2 w-full overflow-hidden rounded bg-muted">
+                      <div className="bg-destructive" style={{ width: `${bugPct}%` }} />
+                      <div className="bg-primary/50" style={{ width: `${ideaPct}%` }} />
+                      <div className="bg-green-500/60" style={{ width: `${praisePct}%` }} />
+                    </div>
+                    <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>Bug: {bug}</span>
+                      <span>Idea: {idea}</span>
+                      <span>Praise: {praise}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+            {selected.size > 0 && (
+              <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border rounded mb-4 p-3 flex items-center gap-2">
+                <span className="text-sm">{selected.size} selected</span>
+                <Button size="sm" variant="outline" onClick={() => markRead(true)}>Mark read</Button>
+                <Button size="sm" variant="outline" onClick={() => markRead(false)}>Mark unread</Button>
+                <Button size="sm" variant="outline" onClick={() => bulkArchive(true)}>Archive</Button>
+                <Button size="sm" variant="outline" onClick={() => bulkArchive(false)}>Unarchive</Button>
+                <div className="flex items-center gap-2">
+                  <Input value={bulkTag} onChange={(e)=>setBulkTag(e.target.value)} placeholder="Add tag" className="h-8 w-32" />
+                  <Button size="sm" onClick={applyTag} disabled={!bulkTag.trim()}>Apply</Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Input value={removeTagValue} onChange={(e)=>setRemoveTagValue(e.target.value)} placeholder="Remove tag" className="h-8 w-32" />
+                  <Button size="sm" variant="destructive" onClick={removeTag} disabled={!removeTagValue.trim()}>Remove</Button>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => setSelected(new Set(feedback.map(f => f.id)))}>Select all</Button>
+                <Button size="sm" variant="ghost" onClick={clearSelection}>Clear</Button>
+              </div>
+            )}
+            {/* Pagination controls */}
+            <div className="mb-3 flex items-center justify-between text-sm">
+              <div className="text-muted-foreground">{totalCount} results • Page {page} of {totalPages}</div>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={page<=1}>Previous</Button>
+                <Button size="sm" variant="outline" onClick={()=>setPage(p=>Math.min(totalPages,p+1))} disabled={page>=totalPages}>Next</Button>
+                {!selectAllFiltered ? (
+                  <Button size="sm" onClick={()=>{ setSelectAllFiltered(true); setSelected(new Set()); }}>Select all {totalCount} filtered</Button>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={()=>setSelectAllFiltered(false)}>Cancel select all</Button>
+                )}
+              </div>
+            </div>
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
               <div className="flex-1">
                 <div className="relative">
@@ -238,6 +369,32 @@ export default function FeedbackPage() {
                   <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="bug">Bug</SelectItem>
+                  <SelectItem value="idea">Idea</SelectItem>
+                  <SelectItem value="praise">Praise</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterRating} onValueChange={setFilterRating}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Rating" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Ratings</SelectItem>
+                  <SelectItem value="1">1</SelectItem>
+                  <SelectItem value="2">2</SelectItem>
+                  <SelectItem value="3">3</SelectItem>
+                  <SelectItem value="4">4</SelectItem>
+                  <SelectItem value="5">5</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={filterProject} onValueChange={setFilterProject}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder="Project" />
@@ -255,8 +412,10 @@ export default function FeedbackPage() {
             <div className="space-y-2">
               {filteredFeedback.length > 0 ? (
                 filteredFeedback.map((item) => (
-                  <div key={item.id} className="project-item group overflow-hidden">
-                    <div className="flex items-start gap-3 p-3">
+                  <details key={item.id} className={`project-item group overflow-hidden border rounded-lg ${selected.has(item.id) ? 'ring-1 ring-primary' : ''}`}>
+                    <summary className="list-none cursor-pointer">
+                      <div className="flex items-start gap-3 p-3">
+                        <input type="checkbox" aria-label="Select feedback" checked={selected.has(item.id)} onChange={() => toggleSelect(item.id)} className="mt-1 h-4 w-4" />
                       <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0">
                         <User className="h-4 w-4 text-accent" />
                       </div>
@@ -300,7 +459,7 @@ export default function FeedbackPage() {
                               <Reply className="h-3 w-3" />
                               <span className="hidden sm:inline ml-1">Reply</span>
                             </Button>
-                            <Button size="sm" variant="outline" className="h-7 text-xs px-2">
+                            <Button size="sm" variant="outline" className="h-7 text-xs px-2" onClick={async (e)=>{ e.preventDefault(); try { await fetch(`/api/feedbacks/${item.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: true }) }); setFeedback(prev => prev.map(f => f.id === item.id ? { ...f, status: 'archived' } : f)); } catch {} }}>
                               <Archive className="h-3 w-3" />
                               <span className="hidden sm:inline ml-1">Archive</span>
                             </Button>
@@ -314,6 +473,33 @@ export default function FeedbackPage() {
                         <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                           {item.message}
                         </p>
+                        {/* Priority, Tags, Screenshot */}
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                          {item.priority && (
+                            <Badge variant="outline" className="text-xs">Priority: {item.priority}</Badge>
+                          )}
+                          {Array.isArray(item.tags) && item.tags.length > 0 && item.tags.slice(0,4).map((t) => (
+                            <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
+                          ))}
+                          {item.screenshot_url && (
+                            <div className="ml-auto">
+                              <ImageLightbox src={item.screenshot_url} thumbClassName="h-12 w-auto rounded border" />
+                            </div>
+                          )}
+                        </div>
+                        {Array.isArray(item.attachments) && item.attachments.length > 0 && (
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            {item.attachments.slice(0,3).map((att, idx) => (
+                              att.type?.startsWith('image/') ? (
+                                <ImageLightbox key={idx} src={att.url} thumbClassName="h-12 w-auto rounded border" />
+                              ) : (
+                                <a key={idx} href={att.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs underline">
+                                  <Paperclip className="h-3 w-3" /> {att.name || 'attachment'}
+                                </a>
+                              )
+                            ))}
+                          </div>
+                        )}
                         
                         {/* Mobile project name */}
                         <div className="mt-1 sm:hidden">
@@ -323,7 +509,39 @@ export default function FeedbackPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                    </summary>
+                    <div className="px-3 pb-3 space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2"><Mail className="h-4 w-4" /> {item.email || 'anonymous'}</div>
+                        <div className="flex items-center gap-2 truncate"><MonitorSmartphone className="h-4 w-4" /> <span title={item.url}>{item.url}</span></div>
+                        {item.type && <div className="capitalize">Type: {item.type}</div>}
+                        <div>Created: {new Date(item.created_at).toLocaleString()}</div>
+                      </div>
+                      {item.screenshot_url && (
+                        <ImageLightbox src={item.screenshot_url} thumbClassName="h-24 w-auto rounded border" />
+                      )}
+                      {Array.isArray(item.attachments) && item.attachments.length > 0 && (
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium">Attachments</div>
+                          <div className="flex flex-wrap gap-2">
+                            {item.attachments.map((att, idx) => (
+                              att.type?.startsWith('image/') ? (
+                                <ImageLightbox key={idx} src={att.url} thumbClassName="h-20 w-auto rounded border" />
+                              ) : (
+                                <a key={idx} href={att.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm underline">
+                                  <Paperclip className="h-3 w-3" /> {att.name || 'attachment'}
+                                </a>
+                              )
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-sm font-medium mb-1">Message</div>
+                        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{item.message}</p>
+                      </div>
+                    </div>
+                  </details>
                 ))
               ) : (
                 <div className="text-center py-12">
@@ -342,3 +560,82 @@ export default function FeedbackPage() {
     </div>
   );
 }
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  };
+
+  const clearSelection = () => setSelected(new Set());
+
+  const markRead = async (read: boolean) => {
+    if (selectAllFiltered) {
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: read ? 'mark_read' : 'mark_unread',
+          filters: {
+            projectId: selectedProjectId,
+            status: filterStatus,
+            type: filterType,
+            rating: filterRating,
+            searchTerm,
+          },
+        }),
+      });
+      setSelected(new Set()); setSelectAllFiltered(false); setPage(1);
+    } else {
+      if (selected.size === 0) return;
+      const ids = Array.from(selected);
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: read ? 'mark_read' : 'mark_unread', ids }),
+      });
+      setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, status: read ? 'read' : 'new' } : f));
+      clearSelection();
+    }
+  };
+
+  const applyTag = async () => {
+    const tag = bulkTag.trim();
+    if (!tag) return;
+    if (selectAllFiltered) {
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add_tag', filters: { projectId: selectedProjectId, status: filterStatus, type: filterType, rating: filterRating, searchTerm, tag } }),
+      });
+      setBulkTag(""); setSelectAllFiltered(false); setPage(1);
+    } else if (selected.size > 0) {
+      const ids = Array.from(selected);
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add_tag', ids, filters: { tag } }),
+      });
+      setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, tags: Array.from(new Set([...(f.tags || []), tag])) } : f));
+      setBulkTag("");
+      clearSelection();
+    }
+  };
+
+  const removeTag = async () => {
+    const tag = removeTagValue.trim();
+    if (!tag) return;
+    if (selectAllFiltered) {
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'remove_tag', filters: { projectId: selectedProjectId, status: filterStatus, type: filterType, rating: filterRating, searchTerm, tag } }),
+      });
+      setRemoveTagValue(""); setSelectAllFiltered(false); setPage(1);
+    } else if (selected.size > 0) {
+      const ids = Array.from(selected);
+      await fetch('/api/feedbacks/bulk', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'remove_tag', ids, filters: { tag } }),
+      });
+      setFeedback(prev => prev.map(f => selected.has(f.id) ? { ...f, tags: (f.tags || []).filter(t => t !== tag) } : f));
+      setRemoveTagValue("");
+      clearSelection();
+    }
+  };

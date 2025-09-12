@@ -8,6 +8,7 @@ declare class FeedbacksWidget {
     private retryCount;
     private maxRetries;
     private lastFocusedElement;
+    private screenshotData;
     constructor(config: WidgetConfig);
     static init(config: WidgetConfig): FeedbacksWidget;
     private init;
@@ -27,6 +28,7 @@ declare class FeedbacksWidget {
     private submitWithRetry;
     private delay;
     private isValidEmail;
+    private captureScreenshot;
     private setSubmitState;
     private showSuccess;
     private showInlineSuccess;

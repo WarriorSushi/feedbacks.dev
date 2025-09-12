@@ -11,6 +11,10 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: `widget-${version}.js`,
+      // Expose as global for CDN consumers (script tag)
+      library: 'FeedbacksWidget',
+      libraryTarget: 'umd',
+      globalObject: 'this',
       clean: true,
     },
     module: {

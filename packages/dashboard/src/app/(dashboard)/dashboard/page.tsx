@@ -9,60 +9,57 @@ import { BackgroundLines } from '@/components/ui/background-lines';
 import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
 import { StatsCard } from '@/components/ui/stats-card';
 import { FeedbackCard } from '@/components/ui/feedback-card';
-import { Plus, BarChart3, Calendar, Mail, ExternalLink, TrendingUp, Users, Clock, MessageSquare } from 'lucide-react';
+import { Plus, BarChart3, Calendar, Mail, ExternalLink, TrendingUp, Users, Clock, MessageSquare, PlayCircle, Settings, BookOpen, Code2, ShieldCheck } from 'lucide-react';
+import { ProjectsComparison } from '@/components/projects-comparison';
+import { OverviewAnalytics } from '@/components/overview-analytics';
+import { ProjectsComparison } from '@/components/projects-comparison';
 import { useEffect, useState } from 'react';
 import { useDashboard } from '@/components/dashboard-client-layout';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 
 export default function DashboardPage() {
   const { user, projects } = useDashboard();
   const [recentFeedback, setRecentFeedback] = useState<any[]>([]);
 
   useEffect(() => {
-    // Mock recent feedback data - in real app, this would come from Supabase
-    const mockFeedback = [
-      {
-        id: '1',
-        email: 'john@example.com',
-        message: 'Great product! The interface is very intuitive.',
-        rating: 5,
-        url: 'https://myapp.com/dashboard',
-        created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        project_name: 'My App',
-        status: 'new'
-      },
-      {
-        id: '2',
-        email: 'sarah@company.com',
-        message: 'The loading time could be improved on mobile devices.',
-        rating: 3,
-        url: 'https://myapp.com/mobile',
-        created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-        project_name: 'My App',
-        status: 'read'
-      },
-      {
-        id: '3',
-        email: 'mike@startup.io',
-        message: 'Fantastic integration! Works perfectly with our React app.',
-        rating: 5,
-        url: 'https://myapp.com/integration',
-        created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        project_name: 'Website v2',
-        status: 'archived'
-      },
-      {
-        id: '4',
-        email: 'lisa@design.co',
-        message: 'Would be nice to have more customization options.',
-        rating: 4,
-        url: 'https://myapp.com/settings',
-        created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        project_name: 'Website v2',
-        status: 'read'
+    const run = async () => {
+      try {
+        const supabase = createBrowserSupabaseClient();
+        const projectIds = projects.map(p => p.id);
+        if (!projectIds.length) {
+          setRecentFeedback([]);
+          return;
+        }
+        const { data, error } = await supabase
+          .from('feedback')
+          .select('*')
+          .in('project_id', projectIds)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        if (error) {
+          console.error('Load feedback error:', error);
+          setRecentFeedback([]);
+          return;
+        }
+        const idToName = new Map(projects.map(p => [p.id, p.name] as const));
+        const mapped = (data || []).map((f: any) => ({
+          id: f.id,
+          email: f.email || 'anonymous',
+          message: f.message,
+          rating: typeof f.rating === 'number' ? f.rating : 0,
+          url: f.url,
+          created_at: f.created_at,
+          project_name: idToName.get(f.project_id) || 'Project',
+          status: f.is_read ? 'read' : 'new',
+        }));
+        setRecentFeedback(mapped);
+      } catch (e) {
+        console.error('Recent feedback load failed:', e);
+        setRecentFeedback([]);
       }
-    ];
-    setRecentFeedback(mockFeedback);
-  }, []);
+    };
+    run();
+  }, [projects]);
 
   // Calculate total feedback across all projects
   const totalFeedback = projects.reduce((acc, project) => {
@@ -114,6 +111,11 @@ export default function DashboardPage() {
               Recent Feedbacks
             </TabsTrigger>
           </TabsList>
+            {projects && projects.length > 0 && (
+              <ProjectsComparison projects={projects.map((p: any) => ({ id: p.id, name: p.name }))} />
+            )}
+            <OverviewAnalytics />
+
           
           <TabsContent value="overview" className="space-y-6 md:space-y-8">
             {/* Stats Overview - Enhanced Stats Cards */}
@@ -142,6 +144,58 @@ export default function DashboardPage() {
                 className="animate-fade-in"
               />
             </div>
+
+            {/* Guided Setup + Resources */
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <PlayCircle className="h-5 w-5" /> Quick Start
+                  </CardTitle>
+                  <CardDescription>Follow these steps to start collecting feedback.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="p-3 rounded-lg border">
+                      <div className="flex items-center gap-2 font-medium mb-1"><Plus className="h-4 w-4" /> Create a Project</div>
+                      <p className="text-sm text-muted-foreground">Set up a project to generate an API key.</p>
+                      <div className="mt-2"><Link href="/projects/new" className="text-sm underline">Create Project →</Link></div>
+                    </div>
+                    <div className="p-3 rounded-lg border">
+                      <div className="flex items-center gap-2 font-medium mb-1"><Settings className="h-4 w-4" /> Configure the Widget</div>
+                      <p className="text-sm text-muted-foreground">Choose mode, colors, and success messages.</p>
+                      <div className="mt-2"><Link href="/projects" className="text-sm underline">Open Installer →</Link></div>
+                    </div>
+                    <div className="p-3 rounded-lg border">
+                      <div className="flex items-center gap-2 font-medium mb-1"><PlayCircle className="h-4 w-4" /> Test & Install</div>
+                      <p className="text-sm text-muted-foreground">Preview live and copy the tailored snippet.</p>
+                      <div className="mt-2"><Link href="/widget-demo" className="text-sm underline">Open Live Demo →</Link></div>
+                    </div>
+                    <div className="p-3 rounded-lg border">
+                      <div className="flex items-center gap-2 font-medium mb-1"><TrendingUp className="h-4 w-4" /> Verify Submissions</div>
+                      <p className="text-sm text-muted-foreground">View new feedback in your dashboard.</p>
+                      <div className="mt-2"><Link href="/feedback" className="text-sm underline">View Feedback →</Link></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5" /> Resources</CardTitle>
+                  <CardDescription>Helpful links to get you going.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Link href="/docs" className="text-sm flex items-center gap-2 underline"><Code2 className="h-4 w-4" /> Docs</Link>
+                  <Link href="/terms" className="text-sm flex items-center gap-2 underline"><ShieldCheck className="h-4 w-4" /> Terms & Privacy</Link>
+                  <a href="https://github.com/WarriorSushi/feedbacks.dev" target="_blank" className="text-sm flex items-center gap-2 underline"><ExternalLink className="h-4 w-4" /> GitHub</a>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Projects Comparison */}
+            {projects && projects.length > 0 && (
+              <ProjectsComparison projects={projects.map((p: any) => ({ id: p.id, name: p.name }))} />
+            )}
 
             {/* Projects Section */}
             <div className="space-y-4 md:space-y-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
@@ -284,3 +338,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

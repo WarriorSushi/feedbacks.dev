@@ -6,6 +6,9 @@ export interface FeedbackData {
     userAgent: string;
     type?: 'bug' | 'idea' | 'praise';
     rating?: number;
+    screenshot?: string;
+    priority?: 'low' | 'medium' | 'high';
+    tags?: string[];
 }
 export interface FeedbackResponse {
     id: string;
@@ -21,4 +24,18 @@ export interface WidgetConfig {
     primaryColor?: string;
     apiUrl?: string;
     debug?: boolean;
+    requireEmail?: boolean;
+    enableType?: boolean;
+    enableRating?: boolean;
+    enableScreenshot?: boolean;
+    screenshotRequired?: boolean;
+    enablePriority?: boolean;
+    enableTags?: boolean;
+    enableAttachment?: boolean;
+    attachmentMaxMB?: number;
+    allowedAttachmentMimes?: string[];
+    successTitle?: string;
+    successDescription?: string;
+    openOnKey?: string;
+    openAfterMs?: number;
 }

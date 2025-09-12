@@ -10,6 +10,20 @@ const nextConfig = {
     // We still run lint in CI separately.
     ignoreDuringBuilds: true,
   },
+  async headers() {
+    const supabaseOrigin = 'https://xiiaugllydxxmjbtzfux.supabase.co';
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: `img-src 'self' data: ${supabaseOrigin};`,
+          },
+        ],
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

@@ -6,6 +6,9 @@ export interface FeedbackData {
   userAgent: string;
   type?: 'bug' | 'idea' | 'praise';
   rating?: number;
+  screenshot?: string; // data URL (png)
+  priority?: 'low' | 'medium' | 'high';
+  tags?: string[];
 }
 
 export interface FeedbackResponse {
@@ -23,4 +26,22 @@ export interface WidgetConfig {
   primaryColor?: string;
   apiUrl?: string; // Custom API endpoint
   debug?: boolean;
+  requireEmail?: boolean;
+  requireCaptcha?: boolean;
+  captchaProvider?: 'turnstile' | 'hcaptcha';
+  turnstileSiteKey?: string;
+  hcaptchaSiteKey?: string;
+  enableType?: boolean;
+  enableRating?: boolean;
+  enableScreenshot?: boolean;
+  screenshotRequired?: boolean;
+  enablePriority?: boolean;
+  enableTags?: boolean;
+  enableAttachment?: boolean;
+  attachmentMaxMB?: number; // default 5
+  allowedAttachmentMimes?: string[]; // default [png,jpeg,pdf]
+  successTitle?: string;
+  successDescription?: string;
+  openOnKey?: string; // e.g., 'Shift+F'
+  openAfterMs?: number; // open automatically after N ms (modal)
 }

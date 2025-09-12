@@ -12,7 +12,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   // RLS ensures user can only read their project's feedback
   const { data, error } = await supabase
     .from('feedback')
-    .select('created_at,message,email,url,user_agent,type,rating')
+    .select('created_at,message,email,url,user_agent,type,rating,priority,tags,screenshot_url,attachments')
     .eq('project_id', params.id)
     .order('created_at', { ascending: false });
 
@@ -20,15 +20,19 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     return new NextResponse('Error generating CSV', { status: 500 });
   }
 
-  const header = ['created_at','message','email','url','user_agent','type','rating'];
-  const rows = (data || []).map(r => [
+  const header = ['created_at','message','email','url','user_agent','type','rating','priority','tags','screenshot_url','attachments'];
+  const rows = (data || []).map((r: any) => [
     r.created_at,
     (r.message || '').replace(/"/g, '""'),
     r.email || '',
     r.url || '',
     (r.user_agent || '').replace(/"/g, '""'),
     r.type || '',
-    r.rating?.toString() || ''
+    r.rating?.toString() || '',
+    r.priority || '',
+    Array.isArray(r.tags) ? r.tags.join('|') : '',
+    r.screenshot_url || '',
+    r.attachments ? JSON.stringify(r.attachments) : ''
   ]);
 
   const csv = [

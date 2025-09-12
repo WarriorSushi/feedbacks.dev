@@ -1,84 +1,73 @@
 # Feedbacks Widget CDN Installation
 
-## Quick Start
+## Quick Start (Auto‑init, easiest)
 
-Add this script tag to your HTML:
+Add this script + CSS and set data attributes on the script tag. The widget auto‑initializes:
 
 ```html
-<!-- Load from Professional CDN (recommended) -->
-<script src="https://app.feedbacks.dev/cdn/widget/1.0.0.js"></script>
-<link rel="stylesheet" href="https://app.feedbacks.dev/cdn/widget/1.0.0.css">
+<!-- Load from CDN (choose a version) -->
+<script 
+  src="https://app.feedbacks.dev/cdn/widget/latest.js"
+  data-project="your_project_api_key"
+  data-embed-mode="modal"             
+  data-position="bottom-right"
+  defer>
+</script>
+<link rel="stylesheet" href="https://app.feedbacks.dev/cdn/widget/latest.css">
+```
 
-<!-- Alternative: Stable version (auto bug fixes) -->
+Data attributes (all optional except `data-project`):
+- `data-project`: your project API key
+- `data-embed-mode`: `modal` | `inline` | `trigger`
+- `data-position`: `bottom-right` | `bottom-left` | `top-right` | `top-left` (modal only)
+- `data-target`: CSS selector for inline container or trigger button (inline/trigger)
+- `data-button-text`: custom text for floating button (modal)
+- `data-color`: primary color (e.g., `#3b82f6`)
+- `data-debug`: present to enable console logs
+ - `data-require-email`: require email input
+ - `data-enable-type` / `data-enable-rating`: disable with `false`
+- `data-enable-screenshot`: enable screenshot capture (optional)
+- `data-screenshot-required`: make screenshot required
+- `data-enable-priority`: show priority field
+- `data-enable-tags`: show tags field (comma separated)
+- `data-enable-attachment`: allow a single attachment (optional)
+- `data-attachment-maxmb`: number (e.g., 5) to cap attachment size
+
+## Manual Init (full control)
+
+```html
 <script src="https://app.feedbacks.dev/cdn/widget/1.0.js"></script>
 <link rel="stylesheet" href="https://app.feedbacks.dev/cdn/widget/1.0.css">
-```
 
-## Usage Examples
-
-### 1. Inline Embed
-```html
+<!-- Inline example -->
 <div id="feedback-widget"></div>
 <script>
-  FeedbacksWidget.init({
-    apiKey: 'your-api-key',
-    containerId: 'feedback-widget',
-    mode: 'inline'
+  new FeedbacksWidget({
+    projectKey: 'your_project_api_key',
+    embedMode: 'inline',
+    target: '#feedback-widget',
+    // Optional
+    // position: 'bottom-right',
+    // buttonText: 'Feedback',
+    // primaryColor: '#3b82f6',
+    // apiUrl: 'https://your-domain.com/api/feedback',
   });
+  
+  // Other modes:
+  // new FeedbacksWidget({ projectKey: '...', embedMode: 'modal', position: 'bottom-right' });
+  // new FeedbacksWidget({ projectKey: '...', embedMode: 'trigger', target: '#feedback-btn' });
+  
 </script>
 ```
 
-### 2. Trigger Button
-```html
-<button id="feedback-btn">Give Feedback</button>
-<script>
-  FeedbacksWidget.init({
-    apiKey: 'your-api-key',
-    triggerId: 'feedback-btn',
-    mode: 'modal'
-  });
-</script>
-```
+## CDN Info
 
-### 3. Floating Button (Auto-trigger)
-```html
-<script>
-  FeedbacksWidget.init({
-    apiKey: 'your-api-key',
-    mode: 'floating'
-  });
-</script>
-```
+- Base: https://app.feedbacks.dev/cdn/widget/
+- Files:
+  - `1.0.0.js` (immutable)
+  - `1.0.js` (stable, auto bug fixes)
+  - `latest.js` (latest features)
+  - Matching `.css` files for all
 
-## Configuration Options
-
-```javascript
-FeedbacksWidget.init({
-  apiKey: 'your-api-key',           // Required: Your project API key
-  mode: 'inline',                   // Required: 'inline', 'modal', or 'floating'
-  containerId: 'feedback-widget',   // Required for inline mode
-  triggerId: 'feedback-btn',        // Required for modal mode
-  apiUrl: 'https://your-domain.com/api/feedback', // Optional: Custom API endpoint
-  theme: 'auto'                     // Optional: 'light', 'dark', or 'auto'
-});
-```
-
-## CDN Information
-
-- **Professional CDN**: https://app.feedbacks.dev/cdn/widget/
-- **Documentation**: https://app.feedbacks.dev/cdn/widget (API reference)
-
-Files available:
-- `1.0.0.js` - Exact version (never changes, most stable)
-- `1.0.js` - Stable branch (auto bug fixes, stable features)  
-- `latest.js` - Latest features (may have breaking changes)
-- Matching `.css` files for all versions
-
-## Version
-
-Current version: 1.0.0
-
-**Smart Versioning:**
-- Exact versions are cached forever (immutable)
-- Pattern versions get latest compatible updates
-- Professional caching for global performance
+Versioning practices:
+- Pin exact versions for stability; use `1.0.js` for safe updates; `latest.js` for newest features.
