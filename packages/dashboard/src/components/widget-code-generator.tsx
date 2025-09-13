@@ -10,7 +10,7 @@ import { CopyButton } from "@/components/copy-button";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Info, Minus, Plus, RotateCcw } from "lucide-react";
+import { Info, RotateCcw } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { CodeSnippet } from "@/components/code-snippet";
 
@@ -55,6 +55,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [message, setMessage] = useState<string>("");
   const [ultra, setUltra] = useState(false);
   const [iframeHeight, setIframeHeight] = useState<number>(360);
+  const [showUltraTip, setShowUltraTip] = useState<boolean>(false);
   const [modalShape, setModalShape] = useState<'rounded'|'pill'|'square'>('rounded');
   const [headerIcon, setHeaderIcon] = useState<'none'|'chat'|'star'|'lightbulb'|'thumbs-up'>('none');
   const [headerLayout, setHeaderLayout] = useState<'text-only'|'icon-left'|'icon-top'>('text-only');
@@ -538,7 +539,7 @@ export default function FeedbackWidget() {
   return (
     <TooltipProvider>
     <div className="space-y-6 relative">
-      {!ultra && (
+      {(!ultra && showUltraTip) && (
         <div className="absolute right-2 -top-2 z-10 animate-in fade-in-0 zoom-in-95">
           <div className="rounded-md bg-popover border px-3 py-2 text-xs text-popover-foreground shadow-md">
             Try Ultra mode for more customisations

@@ -306,12 +306,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Button asChild className="flex-1">
                     <Link href={`/widget-demo?apiKey=${encodeURIComponent(project.api_key)}`} target="_blank">
-                      Test Widget
-                    </Link>
-                  </Button>
-                  <Button variant="outline" asChild className="flex-1">
-                    <Link href="/widget-demo" target="_blank">
-                      View Demo
+                      Open Demo
                     </Link>
                   </Button>
                   <Button variant="outline" asChild className="flex-1">
