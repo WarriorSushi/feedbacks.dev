@@ -323,17 +323,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Anti‑spam (Captcha)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ProjectAntiSpam projectId={params.id} />
-              </CardContent>
-            </Card>
+              {/* Anti-spam controls are now managed within the installation customizer (Ultra). */}
 
             {/* Project Info and API Key (moved to bottom, de-emphasized) */}
             <Card>

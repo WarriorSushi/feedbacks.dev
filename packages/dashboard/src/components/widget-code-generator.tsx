@@ -99,6 +99,8 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     const n = normalizeHex(formBg);
     return n && /^#([0-9a-f]{6})$/i.test(n) ? n : '#ffffff';
   }, [formBg]);
+  const [inlineBorder, setInlineBorder] = useState<string>('');
+  const [inlineShadow, setInlineShadow] = useState<string>('');
   const bgContrast = useMemo(()=>{
     const n = normalizeHex(formBg);
     const m = /^#([0-9a-f]{6})$/i.exec(n||'');
@@ -357,6 +359,8 @@ export default function FeedbackWidget() {
       ...(headerLayout ? { headerLayout } : {}),
       ...(spacing ? { spacing } : {}),
       ...(modalWidth ? { modalWidth } : {}),
+      ...(inlineBorder ? { inlineBorder } : {}),
+      ...(inlineShadow ? { inlineShadow } : {}),
     };
     const initialJson = JSON.stringify(initial).replace(/</g, '\\u003c');
     return `<!doctype html>
@@ -424,6 +428,26 @@ export default function FeedbackWidget() {
     if (!win) return;
     try { win.postMessage({ type: 'widget-preview:update', config: currentConfig }, '*'); } catch {}
   }, [currentConfig]);
+
+  // Prefill captcha provider/keys from settings when enabling captcha
+  useEffect(() => {
+    (async () => {
+      if (!requireCaptcha || captchaProvider !== 'none') return;
+      try {
+        const res = await fetch('/api/settings/anti-spam');
+        if (!res.ok) return;
+        const s = await res.json();
+        const def = s.defaultProvider || 'none';
+        if (def === 'turnstile') {
+          if (s.turnstileSiteKey) setTurnstileSiteKey(s.turnstileSiteKey);
+          setCaptchaProvider('turnstile');
+        } else if (def === 'hcaptcha') {
+          if (s.hcaptchaSiteKey) setHcaptchaSiteKey(s.hcaptchaSiteKey);
+          setCaptchaProvider('hcaptcha');
+        }
+      } catch {}
+    })();
+  }, [requireCaptcha]);
 
   // Auto-resize iframe to fit widget content
   useEffect(() => {
@@ -513,7 +537,14 @@ export default function FeedbackWidget() {
 
   return (
     <TooltipProvider>
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {!ultra && (
+        <div className="absolute right-2 -top-2 z-10 animate-in fade-in-0 zoom-in-95">
+          <div className="rounded-md bg-popover border px-3 py-2 text-xs text-popover-foreground shadow-md">
+            Try Ultra mode for more customisations
+          </div>
+        </div>
+      )}
       {/* Top bar */}
       <div className="flex items-center justify-between">
         <div className="inline-flex rounded-md border p-1 bg-muted/40">
@@ -530,7 +561,8 @@ export default function FeedbackWidget() {
           <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset
         </Button>
       </div>
-      {/* Mode and Platform */}
+      {/* Mode and Platform (Ultra only) */}
+      {ultra && (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -587,7 +619,8 @@ export default function FeedbackWidget() {
             </div>
           </div>
 
-          {/* Presets (apply without changing current mode) */}
+          {/* Presets (Ultra only) */}
+          {ultra && (
           <div className="flex flex-wrap gap-2 items-center">
             <span className="text-sm text-muted-foreground">Presets{mode==='inline'?' (Inline)':''}:</span>
             {mode !== 'inline' ? (
@@ -601,15 +634,16 @@ export default function FeedbackWidget() {
               </>
             ) : (
               <>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); setModalWidth(480); setUltra(false); /* inline defaults */ }}>Inline: Card</Button>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(16); setHeaderLayout('icon-left'); setHeaderIcon('chat'); setEnableType(false); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Compact</Button>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(12); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(false); setEnableRating(false); setPrimaryColor(''); }}>Inline: Minimal</Button>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('transparent'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); /* Borderless */ (window as any).postMessage; }}>Inline: Borderless</Button>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(24); setHeaderLayout('icon-top'); setHeaderIcon('star'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); /* Elevated */ }}>Inline: Elevated</Button>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#f8fafc'); setSpacing(20); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(false); setPrimaryColor('#3b82f6'); /* Section */ }}>Inline: Section</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('0 2px 8px rgba(0,0,0,0.05)'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Card</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('0 2px 8px rgba(0,0,0,0.05)'); setSpacing(16); setHeaderLayout('icon-left'); setHeaderIcon('chat'); setEnableType(false); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Compact</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('none'); setSpacing(12); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(false); setEnableRating(false); setPrimaryColor(''); }}>Inline: Minimal</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('transparent'); setInlineBorder('0 solid transparent'); setInlineShadow('none'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Borderless</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('0 10px 30px rgba(0,0,0,0.12)'); setSpacing(24); setHeaderLayout('icon-top'); setHeaderIcon('star'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Elevated</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#f8fafc'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('none'); setSpacing(20); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(false); setPrimaryColor('#3b82f6'); }}>Inline: Section</Button>
               </>
             )}
           </div>
+          )}
 
           {/* Named presets save/apply */}
           {projectId && (
@@ -697,10 +731,7 @@ export default function FeedbackWidget() {
               {a11yRatio !== null && (
                 <div className={`text-xs ${a11yRatio < 4.5 ? 'text-destructive' : 'text-green-600'}`}>Contrast vs white text: {a11yRatio}:1 {a11yRatio < 4.5 ? '(below AA)' : '(AA ok)'}</div>
               )}
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" onClick={()=> primaryColor && setPrimaryColor(adjustColor(primaryColor, -16))}><Minus className="h-3 w-3 mr-1"/>Darker</Button>
-                <Button size="sm" variant="outline" onClick={()=> primaryColor && setPrimaryColor(adjustColor(primaryColor, 16))}><Plus className="h-3 w-3 mr-1"/>Lighter</Button>
-              </div>
+              {/* Removed darker/lighter buttons for simplicity */}
             </div>
             {/* Form Background Color */}
             <div className="space-y-2">
@@ -733,7 +764,7 @@ export default function FeedbackWidget() {
                 </Popover>
               </div>
               <div className="flex items-center gap-3">
-                <input type="range" min={0.8} max={1.4} step={0.05} value={scale} onChange={(e)=> setScale(parseFloat(e.target.value))} className="w-full" />
+                <input type="range" min={0.6} max={1.0} step={0.05} value={scale} onChange={(e)=> setScale(parseFloat(e.target.value))} className="w-full" />
                 <span className="text-xs tabular-nums w-10 text-right">{scale.toFixed(2)}x</span>
               </div>
             </div>
@@ -967,6 +998,57 @@ export default function FeedbackWidget() {
             <CodeSnippet code={snippet} language="html" />
           </div>
 
+          {/* Import/Export + Named presets (Ultra only) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" variant="outline" onClick={async ()=>{ try { await navigator.clipboard.writeText(JSON.stringify(currentConfig, null, 2)); setMessage('Exported to clipboard'); } catch {} }}>Export Config (JSON)</Button>
+            <Button size="sm" variant="outline" onClick={async ()=>{ const val = window.prompt('Paste JSON config'); if (!val) return; try { const cfg = JSON.parse(val); applyConfig(cfg); setMessage('Imported'); } catch { setMessage('Invalid JSON'); } }}>Import Config (JSON)</Button>
+          </div>
+          {ultra && projectId && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Input placeholder="Preset name" value={presetName} onChange={(e)=> setPresetName(e.target.value)} className="w-48" />
+              <Button size="sm" variant="secondary" onClick={async ()=>{
+                if (!projectId) return;
+                const name = (presetName || '').trim() || `Preset`;
+                try {
+                  const r = await fetch(`/api/projects/${projectId}/widget-config`);
+                  const base = r.ok ? await r.json() : {};
+                  const existing = Array.isArray(base.presets) ? base.presets : [];
+                  const filtered = existing.filter((p:any)=> p && p.name !== name);
+                  const next = { ...base, presets: [...filtered, { name, config: currentConfig }] };
+                  const put = await fetch(`/api/projects/${projectId}/widget-config`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(next) });
+                  if (put.ok) { setPresets(next.presets); setPresetName(''); setMessage('Preset saved'); }
+                } catch {}
+              }}>Save Preset</Button>
+              {presets.length > 0 && (
+                <>
+                  <Select value={selectedPreset} onValueChange={setSelectedPreset}>
+                    <SelectTrigger className="w-56">
+                      <SelectValue placeholder="Choose preset" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {presets.map((p)=> (
+                        <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={()=>{ const p = presets.find(x=> x.name === selectedPreset); if (p) applyConfig(p.config); }}>Apply</Button>
+                  <Button size="sm" variant="destructive" onClick={async ()=>{
+                    if (!projectId || !selectedPreset) return;
+                    try {
+                      const r = await fetch(`/api/projects/${projectId}/widget-config`);
+                      const base = r.ok ? await r.json() : {};
+                      const existing = Array.isArray(base.presets) ? base.presets : [];
+                      const nextPresets = existing.filter((p:any)=> p && p.name !== selectedPreset);
+                      const next = { ...base, presets: nextPresets };
+                      const put = await fetch(`/api/projects/${projectId}/widget-config`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(next) });
+                      if (put.ok) { setPresets(nextPresets); setSelectedPreset(''); setMessage('Preset deleted'); }
+                    } catch {}
+                  }}>Delete</Button>
+                </>
+              )}
+            </div>
+          )}
+
           {/* Save Defaults */}
           {projectId && (
             <div className="flex items-center gap-3">
@@ -984,24 +1066,19 @@ export default function FeedbackWidget() {
         {/* Live Preview */}
         <div className="space-y-2">
           <Label>Live Preview</Label>
-          <div className="rounded-lg border overflow-hidden bg-background">
+          <div>
             <iframe
               ref={iframeRef}
               title="Widget Preview"
-              style={{ width: viewport === 'mobile' ? 390 : '100%', height: iframeHeight, border: "0" }}
+              style={{ width: viewport === 'mobile' ? 390 : '100%', height: iframeHeight, border: '0', background: 'transparent' }}
               srcDoc={previewSrcDoc}
             />
           </div>
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm">
-              <a href={`/widget-demo?apiKey=${encodeURIComponent(projectKey)}`} target="_blank" rel="noreferrer">
-                Open Full Demo
-              </a>
-            </Button>
-            <Button asChild variant="outline" size="sm">
               <a href={`/widget-demo?apiKey=${encodeURIComponent(projectKey)}&config=${encodeURIComponent(JSON.stringify(currentConfig))}`}
                  target="_blank" rel="noreferrer">
-                Open With This Config
+                Open Demo
               </a>
             </Button>
             <Select value={viewport} onValueChange={(v)=>setViewport(v as any)}>
@@ -1016,6 +1093,7 @@ export default function FeedbackWidget() {
           </div>
         </div>
       </div>
+      )}
     </div>
     </TooltipProvider>
   );
