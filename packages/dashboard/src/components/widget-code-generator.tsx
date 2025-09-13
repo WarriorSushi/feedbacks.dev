@@ -61,10 +61,6 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [headerLayout, setHeaderLayout] = useState<'text-only'|'icon-left'|'icon-top'>('text-only');
   const [spacing, setSpacing] = useState<number>(24);
   const [modalWidth, setModalWidth] = useState<number>(480);
-  // Named presets
-  const [presets, setPresets] = useState<Array<{ name: string; config: any }>>([]);
-  const [presetName, setPresetName] = useState<string>("");
-  const [selectedPreset, setSelectedPreset] = useState<string>("");
   // Anti-spam (client-side rendering options)
   const [requireCaptcha, setRequireCaptcha] = useState<boolean>(false);
   const [captchaProvider, setCaptchaProvider] = useState<'turnstile'|'hcaptcha'|'none'>("none");
@@ -548,7 +544,6 @@ export default function FeedbackWidget() {
       const cfg = await res.json();
       if (!cfg || typeof cfg !== 'object') return;
       applyConfig(cfg);
-      if (Array.isArray((cfg as any).presets)) setPresets((cfg as any).presets as any);
     } catch (e) { /* ignore */ }
   };
 
@@ -667,56 +662,6 @@ export default function FeedbackWidget() {
           </div>
           )}
 
-          {/* Named presets save/apply */}
-          {projectId && (
-            <div className="flex flex-wrap items-center gap-2">
-              <Input placeholder="Preset name" value={presetName} onChange={(e)=> setPresetName(e.target.value)} className="w-48" />
-              <Button size="sm" variant="secondary" onClick={async ()=>{
-                if (!projectId) return;
-                const name = (presetName || '').trim() || `Preset ${new Date().toLocaleString()}`;
-                try {
-                  const r = await fetch(`/api/projects/${projectId}/widget-config`);
-                  const base = r.ok ? await r.json() : {};
-                  const existing = Array.isArray(base.presets) ? base.presets : [];
-                  const filtered = existing.filter((p:any)=> p && p.name !== name);
-                  const next = { ...base, presets: [...filtered, { name, config: currentConfig }] };
-                  const put = await fetch(`/api/projects/${projectId}/widget-config`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(next) });
-                  if (put.ok) { setPresets(next.presets); setPresetName(""); setMessage('Preset saved'); }
-                } catch {}
-              }}>Save Preset</Button>
-
-              {presets.length > 0 && (
-                <>
-                  <Select value={selectedPreset} onValueChange={setSelectedPreset}>
-                    <SelectTrigger className="w-56">
-                      <SelectValue placeholder="Choose preset" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {presets.map((p)=> (
-                        <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button size="sm" onClick={()=>{
-                    const p = presets.find(x=> x.name === selectedPreset);
-                    if (p) applyConfig(p.config);
-                  }}>Apply</Button>
-                  <Button size="sm" variant="destructive" onClick={async ()=>{
-                    if (!projectId || !selectedPreset) return;
-                    try {
-                      const r = await fetch(`/api/projects/${projectId}/widget-config`);
-                      const base = r.ok ? await r.json() : {};
-                      const existing = Array.isArray(base.presets) ? base.presets : [];
-                      const nextPresets = existing.filter((p:any)=> p && p.name !== selectedPreset);
-                      const next = { ...base, presets: nextPresets };
-                      const put = await fetch(`/api/projects/${projectId}/widget-config`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(next) });
-                      if (put.ok) { setPresets(nextPresets); setSelectedPreset(""); setMessage('Preset deleted'); }
-                    } catch {}
-                  }}>Delete</Button>
-                </>
-              )}
-            </div>
-          )}
 
           {/* Options */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1050,56 +995,11 @@ export default function FeedbackWidget() {
             <CodeSnippet code={snippet} language="html" />
           </div>
 
-          {/* Import/Export + Named presets (Ultra only) */}
+          {/* Import/Export (Ultra only) */}
           <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" variant="outline" onClick={async ()=>{ try { await navigator.clipboard.writeText(JSON.stringify(currentConfig, null, 2)); setMessage('Exported to clipboard'); } catch {} }}>Export Config (JSON)</Button>
             <Button size="sm" variant="outline" onClick={async ()=>{ const val = window.prompt('Paste JSON config'); if (!val) return; try { const cfg = JSON.parse(val); applyConfig(cfg); setMessage('Imported'); } catch { setMessage('Invalid JSON'); } }}>Import Config (JSON)</Button>
           </div>
-          {ultra && projectId && (
-            <div className="flex flex-wrap items-center gap-2">
-              <Input placeholder="Preset name" value={presetName} onChange={(e)=> setPresetName(e.target.value)} className="w-48" />
-              <Button size="sm" variant="secondary" onClick={async ()=>{
-                if (!projectId) return;
-                const name = (presetName || '').trim() || `Preset`;
-                try {
-                  const r = await fetch(`/api/projects/${projectId}/widget-config`);
-                  const base = r.ok ? await r.json() : {};
-                  const existing = Array.isArray(base.presets) ? base.presets : [];
-                  const filtered = existing.filter((p:any)=> p && p.name !== name);
-                  const next = { ...base, presets: [...filtered, { name, config: currentConfig }] };
-                  const put = await fetch(`/api/projects/${projectId}/widget-config`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(next) });
-                  if (put.ok) { setPresets(next.presets); setPresetName(''); setMessage('Preset saved'); }
-                } catch {}
-              }}>Save Preset</Button>
-              {presets.length > 0 && (
-                <>
-                  <Select value={selectedPreset} onValueChange={setSelectedPreset}>
-                    <SelectTrigger className="w-56">
-                      <SelectValue placeholder="Choose preset" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {presets.map((p)=> (
-                        <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button size="sm" onClick={()=>{ const p = presets.find(x=> x.name === selectedPreset); if (p) applyConfig(p.config); }}>Apply</Button>
-                  <Button size="sm" variant="destructive" onClick={async ()=>{
-                    if (!projectId || !selectedPreset) return;
-                    try {
-                      const r = await fetch(`/api/projects/${projectId}/widget-config`);
-                      const base = r.ok ? await r.json() : {};
-                      const existing = Array.isArray(base.presets) ? base.presets : [];
-                      const nextPresets = existing.filter((p:any)=> p && p.name !== selectedPreset);
-                      const next = { ...base, presets: nextPresets };
-                      const put = await fetch(`/api/projects/${projectId}/widget-config`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(next) });
-                      if (put.ok) { setPresets(nextPresets); setSelectedPreset(''); setMessage('Preset deleted'); }
-                    } catch {}
-                  }}>Delete</Button>
-                </>
-              )}
-            </div>
-          )}
 
           {/* Save Defaults */}
           {projectId && (
