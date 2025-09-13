@@ -572,11 +572,12 @@ export default function FeedbackWidget() {
           <Button variant={ultra ? "default" : "ghost"} size="sm" onClick={()=> setUltra(true)} className={ultra ? "bg-primary text-primary-foreground" : ""}>Ultra</Button>
         </div>
         <Button variant="outline" size="sm" onClick={()=>{
-          setMode('inline'); setPlatform('website'); setPosition('bottom-right'); setPrimaryColor(''); setScale(1);
+          setMode('inline'); setPlatform('website'); setPosition('bottom-right'); setPrimaryColor(''); setFormBg(''); setScale(1);
           setButtonText(''); setContainerId('feedback-widget'); setTriggerId('feedback-btn');
           setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setScreenshotRequired(false);
           setEnablePriority(false); setEnableTags(false); setEnableAttachment(false); setAttachmentMaxMB('5'); setSuccessTitle(''); setSuccessDescription('');
           setRequireCaptcha(false); setCaptchaProvider('none'); setTurnstileSiteKey(''); setHcaptchaSiteKey('');
+          setInlineBorder(''); setInlineShadow('');
         }}>
           <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset
         </Button>
@@ -681,6 +682,7 @@ export default function FeedbackWidget() {
                 </Select>
               </div>
             )}
+            {ultra && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Submit Button Color</Label>
@@ -709,7 +711,9 @@ export default function FeedbackWidget() {
               )}
               {/* Removed darker/lighter buttons for simplicity */}
             </div>
+            )}
             {/* Form Background Color */}
+            {ultra && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Form Background Color</Label>
@@ -749,7 +753,9 @@ export default function FeedbackWidget() {
                 </div>
               )}
             </div>
+            )}
             {/* Size / Scale */}
+            {ultra && (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Label>Size</Label>
@@ -765,6 +771,7 @@ export default function FeedbackWidget() {
                 <span className="text-xs tabular-nums w-10 text-right">{scale.toFixed(2)}x</span>
               </div>
             </div>
+            )}
             {mode === "modal" && (
               <div className="space-y-2">
                 <Label>Button Text (optional)</Label>
@@ -996,10 +1003,12 @@ export default function FeedbackWidget() {
           </div>
 
           {/* Import/Export (Ultra only) */}
+          {ultra && (
           <div className="flex flex-wrap items-center gap-2">
             <Button size="sm" variant="outline" onClick={async ()=>{ try { await navigator.clipboard.writeText(JSON.stringify(currentConfig, null, 2)); setMessage('Exported to clipboard'); } catch {} }}>Export Config (JSON)</Button>
             <Button size="sm" variant="outline" onClick={async ()=>{ const val = window.prompt('Paste JSON config'); if (!val) return; try { const cfg = JSON.parse(val); applyConfig(cfg); setMessage('Imported'); } catch { setMessage('Invalid JSON'); } }}>Import Config (JSON)</Button>
           </div>
+          )}
 
           {/* Save Defaults */}
           {projectId && (
