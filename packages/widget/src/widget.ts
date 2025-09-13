@@ -89,6 +89,12 @@ class FeedbacksWidget {
       if ((this.config as any).modalWidth && typeof (this.config as any).modalWidth === 'number') {
         root.style.setProperty('--feedbacks-modal-width', String((this.config as any).modalWidth) + 'px');
       }
+      if ((this.config as any).inlineBorder && typeof (this.config as any).inlineBorder === 'string') {
+        root.style.setProperty('--feedbacks-border', String((this.config as any).inlineBorder));
+      }
+      if ((this.config as any).inlineShadow && typeof (this.config as any).inlineShadow === 'string') {
+        root.style.setProperty('--feedbacks-shadow', String((this.config as any).inlineShadow));
+      }
       // Radius via shape
       const shape = (this.config as any).modalShape as any;
       let radius = '';
@@ -787,6 +793,8 @@ class FeedbacksWidget {
         headerIcon: (script.getAttribute('data-header-icon') as any) || undefined,
         headerLayout: (script.getAttribute('data-header-layout') as any) || undefined,
         spacing: script.getAttribute('data-spacing') ? Number(script.getAttribute('data-spacing')) : undefined,
+        inlineBorder: script.getAttribute('data-inline-border') || undefined,
+        inlineShadow: script.getAttribute('data-inline-shadow') || undefined,
         debug: script.hasAttribute('data-debug'),
         requireEmail: script.hasAttribute('data-require-email') || script.getAttribute('data-require-email') === 'true',
         requireCaptcha: script.hasAttribute('data-require-captcha') || script.getAttribute('data-require-captcha') === 'true',

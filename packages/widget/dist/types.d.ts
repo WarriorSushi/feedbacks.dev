@@ -31,6 +31,8 @@ export interface WidgetConfig {
     headerLayout?: 'text-only' | 'icon-left' | 'icon-top';
     spacing?: number;
     modalWidth?: number;
+    inlineBorder?: string;
+    inlineShadow?: string;
     apiUrl?: string;
     debug?: boolean;
     requireEmail?: boolean;

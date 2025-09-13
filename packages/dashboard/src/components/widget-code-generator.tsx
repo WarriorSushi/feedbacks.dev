@@ -99,6 +99,24 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     const n = normalizeHex(formBg);
     return n && /^#([0-9a-f]{6})$/i.test(n) ? n : '#ffffff';
   }, [formBg]);
+  const bgContrast = useMemo(()=>{
+    const n = normalizeHex(formBg);
+    const m = /^#([0-9a-f]{6})$/i.exec(n||'');
+    if (!m) return null;
+    // Determine best text color (black or white) and compute ratio
+    const hex = m[1];
+    const toRGB = (h:string)=>({r:parseInt(h.slice(0,2),16)/255,g:parseInt(h.slice(2,4),16)/255,b:parseInt(h.slice(4,6),16)/255});
+    const lin = (c:number)=> c<=0.03928? c/12.92 : Math.pow((c+0.055)/1.055,2.4);
+    const L = (rgb:any)=> 0.2126*lin(rgb.r)+0.7152*lin(rgb.g)+0.0722*lin(rgb.b);
+    const bg = toRGB(hex);
+    const Lbg = L(bg);
+    const Lwhite = 1; const Lblack = 0;
+    const ratioWhite = (Lwhite+0.05)/(Lbg+0.05);
+    const ratioBlack = (Lbg+0.05)/(Lblack+0.05);
+    const useWhite = ratioWhite >= ratioBlack;
+    const ratio = Math.round((useWhite?ratioWhite:ratioBlack)*100)/100;
+    return { ratio, text: useWhite? '#ffffff' : '#111827' };
+  }, [formBg]);
 
   function adjustColor(hex: string, amount: number): string {
     const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
@@ -377,6 +395,8 @@ export default function FeedbackWidget() {
             var r = cfg.modalShape==='pill'?'9999px':(cfg.modalShape==='square'?'8px':'16px');
             document.documentElement.style.setProperty('--feedbacks-radius', r);
           }
+          if (cfg.inlineBorder) document.documentElement.style.setProperty('--feedbacks-border', cfg.inlineBorder);
+          if (cfg.inlineShadow) document.documentElement.style.setProperty('--feedbacks-shadow', cfg.inlineShadow);
           new FeedbacksWidget(cfg);
           setTimeout(postHeight, 50);
         }
@@ -496,10 +516,9 @@ export default function FeedbackWidget() {
     <div className="space-y-6">
       {/* Top bar */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-muted-foreground">Simple mode</span>
-          <Switch checked={ultra} onCheckedChange={(v)=> setUltra(!!v)} aria-label="Toggle Ultra Mode" />
-          <span className="text-xs text-muted-foreground">Ultra mode</span>
+        <div className="inline-flex rounded-md border p-1 bg-muted/40">
+          <Button variant={ultra ? "ghost" : "default"} size="sm" onClick={()=> setUltra(false)} className={!ultra ? "bg-primary text-primary-foreground" : ""}>Simple</Button>
+          <Button variant={ultra ? "default" : "ghost"} size="sm" onClick={()=> setUltra(true)} className={ultra ? "bg-primary text-primary-foreground" : ""}>Ultra</Button>
         </div>
         <Button variant="outline" size="sm" onClick={()=>{
           setMode('inline'); setPlatform('website'); setPosition('bottom-right'); setPrimaryColor(''); setScale(1);
@@ -573,18 +592,21 @@ export default function FeedbackWidget() {
             <span className="text-sm text-muted-foreground">Presets{mode==='inline'?' (Inline)':''}:</span>
             {mode !== 'inline' ? (
               <>
-                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#3b82f6'); setButtonText('Feedback'); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); }}>Classic</Button>
-                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor(''); setButtonText('Send'); setRequireEmail(false); setEnableType(false); setEnableRating(false); setEnableScreenshot(false); }}>Minimal</Button>
-                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#111827'); setButtonText('Feedback'); setRequireEmail(true); setEnableType(true); setEnableRating(true); setEnableScreenshot(true); }}>High Contrast</Button>
+                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#3b82f6'); setFormBg('#ffffff'); setButtonText('Feedback'); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setModalWidth(480); setSpacing(24); }}>Default</Button>
+                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor(''); setFormBg('#ffffff'); setButtonText('Send'); setRequireEmail(false); setEnableType(false); setEnableRating(false); setEnableScreenshot(false); setModalWidth(480); setSpacing(20); }}>Minimal</Button>
+                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#111827'); setFormBg('#ffffff'); setButtonText('Feedback'); setRequireEmail(true); setEnableType(true); setEnableRating(true); setEnableScreenshot(true); setModalWidth(480); setSpacing(24); }}>High Contrast</Button>
                 {/* Modal width/density presets */}
                 <Button size="sm" variant="outline" onClick={() => { setModalWidth(400); setSpacing(16); }}>Compact</Button>
                 <Button size="sm" variant="outline" onClick={() => { setModalWidth(640); setSpacing(28); }}>Wide</Button>
               </>
             ) : (
               <>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Card</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); setModalWidth(480); setUltra(false); /* inline defaults */ }}>Inline: Card</Button>
                 <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(16); setHeaderLayout('icon-left'); setHeaderIcon('chat'); setEnableType(false); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Compact</Button>
                 <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(12); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(false); setEnableRating(false); setPrimaryColor(''); }}>Inline: Minimal</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('transparent'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); /* Borderless */ (window as any).postMessage; }}>Inline: Borderless</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(24); setHeaderLayout('icon-top'); setHeaderIcon('star'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); /* Elevated */ }}>Inline: Elevated</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#f8fafc'); setSpacing(20); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(false); setPrimaryColor('#3b82f6'); /* Section */ }}>Inline: Section</Button>
               </>
             )}
           </div>
@@ -695,6 +717,9 @@ export default function FeedbackWidget() {
                 <Input placeholder="#ffffff" value={formBg} onChange={(e) => setFormBg(e.target.value)} className="flex-1" />
                 <input type="color" value={formBgPicker} onChange={(e)=> setFormBg(e.target.value)} className="h-9 w-10 rounded-md border" />
               </div>
+              {bgContrast && (
+                <div className={`text-xs ${bgContrast.ratio < 4.5 ? 'text-destructive' : 'text-green-600'}`}>Contrast vs {bgContrast.text === '#ffffff' ? 'white' : 'black'} text: {bgContrast.ratio}:1 {bgContrast.ratio < 4.5 ? '(below AA)' : '(AA ok)'}</div>
+              )}
             </div>
             {/* Size / Scale */}
             <div className="space-y-2">

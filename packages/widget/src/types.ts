@@ -34,6 +34,8 @@ export interface WidgetConfig {
   headerLayout?: 'text-only' | 'icon-left' | 'icon-top';
   spacing?: number; // base spacing in px (e.g., 16–32)
   modalWidth?: number; // max-width for modal on desktop (px)
+  inlineBorder?: string; // e.g., '0 solid transparent' | '1px solid #e5e7eb'
+  inlineShadow?: string; // e.g., 'none' | '0 8px 24px rgba(0,0,0,0.12)'
   apiUrl?: string; // Custom API endpoint
   debug?: boolean;
   requireEmail?: boolean;
