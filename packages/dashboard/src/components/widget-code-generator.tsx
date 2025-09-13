@@ -59,6 +59,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [headerIcon, setHeaderIcon] = useState<'none'|'chat'|'star'|'lightbulb'|'thumbs-up'>('none');
   const [headerLayout, setHeaderLayout] = useState<'text-only'|'icon-left'|'icon-top'>('text-only');
   const [spacing, setSpacing] = useState<number>(24);
+  const [modalWidth, setModalWidth] = useState<number>(480);
   // Anti-spam (client-side rendering options)
   const [requireCaptcha, setRequireCaptcha] = useState<boolean>(false);
   const [captchaProvider, setCaptchaProvider] = useState<'turnstile'|'hcaptcha'|'none'>("none");
@@ -284,6 +285,7 @@ export default function FeedbackWidget() {
       ...(headerIcon ? { headerIcon } : {}),
       ...(headerLayout ? { headerLayout } : {}),
       ...(spacing ? { spacing } : {}),
+      ...(modalWidth ? { modalWidth } : {}),
     };
     const initialJson = JSON.stringify(initial).replace(/</g, '\\u003c');
     return `<!doctype html>
@@ -370,6 +372,7 @@ export default function FeedbackWidget() {
     ...(headerIcon ? { headerIcon } : {}),
     ...(headerLayout ? { headerLayout } : {}),
     ...(spacing ? { spacing } : {}),
+    ...(modalWidth ? { modalWidth } : {}),
   }), [
     projectKey,
     mode,
@@ -399,6 +402,7 @@ export default function FeedbackWidget() {
     headerIcon,
     headerLayout,
     spacing,
+    modalWidth,
   ]);
 
   // Push live updates without reloading the iframe
@@ -561,10 +565,20 @@ export default function FeedbackWidget() {
 
           {/* Presets (apply without changing current mode) */}
           <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-sm text-muted-foreground">Presets:</span>
-            <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#3b82f6'); setButtonText('Feedback'); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Classic</Button>
-            <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor(''); setButtonText('Send'); setRequireEmail(false); setEnableType(false); setEnableRating(false); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Minimal</Button>
-            <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#111827'); setButtonText('Feedback'); setRequireEmail(true); setEnableType(true); setEnableRating(true); setEnableScreenshot(true); setEnablePriority(false); setEnableTags(false); }}>High Contrast</Button>
+            <span className="text-sm text-muted-foreground">Presets{mode==='inline'?' (Inline)':''}:</span>
+            {mode !== 'inline' ? (
+              <>
+                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#3b82f6'); setButtonText('Feedback'); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Classic</Button>
+                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor(''); setButtonText('Send'); setRequireEmail(false); setEnableType(false); setEnableRating(false); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Minimal</Button>
+                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#111827'); setButtonText('Feedback'); setRequireEmail(true); setEnableType(true); setEnableRating(true); setEnableScreenshot(true); setEnablePriority(false); setEnableTags(false); }}>High Contrast</Button>
+              </>
+            ) : (
+              <>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Card</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(16); setHeaderLayout('icon-left'); setHeaderIcon('chat'); setEnableType(false); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Compact</Button>
+                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(12); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(false); setEnableRating(false); setPrimaryColor(''); }}>Inline: Minimal</Button>
+              </>
+            )}
             <div className="ml-auto">
               <Button size="sm" variant="ghost" onClick={() => setShowAdvanced(v => !v)}>{showAdvanced ? 'Hide Advanced' : 'Show Advanced'}</Button>
             </div>

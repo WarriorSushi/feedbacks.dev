@@ -33,6 +33,7 @@ export interface WidgetConfig {
   headerIcon?: 'none' | 'chat' | 'star' | 'lightbulb' | 'thumbs-up';
   headerLayout?: 'text-only' | 'icon-left' | 'icon-top';
   spacing?: number; // base spacing in px (e.g., 16–32)
+  modalWidth?: number; // max-width for modal on desktop (px)
   apiUrl?: string; // Custom API endpoint
   debug?: boolean;
   requireEmail?: boolean;

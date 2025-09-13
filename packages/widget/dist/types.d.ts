@@ -30,6 +30,7 @@ export interface WidgetConfig {
     headerIcon?: 'none' | 'chat' | 'star' | 'lightbulb' | 'thumbs-up';
     headerLayout?: 'text-only' | 'icon-left' | 'icon-top';
     spacing?: number;
+    modalWidth?: number;
     apiUrl?: string;
     debug?: boolean;
     requireEmail?: boolean;

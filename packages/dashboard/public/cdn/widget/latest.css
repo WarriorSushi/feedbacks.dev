@@ -121,7 +121,7 @@
   .feedbacks-modal {
     border-radius: var(--feedbacks-radius, 16px);
     width: 100%;
-    max-width: 480px;
+    max-width: var(--feedbacks-modal-width, 480px);
     max-height: 85vh;
     animation: feedbacks-scale-up 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
