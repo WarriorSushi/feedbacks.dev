@@ -54,13 +54,14 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [ultra, setUltra] = useState(false);
-  const [iframeHeight, setIframeHeight] = useState<number>(360);
+  const [iframeHeight, setIframeHeight] = useState<number>(600);
   const [showUltraTip, setShowUltraTip] = useState<boolean>(false);
   const [modalShape, setModalShape] = useState<'rounded'|'pill'|'square'>('rounded');
   const [headerIcon, setHeaderIcon] = useState<'none'|'chat'|'star'|'lightbulb'|'thumbs-up'>('none');
   const [headerLayout, setHeaderLayout] = useState<'text-only'|'icon-left'|'icon-top'>('text-only');
   const [spacing, setSpacing] = useState<number>(24);
   const [modalWidth, setModalWidth] = useState<number>(480);
+  const [selectedPresetOption, setSelectedPresetOption] = useState<string>("");
   // Anti-spam (client-side rendering options)
   const [requireCaptcha, setRequireCaptcha] = useState<boolean>(false);
   const [captchaProvider, setCaptchaProvider] = useState<'turnstile'|'hcaptcha'|'none'>("none");
@@ -475,7 +476,7 @@ export default function FeedbackWidget() {
     function onMsg(ev: MessageEvent){
       if (!ev || !ev.data) return;
       if (ev.data.type === 'widget-preview:height' && typeof ev.data.height === 'number') {
-        const min = viewport === 'mobile' ? 700 : 360;
+        const min = viewport === 'mobile' ? 700 : 500;
         setIframeHeight(Math.max(ev.data.height, min));
       }
     }
@@ -639,27 +640,78 @@ export default function FeedbackWidget() {
 
           {/* Presets (Ultra only) */}
           {ultra && (
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-sm text-muted-foreground">Presets{mode==='inline'?' (Inline)':''}:</span>
-            {mode !== 'inline' ? (
-              <>
-                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#3b82f6'); setFormBg('#ffffff'); setButtonText('Feedback'); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setModalWidth(480); setSpacing(24); }}>Default</Button>
-                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor(''); setFormBg('#ffffff'); setButtonText('Send'); setRequireEmail(false); setEnableType(false); setEnableRating(false); setEnableScreenshot(false); setModalWidth(480); setSpacing(20); }}>Minimal</Button>
-                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#111827'); setFormBg('#ffffff'); setButtonText('Feedback'); setRequireEmail(true); setEnableType(true); setEnableRating(true); setEnableScreenshot(true); setModalWidth(480); setSpacing(24); }}>High Contrast</Button>
-                {/* Modal width/density presets */}
-                <Button size="sm" variant="outline" onClick={() => { setModalWidth(400); setSpacing(16); }}>Compact</Button>
-                <Button size="sm" variant="outline" onClick={() => { setModalWidth(640); setSpacing(28); }}>Wide</Button>
-              </>
-            ) : (
-              <>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('0 2px 8px rgba(0,0,0,0.05)'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Card</Button>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('0 2px 8px rgba(0,0,0,0.05)'); setSpacing(16); setHeaderLayout('icon-left'); setHeaderIcon('chat'); setEnableType(false); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Compact</Button>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('none'); setSpacing(12); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(false); setEnableRating(false); setPrimaryColor(''); }}>Inline: Minimal</Button>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('transparent'); setInlineBorder('0 solid transparent'); setInlineShadow('none'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Borderless</Button>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('0 10px 30px rgba(0,0,0,0.12)'); setSpacing(24); setHeaderLayout('icon-top'); setHeaderIcon('star'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6'); }}>Inline: Elevated</Button>
-                <Button size="sm" variant="outline" onClick={() => { setFormBg('#f8fafc'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('none'); setSpacing(20); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(false); setPrimaryColor('#3b82f6'); }}>Inline: Section</Button>
-              </>
-            )}
+          <div className="flex items-center gap-3">
+            <Label>Apply Preset:</Label>
+            <Select value={selectedPresetOption} onValueChange={(value) => {
+              setSelectedPresetOption(value);
+              // Apply preset configurations
+              if (mode !== 'inline') {
+                switch (value) {
+                  case 'default':
+                    setPosition('bottom-right'); setPrimaryColor('#3b82f6'); setFormBg('#ffffff'); setButtonText('Feedback'); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setModalWidth(480); setSpacing(24);
+                    break;
+                  case 'minimal':
+                    setPosition('bottom-right'); setPrimaryColor(''); setFormBg('#ffffff'); setButtonText('Send'); setRequireEmail(false); setEnableType(false); setEnableRating(false); setEnableScreenshot(false); setModalWidth(480); setSpacing(20);
+                    break;
+                  case 'high-contrast':
+                    setPosition('bottom-right'); setPrimaryColor('#111827'); setFormBg('#ffffff'); setButtonText('Feedback'); setRequireEmail(true); setEnableType(true); setEnableRating(true); setEnableScreenshot(true); setModalWidth(480); setSpacing(24);
+                    break;
+                  case 'compact':
+                    setModalWidth(400); setSpacing(16);
+                    break;
+                  case 'wide':
+                    setModalWidth(640); setSpacing(28);
+                    break;
+                }
+              } else {
+                switch (value) {
+                  case 'inline-card':
+                    setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('0 2px 8px rgba(0,0,0,0.05)'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6');
+                    break;
+                  case 'inline-compact':
+                    setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('0 2px 8px rgba(0,0,0,0.05)'); setSpacing(16); setHeaderLayout('icon-left'); setHeaderIcon('chat'); setEnableType(false); setEnableRating(true); setPrimaryColor('#3b82f6');
+                    break;
+                  case 'inline-minimal':
+                    setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('none'); setSpacing(12); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(false); setEnableRating(false); setPrimaryColor('');
+                    break;
+                  case 'inline-borderless':
+                    setFormBg('transparent'); setInlineBorder('0 solid transparent'); setInlineShadow('none'); setSpacing(24); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6');
+                    break;
+                  case 'inline-elevated':
+                    setFormBg('#ffffff'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('0 10px 30px rgba(0,0,0,0.12)'); setSpacing(24); setHeaderLayout('icon-top'); setHeaderIcon('star'); setEnableType(true); setEnableRating(true); setPrimaryColor('#3b82f6');
+                    break;
+                  case 'inline-section':
+                    setFormBg('#f8fafc'); setInlineBorder('1px solid #e5e7eb'); setInlineShadow('none'); setSpacing(20); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(true); setEnableRating(false); setPrimaryColor('#3b82f6');
+                    break;
+                }
+              }
+              // Clear selection after applying
+              setTimeout(() => setSelectedPresetOption(""), 100);
+            }}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Choose a preset..." />
+              </SelectTrigger>
+              <SelectContent>
+                {mode !== 'inline' ? (
+                  <>
+                    <SelectItem value="default">Default</SelectItem>
+                    <SelectItem value="minimal">Minimal</SelectItem>
+                    <SelectItem value="high-contrast">High Contrast</SelectItem>
+                    <SelectItem value="compact">Compact</SelectItem>
+                    <SelectItem value="wide">Wide</SelectItem>
+                  </>
+                ) : (
+                  <>
+                    <SelectItem value="inline-card">Card</SelectItem>
+                    <SelectItem value="inline-compact">Compact</SelectItem>
+                    <SelectItem value="inline-minimal">Minimal</SelectItem>
+                    <SelectItem value="inline-borderless">Borderless</SelectItem>
+                    <SelectItem value="inline-elevated">Elevated</SelectItem>
+                    <SelectItem value="inline-section">Section</SelectItem>
+                  </>
+                )}
+              </SelectContent>
+            </Select>
           </div>
           )}
 
