@@ -481,7 +481,7 @@ export default function FeedbackWidget() {
       if (!ev || !ev.data) return;
       if (ev.data.type === 'widget-preview:height' && typeof ev.data.height === 'number') {
         // Use actual content height but with reasonable minimums
-        const minHeight = viewport === 'mobile' ? 500 : 400;
+        const minHeight = viewport === 'mobile' ? 500 : 700;
         setIframeHeight(Math.max(ev.data.height + 20, minHeight));
       }
     }
