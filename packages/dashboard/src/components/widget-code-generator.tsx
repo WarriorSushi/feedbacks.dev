@@ -60,6 +60,10 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [headerLayout, setHeaderLayout] = useState<'text-only'|'icon-left'|'icon-top'>('text-only');
   const [spacing, setSpacing] = useState<number>(24);
   const [modalWidth, setModalWidth] = useState<number>(480);
+  // Named presets
+  const [presets, setPresets] = useState<Array<{ name: string; config: any }>>([]);
+  const [presetName, setPresetName] = useState<string>("");
+  const [selectedPreset, setSelectedPreset] = useState<string>("");
   // Anti-spam (client-side rendering options)
   const [requireCaptcha, setRequireCaptcha] = useState<boolean>(false);
   const [captchaProvider, setCaptchaProvider] = useState<'turnstile'|'hcaptcha'|'none'>("none");
@@ -114,31 +118,80 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const publicJsHref = `https://app.feedbacks.dev/cdn/widget/${widgetVersion}.js`;
   const publicCssHref = `https://app.feedbacks.dev/cdn/widget/${widgetVersion}.css`;
 
+  // Build current config first, then derive entries for snippets so Simple mode doesn't leak advanced fields
+  const currentConfig = useMemo(() => ({
+    projectKey,
+    embedMode: mode,
+    ...(mode === 'modal' ? { position } : {}),
+    ...(mode === 'inline' ? { target: `#${containerId}` } : {}),
+    ...(mode === 'trigger' ? { target: `#${triggerId}` } : {}),
+    ...(primaryColor ? { primaryColor: normalizeHex(primaryColor) } : {}),
+    ...(formBg ? { backgroundColor: normalizeHex(formBg) } : {}),
+    ...(scale && scale !== 1 ? { scale } : {}),
+    ...(buttonText && mode === 'modal' ? { buttonText } : {}),
+    ...(requireEmail ? { requireEmail: true } : {}),
+    ...(enableType === false ? { enableType: false } : {}),
+    ...(enableRating === false ? { enableRating: false } : {}),
+    ...(enableScreenshot ? { enableScreenshot: true } : {}),
+    ...(screenshotRequired ? { screenshotRequired: true } : {}),
+    // Advanced fields added only in Ultra
+    ...(ultra && requireCaptcha ? { requireCaptcha: true } : {}),
+    ...(ultra && captchaProvider && captchaProvider !== 'none' ? { captchaProvider } : {}),
+    ...(ultra && captchaProvider === 'turnstile' && turnstileSiteKey ? { turnstileSiteKey } : {}),
+    ...(ultra && captchaProvider === 'hcaptcha' && hcaptchaSiteKey ? { hcaptchaSiteKey } : {}),
+    ...(ultra && enablePriority ? { enablePriority: true } : {}),
+    ...(ultra && enableTags ? { enableTags: true } : {}),
+    ...(ultra && successTitle ? { successTitle } : {}),
+    ...(ultra && successDescription ? { successDescription } : {}),
+    ...(ultra && enableAttachment ? { enableAttachment: true } : {}),
+    ...(ultra && enableAttachment && attachmentMaxMB ? { attachmentMaxMB: Number(attachmentMaxMB) } : {}),
+    ...(ultra && modalShape ? { modalShape } : {}),
+    ...(ultra && headerIcon ? { headerIcon } : {}),
+    ...(ultra && headerLayout ? { headerLayout } : {}),
+    ...(ultra && spacing ? { spacing } : {}),
+    ...(ultra && modalWidth ? { modalWidth } : {}),
+  }), [
+    projectKey,
+    mode,
+    position,
+    containerId,
+    triggerId,
+    primaryColor,
+    formBg,
+    scale,
+    buttonText,
+    requireEmail,
+    enableType,
+    enableRating,
+    enableScreenshot,
+    screenshotRequired,
+    // Ultra deps
+    ultra,
+    requireCaptcha,
+    captchaProvider,
+    turnstileSiteKey,
+    hcaptchaSiteKey,
+    enablePriority,
+    enableTags,
+    successTitle,
+    successDescription,
+    enableAttachment,
+    attachmentMaxMB,
+    modalShape,
+    headerIcon,
+    headerLayout,
+    spacing,
+    modalWidth,
+  ]);
+
   const configEntries = useMemo(() => {
-    const entries: Array<[string, string | number | boolean]> = [
-      ["projectKey", projectKey],
-      ["embedMode", mode],
-    ];
-    if (mode === "modal") entries.push(["position", position]);
-    if (primaryColor) entries.push(["primaryColor", normalizeHex(primaryColor)]);
-    if (formBg) entries.push(["backgroundColor", normalizeHex(formBg)]);
-    if (scale && scale !== 1) entries.push(["scale", scale]);
-    if (buttonText && mode === "modal") entries.push(["buttonText", buttonText]);
-    if (mode === "inline") entries.push(["target", `#${containerId}`]);
-    if (mode === "trigger") entries.push(["target", `#${triggerId}`]);
-    if (requireEmail) entries.push(["requireEmail", true]);
-    if (!enableType) entries.push(["enableType", false]);
-    if (!enableRating) entries.push(["enableRating", false]);
-    if (enableScreenshot) entries.push(["enableScreenshot", true]);
-    if (screenshotRequired) entries.push(["screenshotRequired", true]);
-    if (enablePriority) entries.push(["enablePriority", true]);
-    if (enableTags) entries.push(["enableTags", true]);
-    if (successTitle) entries.push(["successTitle", successTitle]);
-    if (successDescription) entries.push(["successDescription", successDescription]);
-    if (enableAttachment) entries.push(["enableAttachment", true]);
-    if (enableAttachment && attachmentMaxMB) entries.push(["attachmentMaxMB", Number(attachmentMaxMB)]);
+    const entries: Array<[string, string | number | boolean]> = [];
+    for (const [k, v] of Object.entries(currentConfig)) {
+      if (typeof v === 'undefined' || v === null) continue;
+      entries.push([k, v as any]);
+    }
     return entries;
-  }, [projectKey, mode, position, primaryColor, formBg, scale, buttonText, containerId, triggerId, requireEmail, enableType, enableRating, enableScreenshot, screenshotRequired, enablePriority, enableTags, successTitle, successDescription, enableAttachment, attachmentMaxMB]);
+  }, [currentConfig]);
 
   const configJs = useMemo(() => {
     const toLine = ([k, v]: [string, string | number | boolean]) =>
@@ -343,67 +396,7 @@ export default function FeedbackWidget() {
   </html>`;
   }, [previewCssHref, previewJsHref]);
 
-  const currentConfig = useMemo(() => ({
-    projectKey,
-    embedMode: mode,
-    ...(mode === 'modal' ? { position } : {}),
-    ...(mode === 'inline' ? { target: `#${containerId}` } : {}),
-    ...(mode === 'trigger' ? { target: `#${triggerId}` } : {}),
-    ...(primaryColor ? { primaryColor: normalizeHex(primaryColor) } : {}),
-    ...(formBg ? { backgroundColor: normalizeHex(formBg) } : {}),
-    ...(scale && scale !== 1 ? { scale } : {}),
-    ...(buttonText && mode === 'modal' ? { buttonText } : {}),
-    ...(requireEmail ? { requireEmail: true } : {}),
-    ...(requireCaptcha ? { requireCaptcha: true } : {}),
-    ...(captchaProvider && captchaProvider !== 'none' ? { captchaProvider } : {}),
-    ...(captchaProvider === 'turnstile' && turnstileSiteKey ? { turnstileSiteKey } : {}),
-    ...(captchaProvider === 'hcaptcha' && hcaptchaSiteKey ? { hcaptchaSiteKey } : {}),
-    ...(enableType === false ? { enableType: false } : {}),
-    ...(enableRating === false ? { enableRating: false } : {}),
-    ...(enableScreenshot ? { enableScreenshot: true } : {}),
-    ...(screenshotRequired ? { screenshotRequired: true } : {}),
-    ...(enablePriority ? { enablePriority: true } : {}),
-    ...(enableTags ? { enableTags: true } : {}),
-    ...(successTitle ? { successTitle } : {}),
-    ...(successDescription ? { successDescription } : {}),
-    ...(enableAttachment ? { enableAttachment: true } : {}),
-    ...(enableAttachment && attachmentMaxMB ? { attachmentMaxMB: Number(attachmentMaxMB) } : {}),
-    ...(modalShape ? { modalShape } : {}),
-    ...(headerIcon ? { headerIcon } : {}),
-    ...(headerLayout ? { headerLayout } : {}),
-    ...(spacing ? { spacing } : {}),
-    ...(modalWidth ? { modalWidth } : {}),
-  }), [
-    projectKey,
-    mode,
-    position,
-    containerId,
-    triggerId,
-    primaryColor,
-    formBg,
-    scale,
-    buttonText,
-    requireEmail,
-    requireCaptcha,
-    captchaProvider,
-    turnstileSiteKey,
-    hcaptchaSiteKey,
-    enableType,
-    enableRating,
-    enableScreenshot,
-    screenshotRequired,
-    enablePriority,
-    enableTags,
-    successTitle,
-    successDescription,
-    enableAttachment,
-    attachmentMaxMB,
-    modalShape,
-    headerIcon,
-    headerLayout,
-    spacing,
-    modalWidth,
-  ]);
+  // currentConfig moved above to allow gating and reuse
 
   // Push live updates without reloading the iframe
   useEffect(() => {
@@ -444,6 +437,40 @@ export default function FeedbackWidget() {
     }
   };
 
+  const applyConfig = (cfg: any) => {
+    if (!cfg || typeof cfg !== 'object') return;
+    if (cfg.embedMode) setMode(cfg.embedMode);
+    if (cfg.position) setPosition(cfg.position);
+    if (cfg.primaryColor) setPrimaryColor(cfg.primaryColor);
+    if (cfg.backgroundColor) setFormBg(cfg.backgroundColor);
+    if (typeof cfg.scale === 'number') setScale(cfg.scale);
+    if (cfg.buttonText) setButtonText(cfg.buttonText);
+    if (cfg.requireCaptcha) setRequireCaptcha(!!cfg.requireCaptcha);
+    if (cfg.captchaProvider) setCaptchaProvider(cfg.captchaProvider);
+    if (cfg.turnstileSiteKey) setTurnstileSiteKey(cfg.turnstileSiteKey);
+    if (cfg.hcaptchaSiteKey) setHcaptchaSiteKey(cfg.hcaptchaSiteKey);
+    if (cfg.target) {
+      if (cfg.embedMode === 'inline') setContainerId(String(cfg.target).replace('#',''));
+      if (cfg.embedMode === 'trigger') setTriggerId(String(cfg.target).replace('#',''));
+    }
+    setRequireEmail(!!cfg.requireEmail);
+    setEnableType(cfg.enableType !== false);
+    setEnableRating(cfg.enableRating !== false);
+    setEnableScreenshot(!!cfg.enableScreenshot);
+    setScreenshotRequired(!!cfg.screenshotRequired);
+    setEnablePriority(!!cfg.enablePriority);
+    setEnableTags(!!cfg.enableTags);
+    if (cfg.successTitle) setSuccessTitle(cfg.successTitle);
+    if (cfg.successDescription) setSuccessDescription(cfg.successDescription);
+    setEnableAttachment(!!cfg.enableAttachment);
+    if (cfg.attachmentMaxMB) setAttachmentMaxMB(String(cfg.attachmentMaxMB));
+    if (cfg.modalShape) setModalShape(cfg.modalShape);
+    if (cfg.headerIcon) setHeaderIcon(cfg.headerIcon);
+    if (cfg.headerLayout) setHeaderLayout(cfg.headerLayout);
+    if (typeof cfg.spacing === 'number') setSpacing(cfg.spacing);
+    if (typeof cfg.modalWidth === 'number') setModalWidth(cfg.modalWidth);
+  };
+
   const loadDefaults = async () => {
     if (!projectId) return;
     try {
@@ -451,30 +478,8 @@ export default function FeedbackWidget() {
       if (!res.ok) return;
       const cfg = await res.json();
       if (!cfg || typeof cfg !== 'object') return;
-      if (cfg.embedMode) setMode(cfg.embedMode);
-      if (cfg.position) setPosition(cfg.position);
-      if (cfg.primaryColor) setPrimaryColor(cfg.primaryColor);
-      if (typeof cfg.scale === 'number') setScale(cfg.scale);
-      if (cfg.buttonText) setButtonText(cfg.buttonText);
-      if (cfg.requireCaptcha) setRequireCaptcha(!!cfg.requireCaptcha);
-      if (cfg.captchaProvider) setCaptchaProvider(cfg.captchaProvider);
-      if (cfg.turnstileSiteKey) setTurnstileSiteKey(cfg.turnstileSiteKey);
-      if (cfg.hcaptchaSiteKey) setHcaptchaSiteKey(cfg.hcaptchaSiteKey);
-      if (cfg.target) {
-        if (cfg.embedMode === 'inline') setContainerId(String(cfg.target).replace('#',''));
-        if (cfg.embedMode === 'trigger') setTriggerId(String(cfg.target).replace('#',''));
-      }
-      setRequireEmail(!!cfg.requireEmail);
-      setEnableType(cfg.enableType !== false);
-      setEnableRating(cfg.enableRating !== false);
-      setEnableScreenshot(!!cfg.enableScreenshot);
-      setScreenshotRequired(!!cfg.screenshotRequired);
-      setEnablePriority(!!cfg.enablePriority);
-      setEnableTags(!!cfg.enableTags);
-      if (cfg.successTitle) setSuccessTitle(cfg.successTitle);
-      if (cfg.successDescription) setSuccessDescription(cfg.successDescription);
-      setEnableAttachment(!!cfg.enableAttachment);
-      if (cfg.attachmentMaxMB) setAttachmentMaxMB(String(cfg.attachmentMaxMB));
+      applyConfig(cfg);
+      if (Array.isArray((cfg as any).presets)) setPresets((cfg as any).presets as any);
     } catch (e) { /* ignore */ }
   };
 
@@ -583,6 +588,57 @@ export default function FeedbackWidget() {
               </>
             )}
           </div>
+
+          {/* Named presets save/apply */}
+          {projectId && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Input placeholder="Preset name" value={presetName} onChange={(e)=> setPresetName(e.target.value)} className="w-48" />
+              <Button size="sm" variant="secondary" onClick={async ()=>{
+                if (!projectId) return;
+                const name = (presetName || '').trim() || `Preset ${new Date().toLocaleString()}`;
+                try {
+                  const r = await fetch(`/api/projects/${projectId}/widget-config`);
+                  const base = r.ok ? await r.json() : {};
+                  const existing = Array.isArray(base.presets) ? base.presets : [];
+                  const filtered = existing.filter((p:any)=> p && p.name !== name);
+                  const next = { ...base, presets: [...filtered, { name, config: currentConfig }] };
+                  const put = await fetch(`/api/projects/${projectId}/widget-config`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(next) });
+                  if (put.ok) { setPresets(next.presets); setPresetName(""); setMessage('Preset saved'); }
+                } catch {}
+              }}>Save Preset</Button>
+
+              {presets.length > 0 && (
+                <>
+                  <Select value={selectedPreset} onValueChange={setSelectedPreset}>
+                    <SelectTrigger className="w-56">
+                      <SelectValue placeholder="Choose preset" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {presets.map((p)=> (
+                        <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button size="sm" onClick={()=>{
+                    const p = presets.find(x=> x.name === selectedPreset);
+                    if (p) applyConfig(p.config);
+                  }}>Apply</Button>
+                  <Button size="sm" variant="destructive" onClick={async ()=>{
+                    if (!projectId || !selectedPreset) return;
+                    try {
+                      const r = await fetch(`/api/projects/${projectId}/widget-config`);
+                      const base = r.ok ? await r.json() : {};
+                      const existing = Array.isArray(base.presets) ? base.presets : [];
+                      const nextPresets = existing.filter((p:any)=> p && p.name !== selectedPreset);
+                      const next = { ...base, presets: nextPresets };
+                      const put = await fetch(`/api/projects/${projectId}/widget-config`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(next) });
+                      if (put.ok) { setPresets(nextPresets); setSelectedPreset(""); setMessage('Preset deleted'); }
+                    } catch {}
+                  }}>Delete</Button>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Options */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
