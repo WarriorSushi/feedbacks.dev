@@ -72,7 +72,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [hcaptchaSiteKey, setHcaptchaSiteKey] = useState<string>("");
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
   useEffect(() => { if (typeof window !== 'undefined') setShowAdvanced(window.innerWidth >= 768); }, []);
-  // Simple contrast check helper for accessibility
+  // Simple contrast checks for accessibility
   function contrastRatio(hex: string): number | null {
     const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
     if (!m) return null; const h = m[1];
@@ -84,6 +84,33 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     const ratio = (1 + 0.05) / (L + 0.05);
     return Math.round(ratio*100)/100;
   }
+  // Contrast between two colors (bg vs text)
+  const contrastBetween = (bg: string, text: string): number | null => {
+    const norm = (v: string) => {
+      const m = /^#?([0-9a-f]{6})$/i.exec(v || '');
+      return m ? `#${m[1].toLowerCase()}` : '';
+    };
+    const hexToLin = (hex: string) => {
+      const h = hex.replace('#','');
+      const r = parseInt(h.slice(0,2),16)/255, g = parseInt(h.slice(2,4),16)/255, b = parseInt(h.slice(4,6),16)/255;
+      const lin = (c:number)=> c<=0.03928? c/12.92 : Math.pow((c+0.055)/1.055,2.4);
+      const L = 0.2126*lin(r)+0.7152*lin(g)+0.0722*lin(b);
+      return L;
+    };
+    const b = norm(bg), t = norm(text);
+    if (!b || !t) return null;
+    const Lb = hexToLin(b), Lt = hexToLin(t);
+    const lighter = Math.max(Lb, Lt), darker = Math.min(Lb, Lt);
+    return Math.round(((lighter+0.05)/(darker+0.05))*100)/100;
+  };
+  const wcagSummary = (ratio: number) => {
+    return {
+      aaNormal: ratio >= 4.5,
+      aaLarge: ratio >= 3,
+      aaaNormal: ratio >= 7,
+      aaaLarge: ratio >= 4.5,
+    };
+  };
   const normalizeHex = (v: string): string => {
     if (!v) return "";
     const m = /^#?([0-9a-f]{6})$/i.exec(v);
@@ -91,6 +118,12 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     return v;
   };
   const a11yRatio = useMemo(()=> primaryColor ? contrastRatio(normalizeHex(primaryColor)) : null, [primaryColor]);
+  const buttonTextOnPrimary = useMemo(()=> {
+    const pc = normalizeHex(primaryColor) || '#3b82f6';
+    const white = contrastBetween(pc, '#ffffff');
+    const black = contrastBetween(pc, '#111827');
+    return { white, black };
+  }, [primaryColor]);
   const colorPickerValue = useMemo(()=> {
     const n = normalizeHex(primaryColor);
     return n && /^#([0-9a-f]{6})$/i.test(n) ? n : '#3b82f6';
@@ -106,19 +139,10 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     const n = normalizeHex(formBg);
     const m = /^#([0-9a-f]{6})$/i.exec(n||'');
     if (!m) return null;
-    // Determine best text color (black or white) and compute ratio
-    const hex = m[1];
-    const toRGB = (h:string)=>({r:parseInt(h.slice(0,2),16)/255,g:parseInt(h.slice(2,4),16)/255,b:parseInt(h.slice(4,6),16)/255});
-    const lin = (c:number)=> c<=0.03928? c/12.92 : Math.pow((c+0.055)/1.055,2.4);
-    const L = (rgb:any)=> 0.2126*lin(rgb.r)+0.7152*lin(rgb.g)+0.0722*lin(rgb.b);
-    const bg = toRGB(hex);
-    const Lbg = L(bg);
-    const Lwhite = 1; const Lblack = 0;
-    const ratioWhite = (Lwhite+0.05)/(Lbg+0.05);
-    const ratioBlack = (Lbg+0.05)/(Lblack+0.05);
-    const useWhite = ratioWhite >= ratioBlack;
-    const ratio = Math.round((useWhite?ratioWhite:ratioBlack)*100)/100;
-    return { ratio, text: useWhite? '#ffffff' : '#111827' };
+    const white = contrastBetween(`#${m[1]}`, '#ffffff');
+    const black = contrastBetween(`#${m[1]}`, '#111827');
+    const best = (white ?? 0) >= (black ?? 0) ? { ratio: white!, text: '#ffffff' } : { ratio: black!, text: '#111827' };
+    return { ...best, white, black } as { ratio: number; text: '#ffffff'|'#111827'; white: number|null; black: number|null };
   }, [formBg]);
 
   function adjustColor(hex: string, amount: number): string {
@@ -562,10 +586,10 @@ export default function FeedbackWidget() {
           <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reset
         </Button>
       </div>
-      {/* Mode and Platform (Ultra only) */}
-      {ultra && (
+      {/* Main layout: left controls + right preview/snippet */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
+          {/* Tiny Mode selector (always visible) + Platform (Ultra only) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -574,50 +598,47 @@ export default function FeedbackWidget() {
                   <PopoverTrigger asChild>
                     <button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
                   </PopoverTrigger>
-                  <PopoverContent className="text-xs max-w-xs">Select how the widget appears on your site. Modal shows a floating button and opens a popup. Inline embeds the form in-place. Trigger attaches to your existing button.</PopoverContent>
+                  <PopoverContent className="text-xs max-w-xs">How the widget appears. Modal shows a floating button; Inline embeds the form; Trigger attaches to your button.</PopoverContent>
                 </Popover>
               </div>
-              <Select value={mode} onValueChange={(v) => setMode(v as Mode)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select mode" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="modal">Modal (Floating Button)</SelectItem>
-                  <SelectItem value="inline">Inline (Embed)</SelectItem>
-                  <SelectItem value="trigger">Trigger (Attach to Button)</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="inline-flex items-center gap-1 rounded-md border bg-muted/30 p-1">
+                <Button size="sm" variant={mode==='modal'?'default':'ghost'} onClick={()=> setMode('modal')} className={mode==='modal'?"bg-primary text-primary-foreground":""}>Modal</Button>
+                <Button size="sm" variant={mode==='inline'?'default':'ghost'} onClick={()=> setMode('inline')} className={mode==='inline'?"bg-primary text-primary-foreground":""}>Inline</Button>
+                <Button size="sm" variant={mode==='trigger'?'default':'ghost'} onClick={()=> setMode('trigger')} className={mode==='trigger'?"bg-primary text-primary-foreground":""}>Trigger</Button>
+              </div>
               <p className="text-xs text-muted-foreground">
-                {mode === 'modal' && 'Best for drop‑in feedback via a floating button and popup.'}
-                {mode === 'inline' && 'Embeds the form directly into your page content.'}
-                {mode === 'trigger' && 'Uses an existing button on your site to open the form.'}
+                {mode === 'modal' && 'Floating button opens a popup.'}
+                {mode === 'inline' && 'Embed the form into your page.'}
+                {mode === 'trigger' && 'Attach to your existing button.'}
               </p>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Label>Platform</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
-                  </PopoverTrigger>
-                  <PopoverContent className="text-xs">Generates code tailored to your stack</PopoverContent>
-                </Popover>
+            {ultra && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Label>Platform</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                    </PopoverTrigger>
+                    <PopoverContent className="text-xs">Generates code tailored to your stack</PopoverContent>
+                  </Popover>
+                </div>
+                <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="website">Website (script tag)</SelectItem>
+                    <SelectItem value="react">React / Next.js</SelectItem>
+                    <SelectItem value="vue">Vue</SelectItem>
+                    <SelectItem value="react-native">React Native</SelectItem>
+                    <SelectItem value="flutter">Flutter</SelectItem>
+                    <SelectItem value="wordpress">WordPress</SelectItem>
+                    <SelectItem value="shopify">Shopify</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select platform" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="website">Website (script tag)</SelectItem>
-                  <SelectItem value="react">React / Next.js</SelectItem>
-                  <SelectItem value="vue">Vue</SelectItem>
-                  <SelectItem value="react-native">React Native</SelectItem>
-                  <SelectItem value="flutter">Flutter</SelectItem>
-                  <SelectItem value="wordpress">WordPress</SelectItem>
-                  <SelectItem value="shopify">Shopify</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            )}
           </div>
 
           {/* Presets (Ultra only) */}
@@ -729,8 +750,17 @@ export default function FeedbackWidget() {
                 <Input placeholder="#3b82f6" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1" />
                 <input type="color" value={colorPickerValue} onChange={(e)=> setPrimaryColor(e.target.value)} className="h-9 w-10 rounded-md border" />
               </div>
-              {a11yRatio !== null && (
-                <div className={`text-xs ${a11yRatio < 4.5 ? 'text-destructive' : 'text-green-600'}`}>Contrast vs white text: {a11yRatio}:1 {a11yRatio < 4.5 ? '(below AA)' : '(AA ok)'}</div>
+              {buttonTextOnPrimary.white !== null && (
+                <div className="text-xs text-muted-foreground">
+                  <span className="font-medium">Button text on primary</span> —
+                  <span className={`ml-1 ${buttonTextOnPrimary.white && buttonTextOnPrimary.white >= 3 ? 'text-green-600' : 'text-destructive'}`}>
+                    white {buttonTextOnPrimary.white}:1 {buttonTextOnPrimary.white && buttonTextOnPrimary.white >= 3 ? '(AA Large ✓)' : '(AA Large ✗)'}
+                  </span>
+                  <span className="mx-1">/</span>
+                  <span className={`${buttonTextOnPrimary.black && buttonTextOnPrimary.black >= 3 ? 'text-green-600' : 'text-destructive'}`}>
+                    dark {buttonTextOnPrimary.black}:1 {buttonTextOnPrimary.black && buttonTextOnPrimary.black >= 3 ? '(AA Large ✓)' : '(AA Large ✗)'}
+                  </span>
+                </div>
               )}
               {/* Removed darker/lighter buttons for simplicity */}
             </div>
@@ -750,7 +780,28 @@ export default function FeedbackWidget() {
                 <input type="color" value={formBgPicker} onChange={(e)=> setFormBg(e.target.value)} className="h-9 w-10 rounded-md border" />
               </div>
               {bgContrast && (
-                <div className={`text-xs ${bgContrast.ratio < 4.5 ? 'text-destructive' : 'text-green-600'}`}>Contrast vs {bgContrast.text === '#ffffff' ? 'white' : 'black'} text: {bgContrast.ratio}:1 {bgContrast.ratio < 4.5 ? '(below AA)' : '(AA ok)'}</div>
+                <div className="text-xs space-y-1">
+                  <div>
+                    <span className="font-medium">Light text</span> —
+                    <span className={`ml-1 ${bgContrast.white && bgContrast.white >= 4.5 ? 'text-green-600' : 'text-destructive'}`}>
+                      subtitle {bgContrast.white}:1 {bgContrast.white && bgContrast.white >= 4.5 ? '(AA ✓)' : '(below AA)'}
+                    </span>
+                    <span className="mx-1">/</span>
+                    <span className={`${bgContrast.white && bgContrast.white >= 3 ? 'text-green-600' : 'text-destructive'}`}>
+                      title {bgContrast.white}:1 {bgContrast.white && bgContrast.white >= 3 ? '(AA Large ✓)' : '(AA Large ✗)'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Dark text</span> —
+                    <span className={`ml-1 ${bgContrast.black && bgContrast.black >= 4.5 ? 'text-green-600' : 'text-destructive'}`}>
+                      subtitle {bgContrast.black}:1 {bgContrast.black && bgContrast.black >= 4.5 ? '(AA ✓)' : '(below AA)'}
+                    </span>
+                    <span className="mx-1">/</span>
+                    <span className={`${bgContrast.black && bgContrast.black >= 3 ? 'text-green-600' : 'text-destructive'}`}>
+                      title {bgContrast.black}:1 {bgContrast.black && bgContrast.black >= 3 ? '(AA Large ✓)' : '(AA Large ✗)'}
+                    </span>
+                  </div>
+                </div>
               )}
             </div>
             {/* Size / Scale */}
@@ -993,7 +1044,7 @@ export default function FeedbackWidget() {
             </>
           )}
 
-          {/* Code Snippet */}
+          {/* Code Snippet (always visible) */}
           <div className="space-y-2">
             <Label>Installation Code</Label>
             <CodeSnippet code={snippet} language="html" />
@@ -1064,7 +1115,7 @@ export default function FeedbackWidget() {
           )}
         </div>
 
-        {/* Live Preview */}
+        {/* Live Preview (always visible) */}
         <div className="space-y-2">
           <Label>Live Preview</Label>
           <div>
@@ -1094,7 +1145,6 @@ export default function FeedbackWidget() {
           </div>
         </div>
       </div>
-      )}
     </div>
     </TooltipProvider>
   );
