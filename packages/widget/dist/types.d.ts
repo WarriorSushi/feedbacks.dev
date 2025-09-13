@@ -24,7 +24,12 @@ export interface WidgetConfig {
     target?: string;
     buttonText?: string;
     primaryColor?: string;
+    backgroundColor?: string;
     scale?: number;
+    modalShape?: 'rounded' | 'pill' | 'square';
+    headerIcon?: 'none' | 'chat' | 'star' | 'lightbulb' | 'thumbs-up';
+    headerLayout?: 'text-only' | 'icon-left' | 'icon-top';
+    spacing?: number;
     apiUrl?: string;
     debug?: boolean;
     requireEmail?: boolean;

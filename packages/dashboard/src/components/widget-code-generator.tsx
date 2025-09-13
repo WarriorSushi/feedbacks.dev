@@ -89,6 +89,11 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     const n = normalizeHex(primaryColor);
     return n && /^#([0-9a-f]{6})$/i.test(n) ? n : '#3b82f6';
   }, [primaryColor]);
+  const [formBg, setFormBg] = useState<string>('');
+  const formBgPicker = useMemo(()=> {
+    const n = normalizeHex(formBg);
+    return n && /^#([0-9a-f]{6})$/i.test(n) ? n : '#ffffff';
+  }, [formBg]);
 
   function adjustColor(hex: string, amount: number): string {
     const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
@@ -115,6 +120,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     ];
     if (mode === "modal") entries.push(["position", position]);
     if (primaryColor) entries.push(["primaryColor", normalizeHex(primaryColor)]);
+    if (formBg) entries.push(["backgroundColor", normalizeHex(formBg)]);
     if (scale && scale !== 1) entries.push(["scale", scale]);
     if (buttonText && mode === "modal") entries.push(["buttonText", buttonText]);
     if (mode === "inline") entries.push(["target", `#${containerId}`]);
@@ -256,6 +262,7 @@ export default function FeedbackWidget() {
       ...(mode === 'inline' ? { target: '#inline-anchor' } : {}),
       ...(mode === 'trigger' ? { target: '#trigger-anchor' } : {}),
       ...(primaryColor ? { primaryColor: normalizeHex(primaryColor) } : {}),
+      ...(formBg ? { backgroundColor: normalizeHex(formBg) } : {}),
       ...(buttonText && mode === 'modal' ? { buttonText } : {}),
       ...(requireEmail ? { requireEmail: true } : {}),
       ...(requireCaptcha ? { requireCaptcha: true } : {}),
@@ -309,6 +316,7 @@ export default function FeedbackWidget() {
           if (cfg.embedMode === 'inline') cfg.target = '#inline-anchor';
           if (cfg.embedMode === 'trigger') cfg.target = '#trigger-anchor';
           if (cfg.primaryColor) document.documentElement.style.setProperty('--feedbacks-primary', cfg.primaryColor);
+          if (cfg.backgroundColor) document.documentElement.style.setProperty('--feedbacks-bg', cfg.backgroundColor);
           if (typeof cfg.spacing === 'number') document.documentElement.style.setProperty('--feedbacks-spacing', String(cfg.spacing)+'px');
           if (cfg.modalShape){
             var r = cfg.modalShape==='pill'?'9999px':(cfg.modalShape==='square'?'8px':'16px');
@@ -340,6 +348,7 @@ export default function FeedbackWidget() {
     ...(mode === 'inline' ? { target: `#${containerId}` } : {}),
     ...(mode === 'trigger' ? { target: `#${triggerId}` } : {}),
     ...(primaryColor ? { primaryColor: normalizeHex(primaryColor) } : {}),
+    ...(formBg ? { backgroundColor: normalizeHex(formBg) } : {}),
     ...(scale && scale !== 1 ? { scale } : {}),
     ...(buttonText && mode === 'modal' ? { buttonText } : {}),
     ...(requireEmail ? { requireEmail: true } : {}),
@@ -478,9 +487,9 @@ export default function FeedbackWidget() {
       {/* Top bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Label>Simple Mode</Label>
+          <Label>Ultra Mode</Label>
           <Switch checked={ultra} onCheckedChange={(v)=> setUltra(!!v)} />
-          <span className="text-xs text-muted-foreground">{ultra ? 'Ultra Customizer' : 'Simple Mode'}</span>
+          <span className="text-xs text-muted-foreground">{ultra ? 'On' : 'Off'}</span>
         </div>
         <Button variant="outline" size="sm" onClick={()=>{
           setMode('inline'); setPlatform('website'); setPosition('bottom-right'); setPrimaryColor(''); setScale(1);
@@ -580,12 +589,12 @@ export default function FeedbackWidget() {
             )}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Label>Background Color</Label>
+                <Label>Submit Button Color</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
                   </PopoverTrigger>
-                  <PopoverContent className="text-xs max-w-xs">Applied as the widget’s primary/background color</PopoverContent>
+                  <PopoverContent className="text-xs max-w-xs">Sets the primary color used for the submit button and accents</PopoverContent>
                 </Popover>
               </div>
               <div className="flex items-center gap-2">
@@ -598,6 +607,22 @@ export default function FeedbackWidget() {
               <div className="flex gap-2">
                 <Button size="sm" variant="outline" onClick={()=> primaryColor && setPrimaryColor(adjustColor(primaryColor, -16))}><Minus className="h-3 w-3 mr-1"/>Darker</Button>
                 <Button size="sm" variant="outline" onClick={()=> primaryColor && setPrimaryColor(adjustColor(primaryColor, 16))}><Plus className="h-3 w-3 mr-1"/>Lighter</Button>
+              </div>
+            </div>
+            {/* Form Background Color */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label>Form Background Color</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button>
+                  </PopoverTrigger>
+                  <PopoverContent className="text-xs max-w-xs">Sets the background of the modal/inline form container</PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex items-center gap-2">
+                <Input placeholder="#ffffff" value={formBg} onChange={(e) => setFormBg(e.target.value)} className="flex-1" />
+                <input type="color" value={formBgPicker} onChange={(e)=> setFormBg(e.target.value)} className="h-9 w-10 rounded-md border" />
               </div>
             </div>
             {/* Size / Scale */}
@@ -690,34 +715,37 @@ export default function FeedbackWidget() {
               <Switch checked={requireEmail} onCheckedChange={(v)=> setRequireEmail(!!v)} />
             </div>
             {/* Captcha options */}
-            <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Label>Require Captcha</Label>
-                <Tooltip><TooltipTrigger asChild><span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span></TooltipTrigger><TooltipContent>Enforce Turnstile or hCaptcha verification</TooltipContent></Tooltip>
+                <Popover><PopoverTrigger asChild><button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></button></PopoverTrigger><PopoverContent className="text-xs">Enforce Turnstile or hCaptcha verification</PopoverContent></Popover>
               </div>
-              <Select value={requireCaptcha ? 'yes' : 'no'} onValueChange={(v)=>setRequireCaptcha(v==='yes')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Require Captcha" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no">No</SelectItem>
-                  <SelectItem value="yes">Yes</SelectItem>
-                </SelectContent>
-              </Select>
+              <Switch checked={requireCaptcha} onCheckedChange={(v)=> setRequireCaptcha(!!v)} />
             </div>
-            <div className="space-y-2">
-              <Label>Captcha Provider</Label>
-              <Select value={captchaProvider} onValueChange={(v)=>setCaptchaProvider(v as any)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Provider" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="turnstile">Cloudflare Turnstile</SelectItem>
-                  <SelectItem value="hcaptcha">hCaptcha</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {ultra && requireCaptcha && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between">
+                  <Label>Use Turnstile</Label>
+                  <Switch checked={captchaProvider==='turnstile'} onCheckedChange={(v)=> setCaptchaProvider(v? 'turnstile' : 'none' as any)} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label>Use hCaptcha</Label>
+                  <Switch checked={captchaProvider==='hcaptcha'} onCheckedChange={(v)=> setCaptchaProvider(v? 'hcaptcha' : 'none' as any)} />
+                </div>
+                {captchaProvider === 'turnstile' && (
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Turnstile Site Key</Label>
+                    <Input placeholder="0xAAAA..." value={turnstileSiteKey} onChange={(e)=>setTurnstileSiteKey(e.target.value)} />
+                  </div>
+                )}
+                {captchaProvider === 'hcaptcha' && (
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>hCaptcha Site Key</Label>
+                    <Input placeholder="10000000-ffff-ffff-ffff-000000000001" value={hcaptchaSiteKey} onChange={(e)=>setHcaptchaSiteKey(e.target.value)} />
+                  </div>
+                )}
+              </div>
+            )}
             {captchaProvider === 'turnstile' && (
               <div className="space-y-2 md:col-span-2">
                 <Label>Turnstile Site Key</Label>
@@ -730,29 +758,13 @@ export default function FeedbackWidget() {
                 <Input placeholder="10000000-ffff-ffff-ffff-000000000001" value={hcaptchaSiteKey} onChange={(e)=>setHcaptchaSiteKey(e.target.value)} />
               </div>
             )}
-            <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <Label>Category Field</Label>
-              <Select value={enableType ? 'on' : 'off'} onValueChange={(v)=>setEnableType(v==='on')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Category Field" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="on">On</SelectItem>
-                  <SelectItem value="off">Off</SelectItem>
-                </SelectContent>
-              </Select>
+              <Switch checked={enableType} onCheckedChange={(v)=> setEnableType(!!v)} />
             </div>
-            <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <Label>Rating Field</Label>
-              <Select value={enableRating ? 'on' : 'off'} onValueChange={(v)=>setEnableRating(v==='on')}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Rating Field" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="on">On</SelectItem>
-                  <SelectItem value="off">Off</SelectItem>
-                </SelectContent>
-              </Select>
+              <Switch checked={enableRating} onCheckedChange={(v)=> setEnableRating(!!v)} />
             </div>
             {/* Success messages */}
             <div className="space-y-2 md:col-span-2">

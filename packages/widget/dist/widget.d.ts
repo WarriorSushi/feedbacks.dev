@@ -14,11 +14,13 @@ declare class FeedbacksWidget {
     private init;
     private setup;
     private adaptLookAndFeel;
+    private applyStyleVars;
     private log;
     private createButton;
     private createInlineForm;
     private attachTriggerListeners;
     private getFormHTML;
+    private getHeaderIcon;
     private attachEventListeners;
     private open;
     private close;

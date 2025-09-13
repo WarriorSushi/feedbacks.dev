@@ -83,6 +83,9 @@ class FeedbacksWidget {
       if ((this.config as any).spacing && typeof (this.config as any).spacing === 'number') {
         root.style.setProperty('--feedbacks-spacing', String((this.config as any).spacing) + 'px');
       }
+      if ((this.config as any).backgroundColor && typeof (this.config as any).backgroundColor === 'string') {
+        root.style.setProperty('--feedbacks-bg', String((this.config as any).backgroundColor));
+      }
       // Radius via shape
       const shape = (this.config as any).modalShape as any;
       let radius = '';
@@ -774,6 +777,7 @@ class FeedbacksWidget {
         position: (script.getAttribute('data-position') as any) || 'bottom-right',
         buttonText: script.getAttribute('data-button-text') || undefined,
         primaryColor: script.getAttribute('data-color') || undefined,
+        backgroundColor: script.getAttribute('data-bg') || undefined,
         scale: script.getAttribute('data-scale') ? Number(script.getAttribute('data-scale')) : undefined,
         modalShape: (script.getAttribute('data-shape') as any) || undefined,
         headerIcon: (script.getAttribute('data-header-icon') as any) || undefined,

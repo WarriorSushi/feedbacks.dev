@@ -435,7 +435,7 @@
 
 /* Inline Container Styles */
 .feedbacks-inline-container {
-  background: white;
+  background: var(--feedbacks-bg, white);
   border-radius: var(--feedbacks-radius, 12px);
   padding: var(--feedbacks-spacing, 24px);
   border: 1px solid #e5e7eb;
@@ -454,7 +454,7 @@
 @media (prefers-color-scheme: dark) {
   .feedbacks-modal,
   .feedbacks-inline-container {
-    background: #1f2937;
+    background: var(--feedbacks-bg, #1f2937);
     color: #f9fafb;
     border-color: #374151;
   }
