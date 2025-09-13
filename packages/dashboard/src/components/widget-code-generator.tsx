@@ -55,6 +55,10 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [message, setMessage] = useState<string>("");
   const [ultra, setUltra] = useState(false);
   const [iframeHeight, setIframeHeight] = useState<number>(360);
+  const [modalShape, setModalShape] = useState<'rounded'|'pill'|'square'>('rounded');
+  const [headerIcon, setHeaderIcon] = useState<'none'|'chat'|'star'|'lightbulb'|'thumbs-up'>('none');
+  const [headerLayout, setHeaderLayout] = useState<'text-only'|'icon-left'|'icon-top'>('text-only');
+  const [spacing, setSpacing] = useState<number>(24);
   // Anti-spam (client-side rendering options)
   const [requireCaptcha, setRequireCaptcha] = useState<boolean>(false);
   const [captchaProvider, setCaptchaProvider] = useState<'turnstile'|'hcaptcha'|'none'>("none");
@@ -251,7 +255,7 @@ export default function FeedbackWidget() {
       ...(mode === 'modal' ? { position } : {}),
       ...(mode === 'inline' ? { target: '#inline-anchor' } : {}),
       ...(mode === 'trigger' ? { target: '#trigger-anchor' } : {}),
-      ...(primaryColor ? { primaryColor } : {}),
+      ...(primaryColor ? { primaryColor: normalizeHex(primaryColor) } : {}),
       ...(buttonText && mode === 'modal' ? { buttonText } : {}),
       ...(requireEmail ? { requireEmail: true } : {}),
       ...(requireCaptcha ? { requireCaptcha: true } : {}),
@@ -269,6 +273,10 @@ export default function FeedbackWidget() {
       ...(successTitle ? { successTitle } : {}),
       ...(successDescription ? { successDescription } : {}),
       ...(scale && scale !== 1 ? { scale } : {}),
+      ...(modalShape ? { modalShape } : {}),
+      ...(headerIcon ? { headerIcon } : {}),
+      ...(headerLayout ? { headerLayout } : {}),
+      ...(spacing ? { spacing } : {}),
     };
     const initialJson = JSON.stringify(initial).replace(/</g, '\\u003c');
     return `<!doctype html>
@@ -301,6 +309,11 @@ export default function FeedbackWidget() {
           if (cfg.embedMode === 'inline') cfg.target = '#inline-anchor';
           if (cfg.embedMode === 'trigger') cfg.target = '#trigger-anchor';
           if (cfg.primaryColor) document.documentElement.style.setProperty('--feedbacks-primary', cfg.primaryColor);
+          if (typeof cfg.spacing === 'number') document.documentElement.style.setProperty('--feedbacks-spacing', String(cfg.spacing)+'px');
+          if (cfg.modalShape){
+            var r = cfg.modalShape==='pill'?'9999px':(cfg.modalShape==='square'?'8px':'16px');
+            document.documentElement.style.setProperty('--feedbacks-radius', r);
+          }
           new FeedbacksWidget(cfg);
           setTimeout(postHeight, 50);
         }
@@ -326,7 +339,7 @@ export default function FeedbackWidget() {
     ...(mode === 'modal' ? { position } : {}),
     ...(mode === 'inline' ? { target: `#${containerId}` } : {}),
     ...(mode === 'trigger' ? { target: `#${triggerId}` } : {}),
-    ...(primaryColor ? { primaryColor } : {}),
+    ...(primaryColor ? { primaryColor: normalizeHex(primaryColor) } : {}),
     ...(scale && scale !== 1 ? { scale } : {}),
     ...(buttonText && mode === 'modal' ? { buttonText } : {}),
     ...(requireEmail ? { requireEmail: true } : {}),
@@ -344,6 +357,10 @@ export default function FeedbackWidget() {
     ...(successDescription ? { successDescription } : {}),
     ...(enableAttachment ? { enableAttachment: true } : {}),
     ...(enableAttachment && attachmentMaxMB ? { attachmentMaxMB: Number(attachmentMaxMB) } : {}),
+    ...(modalShape ? { modalShape } : {}),
+    ...(headerIcon ? { headerIcon } : {}),
+    ...(headerLayout ? { headerLayout } : {}),
+    ...(spacing ? { spacing } : {}),
   }), [
     projectKey,
     mode,
@@ -368,6 +385,10 @@ export default function FeedbackWidget() {
     successDescription,
     enableAttachment,
     attachmentMaxMB,
+    modalShape,
+    headerIcon,
+    headerLayout,
+    spacing,
   ]);
 
   // Push live updates without reloading the iframe
@@ -755,13 +776,71 @@ export default function FeedbackWidget() {
             <>
               <Separator />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Container / Target */}
                 {mode === 'inline' && (
                   <div className="space-y-2">
                     <Label>Container ID</Label>
                     <Input value={containerId} onChange={(e) => setContainerId(e.target.value)} />
                   </div>
                 )}
-                {/* Future: modal shape, icon options, etc. */}
+                {/* Modal Shape */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label>Modal Shape</Label>
+                    <Popover><PopoverTrigger asChild><button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground"/></button></PopoverTrigger><PopoverContent className="text-xs">Controls border radius for modal and inline card</PopoverContent></Popover>
+                  </div>
+                  <Select value={modalShape} onValueChange={(v)=> setModalShape(v as any)}>
+                    <SelectTrigger><SelectValue placeholder="Shape" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="rounded">Rounded</SelectItem>
+                      <SelectItem value="pill">Pill</SelectItem>
+                      <SelectItem value="square">Square</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* Header Icon */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label>Header Icon</Label>
+                    <Popover><PopoverTrigger asChild><button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground"/></button></PopoverTrigger><PopoverContent className="text-xs">Choose an icon to display in the header</PopoverContent></Popover>
+                  </div>
+                  <Select value={headerIcon} onValueChange={(v)=> setHeaderIcon(v as any)}>
+                    <SelectTrigger><SelectValue placeholder="Icon" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">None</SelectItem>
+                      <SelectItem value="chat">Chat</SelectItem>
+                      <SelectItem value="star">Star</SelectItem>
+                      <SelectItem value="lightbulb">Lightbulb</SelectItem>
+                      <SelectItem value="thumbs-up">Thumbs Up</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* Header Layout */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label>Header Layout</Label>
+                    <Popover><PopoverTrigger asChild><button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground"/></button></PopoverTrigger><PopoverContent className="text-xs">Position of icon relative to title</PopoverContent></Popover>
+                  </div>
+                  <Select value={headerLayout} onValueChange={(v)=> setHeaderLayout(v as any)}>
+                    <SelectTrigger><SelectValue placeholder="Layout" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="text-only">Text only</SelectItem>
+                      <SelectItem value="icon-left">Icon left</SelectItem>
+                      <SelectItem value="icon-top">Icon top</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {/* Spacing */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label>Spacing</Label>
+                    <Popover><PopoverTrigger asChild><button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground"/></button></PopoverTrigger><PopoverContent className="text-xs">Adjust padding and gaps</PopoverContent></Popover>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input type="range" min={12} max={32} step={2} value={spacing} onChange={(e)=> setSpacing(parseInt(e.target.value))} className="w-full" />
+                    <span className="text-xs tabular-nums w-10 text-right">{spacing}px</span>
+                  </div>
+                </div>
               </div>
             </>
           )}
@@ -793,7 +872,7 @@ export default function FeedbackWidget() {
             <iframe
               ref={iframeRef}
               title="Widget Preview"
-              style={{ width: viewport === 'mobile' ? 390 : '100%', height: viewport === 'mobile' ? 700 : 360, border: "0" }}
+              style={{ width: viewport === 'mobile' ? 390 : '100%', height: iframeHeight, border: "0" }}
               srcDoc={previewSrcDoc}
             />
           </div>

@@ -33,6 +33,7 @@ class FeedbacksWidget {
   private setup(): void {
     // Attempt to adapt font and colors from host page if not explicitly provided
     this.adaptLookAndFeel();
+    this.applyStyleVars();
     if (this.config.embedMode === 'inline') {
       this.createInlineForm();
     } else if (this.config.embedMode === 'trigger') {
@@ -72,6 +73,24 @@ class FeedbacksWidget {
             document.documentElement.style.setProperty('--feedbacks-primary-hover', darker);
           }
         } catch {}
+      }
+    } catch {}
+  }
+
+  private applyStyleVars(): void {
+    try {
+      const root = document.documentElement;
+      if ((this.config as any).spacing && typeof (this.config as any).spacing === 'number') {
+        root.style.setProperty('--feedbacks-spacing', String((this.config as any).spacing) + 'px');
+      }
+      // Radius via shape
+      const shape = (this.config as any).modalShape as any;
+      let radius = '';
+      if (shape === 'pill') radius = '9999px';
+      else if (shape === 'square') radius = '8px';
+      else if (shape === 'rounded') radius = '16px';
+      if (radius) {
+        root.style.setProperty('--feedbacks-radius', radius);
       }
     } catch {}
   }
@@ -145,11 +164,20 @@ class FeedbacksWidget {
     const idSuffix = isModal ? '-modal' : '-inline';
     const showType = this.config.enableType !== false; // default true
     const showRating = this.config.enableRating !== false; // default true
+    const layout = ((this.config as any).headerLayout as any) || 'text-only';
+    const icon = ((this.config as any).headerIcon as any) || 'none';
+    const iconSVG = this.getHeaderIcon(icon);
+    const headerTop = layout === 'icon-top' && icon !== 'none' ? `<div class="feedbacks-header-icon">${iconSVG}</div>` : '';
+    const headerLeftStart = layout === 'icon-left' && icon !== 'none' ? `<div class="feedbacks-header-row"><div class="feedbacks-header-icon">${iconSVG}</div><div class="feedbacks-header-text">` : '';
+    const headerLeftEnd = layout === 'icon-left' && icon !== 'none' ? `</div></div>` : '';
     return `
       <div class="feedbacks-widget">
         <div class="feedbacks-header">
+          ${headerTop}
+          ${headerLeftStart}
           <h3 class="feedbacks-title">Send Feedback</h3>
           <p class="feedbacks-subtitle">Help us improve by sharing your thoughts</p>
+          ${headerLeftEnd}
           ${isModal ? '<button type="button" class="feedbacks-close" aria-label="Close feedback form">✕</button>' : ''}
         </div>
         <div class="feedbacks-content">
@@ -245,6 +273,21 @@ class FeedbacksWidget {
         </div>
       </div>
     `;
+  }
+
+  private getHeaderIcon(kind: string): string {
+    switch (kind) {
+      case 'chat':
+        return '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>';
+      case 'star':
+        return '<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 .587l3.668 7.568L24 9.75l-6 5.85 1.416 8.4L12 19.8 4.584 24l1.416-8.4L0 9.75l8.332-1.595z"/></svg>';
+      case 'lightbulb':
+        return '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4"/><path d="M2 10a10 10 0 1 1 20 0c0 3.866-2.239 5.6-4 7-1 1-1 3-1 3H7s0-2-1-3c-1.761-1.4-4-3.134-4-7z"/></svg>';
+      case 'thumbs-up':
+        return '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.72l1.38-9a2 2 0 0 0-2-2H14z"/></svg>';
+      default:
+        return '';
+    }
   }
 
   private attachEventListeners(): void {
@@ -732,6 +775,10 @@ class FeedbacksWidget {
         buttonText: script.getAttribute('data-button-text') || undefined,
         primaryColor: script.getAttribute('data-color') || undefined,
         scale: script.getAttribute('data-scale') ? Number(script.getAttribute('data-scale')) : undefined,
+        modalShape: (script.getAttribute('data-shape') as any) || undefined,
+        headerIcon: (script.getAttribute('data-header-icon') as any) || undefined,
+        headerLayout: (script.getAttribute('data-header-layout') as any) || undefined,
+        spacing: script.getAttribute('data-spacing') ? Number(script.getAttribute('data-spacing')) : undefined,
         debug: script.hasAttribute('data-debug'),
         requireEmail: script.hasAttribute('data-require-email') || script.getAttribute('data-require-email') === 'true',
         requireCaptcha: script.hasAttribute('data-require-captcha') || script.getAttribute('data-require-captcha') === 'true',
