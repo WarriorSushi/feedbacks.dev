@@ -568,9 +568,12 @@ export default function FeedbackWidget() {
             <span className="text-sm text-muted-foreground">Presets{mode==='inline'?' (Inline)':''}:</span>
             {mode !== 'inline' ? (
               <>
-                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#3b82f6'); setButtonText('Feedback'); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Classic</Button>
-                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor(''); setButtonText('Send'); setRequireEmail(false); setEnableType(false); setEnableRating(false); setEnableScreenshot(false); setEnablePriority(false); setEnableTags(false); }}>Minimal</Button>
-                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#111827'); setButtonText('Feedback'); setRequireEmail(true); setEnableType(true); setEnableRating(true); setEnableScreenshot(true); setEnablePriority(false); setEnableTags(false); }}>High Contrast</Button>
+                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#3b82f6'); setButtonText('Feedback'); setRequireEmail(false); setEnableType(true); setEnableRating(true); setEnableScreenshot(false); }}>Classic</Button>
+                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor(''); setButtonText('Send'); setRequireEmail(false); setEnableType(false); setEnableRating(false); setEnableScreenshot(false); }}>Minimal</Button>
+                <Button size="sm" variant="outline" onClick={() => { setPosition('bottom-right'); setPrimaryColor('#111827'); setButtonText('Feedback'); setRequireEmail(true); setEnableType(true); setEnableRating(true); setEnableScreenshot(true); }}>High Contrast</Button>
+                {/* Modal width/density presets */}
+                <Button size="sm" variant="outline" onClick={() => { setModalWidth(400); setSpacing(16); }}>Compact</Button>
+                <Button size="sm" variant="outline" onClick={() => { setModalWidth(640); setSpacing(28); }}>Wide</Button>
               </>
             ) : (
               <>
@@ -579,9 +582,6 @@ export default function FeedbackWidget() {
                 <Button size="sm" variant="outline" onClick={() => { setFormBg('#ffffff'); setSpacing(12); setHeaderLayout('text-only'); setHeaderIcon('none'); setEnableType(false); setEnableRating(false); setPrimaryColor(''); }}>Inline: Minimal</Button>
               </>
             )}
-            <div className="ml-auto">
-              <Button size="sm" variant="ghost" onClick={() => setShowAdvanced(v => !v)}>{showAdvanced ? 'Hide Advanced' : 'Show Advanced'}</Button>
-            </div>
           </div>
 
           {/* Options */}
@@ -863,6 +863,17 @@ export default function FeedbackWidget() {
                   <div className="flex items-center gap-3">
                     <input type="range" min={12} max={32} step={2} value={spacing} onChange={(e)=> setSpacing(parseInt(e.target.value))} className="w-full" />
                     <span className="text-xs tabular-nums w-10 text-right">{spacing}px</span>
+                  </div>
+                </div>
+                {/* Modal Width */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label>Modal Width</Label>
+                    <Popover><PopoverTrigger asChild><button type="button" className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground"/></button></PopoverTrigger><PopoverContent className="text-xs">Max width on desktop screens</PopoverContent></Popover>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input type="range" min={360} max={720} step={20} value={modalWidth} onChange={(e)=> setModalWidth(parseInt(e.target.value))} className="w-full" />
+                    <span className="text-xs tabular-nums w-12 text-right">{modalWidth}px</span>
                   </div>
                 </div>
               </div>
