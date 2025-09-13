@@ -54,7 +54,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [ultra, setUltra] = useState(false);
-  const [iframeHeight, setIframeHeight] = useState<number>(600);
+  const [iframeHeight, setIframeHeight] = useState<number>(800);
   const [showUltraTip, setShowUltraTip] = useState<boolean>(false);
   const [modalShape, setModalShape] = useState<'rounded'|'pill'|'square'>('rounded');
   const [headerIcon, setHeaderIcon] = useState<'none'|'chat'|'star'|'lightbulb'|'thumbs-up'>('none');
@@ -424,7 +424,11 @@ export default function FeedbackWidget() {
           if (cfg.inlineBorder) document.documentElement.style.setProperty('--feedbacks-border', cfg.inlineBorder);
           if (cfg.inlineShadow) document.documentElement.style.setProperty('--feedbacks-shadow', cfg.inlineShadow);
           new FeedbacksWidget(cfg);
+          // Post height immediately and repeatedly to ensure it's captured
+          postHeight();
+          setTimeout(postHeight, 10);
           setTimeout(postHeight, 50);
+          setTimeout(postHeight, 100);
         }
         function ready(){ if (typeof FeedbacksWidget === 'function') { apply(pending); pending = null; } else setTimeout(ready, 30); }
         ready();
@@ -476,8 +480,8 @@ export default function FeedbackWidget() {
     function onMsg(ev: MessageEvent){
       if (!ev || !ev.data) return;
       if (ev.data.type === 'widget-preview:height' && typeof ev.data.height === 'number') {
-        const min = viewport === 'mobile' ? 700 : 500;
-        setIframeHeight(Math.max(ev.data.height, min));
+        // Use actual content height, add some padding for safety
+        setIframeHeight(ev.data.height + 20);
       }
     }
     window.addEventListener('message', onMsg);
