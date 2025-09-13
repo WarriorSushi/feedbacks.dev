@@ -54,7 +54,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [ultra, setUltra] = useState(false);
-  const [iframeHeight, setIframeHeight] = useState<number>(800);
+  const [iframeHeight, setIframeHeight] = useState<number>(600);
   const [showUltraTip, setShowUltraTip] = useState<boolean>(false);
   const [modalShape, setModalShape] = useState<'rounded'|'pill'|'square'>('rounded');
   const [headerIcon, setHeaderIcon] = useState<'none'|'chat'|'star'|'lightbulb'|'thumbs-up'>('none');
@@ -480,8 +480,9 @@ export default function FeedbackWidget() {
     function onMsg(ev: MessageEvent){
       if (!ev || !ev.data) return;
       if (ev.data.type === 'widget-preview:height' && typeof ev.data.height === 'number') {
-        // Use actual content height, add some padding for safety
-        setIframeHeight(ev.data.height + 20);
+        // Use actual content height but with reasonable minimums
+        const minHeight = viewport === 'mobile' ? 500 : 400;
+        setIframeHeight(Math.max(ev.data.height + 20, minHeight));
       }
     }
     window.addEventListener('message', onMsg);
