@@ -137,7 +137,7 @@ export function WidgetCodeGenerator({ projectKey, widgetVersion = "latest", proj
     if (enableAttachment) entries.push(["enableAttachment", true]);
     if (enableAttachment && attachmentMaxMB) entries.push(["attachmentMaxMB", Number(attachmentMaxMB)]);
     return entries;
-  }, [projectKey, mode, position, primaryColor, scale, buttonText, containerId, triggerId, requireEmail, enableType, enableRating, enableScreenshot, screenshotRequired, enablePriority, enableTags, successTitle, successDescription, enableAttachment, attachmentMaxMB]);
+  }, [projectKey, mode, position, primaryColor, formBg, scale, buttonText, containerId, triggerId, requireEmail, enableType, enableRating, enableScreenshot, screenshotRequired, enablePriority, enableTags, successTitle, successDescription, enableAttachment, attachmentMaxMB]);
 
   const configJs = useMemo(() => {
     const toLine = ([k, v]: [string, string | number | boolean]) =>
@@ -377,6 +377,7 @@ export default function FeedbackWidget() {
     containerId,
     triggerId,
     primaryColor,
+    formBg,
     scale,
     buttonText,
     requireEmail,
@@ -487,9 +488,9 @@ export default function FeedbackWidget() {
       {/* Top bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Label>Ultra Mode</Label>
-          <Switch checked={ultra} onCheckedChange={(v)=> setUltra(!!v)} />
-          <span className="text-xs text-muted-foreground">{ultra ? 'On' : 'Off'}</span>
+          <span className="text-xs text-muted-foreground">Simple mode</span>
+          <Switch checked={ultra} onCheckedChange={(v)=> setUltra(!!v)} aria-label="Toggle Ultra Mode" />
+          <span className="text-xs text-muted-foreground">Ultra mode</span>
         </div>
         <Button variant="outline" size="sm" onClick={()=>{
           setMode('inline'); setPlatform('website'); setPosition('bottom-right'); setPrimaryColor(''); setScale(1);
@@ -674,39 +675,47 @@ export default function FeedbackWidget() {
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Label>Priority Field</Label>
-                <Tooltip><TooltipTrigger asChild><span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span></TooltipTrigger><TooltipContent>Optional priority selector</TooltipContent></Tooltip>
+            {ultra && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Label>Priority Field</Label>
+                  <Tooltip><TooltipTrigger asChild><span className="inline-flex items-center cursor-help"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span></TooltipTrigger><TooltipContent>Optional priority selector</TooltipContent></Tooltip>
+                </div>
+                <Switch checked={enablePriority} onCheckedChange={(v)=> setEnablePriority(!!v)} />
               </div>
-              <Switch checked={enablePriority} onCheckedChange={(v)=> setEnablePriority(!!v)} />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Label>Tags Field</Label>
+            )}
+            {ultra && (
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Label>Tags Field</Label>
+                </div>
+                <Switch checked={enableTags} onCheckedChange={(v)=> setEnableTags(!!v)} />
               </div>
-              <Switch checked={enableTags} onCheckedChange={(v)=> setEnableTags(!!v)} />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Label>Attachment</Label>
-              </div>
-              <Switch checked={enableAttachment} onCheckedChange={(v)=> setEnableAttachment(!!v)} />
-            </div>
-            {enableAttachment && (
-              <div className="space-y-2">
-                <Label>Attachment Size Limit (MB)</Label>
-                <Select value={attachmentMaxMB} onValueChange={setAttachmentMaxMB}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Max MB" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="2">2</SelectItem>
-                    <SelectItem value="5">5</SelectItem>
-                    <SelectItem value="10">10</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            )}
+            {ultra && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Label>Attachment</Label>
+                  </div>
+                  <Switch checked={enableAttachment} onCheckedChange={(v)=> setEnableAttachment(!!v)} />
+                </div>
+                {enableAttachment && (
+                  <div className="space-y-2">
+                    <Label>Attachment Size Limit (MB)</Label>
+                    <Select value={attachmentMaxMB} onValueChange={setAttachmentMaxMB}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Max MB" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2">2</SelectItem>
+                        <SelectItem value="5">5</SelectItem>
+                        <SelectItem value="10">10</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </>
             )}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -746,18 +755,7 @@ export default function FeedbackWidget() {
                 )}
               </div>
             )}
-            {captchaProvider === 'turnstile' && (
-              <div className="space-y-2 md:col-span-2">
-                <Label>Turnstile Site Key</Label>
-                <Input placeholder="0xAAAA..." value={turnstileSiteKey} onChange={(e)=>setTurnstileSiteKey(e.target.value)} />
-              </div>
-            )}
-            {captchaProvider === 'hcaptcha' && (
-              <div className="space-y-2 md:col-span-2">
-                <Label>hCaptcha Site Key</Label>
-                <Input placeholder="10000000-ffff-ffff-ffff-000000000001" value={hcaptchaSiteKey} onChange={(e)=>setHcaptchaSiteKey(e.target.value)} />
-              </div>
-            )}
+            {/* provider keys rendered above under Ultra when required */}
             <div className="flex items-center justify-between">
               <Label>Category Field</Label>
               <Switch checked={enableType} onCheckedChange={(v)=> setEnableType(!!v)} />
