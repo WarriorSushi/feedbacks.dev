@@ -87,19 +87,24 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
   const makeId = (seed: string) => 'u-' + Math.random().toString(36).slice(2, 10);
   const ensureArrays = (c: WebhookCfg): WebhookCfg => {
     const next: any = { ...(c as any) };
-    if (c.slack && !(c.slack as any).endpoints) {
-      const url = (c.slack as any).url; const enabled = (c.slack as any).enabled;
+    // Always ensure container objects exist
+    if (!next.slack) next.slack = { endpoints: [] };
+    if (!next.discord) next.discord = { endpoints: [] };
+    if (!next.generic) next.generic = { endpoints: [] };
+    // Back-compat: transform legacy single-url shapes to arrays
+    if ((c as any).slack && !(c as any).slack.endpoints) {
+      const url = (c as any).slack.url; const enabled = (c as any).slack.enabled;
       next.slack = { endpoints: url ? [{ id: makeId('slack'), url, enabled: !!enabled, delivery: 'immediate', events: ['created'] }] : [] };
     }
-    if (c.discord && !(c.discord as any).endpoints) {
-      const url = (c.discord as any).url; const enabled = (c.discord as any).enabled;
+    if ((c as any).discord && !(c as any).discord.endpoints) {
+      const url = (c as any).discord.url; const enabled = (c as any).discord.enabled;
       next.discord = { endpoints: url ? [{ id: makeId('discord'), url, enabled: !!enabled, delivery: 'immediate', events: ['created'] }] : [] };
     }
-    if (c.generic && !(c.generic as any).endpoints) {
-      const url = (c.generic as any).url; const enabled = (c.generic as any).enabled; const secret = (c.generic as any).secret;
+    if ((c as any).generic && !(c as any).generic.endpoints) {
+      const url = (c as any).generic.url; const enabled = (c as any).generic.enabled; const secret = (c as any).generic.secret;
       next.generic = { endpoints: url ? [{ id: makeId('generic'), url, enabled: !!enabled, delivery: 'immediate', secret, events: ['created'] }] : [] };
     }
-    return next;
+    return next as WebhookCfg;
   };
   const cfgArrays = ensureArrays(cfg);
 
@@ -211,6 +216,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
     const items = toArray((cfgArrays as any)[key]?.endpoints) as Array<any>;
     const updateEndpoint = (idx: number, patch: any) => setCfg((c) => {
       const next = ensureArrays({ ...(c as any) });
+      (next as any)[key] = (next as any)[key] || { endpoints: [] };
       const arr = toArray((next as any)[key].endpoints);
       arr[idx] = { ...arr[idx], ...patch };
       (next as any)[key].endpoints = arr;
@@ -218,6 +224,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
     });
     const addEndpoint = () => setCfg((c) => {
       const next = ensureArrays({ ...(c as any) });
+      (next as any)[key] = (next as any)[key] || { endpoints: [] };
       const arr = toArray((next as any)[key].endpoints);
       arr.push({ id: makeId('new'), url: '', enabled: true, delivery: 'immediate' });
       (next as any)[key].endpoints = arr;
@@ -225,6 +232,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
     });
     const removeEndpoint = (idx: number) => setCfg((c) => {
       const next = ensureArrays({ ...(c as any) });
+      (next as any)[key] = (next as any)[key] || { endpoints: [] };
       const arr = toArray((next as any)[key].endpoints);
       arr.splice(idx, 1);
       (next as any)[key].endpoints = arr;
