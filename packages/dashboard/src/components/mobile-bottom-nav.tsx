@@ -75,15 +75,7 @@ export function MobileBottomNav({ projectsCount = 0 }: MobileBottomNavProps) {
                       )} 
                     />
                     
-                    {/* Badge for projects count */}
-                    {item.badge && (
-                      <Badge 
-                        variant="secondary" 
-                        className="absolute -top-2 -right-2 h-5 w-5 p-0 text-xs bg-primary text-primary-foreground rounded-full flex items-center justify-center"
-                      >
-                        {item.badge}
-                      </Badge>
-                    )}
+                    {/* Mobile: Hide projects count badge for cleaner UI */}
                     
                     {/* Active indicator */}
                     {isActive && (
