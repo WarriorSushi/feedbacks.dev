@@ -268,12 +268,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                     <ExternalLink className="h-4 w-4" />
                     View All Feedback
                   </Button>
-                  <Button variant="outline" className="w-full justify-start gap-2" asChild>
-                    <Link href="/settings">
-                      <Settings className="h-4 w-4" />
-                      Project Settings
-                    </Link>
-                  </Button>
+                  <ProjectSettingsLauncher projectId={project.id} projectName={project.name} className="w-full justify-start" />
                 </CardContent>
               </Card>
             </div>
