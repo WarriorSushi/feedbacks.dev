@@ -24,7 +24,7 @@ export function CodeSnippet({ code, language = 'html', className = '' }: CodeSni
   };
 
   return (
-    <div className={`relative rounded-xl border shadow-lg bg-background text-foreground dark:bg-slate-950 dark:border-slate-800 ${className}`}>
+    <div className={`relative rounded-xl border shadow-lg bg-background text-foreground dark:bg-slate-950 dark:border-slate-800 max-w-full ${className}`}>
       {/* macOS Window Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-muted/50 dark:bg-slate-900/50 rounded-t-xl border-b border-border dark:border-slate-800 backdrop-blur-sm">
         <div className="flex items-center space-x-2">
@@ -55,7 +55,7 @@ export function CodeSnippet({ code, language = 'html', className = '' }: CodeSni
           )}
         </Button>
       </div>
-      <pre className="p-3 overflow-hidden text-xs leading-relaxed bg-card dark:bg-slate-950 rounded-b-xl text-left">
+      <pre className="p-3 overflow-x-auto overflow-y-hidden text-xs leading-relaxed bg-card dark:bg-slate-950 rounded-b-xl text-left">
         <code className="block text-left text-card-foreground dark:text-slate-300 whitespace-pre-wrap font-mono">{code}</code>
       </pre>
     </div>

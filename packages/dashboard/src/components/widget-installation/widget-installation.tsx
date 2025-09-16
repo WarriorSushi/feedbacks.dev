@@ -676,6 +676,16 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
     setViewport('desktop');
     requestAnimationFrame(scrollTabsIntoView);
   };
+  const resetToDefaults = () => {
+    const next = { ...DEFAULT_CONFIG, embedMode: config.embedMode };
+    if (config.embedMode === 'inline') next.target = normalizeTarget(config.target, '#feedback-widget');
+    if (config.embedMode === 'trigger') next.target = normalizeTarget(config.target, '#feedback-button');
+    setConfig(next);
+    setSelectedPlatform('website');
+    setViewport('desktop');
+    setStatusMessage('Reset to defaults (preserved mode)');
+    requestAnimationFrame(scrollTabsIntoView);
+  };
   const handleSave = async () => {
     scrollTabsIntoView();
     setSaving(true);
@@ -1284,7 +1294,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               <Button variant="outline" size="sm" disabled={loading}>Reset</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => resetToPublished()}>Reset to Last Published</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
               <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
