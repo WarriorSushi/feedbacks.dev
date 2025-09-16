@@ -759,7 +759,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   }), [config.inlineBorder, config.inlineShadow, config.backgroundColor]);
 
   const sections = (
-    <div ref={tabsRef} className="space-y-6">
+    <div ref={tabsRef} className="space-y-8">
       <Tabs
         value={activeTab}
         onValueChange={(value) => {
@@ -777,7 +777,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
       </TabsList>
         {null}
 
-      <TabsContent value="setup" className="space-y-6">
+      <TabsContent value="setup" className="space-y-8">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Choose an experience</CardTitle>
@@ -844,7 +844,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
       </TabsContent>
 
-      <TabsContent value="appearance" className="space-y-6">
+      <TabsContent value="appearance" className="space-y-8">
         <Card>
           <CardHeader>
             <CardTitle>Branding</CardTitle>
@@ -967,7 +967,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="fields" className="space-y-6">
+      <TabsContent value="fields" className="space-y-8">
         <Card>
           <CardHeader>
             <CardTitle>Inputs & behavior</CardTitle>
@@ -1064,7 +1064,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="protection" className="space-y-6">
+      <TabsContent value="protection" className="space-y-8">
         <Card>
           <CardHeader>
             <CardTitle>Spam & abuse controls</CardTitle>
@@ -1125,7 +1125,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
         <AlertCard />
       </TabsContent>
-      <TabsContent value="publish" className="space-y-6">
+      <TabsContent value="publish" className="space-y-8">
         <Card>
           <CardHeader>
             <CardTitle>Integration snippets</CardTitle>
@@ -1282,7 +1282,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
     </div>
   );
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 pb-24">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold tracking-tight">Widget installation</h2>
@@ -1308,7 +1308,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         <div className="flex items-center gap-2 text-xs text-muted-foreground"><History className="h-3 w-3" />{statusMessage}</div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)]">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)]">
         <div className="space-y-6">
           {loading ? (
             <Card className="h-[520px] animate-pulse" />
@@ -1332,6 +1332,25 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         nextDisabled={activeTab === 'publish' ? saving || loading || !isDirty : !hasNext}
         showNext={activeTab === 'publish' ? true : hasNext}
       />
+
+      {/* Sticky action bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border">
+        <div className="container mx-auto px-4 py-2 flex items-center justify-end gap-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={loading}>Reset</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button onClick={handleSave} disabled={loading || saving || !isDirty}>
+            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+            {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
