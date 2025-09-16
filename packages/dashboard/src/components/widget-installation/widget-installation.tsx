@@ -1,4 +1,4 @@
-
+﻿
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
@@ -389,6 +389,9 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
             triggerAnchor.style.display = cfg.embedMode === 'trigger' ? 'inline-flex' : 'none';
           }
           new FeedbacksWidget(cfg);
+          if (cfg.embedMode === 'modal') {
+            setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 80);
+          }
           postHeight();
         }
         function postHeight(){
@@ -1176,7 +1179,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               </ol>
             )}
             <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              Need a different platform? Switch the selection in Setup � snippets update instantly.
+              Need a different platform? Switch the selection in Setup — snippets update instantly.
             </div>
           </CardContent>
         </Card>
@@ -1218,7 +1221,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                   <Input value={normalizeTarget(config.target, '#feedback-widget').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-widget" />
                 </div>
                 <CodeSnippet code={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}"></div>`} language="html" />
-                <p className="text-xs text-muted-foreground">Drop the div anywhere in your layout. The widget renders directly inside it—no wrapper shell needed.</p>
+                <p className="text-xs text-muted-foreground">Drop the div anywhere in your layout. The widget renders directly inside itâ€”no wrapper shell needed.</p>
               </div>
             )}
 
@@ -1253,7 +1256,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               <div key={row.id} className={cn('flex flex-col gap-1 rounded-lg border p-3 text-sm sm:flex-row sm:items-center sm:justify-between', idx === 0 ? 'border-primary/40 bg-primary/5' : 'border-border')}>
                 <div>
                   <div className="font-medium">{row.label}</div>
-                  <p className="text-xs text-muted-foreground">Version {row.version} · {row.updatedAt ? formatDate(row.updatedAt) : 'Pending'}</p>
+                  <p className="text-xs text-muted-foreground">Version {row.version} Â· {row.updatedAt ? formatDate(row.updatedAt) : 'Pending'}</p>
                 </div>
                 <Badge variant={idx === 0 ? 'default' : 'secondary'}>{idx === 0 ? 'Current' : 'Past'}</Badge>
               </div>
@@ -1262,7 +1265,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
         <div className="pt-1 text-[11px] text-muted-foreground" hidden={activeTab !== 'publish'}>
           Project ID <code className="rounded bg-background px-1 py-0.5 font-mono text-[10px]">{projectId}</code>
-          · Last published {defaultConfigRow?.updatedAt ? formatDate(defaultConfigRow.updatedAt) : 'Not yet published'}
+          Â· Last published {defaultConfigRow?.updatedAt ? formatDate(defaultConfigRow.updatedAt) : 'Not yet published'}
         </div>
       </TabsContent>
       </Tabs>
@@ -1400,6 +1403,7 @@ function AlertCard() {
     </Card>
   );
 }
+
 
 
 
