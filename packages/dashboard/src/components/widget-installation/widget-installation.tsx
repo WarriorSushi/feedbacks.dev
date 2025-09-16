@@ -377,36 +377,67 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
       (function(){
         const initial = ${runtimeJson};
         let view = 'launcher'; // 'launcher' | 'form'
-        function ensureWidgetLoaded(cb){
+        let lastConfig = initial;
+        let fallbackLoaded = false;
+
+        function ensureWidgetLoaded(cb, attempt) {
+          const tries = typeof attempt === 'number' ? attempt : 0;
           try {
-            if (window && (window).FeedbacksWidget) return cb();
-          } catch(e){}
-          try {
-            var css = document.createElement('link');
-            css.rel = 'stylesheet';
-            css.href = 'https://app.feedbacks.dev/cdn/widget/${widgetVersion}.css';
-            document.head.appendChild(css);
-          } catch(e){}
-          try {
-            var s = document.createElement('script');
-            s.src = 'https://app.feedbacks.dev/cdn/widget/${widgetVersion}.js';
-            s.onload = function(){ setTimeout(cb, 10); };
-            s.onerror = function(){ setTimeout(cb, 10); };
-            document.head.appendChild(s);
-          } catch(e) { setTimeout(cb, 10); }
-          setTimeout(function(){ try { if ((window).FeedbacksWidget) cb(); } catch(e){} }, 1200);
+            if (typeof window !== 'undefined' && window.FeedbacksWidget) {
+              cb();
+              return;
+            }
+          } catch (error) {}
+
+          if (!fallbackLoaded) {
+            fallbackLoaded = true;
+            try {
+              var css = document.createElement('link');
+              css.rel = 'stylesheet';
+              css.href = 'https://app.feedbacks.dev/cdn/widget/${widgetVersion}.css';
+              document.head.appendChild(css);
+            } catch (error) {}
+            try {
+              var script = document.createElement('script');
+              script.src = 'https://app.feedbacks.dev/cdn/widget/${widgetVersion}.js';
+              script.onload = function () {
+                try {
+                  if (typeof window !== 'undefined' && window.FeedbacksWidget) {
+                    cb();
+                  }
+                } catch (error) {}
+              };
+              document.head.appendChild(script);
+            } catch (error) {}
+          }
+
+          if (tries > 40) {
+            cb();
+            return;
+          }
+
+          setTimeout(function () {
+            ensureWidgetLoaded(cb, tries + 1);
+          }, 120);
         }
         function mount(cfg){
           try { document.querySelectorAll('.feedbacks-overlay').forEach(el => el.remove()); } catch(e){}
           try { document.querySelectorAll('.feedbacks-inline-container').forEach(el => el.remove()); } catch(e){}
           try { const existing = document.querySelector('.feedbacks-button'); if (existing) existing.remove(); } catch(e){}
+          lastConfig = cfg;
           if (cfg.embedMode === 'inline') cfg.target = '#inline-anchor';
           if (cfg.embedMode === 'trigger') cfg.target = '#trigger-anchor';
           const inlineAnchor = document.getElementById('inline-anchor');
           if (inlineAnchor) inlineAnchor.style.display = cfg.embedMode === 'inline' ? 'block' : 'none';
           const triggerAnchor = document.getElementById('trigger-anchor');
           if (triggerAnchor) triggerAnchor.style.display = cfg.embedMode === 'trigger' ? 'inline-flex' : 'none';
-          try { new FeedbacksWidget(cfg); } catch(e) {}
+          try {
+            if (typeof window !== 'undefined' && window.FeedbacksWidget) {
+              new window.FeedbacksWidget(cfg);
+            }
+          } catch (error) {
+            console.error('Feedbacks widget preview failed to mount', error);
+          }
           if (cfg.embedMode === 'modal') {
             if (view === 'form') {
               setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 100);
@@ -418,11 +449,20 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         }
         function closeModal(){
           try {
-            const closeBtn = document.querySelector('.feedbacks-overlay [data-feedbacks-close]');
-            if (closeBtn) { (closeBtn as HTMLElement).click(); return; }
-            const overlay = document.querySelector('.feedbacks-overlay');
-            if (overlay) { (overlay as HTMLElement).dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); }
-          } catch(e){}
+            var closeBtn = document.querySelector('.feedbacks-overlay [data-feedbacks-close], .feedbacks-overlay .feedbacks-close');
+            if (closeBtn && typeof closeBtn.dispatchEvent === 'function') {
+              if (typeof closeBtn.click === 'function') {
+                closeBtn.click();
+                return;
+              }
+              closeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+              return;
+            }
+            var overlay = document.querySelector('.feedbacks-overlay');
+            if (overlay && typeof overlay.dispatchEvent === 'function') {
+              overlay.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+            }
+          } catch(error) {}
         }
         function postHeight(){
           try {
@@ -442,7 +482,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           if (ev.data.type === 'widget-preview:view') {
             view = ev.data.view === 'form' ? 'form' : 'launcher';
             try {
-              const current = initial.embedMode;
+              const current = lastConfig && lastConfig.embedMode ? lastConfig.embedMode : initial.embedMode;
               if (current === 'modal') {
                 if (view === 'form') {
                   setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 50);
@@ -480,6 +520,11 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
   useEffect(() => {
     setHeight(viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP);
   }, [viewport]);
+  useEffect(() => {
+    if (config.embedMode !== 'modal' && previewView !== 'launcher') {
+      setPreviewView('launcher');
+    }
+  }, [config.embedMode, previewView]);
   const previewHtml = useMemo(() => buildPreviewHtml(config, projectKey, widgetVersion), [config, projectKey, widgetVersion]);
 
   useEffect(() => {
