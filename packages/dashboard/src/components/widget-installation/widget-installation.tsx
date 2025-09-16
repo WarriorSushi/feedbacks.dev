@@ -466,9 +466,31 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         }
         function postHeight(){
           try {
-            const root = document.getElementById('preview-root');
-            const rect = root ? root.getBoundingClientRect() : null;
-            const height = rect ? Math.ceil(rect.height) : Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight);
+            var height = 0;
+            if (view === 'form' && lastConfig && lastConfig.embedMode === 'modal') {
+              var modal = document.querySelector('.feedbacks-modal');
+              if (modal && typeof modal.getBoundingClientRect === 'function') {
+                var modalRect = modal.getBoundingClientRect();
+                if (modalRect) {
+                  height = Math.ceil(modalRect.bottom + Math.max(24, modalRect.top));
+                }
+              }
+              if (!height) {
+                var overlay = document.querySelector('.feedbacks-overlay');
+                if (overlay && typeof overlay.getBoundingClientRect === 'function') {
+                  var overlayRect = overlay.getBoundingClientRect();
+                  if (overlayRect) {
+                    height = Math.ceil(overlayRect.height || overlayRect.bottom || 0);
+                  }
+                }
+              }
+            }
+            if (!height) {
+              var root = document.getElementById('preview-root');
+              var rect = root && typeof root.getBoundingClientRect === 'function' ? root.getBoundingClientRect() : null;
+              height = rect ? Math.ceil(rect.height) : Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight);
+            }
+            if (height < 320) height = 320;
             parent.postMessage({ type: 'widget-preview:height', height: height }, '*');
           } catch (e) {
             parent.postMessage({ type: 'widget-preview:height', height: Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight) }, '*');
@@ -477,7 +499,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         window.addEventListener('message', function(ev){
           if (!ev || !ev.data) return;
           if (ev.data.type === 'widget-preview:update') {
-            setTimeout(function(){ ensureWidgetLoaded(function(){ mount(ev.data.config || initial); }); }, 50);
+            setTimeout(function(){ ensureWidgetLoaded(function(){ mount(ev.data.config || initial); setTimeout(postHeight, 150); }); }, 50);
           }
           if (ev.data.type === 'widget-preview:view') {
             view = ev.data.view === 'form' ? 'form' : 'launcher';
@@ -485,19 +507,21 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
               const current = lastConfig && lastConfig.embedMode ? lastConfig.embedMode : initial.embedMode;
               if (current === 'modal') {
                 if (view === 'form') {
-                  setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 50);
+                  setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 60);
+                  setTimeout(postHeight, 200);
                 } else {
                   closeModal();
+                  setTimeout(postHeight, 120);
                 }
               } else {
                 closeModal();
               }
             } catch(e){}
-            setTimeout(postHeight, 80);
+            setTimeout(postHeight, 160);
           }
         });
         window.addEventListener('load', function(){ ensureWidgetLoaded(function(){ mount(initial); postHeight(); }); });
-        new MutationObserver(postHeight).observe(document.body, { childList: true, subtree: true });
+        new MutationObserver(function(){ setTimeout(postHeight, 60); }).observe(document.body, { childList: true, subtree: true });
       })();
     </script>
   </body>
