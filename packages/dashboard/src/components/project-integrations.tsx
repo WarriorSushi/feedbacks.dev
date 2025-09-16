@@ -205,7 +205,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
       </Card>
     );
   };
-  const testKind = async (kind: 'slack'|'discord'|'generic', endpointId?: string) => {
+  const testKind = async (kind: 'slack'|'discord'|'generic'|'github', endpointId?: string) => {
     setTesting((m) => ({ ...m, [kind]: true }));
     setMessage('');
     try {
@@ -639,5 +639,6 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
     </div>
   );
 }
+
 
 
