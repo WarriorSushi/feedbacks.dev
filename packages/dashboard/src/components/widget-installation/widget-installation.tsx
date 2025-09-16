@@ -649,13 +649,13 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const handleNext = useCallback(() => goToStep('next'), [goToStep]);
 
   const resetToSaved = () => {
-    const next = mergeConfig(DEFAULT_CONFIG, defaultConfigRow?.config || {});
-    if (defaultConfigRow?.config?.target) next.target = defaultConfigRow.config.target;
+    // Full factory reset to defaults, regardless of last published
+    const next = { ...DEFAULT_CONFIG };
     setConfig(next);
     // Reset auxiliary UI state as well
     setSelectedPlatform('website');
     setViewport('desktop');
-    setStatusMessage('Reverted to last published settings');
+    setStatusMessage('Reset to defaults');
     requestAnimationFrame(scrollTabsIntoView);
   };
   const handleSave = async () => {
