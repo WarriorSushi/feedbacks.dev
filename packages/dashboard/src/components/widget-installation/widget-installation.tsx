@@ -16,6 +16,7 @@ import { CodeSnippet } from '@/components/code-snippet';
 import { CopyButton } from '@/components/copy-button';
 import { cn, formatDate } from '@/lib/utils';
 import { Loader2, Monitor, Smartphone, Sparkles, History, ShieldCheck, Palette, ChevronLeft, ChevronRight, Code, MousePointer, CheckCircle, Rocket } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const DEFAULT_WIDGET_VERSION = 'latest';
 const ALLOWED_POSITIONS = ['bottom-right', 'bottom-left', 'top-right', 'top-left'] as const;
@@ -1118,8 +1119,8 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <CardDescription>Copy-paste for your selected platform.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="website" className="w-full">
-              <TabsList className="w-full overflow-x-auto gap-2">
+            <Tabs value={selectedPlatform} onValueChange={(v) => setSelectedPlatform(v as any)} className="w-full">
+              <TabsList className="w-full overflow-x-auto whitespace-nowrap gap-2">
                 {FRAMEWORK_OPTIONS.map((option) => (
                   <TabsTrigger key={option.value} value={option.value} className="px-3 py-1 text-xs sm:text-sm">
                     {option.label}
@@ -1127,7 +1128,8 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                 ))}
               </TabsList>
               {FRAMEWORK_OPTIONS.map((option) => (
-                <TabsContent key={option.value} value={option.value} className="pt-4">
+                <TabsContent key={option.value} value={option.value} className="pt-3">
+                  <div className="mb-2 text-xs text-muted-foreground">Platform: <span className="font-medium text-foreground">{option.label}</span></div>
                   <CodeSnippet code={snippets.get(option.value) || ''} language={SNIPPET_LANGUAGES[option.value]} />
                 </TabsContent>
               ))}
@@ -1152,7 +1154,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             {config.embedMode === 'inline' && (
               <ol className="space-y-3 text-sm">
                 <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
-                <li className="flex items-start gap-2"><MousePointer className="h-4 w-4 mt-0.5 text-primary" /> Place <code>&lt;div id="{normalizeTarget(config.target, '#feedback-widget').replace('#','')}"/&gt;</code> where the form should render.</li>
+                <li className="flex items-start gap-2">
+                  <MousePointer className="h-4 w-4 mt-0.5 text-primary" />
+                  <div className="flex-1">Place <code>&lt;div id="{normalizeTarget(config.target, '#feedback-widget').replace('#','')}"/&gt;</code> where the form should render.</div>
+                  <CopyButton className="h-7 px-2 text-[11px]" text={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#','')}"/>`} />
+                </li>
                 <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 mt-0.5 text-primary" /> Save & publish your configuration.</li>
                 <li className="flex items-start gap-2"><Rocket className="h-4 w-4 mt-0.5 text-primary" /> Verify in the widget demo and on your site.</li>
               </ol>
@@ -1160,13 +1166,17 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             {config.embedMode === 'trigger' && (
               <ol className="space-y-3 text-sm">
                 <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
-                <li className="flex items-start gap-2"><MousePointer className="h-4 w-4 mt-0.5 text-primary" /> Give your button the id <code>{normalizeTarget(config.target, '#feedback-button')}</code> or add <code>data-feedbacks-trigger</code>.</li>
+                <li className="flex items-start gap-2">
+                  <MousePointer className="h-4 w-4 mt-0.5 text-primary" />
+                  <div className="flex-1">Give your button the id <code>{normalizeTarget(config.target, '#feedback-button')}</code> or add <code>data-feedbacks-trigger</code>.</div>
+                  <CopyButton className="h-7 px-2 text-[11px]" text={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#','')}">Give feedback</button>`} />
+                </li>
                 <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 mt-0.5 text-primary" /> Save & publish your configuration.</li>
                 <li className="flex items-start gap-2"><Rocket className="h-4 w-4 mt-0.5 text-primary" /> Verify in the widget demo and on your site.</li>
               </ol>
             )}
             <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              Need a different platform? Switch the selection in Setup â€” snippets update instantly.
+              Need a different platform? Switch the selection in Setup — snippets update instantly.
             </div>
           </CardContent>
         </Card>
@@ -1266,7 +1276,15 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           <p className="text-sm text-muted-foreground">Fine-tune, preview, and publish the experience for {projectName}.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={resetToSaved} disabled={loading}>Reset</Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={loading}>Reset</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => resetToPublished()}>Reset to Last Published</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button onClick={handleSave} disabled={loading || saving || !isDirty}>
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
             {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
@@ -1382,6 +1400,7 @@ function AlertCard() {
     </Card>
   );
 }
+
 
 
 
