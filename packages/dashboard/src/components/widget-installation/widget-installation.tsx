@@ -1094,15 +1094,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         <AlertCard />
       </TabsContent>
       <TabsContent value="publish" className="space-y-6">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border bg-muted/40 px-3 py-2 text-xs">
-          <span className="font-medium text-foreground">{projectName}</span>
-          <span className="text-muted-foreground">Project ID: <code className="rounded bg-background px-1.5 py-0.5 font-mono">{projectId}</code></span>
-          <span className="text-muted-foreground flex items-center gap-2">
-            API key: <code className="rounded bg-background px-1.5 py-0.5 font-mono">{projectKey.slice(0, 8)}…{projectKey.slice(-4)}</code>
-            <CopyButton text={projectKey} className="h-6 px-2 text-[11px]" />
-          </span>
-          <span className="text-muted-foreground">Last published: {defaultConfigRow?.updatedAt ? formatDate(defaultConfigRow.updatedAt) : 'Not yet published'}</span>
-        </div>
 
         <Card>
           <CardHeader>
@@ -1224,6 +1215,10 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             ))}
           </CardContent>
         </Card>
+        <div className="pt-1 text-[11px] text-muted-foreground">
+          Project ID <code className="rounded bg-background px-1 py-0.5 font-mono text-[10px]">{projectId}</code>
+          · Last published {defaultConfigRow?.updatedAt ? formatDate(defaultConfigRow.updatedAt) : 'Not yet published'}
+        </div>
       </TabsContent>
       </Tabs>
     </div>
