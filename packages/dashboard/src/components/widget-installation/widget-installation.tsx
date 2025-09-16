@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CodeSnippet } from '@/components/code-snippet';
 import { cn, formatDate } from '@/lib/utils';
-import { Loader2, Monitor, Smartphone, Sparkles, History, ShieldCheck, Palette } from 'lucide-react';
+import { Loader2, Monitor, Smartphone, Sparkles, History, ShieldCheck, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const DEFAULT_WIDGET_VERSION = 'latest';
 const ALLOWED_POSITIONS = ['bottom-right', 'bottom-left', 'top-right', 'top-left'] as const;
@@ -24,6 +24,48 @@ const ALLOWED_HEADER_ICONS = ['none', 'chat', 'star', 'lightbulb', 'thumbs-up'] 
 const ALLOWED_HEADER_LAYOUTS = ['text-only', 'icon-left', 'icon-top'] as const;
 const CAPTCHAS = ['none', 'turnstile', 'hcaptcha'] as const;
 const SNIPPET_PLATFORMS = ['website', 'react', 'vue', 'react-native', 'flutter', 'wordpress', 'shopify'] as const;
+const SNIPPET_LANGUAGES: Record<(typeof SNIPPET_PLATFORMS)[number], string> = {
+  website: 'html',
+  react: 'tsx',
+  vue: 'html',
+  'react-native': 'tsx',
+  flutter: 'dart',
+  wordpress: 'php',
+  shopify: 'liquid',
+};
+
+const PLATFORM_INSTRUCTIONS: Record<(typeof SNIPPET_PLATFORMS)[number], string[]> = {
+  website: [
+    'Paste the snippet just before the closing </body> tag on your site.',
+    'Make sure any inline container id or trigger button id exists in the HTML.',
+  ],
+  react: [
+    'Add this helper component to your app and render it once in your layout.',
+    'The widget script loads after hydration, so render inline targets or trigger buttons in the component tree.',
+  ],
+  vue: [
+    'Include the script in index.html and run the init code inside onMounted.',
+    'Ensure the container or trigger id is present when the component mounts.',
+  ],
+  'react-native': [
+    'Drop this snippet into a WebView for your mobile app.',
+    'Swap the inline HTML if you need to customise colours or ids.',
+  ],
+  flutter: [
+    'Load the HTML snippet inside webview_flutter or a similar widget.',
+    'Adjust the inline HTML if you need to customise ids or styling.',
+  ],
+  wordpress: [
+    'Register the scripts in your theme or plugin, for example in functions.php.',
+    'If you are attaching to an existing button, add the chosen id in your theme markup.',
+  ],
+  shopify: [
+    'Add the script to theme.liquid so it loads on every page.',
+    'Include the init snippet in the template where you want the widget to appear.',
+  ],
+};
+
+
 
 export type EmbedMode = 'modal' | 'inline' | 'trigger';
 
@@ -121,16 +163,16 @@ const DEFAULT_CONFIG: WidgetConfig = {
 
 const MODE_PRESETS: Array<{ mode: EmbedMode; title: string; description: string; helper?: string }> = [
   {
-    mode: 'modal',
-    title: 'Floating Modal',
-    description: 'Premium launcher button that opens a layered experience.',
-    helper: 'Ideal for marketing sites and SaaS dashboards.',
-  },
-  {
     mode: 'inline',
     title: 'Inline Section',
     description: 'Embed the form directly inside your page layout.',
     helper: 'Perfect for docs, help centers, and support hubs.',
+  },
+  {
+    mode: 'modal',
+    title: 'Floating Modal',
+    description: 'Premium launcher button that opens a layered experience.',
+    helper: 'Ideal for marketing sites and SaaS dashboards.',
   },
   {
     mode: 'trigger',
@@ -318,6 +360,18 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           try { const existing = document.querySelector('.feedbacks-button'); if (existing) existing.remove(); } catch(e){}
           if (cfg.embedMode === 'inline') cfg.target = '#inline-anchor';
           if (cfg.embedMode === 'trigger') cfg.target = '#trigger-anchor';
+          const inlineAnchor = document.getElementById('inline-anchor');
+          if (inlineAnchor) {
+            inlineAnchor.style.display = cfg.embedMode === 'inline' ? 'block' : 'none';
+            inlineAnchor.style.border = cfg.embedMode === 'inline' ? (cfg.inlineBorder || '1px solid rgba(15,23,42,0.08)') : '0';
+            inlineAnchor.style.boxShadow = cfg.embedMode === 'inline' ? (cfg.inlineShadow || 'none') : 'none';
+            inlineAnchor.style.padding = cfg.embedMode === 'inline' ? '24px' : '0';
+            inlineAnchor.style.background = cfg.embedMode === 'inline' ? (cfg.backgroundColor || '#ffffff') : 'transparent';
+          }
+          const triggerAnchor = document.getElementById('trigger-anchor');
+          if (triggerAnchor) {
+            triggerAnchor.style.display = cfg.embedMode === 'trigger' ? 'inline-flex' : 'none';
+          }
           new FeedbacksWidget(cfg);
           postHeight();
         }
@@ -387,6 +441,7 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
             onCheckedChange={(checked) => {
               const next = checked ? 'mobile' : 'desktop';
               setHeight(next === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP);
+              onViewportChange(next as PreviewViewport);
             }}
             className="mx-1"
           />
@@ -436,9 +491,30 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const [presets, setPresets] = useState<WidgetPreset[]>([]);
   const [activeTab, setActiveTab] = useState<string>('setup');
   const [viewport, setViewport] = useState<PreviewViewport>('desktop');
+  const [selectedPlatform, setSelectedPlatform] = useState<typeof SNIPPET_PLATFORMS[number]>('website');
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
+
+  const steps = [
+    { id: 'setup', label: 'Setup' },
+    { id: 'appearance', label: 'Appearance' },
+    { id: 'fields', label: 'Fields' },
+    { id: 'protection', label: 'Protection' },
+    { id: 'publish', label: 'Publish' },
+  ];
+  const stepOrder = steps.map((step) => step.id);
+  const currentStepIndex = Math.max(0, stepOrder.indexOf(activeTab));
+  const goToStep = useCallback((direction: 'prev' | 'next') => {
+    const nextIndex = direction === 'next'
+      ? Math.min(stepOrder.length - 1, currentStepIndex + 1)
+      : Math.max(0, currentStepIndex - 1);
+    setActiveTab(stepOrder[nextIndex]);
+  }, [currentStepIndex, stepOrder]);
+  const hasPrev = currentStepIndex > 0;
+  const hasNext = currentStepIndex < stepOrder.length - 1;
+  const handlePrev = useCallback(() => goToStep('prev'), [goToStep]);
+  const handleNext = useCallback(() => goToStep('next'), [goToStep]);
 
   const currentHash = useMemo(() => hash(config || {}), [config]);
   const savedHash = useMemo(() => hash((defaultConfigRow?.config as Record<string, any>) || {}), [defaultConfigRow]);
@@ -591,6 +667,9 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   };
 
   const snippets = useMemo(() => buildSnippets(config, projectKey, widgetVersion), [config, projectKey, widgetVersion]);
+  const snippetForPlatform = snippets.get(selectedPlatform) || '';
+  const snippetLanguage = SNIPPET_LANGUAGES[selectedPlatform];
+  const platformInstructions = PLATFORM_INSTRUCTIONS[selectedPlatform];
 
   const activePresetSlug = useMemo(() => {
     if (!presets.length || !defaultConfigRow) return null;
@@ -629,6 +708,30 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                 {item.helper && <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{item.helper}</span>}
               </button>
             ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Select your platform</CardTitle>
+            <CardDescription>This controls the snippet we generate for you in the Publish step.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {SNIPPET_PLATFORMS.map((platform) => (
+                <Button
+                  key={platform}
+                  type="button"
+                  size="sm"
+                  variant={selectedPlatform === platform ? 'default' : 'outline'}
+                  className="capitalize"
+                  onClick={() => setSelectedPlatform(platform)}
+                >
+                  {platform.replace('-', ' ')}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">We&#39;ll tailor the installation snippet and guidance based on this choice.</p>
           </CardContent>
         </Card>
 
@@ -681,15 +784,23 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           <Card>
             <CardHeader>
               <CardTitle>Attach to existing button</CardTitle>
-              <CardDescription>Use any button on your site and we will take over the click event.</CardDescription>
+              <CardDescription>Point the widget at one of your buttons and we will open the modal when it is clicked.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Button ID</Label>
                 <Input value={normalizeTarget(config.target, '#feedback-button').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-button" />
-                <p className="text-xs text-muted-foreground">Assign this id to your existing button element.</p>
+                <p className="text-xs text-muted-foreground">Give an existing element this id and the modal will hook into it.</p>
               </div>
               <CodeSnippet code={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give feedback</button>`} language="html" />
+              <div className="space-y-2 text-xs text-muted-foreground">
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Add the id above to the button or link you want to reuse.</li>
+                  <li>Keep our install script in the Publish step before <code>&lt;/body&gt;</code>; it automatically finds that id.</li>
+                  <li>If the button renders after hydration, run <code>new FeedbacksWidget</code> once the element exists.</li>
+                </ol>
+                <p>Prefer the standard floating button? Switch back to &quot;Floating Modal&quot;.</p>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -972,12 +1083,26 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
       <TabsContent value="publish" className="space-y-6">
         <Card>
           <CardHeader>
+            <CardTitle>Installation snippet</CardTitle>
+            <CardDescription>Copy the code for your chosen platform and deploy.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
+              {platformInstructions.map((instruction) => (
+                <li key={instruction}>{instruction}</li>
+              ))}
+            </ul>
+            <CodeSnippet code={snippetForPlatform} language={snippetLanguage} />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
             <CardTitle>Launch checklist</CardTitle>
             <CardDescription>Follow these steps to deploy the widget with confidence.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <ol className="list-decimal space-y-3 pl-4 text-sm">
-              <li><strong>Choose your platform</strong> and paste the snippet into your site or app.</li>
+              <li><strong>Embed the snippet</strong> in your {selectedPlatform.replace('-', ' ')} project.</li>
               <li><strong>Save & publish</strong> your configuration to make it live for all visitors.</li>
               <li><strong>Verify</strong> in production using the <Link href={`/widget-demo?apiKey=${encodeURIComponent(projectKey)}`} className="underline" target="_blank" rel="noreferrer">widget demo</Link> and the actual embed.</li>
             </ol>
@@ -1029,6 +1154,8 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
       {statusMessage && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground"><History className="h-3 w-3" />{statusMessage}</div>
       )}
+
+      <StepNavigation steps={steps} currentIndex={currentStepIndex} onPrev={handlePrev} onNext={handleNext} hasPrev={hasPrev} hasNext={hasNext} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)]">
         <div className="space-y-6">
@@ -1083,6 +1210,29 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      <StepNavigation steps={steps} currentIndex={currentStepIndex} onPrev={handlePrev} onNext={handleNext} hasPrev={hasPrev} hasNext={hasNext} />
+    </div>
+  );
+}
+
+
+function StepNavigation({ steps, currentIndex, onPrev, onNext, hasPrev, hasNext }: { steps: Array<{ id: string; label: string }>; currentIndex: number; onPrev: () => void; onNext: () => void; hasPrev: boolean; hasNext: boolean; }) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl border bg-card/60 p-3">
+      <div className="text-xs text-muted-foreground">
+        Step {currentIndex + 1} of {steps.length}
+      </div>
+      <div className="flex gap-2">
+        <Button type="button" variant="outline" size="sm" onClick={onPrev} disabled={!hasPrev} className="flex items-center gap-1">
+          <ChevronLeft className="h-4 w-4" />
+          Previous
+        </Button>
+        <Button type="button" size="sm" onClick={onNext} disabled={!hasNext} className="flex items-center gap-1">
+          Next
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );
