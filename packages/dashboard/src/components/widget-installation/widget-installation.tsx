@@ -329,9 +329,10 @@ function buildSnippets(config: WidgetConfig, projectKey: string, widgetVersion: 
   ]);
 }
 function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersion: string) {
-  // Force preview to always render floating modal launcher
-  const forced: WidgetConfig = { ...config, embedMode: 'modal' };
-  const runtime = buildRuntimeConfig(forced, projectKey);
+  // Respect selected experience; we enhance modal with a view toggle via messages
+  const runtime = buildRuntimeConfig(config, projectKey);
+  if (runtime.embedMode === 'inline') runtime.target = '#inline-anchor';
+  if (runtime.embedMode === 'trigger') runtime.target = '#trigger-anchor';
   const jsHref = `/cdn/widget/${widgetVersion}.js`;
   const cssHref = `/cdn/widget/${widgetVersion}.css`;
   const runtimeJson = JSON.stringify(runtime).replace(/</g, '\\u003c');
@@ -346,9 +347,22 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
       :root { font-family: 'Inter', system-ui, sans-serif; }
       body { margin: 0; background: transparent; color: #0f172a; overflow: hidden; }
       #preview-root { position: relative; width: min(760px, 100%); margin: 0 auto; padding: 0; }
-      /* Only modal launcher is shown in preview */
-      #inline-anchor { display: none; }
-      #trigger-anchor { display: none; }
+      /* Show anchors for inline/trigger modes */
+      #inline-anchor {
+        display: ${runtime.embedMode === 'inline' ? 'block' : 'none'};
+        width: 100%;
+      }
+      #trigger-anchor {
+        display: ${runtime.embedMode === 'trigger' ? 'inline-flex' : 'none'};
+        margin-top: 8px;
+        padding: 10px 18px;
+        border-radius: 9999px;
+        border: 1px solid rgba(15,23,42,0.1);
+        background: rgba(255,255,255,0.9);
+        color: #0f172a;
+        font-weight: 600;
+        box-shadow: 0 10px 30px rgba(15,23,42,0.08);
+      }
       /* Preview-only: avoid inner scroll in modal, let parent iframe grow */
       .feedbacks-modal { max-height: none !important; }
     </style>
@@ -367,10 +381,19 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           try { document.querySelectorAll('.feedbacks-overlay').forEach(el => el.remove()); } catch(e){}
           try { document.querySelectorAll('.feedbacks-inline-container').forEach(el => el.remove()); } catch(e){}
           try { const existing = document.querySelector('.feedbacks-button'); if (existing) existing.remove(); } catch(e){}
-          cfg.embedMode = 'modal';
+          if (cfg.embedMode === 'inline') cfg.target = '#inline-anchor';
+          if (cfg.embedMode === 'trigger') cfg.target = '#trigger-anchor';
+          const inlineAnchor = document.getElementById('inline-anchor');
+          if (inlineAnchor) inlineAnchor.style.display = cfg.embedMode === 'inline' ? 'block' : 'none';
+          const triggerAnchor = document.getElementById('trigger-anchor');
+          if (triggerAnchor) triggerAnchor.style.display = cfg.embedMode === 'trigger' ? 'inline-flex' : 'none';
           try { new FeedbacksWidget(cfg); } catch(e) {}
-          if (view === 'form') {
-            setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 100);
+          if (cfg.embedMode === 'modal') {
+            if (view === 'form') {
+              setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 100);
+            } else {
+              closeModal();
+            }
           }
           postHeight();
         }
@@ -399,11 +422,18 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           }
           if (ev.data.type === 'widget-preview:view') {
             view = ev.data.view === 'form' ? 'form' : 'launcher';
-            if (view === 'form') {
-              setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 50);
-            } else {
-              closeModal();
-            }
+            try {
+              const current = initial.embedMode;
+              if (current === 'modal') {
+                if (view === 'form') {
+                  setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 50);
+                } else {
+                  closeModal();
+                }
+              } else {
+                closeModal();
+              }
+            } catch(e){}
             setTimeout(postHeight, 80);
           }
         });
@@ -450,9 +480,12 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
     const win = iframeRef.current?.contentWindow;
     if (!win) return;
     try {
-      // Always force modal in preview updates
-      win.postMessage({ type: 'widget-preview:update', config: buildRuntimeConfig({ ...config, embedMode: 'modal' }, projectKey) }, '*');
-      win.postMessage({ type: 'widget-preview:view', view: previewView }, '*');
+      win.postMessage({ type: 'widget-preview:update', config: buildRuntimeConfig(config, projectKey) }, '*');
+      if (config.embedMode === 'modal') {
+        win.postMessage({ type: 'widget-preview:view', view: previewView }, '*');
+      } else {
+        win.postMessage({ type: 'widget-preview:view', view: 'launcher' }, '*');
+      }
     } catch {}
   }, [config, projectKey, previewView]);
 
@@ -479,24 +512,26 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
           <Smartphone className={cn('h-3 w-3', viewport === 'mobile' ? 'text-foreground' : 'text-muted-foreground')} />
         </div>
       </div>
-      <div className="flex items-center gap-2 text-xs">
-        <div className="inline-flex rounded-full border bg-muted p-1">
-          <button
-            type="button"
-            className={cn('px-3 py-1 rounded-full', previewView === 'launcher' ? 'bg-background text-foreground' : 'text-muted-foreground')}
-            onClick={() => setPreviewView('launcher')}
-          >
-            Launcher
-          </button>
-          <button
-            type="button"
-            className={cn('px-3 py-1 rounded-full', previewView === 'form' ? 'bg-background text-foreground' : 'text-muted-foreground')}
-            onClick={() => setPreviewView('form')}
-          >
-            Form (opens on click)
-          </button>
+      {config.embedMode === 'modal' && (
+        <div className="flex items-center gap-2 text-xs">
+          <div className="inline-flex rounded-full border bg-muted p-1">
+            <button
+              type="button"
+              className={cn('px-3 py-1 rounded-full', previewView === 'launcher' ? 'bg-background text-foreground' : 'text-muted-foreground')}
+              onClick={() => setPreviewView('launcher')}
+            >
+              Launcher
+            </button>
+            <button
+              type="button"
+              className={cn('px-3 py-1 rounded-full', previewView === 'form' ? 'bg-background text-foreground' : 'text-muted-foreground')}
+              onClick={() => setPreviewView('form')}
+            >
+              Form (opens on click)
+            </button>
+          </div>
         </div>
-      </div>
+      )}
       <div className="rounded-2xl border bg-white shadow-lg overflow-hidden">
         <iframe
           ref={iframeRef}
