@@ -1215,7 +1215,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             ))}
           </CardContent>
         </Card>
-        <div className="pt-1 text-[11px] text-muted-foreground">
+        <div className="pt-1 text-[11px] text-muted-foreground" hidden={activeTab !== 'publish'}>
           Project ID <code className="rounded bg-background px-1 py-0.5 font-mono text-[10px]">{projectId}</code>
           · Last published {defaultConfigRow?.updatedAt ? formatDate(defaultConfigRow.updatedAt) : 'Not yet published'}
         </div>
