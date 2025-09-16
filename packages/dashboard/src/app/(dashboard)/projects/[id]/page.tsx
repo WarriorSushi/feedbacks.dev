@@ -290,30 +290,6 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
               projectName={project.name}
               widgetVersion={WIDGET_VERSION}
             />
-
-            {/* Project Info and API Key */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Project Info</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <Label>Project ID</Label>
-                  <p className="text-sm font-mono text-muted-foreground">{project.id}</p>
-                </div>
-                <div>
-                  <Label>Created</Label>
-                  <p className="text-sm text-muted-foreground">{new Date(project.created_at).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <Label>API Key</Label>
-                  <div className="flex gap-2 mt-1">
-                    <Input value={project.api_key} readOnly className="font-mono text-xs" />
-                    <CopyButton text={project.api_key} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">

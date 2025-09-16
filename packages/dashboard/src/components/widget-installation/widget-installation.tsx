@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
 import { CopyButton } from '@/components/copy-button';
 import { cn, formatDate } from '@/lib/utils';
-import { Loader2, Monitor, Smartphone, Sparkles, History, ShieldCheck, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, Monitor, Smartphone, Sparkles, History, ShieldCheck, Palette, ChevronLeft, ChevronRight, Code, MousePointer, CheckCircle, Rocket } from 'lucide-react';
 
 const DEFAULT_WIDGET_VERSION = 'latest';
 const ALLOWED_POSITIONS = ['bottom-right', 'bottom-left', 'top-right', 'top-left'] as const;
@@ -1094,7 +1094,64 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         <AlertCard />
       </TabsContent>
       <TabsContent value="publish" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Integration snippets</CardTitle>
+            <CardDescription>Copy-paste for your selected platform.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="website" className="w-full">
+              <TabsList className="w-full overflow-x-auto gap-2">
+                {FRAMEWORK_OPTIONS.map((option) => (
+                  <TabsTrigger key={option.value} value={option.value} className="px-3 py-1 text-xs sm:text-sm">
+                    {option.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {FRAMEWORK_OPTIONS.map((option) => (
+                <TabsContent key={option.value} value={option.value} className="pt-4">
+                  <CodeSnippet code={snippets.get(option.value) || ''} language={SNIPPET_LANGUAGES[option.value]} />
+                </TabsContent>
+              ))}
+            </Tabs>
+          </CardContent>
+        </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle>Install guide</CardTitle>
+            <CardDescription>Simple, mode-specific steps to ship confidently.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {config.embedMode === 'modal' && (
+              <ol className="space-y-3 text-sm">
+                <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
+                <li className="flex items-start gap-2"><MousePointer className="h-4 w-4 mt-0.5 text-primary" /> A floating button appears at bottom-right. Tweak label/position below if needed.</li>
+                <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 mt-0.5 text-primary" /> Save & publish your configuration.</li>
+                <li className="flex items-start gap-2"><Rocket className="h-4 w-4 mt-0.5 text-primary" /> Verify in the widget demo and on your site.</li>
+              </ol>
+            )}
+            {config.embedMode === 'inline' && (
+              <ol className="space-y-3 text-sm">
+                <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
+                <li className="flex items-start gap-2"><MousePointer className="h-4 w-4 mt-0.5 text-primary" /> Place <code>&lt;div id="{normalizeTarget(config.target, '#feedback-widget').replace('#','')}"/&gt;</code> where the form should render.</li>
+                <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 mt-0.5 text-primary" /> Save & publish your configuration.</li>
+                <li className="flex items-start gap-2"><Rocket className="h-4 w-4 mt-0.5 text-primary" /> Verify in the widget demo and on your site.</li>
+              </ol>
+            )}
+            {config.embedMode === 'trigger' && (
+              <ol className="space-y-3 text-sm">
+                <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
+                <li className="flex items-start gap-2"><MousePointer className="h-4 w-4 mt-0.5 text-primary" /> Give your button the id <code>{normalizeTarget(config.target, '#feedback-button')}</code> or add <code>data-feedbacks-trigger</code>.</li>
+                <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 mt-0.5 text-primary" /> Save & publish your configuration.</li>
+                <li className="flex items-start gap-2"><Rocket className="h-4 w-4 mt-0.5 text-primary" /> Verify in the widget demo and on your site.</li>
+              </ol>
+            )}
+            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+              Need a different platform? Switch the selection in Setup — snippets update instantly.
+            </div>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle>Experience details</CardTitle>
@@ -1154,46 +1211,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Integration snippets</CardTitle>
-            <CardDescription>Rapid embeds for engineering teams across stacks.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="website" className="w-full">
-              <TabsList className="w-full overflow-x-auto gap-2">
-                {FRAMEWORK_OPTIONS.map((option) => (
-                  <TabsTrigger key={option.value} value={option.value} className="px-3 py-1 text-xs sm:text-sm">
-                    {option.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              {FRAMEWORK_OPTIONS.map((option) => (
-                <TabsContent key={option.value} value={option.value} className="pt-4">
-                  <CodeSnippet code={snippets.get(option.value) || ''} language={SNIPPET_LANGUAGES[option.value]} />
-                </TabsContent>
-              ))}
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Launch checklist</CardTitle>
-            <CardDescription>Validate your install before shipping to production.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ol className="list-decimal space-y-3 pl-4 text-sm">
-              <li><strong>Embed the snippet</strong> in your {selectedPlatform.replace('-', ' ')} project.</li>
-              <li><strong>Save & publish</strong> your configuration to make it live for all visitors.</li>
-              <li><strong>Verify</strong> using the <Link href={`/widget-demo?apiKey=${encodeURIComponent(projectKey)}`} className="underline" target="_blank" rel="noreferrer">widget demo</Link> and your production environment.</li>
-            </ol>
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              Need a different platform? Switch the selection in Setup and the instructions above will adjust instantly.
-            </div>
           </CardContent>
         </Card>
 
