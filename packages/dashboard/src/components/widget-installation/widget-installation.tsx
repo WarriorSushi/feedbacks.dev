@@ -12,8 +12,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { CodeSnippet } from '@/components/code-snippet';
+import { CopyButton } from '@/components/copy-button';
 import { cn, formatDate } from '@/lib/utils';
 import { Loader2, Monitor, Smartphone, Sparkles, History, ShieldCheck, Palette, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -33,6 +33,16 @@ const SNIPPET_LANGUAGES: Record<(typeof SNIPPET_PLATFORMS)[number], string> = {
   wordpress: 'php',
   shopify: 'liquid',
 };
+
+const FRAMEWORK_OPTIONS: Array<{ value: (typeof SNIPPET_PLATFORMS)[number]; label: string }> = [
+  { value: 'website', label: 'Website' },
+  { value: 'react', label: 'React' },
+  { value: 'vue', label: 'Vue' },
+  { value: 'react-native', label: 'React Native' },
+  { value: 'flutter', label: 'Flutter' },
+  { value: 'wordpress', label: 'WordPress' },
+  { value: 'shopify', label: 'Shopify' },
+];
 
 const PLATFORM_INSTRUCTIONS: Record<(typeof SNIPPET_PLATFORMS)[number], string[]> = {
   website: [
@@ -226,7 +236,7 @@ function buildRuntimeConfig(config: WidgetConfig, projectKey: string) {
     projectKey,
     embedMode: config.embedMode,
   };
-  if (config.embedMode === 'modal' && config.position) result.position = config.position;
+  if (config.embedMode === 'modal') result.position = config.position || 'bottom-right';
   if (config.embedMode === 'inline' && config.target) result.target = config.target;
   if (config.embedMode === 'trigger' && config.target) result.target = config.target;
   if (config.buttonText && config.embedMode === 'modal') result.buttonText = config.buttonText;
@@ -334,86 +344,45 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
     <style>
       :root {
         font-family: 'Inter', system-ui, sans-serif;
-        background: transparent;
       }
       body {
         margin: 0;
         min-height: 100vh;
-        background: #f8fafc;
+        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
         color: #0f172a;
         display: flex;
         justify-content: center;
         align-items: flex-start;
-        padding: 40px 32px;
-      }
-      .preview-stage {
-        position: relative;
-        width: clamp(320px, 100%, 760px);
-        min-height: 720px;
-        background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(241,245,249,0.9));
-        border-radius: 24px;
-        border: 1px solid rgba(15,23,42,0.08);
-        box-shadow: 0 24px 60px rgba(15,23,42,0.16);
-        padding: 24px;
+        padding: 32px 16px 48px;
         overflow: hidden;
       }
-      .preview-header {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: rgba(15,23,42,0.5);
-        margin-bottom: 16px;
-      }
-      .preview-canvas {
+      #preview-root {
         position: relative;
-        z-index: 1;
-        height: calc(100% - 16px);
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
+        width: min(760px, 100%);
+        margin: 0 auto;
+        min-height: clamp(520px, 72vh, 860px);
       }
-      .preview-stage .feedbacks-button,
-      .preview-stage .feedbacks-overlay {
-        position: absolute !important;
+      #inline-anchor {
+        display: ${runtime.embedMode === 'inline' ? 'block' : 'none'};
+        width: 100%;
       }
-      .preview-stage .feedbacks-overlay {
-        inset: 0;
-      }
-      .preview-stage .feedbacks-button {
-        position: absolute !important;
-        bottom: 16px;
-        right: 16px;
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 0 20px !important;
-        min-height: 52px;
-        min-width: 56px;
-        width: auto !important;
-        max-width: min(320px, calc(100% - 32px));
-        border-radius: 9999px !important;
-        font-size: clamp(14px, 3.4vw, 16px);
-        line-height: 1;
+      #trigger-anchor {
+        display: ${runtime.embedMode === 'trigger' ? 'inline-flex' : 'none'};
+        margin-top: 24px;
+        padding: 10px 18px;
+        border-radius: 9999px;
+        border: 1px solid rgba(15,23,42,0.1);
+        background: rgba(255,255,255,0.9);
+        color: #0f172a;
         font-weight: 600;
-        letter-spacing: 0.01em;
-        white-space: nowrap;
-        overflow: hidden;
-      }
-      .preview-stage .feedbacks-button svg {
-        width: 20px;
-        height: 20px;
-        flex-shrink: 0;
+        box-shadow: 0 10px 30px rgba(15,23,42,0.08);
       }
     </style>
   </head>
   <body>
-    <div class="preview-stage">
-      <div class="preview-header">Widget Preview</div>
-      <div class="preview-canvas">
-        <div id="inline-anchor" style="display:${runtime.embedMode === 'inline' ? 'block' : 'none'}"></div>
-        <button id="trigger-anchor" style="display:${runtime.embedMode === 'trigger' ? 'inline-flex' : 'none'}" class="px-4 py-2 rounded-md border border-slate-200 bg-slate-50 text-slate-700">Open feedback</button>
-      </div>
+    <div id="preview-root">
+      <div id="inline-anchor"></div>
+      <button id="trigger-anchor">Open feedback</button>
     </div>
     <script src="${jsHref}"></script>
     <script>
@@ -428,25 +397,12 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           const inlineAnchor = document.getElementById('inline-anchor');
           if (inlineAnchor) {
             inlineAnchor.style.display = cfg.embedMode === 'inline' ? 'block' : 'none';
-            inlineAnchor.style.border = cfg.embedMode === 'inline' ? (cfg.inlineBorder || '1px solid rgba(15,23,42,0.08)') : '0';
-            inlineAnchor.style.boxShadow = cfg.embedMode === 'inline' ? (cfg.inlineShadow || 'none') : 'none';
-            inlineAnchor.style.padding = cfg.embedMode === 'inline' ? '24px' : '0';
-            inlineAnchor.style.background = cfg.embedMode === 'inline' ? (cfg.backgroundColor || '#ffffff') : 'transparent';
           }
           const triggerAnchor = document.getElementById('trigger-anchor');
           if (triggerAnchor) {
             triggerAnchor.style.display = cfg.embedMode === 'trigger' ? 'inline-flex' : 'none';
           }
           new FeedbacksWidget(cfg);
-          try {
-            const stage = document.querySelector('.preview-stage');
-            if (stage) {
-              const overlay = document.querySelector('.feedbacks-overlay');
-              if (overlay) stage.appendChild(overlay);
-              const launcher = document.querySelector('.feedbacks-button');
-              if (launcher) stage.appendChild(launcher);
-            }
-          } catch(e){}
           postHeight();
         }
         function postHeight(){
@@ -787,7 +743,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Choose an experience</CardTitle>
             <CardDescription>Select how the widget should appear on your site.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-3">
+          <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {MODE_PRESETS.map((item) => (
               <button
                 type="button"
@@ -830,81 +786,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
 
-        {config.embedMode === 'modal' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Launcher placement</CardTitle>
-              <CardDescription>Choose where the floating button should live on your page.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-3 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>Position</Label>
-                <Select value={config.position} onValueChange={(value) => updateConfig({ position: value as any })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select position" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ALLOWED_POSITIONS.map((pos) => (
-                      <SelectItem key={pos} value={pos}>{pos.replace('-', ' ')}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Button label</Label>
-                <Input value={config.buttonText || ''} onChange={(event) => updateConfig({ buttonText: event.target.value })} placeholder="Feedback" />
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {config.embedMode === 'inline' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Inline anchor</CardTitle>
-              <CardDescription>Drop this snippet where the widget should render.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="space-y-2">
-                <Label>Container ID</Label>
-                <Input value={normalizeTarget(config.target, '#feedback-widget').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-widget" />
-                <p className="text-xs text-muted-foreground">Place a div with this id on your page. We will hydrate it automatically.</p>
-              </div>
-              <CodeSnippet code={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}"></div>`} language="html" />
-            </CardContent>
-          </Card>
-        )}
-
-        {config.embedMode === 'trigger' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Attach to existing button</CardTitle>
-              <CardDescription>Point the widget at one of your buttons and we will open the modal when it is clicked.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Button ID</Label>
-                <Input value={normalizeTarget(config.target, '#feedback-button').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-button" />
-                <p className="text-xs text-muted-foreground">Give an existing element this id and the modal will hook into it.</p>
-              </div>
-              <CodeSnippet code={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give feedback</button>`} language="html" />
-              <CodeSnippet code={`<button data-feedbacks-trigger>Open feedback</button>`} language="html" />
-              <div className="space-y-3 text-xs text-muted-foreground">
-                <ol className="list-decimal list-inside space-y-1">
-                  <li>Add the id above to the button or link you want to reuse (or add <code>data-feedbacks-trigger</code> as an attribute).</li>
-                  <li>Keep the install script from the Publish step near <code>&lt;/body&gt;</code>; it will attach to matching elements automatically.</li>
-                  <li>If your button renders after hydration, call <code>new FeedbacksWidget</code> once the element is in the DOM.</li>
-                </ol>
-                <div className="rounded-lg border bg-muted/30 p-3">
-                  <p className="font-medium text-foreground">Where does the modal appear?</p>
-                  <p>The widget keeps the modal content in our overlay. Clicking your button triggers the same modal you preview in the Floating Modal experience.</p>
-                  <p className="mt-2">Prefer the standard floating button instead? Switch back to “Floating Modal”.</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Palette className="h-4 w-4 text-primary" />Presets</CardTitle>
@@ -921,99 +802,8 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             )}
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Integration snippets</CardTitle>
-            <CardDescription>Quick references for popular frameworks while you configure.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="website" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="website">Website</TabsTrigger>
-                <TabsTrigger value="react">React</TabsTrigger>
-                <TabsTrigger value="vue">Vue</TabsTrigger>
-              </TabsList>
-              <TabsContent value="website">
-                <CodeSnippet code={snippets.get('website') || ''} language="html" />
-              </TabsContent>
-              <TabsContent value="react">
-                <CodeSnippet code={snippets.get('react') || ''} language="tsx" />
-              </TabsContent>
-              <TabsContent value="vue">
-                <CodeSnippet code={snippets.get('vue') || ''} language="html" />
-              </TabsContent>
-              <TabsList className="mt-4 grid w-full grid-cols-4">
-                <TabsTrigger value="react-native">React Native</TabsTrigger>
-                <TabsTrigger value="flutter">Flutter</TabsTrigger>
-                <TabsTrigger value="wordpress">WordPress</TabsTrigger>
-                <TabsTrigger value="shopify">Shopify</TabsTrigger>
-              </TabsList>
-              <TabsContent value="react-native">
-                <CodeSnippet code={snippets.get('react-native') || ''} language="tsx" />
-              </TabsContent>
-              <TabsContent value="flutter">
-                <CodeSnippet code={snippets.get('flutter') || ''} language="dart" />
-              </TabsContent>
-              <TabsContent value="wordpress">
-                <CodeSnippet code={snippets.get('wordpress') || ''} language="php" />
-              </TabsContent>
-              <TabsContent value="shopify">
-                <CodeSnippet code={snippets.get('shopify') || ''} language="liquid" />
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Launch checklist</CardTitle>
-            <CardDescription>Validate your install before shipping to production.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ol className="list-decimal space-y-3 pl-4 text-sm">
-              <li><strong>Embed the snippet</strong> in your {selectedPlatform.replace('-', ' ')} project.</li>
-              <li><strong>Save & publish</strong> your configuration to make it live for all visitors.</li>
-              <li><strong>Verify</strong> using the <Link href={`/widget-demo?apiKey=${encodeURIComponent(projectKey)}`} className="underline" target="_blank" rel="noreferrer">widget demo</Link> and your production environment.</li>
-            </ol>
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
-              Need a different platform? Switch selections above and the publish snippet will update automatically.
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Project API key</CardTitle>
-            <CardDescription>Keep this safe when wiring up the widget server-side.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="text-xs text-muted-foreground">
-              Store it in environment variables and pass it to your deployment pipeline.
-            </div>
-            <Input value={projectKey} readOnly className="font-mono text-xs" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent versions</CardTitle>
-            <CardDescription>Track how your install evolves.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {history.length === 0 && <p className="text-sm text-muted-foreground">Publish your first configuration to see history here.</p>}
-            {history.map((row, idx) => (
-              <div key={row.id} className={cn('flex items-center justify-between rounded-lg border p-3 text-sm', idx === 0 ? 'border-primary/40 bg-primary/5' : 'border-border')}>
-                <div>
-                  <div className="font-medium">{row.label}</div>
-                  <p className="text-xs text-muted-foreground">Version {row.version} · {row.updatedAt ? formatDate(row.updatedAt) : 'Pending'}</p>
-                </div>
-                <Badge variant={idx === 0 ? 'default' : 'secondary'}>{idx === 0 ? 'Current' : 'Past'}</Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
       </TabsContent>
+
       <TabsContent value="appearance" className="space-y-6">
         <Card>
           <CardHeader>
@@ -1296,6 +1086,78 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         <AlertCard />
       </TabsContent>
       <TabsContent value="publish" className="space-y-6">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-md border bg-muted/40 px-3 py-2 text-xs">
+          <span className="font-medium text-foreground">{projectName}</span>
+          <span className="text-muted-foreground">Project ID: <code className="rounded bg-background px-1.5 py-0.5 font-mono">{projectId}</code></span>
+          <span className="text-muted-foreground flex items-center gap-2">
+            API key: <code className="rounded bg-background px-1.5 py-0.5 font-mono">{projectKey.slice(0, 8)}…{projectKey.slice(-4)}</code>
+            <CopyButton text={projectKey} className="h-6 px-2 text-[11px]" />
+          </span>
+          <span className="text-muted-foreground">Last published: {defaultConfigRow?.updatedAt ? formatDate(defaultConfigRow.updatedAt) : 'Not yet published'}</span>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Experience details</CardTitle>
+            <CardDescription>Fine-tune options for the current embed mode and copy helper snippets.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            {config.embedMode === 'modal' && (
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Launcher position</Label>
+                    <Select value={config.position} onValueChange={(value) => updateConfig({ position: value as any })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select position" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ALLOWED_POSITIONS.map((pos) => (
+                          <SelectItem key={pos} value={pos}>{pos.replace('-', ' ')}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Button label</Label>
+                    <Input value={config.buttonText || ''} onChange={(event) => updateConfig({ buttonText: event.target.value })} placeholder="Feedback" />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">Floating button updates instantly in the preview. Position defaults to bottom right for the polished concierge look.</p>
+              </div>
+            )}
+
+            {config.embedMode === 'inline' && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Container ID</Label>
+                  <Input value={normalizeTarget(config.target, '#feedback-widget').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-widget" />
+                </div>
+                <CodeSnippet code={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}"></div>`} language="html" />
+                <p className="text-xs text-muted-foreground">Drop the div anywhere in your layout. The widget renders directly inside it—no wrapper shell needed.</p>
+              </div>
+            )}
+
+            {config.embedMode === 'trigger' && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Button ID</Label>
+                  <Input value={normalizeTarget(config.target, '#feedback-button').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-button" />
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <CodeSnippet code={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give feedback</button>`} language="html" />
+                  <CodeSnippet code={`<button data-feedbacks-trigger>Open feedback</button>`} language="html" />
+                </div>
+                <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground space-y-2">
+                  <p className="font-medium text-foreground">How it works</p>
+                  <p>Give any element the chosen id or <code>data-feedbacks-trigger</code> attribute. The widget script discovers it automatically after load.</p>
+                  <p>If the button renders after hydration, instantiate <code>new FeedbacksWidget</code> once the element exists.</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Installation snippet</CardTitle>
@@ -1308,6 +1170,65 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               ))}
             </ul>
             <CodeSnippet code={snippetForPlatform} language={snippetLanguage} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Integration snippets</CardTitle>
+            <CardDescription>Rapid embeds for engineering teams across stacks.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="website" className="w-full">
+              <TabsList className="flex flex-wrap gap-2">
+                {FRAMEWORK_OPTIONS.map((option) => (
+                  <TabsTrigger key={option.value} value={option.value} className="px-3 py-1 text-xs sm:text-sm">
+                    {option.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {FRAMEWORK_OPTIONS.map((option) => (
+                <TabsContent key={option.value} value={option.value} className="pt-4">
+                  <CodeSnippet code={snippets.get(option.value) || ''} language={SNIPPET_LANGUAGES[option.value]} />
+                </TabsContent>
+              ))}
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Launch checklist</CardTitle>
+            <CardDescription>Validate your install before shipping to production.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ol className="list-decimal space-y-3 pl-4 text-sm">
+              <li><strong>Embed the snippet</strong> in your {selectedPlatform.replace('-', ' ')} project.</li>
+              <li><strong>Save & publish</strong> your configuration to make it live for all visitors.</li>
+              <li><strong>Verify</strong> using the <Link href={`/widget-demo?apiKey=${encodeURIComponent(projectKey)}`} className="underline" target="_blank" rel="noreferrer">widget demo</Link> and your production environment.</li>
+            </ol>
+            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+              Need a different platform? Switch the selection in Setup and the instructions above will adjust instantly.
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent versions</CardTitle>
+            <CardDescription>Track how your install evolves.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {history.length === 0 && <p className="text-sm text-muted-foreground">Publish your first configuration to see history here.</p>}
+            {history.map((row, idx) => (
+              <div key={row.id} className={cn('flex flex-col gap-1 rounded-lg border p-3 text-sm sm:flex-row sm:items-center sm:justify-between', idx === 0 ? 'border-primary/40 bg-primary/5' : 'border-border')}>
+                <div>
+                  <div className="font-medium">{row.label}</div>
+                  <p className="text-xs text-muted-foreground">Version {row.version} · {row.updatedAt ? formatDate(row.updatedAt) : 'Pending'}</p>
+                </div>
+                <Badge variant={idx === 0 ? 'default' : 'secondary'}>{idx === 0 ? 'Current' : 'Past'}</Badge>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </TabsContent>
@@ -1323,11 +1244,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
     </Tabs>
   );
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-3 rounded-2xl border bg-gradient-to-br from-background to-muted/40 p-4 md:flex-row md:items-center">
-        <div>
-          <h2 className="text-2xl font-semibold">Widget installation</h2>
-          <p className="text-sm text-muted-foreground">Craft a premium feedback experience before dropping it into <span className="font-medium text-foreground">{projectName}</span>.</p>
+    <div className="space-y-5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold tracking-tight">Widget installation</h2>
+          <p className="text-sm text-muted-foreground">Fine-tune, preview, and publish the experience for {projectName}.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={resetToSaved} disabled={loading}>Reset</Button>
@@ -1372,21 +1293,19 @@ function StepNavigation({ steps, currentIndex, onPrev, onNext, hasPrev, hasNext,
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-3 rounded-xl border bg-card/60 p-3',
+        'flex flex-col gap-3 rounded-xl border bg-card/60 p-3 sm:flex-row sm:items-center sm:justify-between',
         variant === 'top' ? 'mt-3 mb-6' : 'mt-8'
       )}
     >
-      <div className="text-xs text-muted-foreground">
-        Step {currentIndex + 1} of {steps.length}
-      </div>
-      <div className="flex gap-2">
+      <div className="text-xs text-muted-foreground">Step {currentIndex + 1} of {steps.length}</div>
+      <div className="flex gap-2 flex-wrap sm:flex-nowrap">
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={onPrev}
           disabled={!hasPrev}
-          className={cn('flex items-center gap-1', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
+          className={cn('flex items-center gap-1 w-full sm:w-auto', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
         >
           <ChevronLeft className="h-4 w-4" />
           Previous
@@ -1396,7 +1315,7 @@ function StepNavigation({ steps, currentIndex, onPrev, onNext, hasPrev, hasNext,
           size="sm"
           onClick={onNext}
           disabled={!hasNext}
-          className={cn('flex items-center gap-1', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
+          className={cn('flex items-center gap-1 w-full sm:w-auto', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
         >
           Next
           <ChevronRight className="h-4 w-4" />
