@@ -365,6 +365,14 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
       }
       /* Preview-only: avoid inner scroll in modal, let parent iframe grow */
       .feedbacks-modal { max-height: none !important; }
+      .feedbacks-overlay {
+        align-items: flex-start !important;
+        justify-content: center !important;
+        padding-top: 32px !important;
+      }
+      @media (min-width: 768px) {
+        .feedbacks-overlay { padding-top: 48px !important; }
+      }
     </style>
   </head>
   <body>
@@ -472,7 +480,9 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
               if (modal && typeof modal.getBoundingClientRect === 'function') {
                 var modalRect = modal.getBoundingClientRect();
                 if (modalRect) {
-                  height = Math.ceil(modalRect.bottom + Math.max(24, modalRect.top));
+                  var modalHeight = modalRect.height || (modalRect.bottom - modalRect.top);
+                  var modalTop = Math.max(0, modalRect.top);
+                  height = Math.ceil(modalHeight + modalTop + 48);
                 }
               }
               if (!height) {
@@ -480,7 +490,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
                 if (overlay && typeof overlay.getBoundingClientRect === 'function') {
                   var overlayRect = overlay.getBoundingClientRect();
                   if (overlayRect) {
-                    height = Math.ceil(overlayRect.height || overlayRect.bottom || 0);
+                    height = Math.ceil((overlayRect.height || overlayRect.bottom || 0) + 48);
                   }
                 }
               }
