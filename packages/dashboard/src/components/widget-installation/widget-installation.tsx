@@ -377,6 +377,25 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
       (function(){
         const initial = ${runtimeJson};
         let view = 'launcher'; // 'launcher' | 'form'
+        function ensureWidgetLoaded(cb){
+          try {
+            if (window && (window).FeedbacksWidget) return cb();
+          } catch(e){}
+          try {
+            var css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = 'https://app.feedbacks.dev/cdn/widget/${widgetVersion}.css';
+            document.head.appendChild(css);
+          } catch(e){}
+          try {
+            var s = document.createElement('script');
+            s.src = 'https://app.feedbacks.dev/cdn/widget/${widgetVersion}.js';
+            s.onload = function(){ setTimeout(cb, 10); };
+            s.onerror = function(){ setTimeout(cb, 10); };
+            document.head.appendChild(s);
+          } catch(e) { setTimeout(cb, 10); }
+          setTimeout(function(){ try { if ((window).FeedbacksWidget) cb(); } catch(e){} }, 1200);
+        }
         function mount(cfg){
           try { document.querySelectorAll('.feedbacks-overlay').forEach(el => el.remove()); } catch(e){}
           try { document.querySelectorAll('.feedbacks-inline-container').forEach(el => el.remove()); } catch(e){}
@@ -418,7 +437,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         window.addEventListener('message', function(ev){
           if (!ev || !ev.data) return;
           if (ev.data.type === 'widget-preview:update') {
-            setTimeout(function(){ mount(ev.data.config || initial); }, 50);
+            setTimeout(function(){ ensureWidgetLoaded(function(){ mount(ev.data.config || initial); }); }, 50);
           }
           if (ev.data.type === 'widget-preview:view') {
             view = ev.data.view === 'form' ? 'form' : 'launcher';
@@ -437,7 +456,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
             setTimeout(postHeight, 80);
           }
         });
-        window.addEventListener('load', function(){ mount(initial); postHeight(); });
+        window.addEventListener('load', function(){ ensureWidgetLoaded(function(){ mount(initial); postHeight(); }); });
         new MutationObserver(postHeight).observe(document.body, { childList: true, subtree: true });
       })();
     </script>
