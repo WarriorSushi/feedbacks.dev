@@ -1256,7 +1256,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               <div key={row.id} className={cn('flex flex-col gap-1 rounded-lg border p-3 text-sm sm:flex-row sm:items-center sm:justify-between', idx === 0 ? 'border-primary/40 bg-primary/5' : 'border-border')}>
                 <div>
                   <div className="font-medium">{row.label}</div>
-                  <p className="text-xs text-muted-foreground">Version {row.version} Â· {row.updatedAt ? formatDate(row.updatedAt) : 'Pending'}</p>
+                  <p className="text-xs text-muted-foreground">Version {row.version} · {row.updatedAt ? formatDate(row.updatedAt) : 'Pending'}</p>
                 </div>
                 <Badge variant={idx === 0 ? 'default' : 'secondary'}>{idx === 0 ? 'Current' : 'Past'}</Badge>
               </div>
@@ -1265,7 +1265,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
         <div className="pt-1 text-[11px] text-muted-foreground" hidden={activeTab !== 'publish'}>
           Project ID <code className="rounded bg-background px-1 py-0.5 font-mono text-[10px]">{projectId}</code>
-          Â· Last published {defaultConfigRow?.updatedAt ? formatDate(defaultConfigRow.updatedAt) : 'Not yet published'}
+          · Last published {defaultConfigRow?.updatedAt ? formatDate(defaultConfigRow.updatedAt) : 'Not yet published'}
         </div>
       </TabsContent>
       </Tabs>
@@ -1403,6 +1403,7 @@ function AlertCard() {
     </Card>
   );
 }
+
 
 
 
