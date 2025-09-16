@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
 import { CopyButton } from '@/components/copy-button';
 import { cn, formatDate } from '@/lib/utils';
-import { Loader2, Monitor, Smartphone, Sparkles, History, ShieldCheck, Palette, ChevronLeft, ChevronRight, Code, MousePointer, CheckCircle, Rocket } from 'lucide-react';
+import {, Info} from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const DEFAULT_WIDGET_VERSION = 'latest';
@@ -525,8 +525,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const [selectedPlatform, setSelectedPlatform] = useState<typeof SNIPPET_PLATFORMS[number]>('website');
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
-  const [statusMessage, setStatusMessage] = useState<string>('');
-  const tabsRef = useRef<HTMLDivElement>(null);
+  \n  const [showAdvancedFields, setShowAdvancedFields] = useState<boolean>(false);\n  const [showAdvancedStyling, setShowAdvancedStyling] = useState<boolean>(false);\n  const [showAdvancedExperience, setShowAdvancedExperience] = useState<boolean>(false);
 
   const steps = [
     { id: 'setup', label: 'Setup' },
@@ -990,10 +989,10 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             </div>
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
-                <div className="text-sm font-medium">Rating scale</div>
-                <p className="text-xs text-muted-foreground">Collect optional 1-5 star ratings alongside comments.</p>
+                <div className="text-sm font-medium">Screenshot upload</div>
+                <p className="text-xs text-muted-foreground">Allow users to attach a browser screenshot.</p>
               </div>
-              <Switch checked={config.enableRating !== false} onCheckedChange={(value) => updateConfig({ enableRating: value })} />
+              <Switch checked={!!config.enableScreenshot} onCheckedChange={(value) => updateConfig({ enableScreenshot: value })} />
             </div>
             {!showAdvancedFields && (
               <div className="md:col-span-2">
@@ -1004,15 +1003,17 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <>
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
-                <div className="text-sm font-medium">Screenshot upload</div>
-                <p className="text-xs text-muted-foreground">Allow users to attach a browser screenshot.</p>
+                <div className="text-sm font-medium">Rating scale</div>
+                <p className="text-xs text-muted-foreground">Collect optional 1-5 star ratings alongside comments.</p>
               </div>
-              <Switch checked={!!config.enableScreenshot} onCheckedChange={(value) => updateConfig({ enableScreenshot: value })} />
+              <Switch checked={config.enableRating !== false} onCheckedChange={(value) => updateConfig({ enableRating: value })} />
             </div>
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
-                <div className="text-sm font-medium">Require screenshot</div>
-                <p className="text-xs text-muted-foreground">Only available when screenshot uploads are allowed.</p>
+                <div className="text-sm font-medium flex items-center gap-1">
+                  Require screenshot
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" title="Active only when screenshot uploads are enabled" />
+                </div>
               </div>
               <Switch checked={!!config.screenshotRequired} disabled={!config.enableScreenshot} onCheckedChange={(value) => updateConfig({ screenshotRequired: value })} />
             </div>
@@ -1085,8 +1086,10 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="rounded-lg border p-3 flex items-center justify-between md:col-span-2">
               <div>
-                <div className="text-sm font-medium">Require CAPTCHA</div>
-                <p className="text-xs text-muted-foreground">Prevent automated submissions with Turnstile or hCaptcha.</p>
+                <div className="text-sm font-medium flex items-center gap-1">
+                  Require CAPTCHA
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" title="Enforce CAPTCHA on submit (Turnstile or hCaptcha)." />
+                </div>
               </div>
               <Switch checked={!!config.requireCaptcha} onCheckedChange={(value) => updateConfig({ requireCaptcha: value })} />
             </div>
@@ -1208,8 +1211,13 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Experience details</CardTitle>
-            <CardDescription>Fine-tune options for the current embed mode and copy helper snippets.</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Experience details</CardTitle>
+                <CardDescription>Fine-tune options for the current embed mode.</CardDescription>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => setShowAdvancedExperience((v)=>!v)}>{showAdvancedExperience ? 'Hide' : 'Show'} advanced</Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-5">
             {config.embedMode === 'modal' && (
@@ -1233,7 +1241,9 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                     <Input value={config.buttonText || ''} onChange={(event) => updateConfig({ buttonText: event.target.value })} placeholder="Feedback" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">Floating button updates instantly in the preview. Position defaults to bottom right for the polished concierge look.</p>
+                {showAdvancedExperience && (
+                  <p className="text-xs text-muted-foreground">Floating button updates instantly in the preview. Position defaults to bottom right for the polished concierge look.</p>
+                )}
               </div>
             )}
 
@@ -1254,15 +1264,19 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                   <Label>Button ID</Label>
                   <Input value={normalizeTarget(config.target, '#feedback-button').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-button" />
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <CodeSnippet code={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give feedback</button>`} language="html" />
-                  <CodeSnippet code={`<button data-feedbacks-trigger>Open feedback</button>`} language="html" />
-                </div>
-                <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground space-y-2">
-                  <p className="font-medium text-foreground">How it works</p>
-                  <p>Give any element the chosen id or <code>data-feedbacks-trigger</code> attribute. The widget script discovers it automatically after load.</p>
-                  <p>If the button renders after hydration, instantiate <code>new FeedbacksWidget</code> once the element exists.</p>
-                </div>
+                {showAdvancedExperience && (
+                  <>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <CodeSnippet code={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give feedback</button>`} language="html" />
+                      <CodeSnippet code={`<button data-feedbacks-trigger>Open feedback</button>`} language="html" />
+                    </div>
+                    <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground space-y-2">
+                      <p className="font-medium text-foreground">How it works</p>
+                      <p>Give any element the chosen id or <code>data-feedbacks-trigger</code> attribute. The widget script discovers it automatically after load.</p>
+                      <p>If the button renders after hydration, instantiate <code>new FeedbacksWidget</code> once the element exists.</p>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </CardContent>
@@ -1445,6 +1459,9 @@ function AlertCard() {
     </Card>
   );
 }
+
+
+
 
 
 
