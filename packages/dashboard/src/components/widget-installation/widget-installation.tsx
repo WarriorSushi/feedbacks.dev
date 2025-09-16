@@ -528,6 +528,8 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const [showAdvancedFields, setShowAdvancedFields] = useState<boolean>(false);
   const [showAdvancedStyling, setShowAdvancedStyling] = useState<boolean>(false);
   const [showAdvancedExperience, setShowAdvancedExperience] = useState<boolean>(false);
+  const [statusMessage, setStatusMessage] = useState<string>('');
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   const steps = [
     { id: 'setup', label: 'Setup' },
@@ -1014,7 +1016,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               <div>
                 <div className="text-sm font-medium flex items-center gap-1">
                   Require screenshot
-                  <Info className="h-3.5 w-3.5 text-muted-foreground" title="Active only when screenshot uploads are enabled" />
+                  <span title="Active only when screenshot uploads are enabled"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
                 </div>
               </div>
               <Switch checked={!!config.screenshotRequired} disabled={!config.enableScreenshot} onCheckedChange={(value) => updateConfig({ screenshotRequired: value })} />
@@ -1090,7 +1092,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               <div>
                 <div className="text-sm font-medium flex items-center gap-1">
                   Require CAPTCHA
-                  <Info className="h-3.5 w-3.5 text-muted-foreground" title="Enforce CAPTCHA on submit (Turnstile or hCaptcha)." />
+                  <span title="Enforce CAPTCHA on submit (Turnstile or hCaptcha)."><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
                 </div>
               </div>
               <Switch checked={!!config.requireCaptcha} onCheckedChange={(value) => updateConfig({ requireCaptcha: value })} />
@@ -1122,7 +1124,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                 <Input value={config.hcaptchaSiteKey || ''} onChange={(event) => updateConfig({ hcaptchaSiteKey: event.target.value })} placeholder="10000000-ffff-ffff-ffff-000000000001" />
               </div>
             )}
-            </div>
           </CardContent>
         </Card>
         <Card>
@@ -1187,7 +1188,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                 <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
                 <li className="flex items-start gap-2">
                   <MousePointer className="h-4 w-4 mt-0.5 text-primary" />
-                  <div className="flex-1">Place <code>&lt;div id="{normalizeTarget(config.target, '#feedback-widget').replace('#','')}"/&gt;</code> where the form should render.</div>
+                  <div className="flex-1">Place <code>&lt;div id=&quot;{normalizeTarget(config.target, '#feedback-widget').replace('#','')}&quot;/&gt;</code> where the form should render.</div>
                   <CopyButton className="h-7 px-2 text-[11px]" text={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#','')}"/>`} />
                 </li>
                 <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 mt-0.5 text-primary" /> Save & publish your configuration.</li>
