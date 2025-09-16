@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CopyButton } from '@/components/copy-button';
 import { WidgetInstallationExperience } from '@/components/widget-installation';
-import { ArrowLeft, ExternalLink, Settings, MessageSquare, Code, Globe, Mail, MonitorSmartphone, Tag, Paperclip, BarChart3, Webhook } from 'lucide-react';
+import { ArrowLeft, ExternalLink, MessageSquare, Code, Globe, Mail, MonitorSmartphone, Tag, Paperclip, BarChart3, Webhook } from 'lucide-react';
 import Link from 'next/link';
+import { ProjectSettingsLauncher } from '@/components/project-settings-launcher';
 import { ProjectAnalytics } from '@/components/project-analytics';
 import { ImageLightbox } from '@/components/image-lightbox';
 import { ProjectIntegrations } from '@/components/project-integrations';
@@ -76,12 +77,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
               Back to Dashboard
             </Link>
           </Button>
-          <Button variant="outline" className="gap-2" asChild>
-            <Link href="/settings">
-              <Settings className="h-4 w-4" />
-              Settings
-            </Link>
-          </Button>
+          <ProjectSettingsLauncher projectId={project.id} projectName={project.name} />
         </div>
 
         {/* Project Header */}

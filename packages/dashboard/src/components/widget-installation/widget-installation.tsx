@@ -652,7 +652,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
     const next = mergeConfig(DEFAULT_CONFIG, defaultConfigRow?.config || {});
     if (defaultConfigRow?.config?.target) next.target = defaultConfigRow.config.target;
     setConfig(next);
+    // Reset auxiliary UI state as well
+    setSelectedPlatform('website');
+    setViewport('desktop');
     setStatusMessage('Reverted to last published settings');
+    requestAnimationFrame(scrollTabsIntoView);
   };
   const handleSave = async () => {
     scrollTabsIntoView();
