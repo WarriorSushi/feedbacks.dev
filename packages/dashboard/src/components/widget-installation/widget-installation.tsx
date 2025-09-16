@@ -541,7 +541,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
     if (next.embedMode === 'inline') next.target = normalizeTarget(next.target, '#feedback-widget');
     if (next.embedMode === 'trigger') next.target = normalizeTarget(next.target, '#feedback-button');
     setConfig(next);
-    setStatusMessage(`Applied preset • ${preset.name}`);
+    setStatusMessage(`Applied preset - ${preset.name}`);
   };
 
   const resetToSaved = () => {
@@ -552,7 +552,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   };
   const handleSave = async () => {
     setSaving(true);
-    setStatusMessage('Saving…');
+    setStatusMessage('Saving...');
     try {
       const res = await fetch(`/api/projects/${projectId}/widget-config`, {
         method: 'PUT',
@@ -578,7 +578,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         };
         setDefaultConfigRow(savedRow);
         setHistory((prev) => [savedRow, ...prev.filter((row) => row.id !== savedRow.id)].slice(0, 10));
-        setStatusMessage('Saved • This configuration is now live');
+        setStatusMessage('Saved - This configuration is now live');
       } else {
         setStatusMessage('Saved');
       }
@@ -1001,7 +1001,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               <div key={row.id} className={cn('flex items-center justify-between rounded-lg border p-3 text-sm', idx === 0 ? 'border-primary/40 bg-primary/5' : 'border-border')}>
                 <div>
                   <div className="font-medium">{row.label}</div>
-                  <p className="text-xs text-muted-foreground">Version {row.version} · {row.updatedAt ? formatDate(row.updatedAt) : 'Pending'}</p>
+                  <p className="text-xs text-muted-foreground">Version {row.version} - {row.updatedAt ? formatDate(row.updatedAt) : 'Pending'}</p>
                 </div>
                 {idx === 0 && <Badge variant="default">Current</Badge>}
               </div>
@@ -1022,7 +1022,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           <Button variant="outline" size="sm" onClick={resetToSaved} disabled={loading}>Reset</Button>
           <Button onClick={handleSave} disabled={loading || saving || !isDirty}>
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
-            {saving ? 'Saving…' : isDirty ? 'Save & publish' : 'Saved'}
+            {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
           </Button>
         </div>
       </div>
@@ -1096,7 +1096,7 @@ function AlertCard() {
         <CardDescription>Balance security with submission friction.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2 text-sm text-muted-foreground">
-        <p>Consider enabling CAPTCHA for public widgets embedded on marketing pages. Rate limits apply per IP—adjust for highly trafficked products.</p>
+        <p>Consider enabling CAPTCHA for public widgets embedded on marketing pages. Rate limits apply per IP-adjust for highly trafficked products.</p>
         <p>Attachments and screenshots are stored in your Supabase storage bucket <code className="rounded bg-muted px-1.5 py-0.5 text-xs">feedback_attachments</code>. Remember to configure retention policies.</p>
       </CardContent>
     </Card>
