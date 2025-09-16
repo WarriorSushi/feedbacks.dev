@@ -736,6 +736,15 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         <TabsTrigger value="protection">Protection</TabsTrigger>
         <TabsTrigger value="publish">Publish</TabsTrigger>
       </TabsList>
+      <StepNavigation
+        steps={steps}
+        currentIndex={currentStepIndex}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        variant="top"
+      />
 
       <TabsContent value="setup" className="space-y-6">
         <Card>
@@ -1232,15 +1241,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
       </TabsContent>
-      <StepNavigation
-        steps={steps}
-        currentIndex={currentStepIndex}
-        onPrev={handlePrev}
-        onNext={handleNext}
-        hasPrev={hasPrev}
-        hasNext={hasNext}
-        variant="bottom"
-      />
     </Tabs>
   );
   return (
