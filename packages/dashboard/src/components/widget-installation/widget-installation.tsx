@@ -1169,21 +1169,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
 
         <Card>
           <CardHeader>
-            <CardTitle>Installation snippet</CardTitle>
-            <CardDescription>Copy the code for your chosen platform and deploy.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="list-disc list-inside text-xs text-muted-foreground space-y-1">
-              {platformInstructions.map((instruction) => (
-                <li key={instruction}>{instruction}</li>
-              ))}
-            </ul>
-            <CodeSnippet code={snippetForPlatform} language={snippetLanguage} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
             <CardTitle>Integration snippets</CardTitle>
             <CardDescription>Rapid embeds for engineering teams across stacks.</CardDescription>
           </CardHeader>
