@@ -13,6 +13,7 @@
   bottom: 16px;
   right: 16px;
   min-height: 52px;
+  min-width: 56px;
   padding: 0 20px;
   border-radius: 9999px;
   background: var(--feedbacks-primary, #2563eb);
@@ -26,12 +27,13 @@
   justify-content: center;
   gap: 10px;
   color: #ffffff;
-  font-size: 16px;
+  font-size: clamp(14px, 3.8vw, 16px);
   line-height: 1;
   font-weight: 600;
   letter-spacing: 0.01em;
   white-space: nowrap;
-  max-width: 320px;
+  text-overflow: ellipsis;
+  max-width: min(320px, calc(100vw - 32px));
   overflow: hidden;
   backdrop-filter: blur(8px);
   outline: none;
@@ -101,6 +103,7 @@
     padding: 0 24px;
     gap: 12px;
     font-size: 17px;
+    max-width: 360px;
   }
 
   .feedbacks-button-icon-only {

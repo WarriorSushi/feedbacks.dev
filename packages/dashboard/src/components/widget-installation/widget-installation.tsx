@@ -379,6 +379,32 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
       .preview-stage .feedbacks-overlay {
         inset: 0;
       }
+      .preview-stage .feedbacks-button {
+        position: absolute !important;
+        bottom: 16px;
+        right: 16px;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 0 20px !important;
+        min-height: 52px;
+        min-width: 56px;
+        width: auto !important;
+        max-width: min(320px, calc(100% - 32px));
+        border-radius: 9999px !important;
+        font-size: clamp(14px, 3.4vw, 16px);
+        line-height: 1;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .preview-stage .feedbacks-button svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+      }
     </style>
   </head>
   <body>
@@ -754,15 +780,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         <TabsTrigger value="protection">Protection</TabsTrigger>
         <TabsTrigger value="publish">Publish</TabsTrigger>
       </TabsList>
-      <StepNavigation
-        steps={steps}
-        currentIndex={currentStepIndex}
-        onPrev={handlePrev}
-        onNext={handleNext}
-        hasPrev={hasPrev}
-        hasNext={hasNext}
-        variant="top"
-      />
 
       <TabsContent value="setup" className="space-y-6">
         <Card>
