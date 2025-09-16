@@ -995,6 +995,13 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               </div>
               <Switch checked={config.enableRating !== false} onCheckedChange={(value) => updateConfig({ enableRating: value })} />
             </div>
+            {!showAdvancedFields && (
+              <div className="md:col-span-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowAdvancedFields(true)}>Show advanced inputs</Button>
+              </div>
+            )}
+            {showAdvancedFields && (
+            <>
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <div className="text-sm font-medium">Screenshot upload</div>
@@ -1023,7 +1030,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               </div>
               <Switch checked={!!config.enableTags} onCheckedChange={(value) => updateConfig({ enableTags: value })} />
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center justify-between rounded-lg border p-3 md:col-span-2">
               <div>
                 <div className="text-sm font-medium">File attachments</div>
                 <p className="text-xs text-muted-foreground">Accept supplementary files (PNG, JPG, PDF).</p>
@@ -1031,7 +1038,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               <Switch checked={!!config.enableAttachment} onCheckedChange={(value) => updateConfig({ enableAttachment: value })} />
             </div>
             {config.enableAttachment && (
-              <div className="space-y-2">
+              <div className="space-y-2 md:col-span-2">
                 <Label>Attachment size limit (MB)</Label>
                 <Select value={String(config.attachmentMaxMB || 5)} onValueChange={(value) => updateConfig({ attachmentMaxMB: Number(value) })}>
                   <SelectTrigger>
@@ -1044,6 +1051,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                   </SelectContent>
                 </Select>
               </div>
+            )}
+            <div className="md:col-span-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setShowAdvancedFields(false)}>Hide advanced inputs</Button>
+            </div>
+            </>
             )}
           </CardContent>
         </Card>
@@ -1070,15 +1082,15 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <CardTitle>Spam & abuse controls</CardTitle>
             <CardDescription>Keep noise out while preserving great feedback.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between rounded-lg border p-3">
+          <CardContent className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-lg border p-3 flex items-center justify-between md:col-span-2">
               <div>
                 <div className="text-sm font-medium">Require CAPTCHA</div>
                 <p className="text-xs text-muted-foreground">Prevent automated submissions with Turnstile or hCaptcha.</p>
               </div>
               <Switch checked={!!config.requireCaptcha} onCheckedChange={(value) => updateConfig({ requireCaptcha: value })} />
             </div>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3">
               <div className="space-y-2">
                 <Label>Provider</Label>
                 <Select value={config.captchaProvider || 'none'} onValueChange={(value) => updateConfig({ captchaProvider: value as any, requireCaptcha: value !== 'none' })}>
@@ -1092,18 +1104,19 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                   </SelectContent>
                 </Select>
               </div>
-              {config.captchaProvider === 'turnstile' && (
-                <div className="space-y-2">
-                  <Label>Turnstile site key</Label>
-                  <Input value={config.turnstileSiteKey || ''} onChange={(event) => updateConfig({ turnstileSiteKey: event.target.value })} placeholder="0xAAAA..." />
-                </div>
-              )}
-              {config.captchaProvider === 'hcaptcha' && (
-                <div className="space-y-2">
-                  <Label>hCaptcha site key</Label>
-                  <Input value={config.hcaptchaSiteKey || ''} onChange={(event) => updateConfig({ hcaptchaSiteKey: event.target.value })} placeholder="10000000-ffff-ffff-ffff-000000000001" />
-                </div>
-              )}
+            </div>
+            {config.captchaProvider === 'turnstile' && (
+              <div className="space-y-2">
+                <Label>Turnstile site key</Label>
+                <Input value={config.turnstileSiteKey || ''} onChange={(event) => updateConfig({ turnstileSiteKey: event.target.value })} placeholder="0xAAAA..." />
+              </div>
+            )}
+            {config.captchaProvider === 'hcaptcha' && (
+              <div className="space-y-2">
+                <Label>hCaptcha site key</Label>
+                <Input value={config.hcaptchaSiteKey || ''} onChange={(event) => updateConfig({ hcaptchaSiteKey: event.target.value })} placeholder="10000000-ffff-ffff-ffff-000000000001" />
+              </div>
+            )}
             </div>
           </CardContent>
         </Card>
