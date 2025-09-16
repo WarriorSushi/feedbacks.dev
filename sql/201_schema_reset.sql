@@ -320,7 +320,7 @@ create table public.webhook_deliveries (
   id uuid primary key default uuid_generate_v4(),
   project_id uuid not null references public.projects(id) on delete cascade,
   created_at timestamptz not null default now(),
-  kind text not null check (kind in ('slack','discord','generic')),
+  kind text not null check (kind in ('slack','discord','generic','github')),
   url text not null,
   event text not null,
   status text not null check (status in ('success','failed')),

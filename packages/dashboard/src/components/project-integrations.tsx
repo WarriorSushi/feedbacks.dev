@@ -130,6 +130,81 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
     }
   };
 
+  const endpointListGitHub = () => {
+    const key = 'github' as const;
+    const items = toArray((cfgArrays as any)[key]?.endpoints) as Array<any>;
+    const updateEndpoint = (idx: number, patch: any) => setCfg((c) => {
+      const next = ensureArrays({ ...(c as any) });
+      (next as any)[key] = (next as any)[key] || { endpoints: [] };
+      const arr = toArray((next as any)[key].endpoints);
+      arr[idx] = { ...arr[idx], ...patch };
+      (next as any)[key].endpoints = arr;
+      return next;
+    });
+    const addEndpoint = () => setCfg((c) => {
+      const next = ensureArrays({ ...(c as any) });
+      (next as any)[key] = (next as any)[key] || { endpoints: [] };
+      const arr = toArray((next as any)[key].endpoints);
+      arr.push({ id: makeId('gh'), repo: '', token: '', labels: '', enabled: true, delivery: 'immediate' });
+      (next as any)[key].endpoints = arr;
+      return next;
+    });
+    const removeEndpoint = (idx: number) => setCfg((c) => {
+      const next = ensureArrays({ ...(c as any) });
+      (next as any)[key] = (next as any)[key] || { endpoints: [] };
+      const arr = toArray((next as any)[key].endpoints);
+      arr.splice(idx, 1);
+      (next as any)[key].endpoints = arr;
+      return next;
+    });
+
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center justify-between">
+            <span>GitHub Issues</span>
+            <Button size="sm" variant="outline" className="gap-1" onClick={addEndpoint}><Plus className="h-3 w-3" /> Add</Button>
+          </CardTitle>
+          <CardDescription>Create issues in a repo on new feedback.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          {items.length === 0 && (
+            <div className="text-sm text-muted-foreground">No endpoints. Click Add to create one.</div>
+          )}
+          {items.map((ep, idx) => (
+            <div key={ep.id || idx} className="border rounded p-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-medium">Endpoint {idx+1}</div>
+                <Button size="sm" variant="ghost" className="text-destructive" onClick={() => removeEndpoint(idx)}><Trash2 className="h-4 w-4" /></Button>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <Label>Repository (owner/repo)</Label>
+                  <Input value={ep.repo || ''} onChange={(e)=>updateEndpoint(idx, { repo: e.target.value })} placeholder="owner/repo" />
+                </div>
+                <div>
+                  <Label>Personal Access Token</Label>
+                  <Input type="password" value={ep.token || ''} onChange={(e)=>updateEndpoint(idx, { token: e.target.value })} placeholder="ghp_..." />
+                </div>
+                <div className="sm:col-span-2">
+                  <Label>Labels (comma-separated)</Label>
+                  <Input value={ep.labels || ''} onChange={(e)=>updateEndpoint(idx, { labels: e.target.value })} placeholder="feedback, bug" />
+                </div>
+                <div className="flex items-center justify-between rounded border p-2 sm:col-span-2">
+                  <div>
+                    <div className="text-sm font-medium">Enabled</div>
+                    <div className="text-xs text-muted-foreground">Trigger on new feedback</div>
+                  </div>
+                  <Switch checked={!!ep.enabled} onCheckedChange={(b)=>updateEndpoint(idx, { enabled: b })} />
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className="text-xs text-muted-foreground">Token requires repo scope. Title/body include message, rating, URL, and email if present.</div>
+        </CardContent>
+      </Card>
+    );
+  };
   const testKind = async (kind: 'slack'|'discord'|'generic', endpointId?: string) => {
     setTesting((m) => ({ ...m, [kind]: true }));
     setMessage('');
@@ -416,6 +491,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
           {endpointList('Slack', 'slack', 'https://hooks.slack.com/services/...', 'Sends a simple text message')}
           {endpointList('Discord', 'discord', 'https://discord.com/api/webhooks/...', 'Sends a message via Discord webhook')}
           {endpointList('Generic POST', 'generic', 'https://example.com/webhook', 'POSTs a JSON payload on events')}
+          {endpointListGitHub()}
 
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">Saved per project. Toggle to enable delivery.</div>

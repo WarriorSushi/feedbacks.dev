@@ -95,7 +95,7 @@ async function verifyHCaptcha(token: string, ip?: string) {
 
 async function logDelivery(entry: {
   project_id: string;
-  kind: 'slack'|'discord'|'generic';
+  kind: 'slack'|'discord'|'generic'|'github';
   url: string;
   event: string;
   status: 'success'|'failed';
@@ -485,7 +485,7 @@ export async function POST(request: NextRequest) {
     // Helpers for multi-endpoint config
     type Rules = { ratingMax?: number; types?: Array<'bug'|'idea'|'praise'>; tagsInclude?: string[] };
     type Endpoint = {
-      kind: 'slack'|'discord'|'generic';
+      kind: 'slack'|'discord'|'generic'|'github';
       id: string;
       url: string;
       enabled: boolean;
@@ -497,6 +497,10 @@ export async function POST(request: NextRequest) {
       rateLimitPerMin?: number; // cap sends per minute for this endpoint (immediate only)
       redact?: { email?: boolean; url?: boolean };
       format?: 'compact' | 'full'; // optional format property
+      // GitHub
+      repo?: string;
+      token?: string;
+      labels?: string;
     };
     const makeId = (url: string) => 'u-' + crypto.createHash('sha1').update(url).digest('hex').slice(0, 12);
     const toArray = (maybe: any) => Array.isArray(maybe) ? maybe : [];
@@ -527,6 +531,15 @@ export async function POST(request: NextRequest) {
       }
     } else if (cfg?.generic?.url) {
       endpoints.push({ kind: 'generic', id: makeId(cfg.generic.url), url: cfg.generic.url, enabled: !!cfg.generic.enabled, delivery: 'immediate', secret: cfg.generic.secret });
+    }
+
+    // GitHub endpoints (create issues)
+    if (cfg?.github?.endpoints) {
+      for (const ep of toArray(cfg.github.endpoints)) {
+        if (!ep?.repo || !ep?.token) continue;
+        const apiUrl = `https://api.github.com/repos/${ep.repo}/issues`;
+        endpoints.push({ kind: 'github', id: ep.id || makeId(apiUrl), url: apiUrl, enabled: !!ep.enabled, delivery: ep.delivery || 'immediate', rules: ep.rules, events: ep.events, rateLimitPerMin: ep.rateLimitPerMin, repo: ep.repo, token: ep.token, labels: (ep as any).labels });
+      }
     }
 
     const matchesRules = (rules?: Rules) => {
@@ -693,6 +706,40 @@ export async function POST(request: NextRequest) {
             }
           } catch (e: any) {
             await logDelivery({ project_id: project.id, kind: 'generic', url: ep.url, endpoint_id: ep.id, event, status: 'failed', error: e?.message?.slice(0,500) || 'error', payload: genericPayload });
+          }
+        })());
+      } else if (ep.kind === 'github') {
+        deliveries.push((async () => {
+          try {
+            const headers = {
+              'Authorization': `Bearer ${ep.token}`,
+              'Accept': 'application/vnd.github+json',
+              'User-Agent': 'feedbacks.dev'
+            } as Record<string,string>;
+            const title = `${type ? `[${String(type)}] ` : ''}${trimmedMessage.slice(0, 80)}`;
+            const bodyLines = [
+              `Project: ${project.name || project.id}`,
+              '',
+              trimmedMessage,
+              '',
+              ...(typeof numericRating === 'number' ? [`Rating: ${numericRating}/5`] : []),
+              ...(type ? [`Type: ${type}`] : []),
+              ...(priority ? [`Priority: ${priority}`] : []),
+              ...(tagArray && tagArray.length ? [`Tags: ${tagArray.slice(0,6).join(', ')}`] : []),
+              ...(email ? [`Reporter: ${email}`] : []),
+              `URL: ${url}`,
+              `View: ${APP_BASE_URL}/projects/${project.id}`,
+              ...(screenshotUrl ? [`Screenshot: ${screenshotUrl}`] : []),
+            ];
+            const payload: any = { title, body: bodyLines.join('\n') };
+            if (ep.labels) {
+              const labels = String(ep.labels).split(',').map(s=>s.trim()).filter(Boolean);
+              if (labels.length) payload.labels = labels;
+            }
+            const res = await deliverWithRetry(ep.url, payload, { headers });
+            await logDelivery({ project_id: project.id, kind: 'github', url: ep.url, endpoint_id: ep.id, event, status: res.ok ? 'success' : 'failed', status_code: res.status, error: res.ok ? null : res.bodyText, payload, response_time_ms: res.ms, response_body: res.ok ? null : res.bodyText, attempt: res.attempt });
+          } catch (e: any) {
+            await logDelivery({ project_id: project.id, kind: 'github', url: ep.url, endpoint_id: ep.id, event, status: 'failed', error: e?.message?.slice(0,500) || 'error' });
           }
         })());
       }

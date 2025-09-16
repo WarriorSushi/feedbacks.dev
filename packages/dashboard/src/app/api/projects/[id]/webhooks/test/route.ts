@@ -62,6 +62,22 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       const r = await postJson(ep.url, payload, headers);
       return NextResponse.json({ ok: r.ok }, { status: r.ok ? 200 : 400 });
     }
+    if (kind === 'github') {
+      const ep = (() => {
+        const arr = Array.isArray(cfg?.github?.endpoints) ? cfg.github.endpoints : [];
+        return endpointId ? arr.find((e:any)=>e?.id===endpointId) : arr[0];
+      })();
+      if (!ep?.enabled || !ep?.repo || !ep?.token) return NextResponse.json({ ok: false, error: 'Not configured' }, { status: 400 });
+      const url = `https://api.github.com/repos/${ep.repo}/issues`;
+      const headers = {
+        'Authorization': `Bearer ${ep.token}`,
+        'Accept': 'application/vnd.github+json',
+        'User-Agent': 'feedbacks.dev'
+      } as Record<string,string>;
+      const payload = { title: `feedbacks.dev test webhook for ${name}`, body: `This is a test issue created at ${new Date().toISOString()}`, labels: ['feedbacks-dev'] };
+      const r = await postJson(url, payload, headers);
+      return NextResponse.json({ ok: r.ok }, { status: r.ok ? 200 : 400 });
+    }
     return NextResponse.json({ ok: false, error: 'Webhook not configured or enabled' }, { status: 400 });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e.message || 'Failed' }, { status: 400 });

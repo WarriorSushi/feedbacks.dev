@@ -53,6 +53,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   checkEndpoints(body?.slack?.endpoints, 'slack');
   checkEndpoints(body?.discord?.endpoints, 'discord');
   checkEndpoints(body?.generic?.endpoints, 'generic');
+  // Basic GitHub check: ensure repo and token strings if provided
+  if (Array.isArray(body?.github?.endpoints)) {
+    for (let i=0;i<body.github.endpoints.length;i++) {
+      const ep = body.github.endpoints[i];
+      if (ep && ((ep.repo && typeof ep.repo !== 'string') || (ep.token && typeof ep.token !== 'string'))) {
+        invalid.push(`github.endpoints[${i}]`);
+      }
+    }
+  }
   if (invalid.length) {
     return NextResponse.json({ error: 'Only HTTPS URLs are allowed', fields: invalid }, { status: 400 });
   }
