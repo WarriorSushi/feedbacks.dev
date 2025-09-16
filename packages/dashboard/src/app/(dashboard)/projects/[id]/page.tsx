@@ -11,6 +11,7 @@ import { WidgetInstallationExperience } from '@/components/widget-installation';
 import { ArrowLeft, ExternalLink, MessageSquare, Code, Globe, Mail, MonitorSmartphone, Tag, Paperclip, BarChart3, Webhook } from 'lucide-react';
 import Link from 'next/link';
 import { ProjectSettingsLauncher } from '@/components/project-settings-launcher';
+import { RefreshButton } from '@/components/refresh-button';
 import { ProjectAnalytics } from '@/components/project-analytics';
 import { ImageLightbox } from '@/components/image-lightbox';
 import { ProjectIntegrations } from '@/components/project-integrations';
@@ -77,7 +78,10 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
               Back to Dashboard
             </Link>
           </Button>
-          <ProjectSettingsLauncher projectId={project.id} projectName={project.name} />
+          <div className="flex items-center gap-2">
+            <RefreshButton />
+            <ProjectSettingsLauncher projectId={project.id} projectName={project.name} />
+          </div>
         </div>
 
         {/* Project Header */}
