@@ -937,22 +937,30 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Choose an experience</CardTitle>
             <CardDescription>Select how the widget should appear on your site.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {MODE_PRESETS.map((item) => (
-              <button
-                type="button"
-                key={item.mode}
-                onClick={() => handleModeChange(item.mode)}
-                className={cn(
-                  'flex flex-col gap-2 rounded-xl border p-4 text-left transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  config.embedMode === item.mode ? 'border-primary shadow-lg' : 'border-border'
-                )}
-              >
-                <div className="text-sm font-semibold">{item.title}</div>
-                <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
-                {item.helper && <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{item.helper}</span>}
-              </button>
-            ))}
+          <CardContent>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              {MODE_PRESETS.map((item) => {
+                const active = config.embedMode === item.mode;
+                return (
+                  <button
+                    type="button"
+                    key={item.mode}
+                    onClick={() => handleModeChange(item.mode)}
+                    aria-pressed={active}
+                    className={cn(
+                      'flex min-w-[200px] flex-1 items-start gap-2 rounded-lg border px-3 py-2 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      active ? 'border-primary bg-primary/5' : 'border-border bg-card'
+                    )}
+                  >
+                    <div className="flex-1 space-y-1">
+                      <div className="text-sm font-medium leading-tight">{item.title}</div>
+                      <p className="text-xs text-muted-foreground leading-snug">{item.description}</p>
+                      {item.helper && <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">{item.helper}</span>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
 
@@ -1295,13 +1303,13 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
         <AlertCard />
       </TabsContent>
-      <TabsContent value="publish" className="space-y-8">
+      <TabsContent value="publish" className="space-y-6 sm:space-y-8">
         <Card>
-          <CardHeader>
-            <CardTitle>Integration snippets</CardTitle>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg font-semibold leading-tight sm:text-xl">Integration snippets</CardTitle>
             <CardDescription>Copy-paste for your selected platform.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
             <Tabs value={selectedPlatform} onValueChange={(v) => setSelectedPlatform(v as any)} className="w-full">
               <TabsList className="w-full overflow-x-auto whitespace-nowrap gap-2">
                 {FRAMEWORK_OPTIONS.map((option) => (
@@ -1321,11 +1329,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Install guide</CardTitle>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg font-semibold leading-tight sm:text-xl">Install guide</CardTitle>
             <CardDescription>Simple, mode-specific steps to ship confidently.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-3 p-4 pt-0 sm:p-6 sm:pt-0">
             {config.embedMode === 'modal' && (
               <ol className="space-y-3 text-sm">
                 <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
@@ -1364,16 +1372,16 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
+          <CardHeader className="p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Experience details</CardTitle>
+                <CardTitle className="text-lg font-semibold leading-tight sm:text-xl">Experience details</CardTitle>
                 <CardDescription>Fine-tune options for the current embed mode.</CardDescription>
               </div>
               <Button size="sm" variant="outline" onClick={() => setShowAdvancedExperience((v)=>!v)}>{showAdvancedExperience ? 'Hide' : 'Show'} advanced</Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-5 p-4 pt-0 sm:p-6 sm:pt-0">
             {config.embedMode === 'modal' && (
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">

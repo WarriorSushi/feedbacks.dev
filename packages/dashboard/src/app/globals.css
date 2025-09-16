@@ -323,7 +323,7 @@
 
   /* Premium Button Styles */
   .premium-button {
-    background: var(--gradient-primary);
+    background-color: hsl(var(--primary));
     color: hsl(var(--primary-foreground));
     border: 1px solid hsl(var(--primary));
     box-shadow: 
@@ -334,7 +334,8 @@
   }
 
   .premium-button:hover {
-    background: var(--gradient-secondary);
+    background-color: hsl(var(--primary));
+    filter: brightness(0.95);
     box-shadow: 
       0 4px 6px -1px rgb(0 0 0 / 0.1),
       0 2px 4px -2px rgb(0 0 0 / 0.1),

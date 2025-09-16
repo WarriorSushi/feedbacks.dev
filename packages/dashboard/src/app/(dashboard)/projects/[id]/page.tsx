@@ -92,7 +92,11 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
         {/* Project Tabs */}
         <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-4">
+            <TabsTrigger value="widget-installation" className="flex items-center gap-2">
+              <Code className="h-4 w-4" />
+              <span className="hidden sm:inline">Widget Installation</span>
+            </TabsTrigger>
             <TabsTrigger value="feedback" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               <span className="hidden sm:inline">Feedback</span>
@@ -104,10 +108,6 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             <TabsTrigger value="integrations" className="flex items-center gap-2">
               <Webhook className="h-4 w-4" />
               <span className="hidden sm:inline">Integrations</span>
-            </TabsTrigger>
-            <TabsTrigger value="widget-installation" className="flex items-center gap-2">
-              <Code className="h-4 w-4" />
-              <span className="hidden sm:inline">Widget Installation</span>
             </TabsTrigger>
           </TabsList>
 
