@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
 import { CopyButton } from '@/components/copy-button';
 import { cn, formatDate } from '@/lib/utils';
-import {, Info} from 'lucide-react';
+import { Loader2, Monitor, Smartphone, Sparkles, History, ShieldCheck, Palette, ChevronLeft, ChevronRight, Code, MousePointer, CheckCircle, Rocket, Info } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const DEFAULT_WIDGET_VERSION = 'latest';
