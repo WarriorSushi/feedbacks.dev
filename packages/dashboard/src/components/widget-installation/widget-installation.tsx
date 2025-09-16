@@ -1247,8 +1247,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         <div className="flex items-center gap-2 text-xs text-muted-foreground"><History className="h-3 w-3" />{statusMessage}</div>
       )}
 
-      <StepNavigation steps={steps} currentIndex={currentStepIndex} onPrev={handlePrev} onNext={handleNext} hasPrev={hasPrev} hasNext={hasNext} />
-
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)]">
         <div className="space-y-6">
           {loading ? (
