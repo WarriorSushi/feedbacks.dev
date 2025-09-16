@@ -259,8 +259,8 @@
 
 .feedbacks-label {
   font-size: 14px;
-  font-weight: 500;
-  color: var(--feedbacks-text-strong, #374151);
+  font-weight: 600;
+  color: var(--feedbacks-text-strong, #111827);
 }
 
 .feedbacks-textarea {
@@ -480,11 +480,12 @@
 
 /* Inline Container Styles */
 .feedbacks-inline-container {
-  background: var(--feedbacks-bg, white);
+  background: var(--feedbacks-bg, #ffffff);
   border-radius: var(--feedbacks-radius, 12px);
-  padding: var(--feedbacks-spacing, 0);
-  border: var(--feedbacks-border, none);
-  box-shadow: var(--feedbacks-shadow, none);
+  padding: var(--feedbacks-spacing, 24px);
+  border: var(--feedbacks-border, 1px solid #e5e7eb);
+  box-shadow: var(--feedbacks-shadow, 0 8px 24px rgba(0, 0, 0, 0.06));
+  overflow: hidden; /* ensure content respects pill radius */
 }
 
 /* Header icon styles */

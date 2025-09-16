@@ -217,17 +217,20 @@ class FeedbacksWidget {
       return;
     }
 
-    const container = target as HTMLElement;
-    container.innerHTML = this.getFormHTML(false);
+    const shell = document.createElement('div');
+    shell.className = 'feedbacks-inline-container';
+    shell.innerHTML = this.getFormHTML(false);
+    (target as HTMLElement).innerHTML = '';
+    (target as HTMLElement).appendChild(shell);
 
     // Apply scale if configured
     if (typeof (this.config as any).scale === 'number' && (this.config as any).scale && (this.config as any).scale !== 1) {
       const s = (this.config as any).scale as number;
-      container.style.transform = `scale(${s})`;
-      container.style.transformOrigin = 'top left';
+      shell.style.transform = `scale(${s})`;
+      shell.style.transformOrigin = 'top left';
     }
-    this.attachFormHandlers(container, false);
-    this.renderCaptcha(container, false);
+    this.attachFormHandlers(shell, false);
+    this.renderCaptcha(shell, false);
   }
 
   private attachTriggerListeners(): void {

@@ -649,13 +649,22 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const handleNext = useCallback(() => goToStep('next'), [goToStep]);
 
   const resetToSaved = () => {
-    // Full factory reset to defaults, regardless of last published
-    const next = { ...DEFAULT_CONFIG };
+    // Prefer last published; if not available, reset to defaults but keep current mode
+    let next: WidgetConfig;
+    if (defaultConfigRow?.config) {
+      next = mergeConfig(DEFAULT_CONFIG, defaultConfigRow.config || {});
+      if (defaultConfigRow.config.target) next.target = defaultConfigRow.config.target;
+      setStatusMessage('Reverted to last published settings');
+    } else {
+      next = { ...DEFAULT_CONFIG, embedMode: config.embedMode };
+      if (config.embedMode === 'inline') next.target = normalizeTarget(config.target, '#feedback-widget');
+      if (config.embedMode === 'trigger') next.target = normalizeTarget(config.target, '#feedback-button');
+      setStatusMessage('Reset to defaults (preserved mode)');
+    }
     setConfig(next);
-    // Reset auxiliary UI state as well
+    // Reset auxiliary UI state
     setSelectedPlatform('website');
     setViewport('desktop');
-    setStatusMessage('Reset to defaults');
     requestAnimationFrame(scrollTabsIntoView);
   };
   const handleSave = async () => {
