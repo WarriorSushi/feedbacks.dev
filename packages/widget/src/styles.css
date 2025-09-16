@@ -12,9 +12,9 @@
   position: fixed;
   bottom: 16px;
   right: 16px;
-  min-height: 52px;
+  min-height: 48px;
   min-width: 56px;
-  padding: 0 20px;
+  padding: 0 18px;
   border-radius: 9999px;
   background: var(--feedbacks-primary, #2563eb);
   border: none;
@@ -25,10 +25,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   color: #ffffff;
-  font-size: clamp(14px, 3.8vw, 16px);
-  line-height: 1;
+  font-size: clamp(13px, 2.8vw, 15px);
+  line-height: 1.1;
   font-weight: 600;
   letter-spacing: 0.01em;
   white-space: nowrap;
@@ -99,10 +99,10 @@
   .feedbacks-button {
     bottom: 24px;
     right: 24px;
-    min-height: 56px;
-    padding: 0 24px;
-    gap: 12px;
-    font-size: 17px;
+    min-height: 52px;
+    padding: 0 22px;
+    gap: 10px;
+    font-size: 16px;
     max-width: 360px;
   }
 

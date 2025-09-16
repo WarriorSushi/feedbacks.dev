@@ -210,8 +210,8 @@ const INLINE_STYLE_PRESETS: Array<{ label: string; border: string; shadow: strin
   },
 ];
 
-const PREVIEW_MIN_HEIGHT_DESKTOP = 760;
-const PREVIEW_MIN_HEIGHT_MOBILE = 520;
+const PREVIEW_MIN_HEIGHT_DESKTOP = 480;
+const PREVIEW_MIN_HEIGHT_MOBILE = 360;
 function mergeConfig(base: WidgetConfig, incoming: Record<string, any> | null | undefined): WidgetConfig {
   if (!incoming || typeof incoming !== 'object') return base;
   const merged: WidgetConfig = { ...base };
@@ -353,14 +353,13 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         display: flex;
         justify-content: center;
         align-items: flex-start;
-        padding: 32px 16px 48px;
+        padding: 24px 12px 32px;
         overflow: hidden;
       }
       #preview-root {
         position: relative;
         width: min(760px, 100%);
         margin: 0 auto;
-        min-height: clamp(520px, 72vh, 860px);
       }
       #inline-anchor {
         display: ${runtime.embedMode === 'inline' ? 'block' : 'none'};
@@ -446,7 +445,7 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
       if (typeof ev.data.height === 'number') {
         const min = viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP;
         const max = viewport === 'mobile' ? 960 : 1280;
-        setHeight(Math.min(max, Math.max(min, ev.data.height + 32)));
+        setHeight(Math.min(max, Math.max(min, ev.data.height + 16)));
       }
     }
     window.addEventListener('message', handleMessage);
@@ -526,6 +525,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
+  const tabsRef = useRef<HTMLDivElement>(null);
 
   const steps = [
     { id: 'setup', label: 'Setup' },
@@ -536,17 +536,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   ];
   const stepOrder = steps.map((step) => step.id);
   const currentStepIndex = Math.max(0, stepOrder.indexOf(activeTab));
-  const goToStep = useCallback((direction: 'prev' | 'next') => {
-    const nextIndex = direction === 'next'
-      ? Math.min(stepOrder.length - 1, currentStepIndex + 1)
-      : Math.max(0, currentStepIndex - 1);
-    setActiveTab(stepOrder[nextIndex]);
-  }, [currentStepIndex, stepOrder]);
-  const hasPrev = currentStepIndex > 0;
-  const hasNext = currentStepIndex < stepOrder.length - 1;
-  const handlePrev = useCallback(() => goToStep('prev'), [goToStep]);
-  const handleNext = useCallback(() => goToStep('next'), [goToStep]);
-
   const currentHash = useMemo(() => hash(config || {}), [config]);
   const savedHash = useMemo(() => hash((defaultConfigRow?.config as Record<string, any>) || {}), [defaultConfigRow]);
   const isDirty = currentHash !== savedHash;
@@ -650,6 +639,23 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
     setStatusMessage(`Applied preset - ${preset.name}`);
   };
 
+  const scrollTabsIntoView = useCallback(() => {
+    if (!tabsRef.current) return;
+    tabsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
+  const goToStep = useCallback((direction: 'prev' | 'next') => {
+    const nextIndex = direction === 'next'
+      ? Math.min(stepOrder.length - 1, currentStepIndex + 1)
+      : Math.max(0, currentStepIndex - 1);
+    setActiveTab(stepOrder[nextIndex]);
+    requestAnimationFrame(scrollTabsIntoView);
+  }, [currentStepIndex, stepOrder, scrollTabsIntoView]);
+  const hasPrev = currentStepIndex > 0;
+  const hasNext = currentStepIndex < stepOrder.length - 1;
+  const handlePrev = useCallback(() => goToStep('prev'), [goToStep]);
+  const handleNext = useCallback(() => goToStep('next'), [goToStep]);
+
   const resetToSaved = () => {
     const next = mergeConfig(DEFAULT_CONFIG, defaultConfigRow?.config || {});
     if (defaultConfigRow?.config?.target) next.target = defaultConfigRow.config.target;
@@ -657,6 +663,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
     setStatusMessage('Reverted to last published settings');
   };
   const handleSave = async () => {
+    scrollTabsIntoView();
     setSaving(true);
     setStatusMessage('Saving...');
     try {
@@ -728,23 +735,32 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   }), [config.inlineBorder, config.inlineShadow, config.backgroundColor]);
 
   const sections = (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-5">
-        <TabsTrigger value="setup">Setup</TabsTrigger>
-        <TabsTrigger value="appearance">Appearance</TabsTrigger>
-        <TabsTrigger value="fields">Fields</TabsTrigger>
-        <TabsTrigger value="protection">Protection</TabsTrigger>
+    <div ref={tabsRef} className="space-y-6">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => {
+          setActiveTab(value);
+          requestAnimationFrame(scrollTabsIntoView);
+        }}
+        className="w-full"
+      >
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="setup">Setup</TabsTrigger>
+          <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          <TabsTrigger value="fields">Fields</TabsTrigger>
+          <TabsTrigger value="protection">Protection</TabsTrigger>
         <TabsTrigger value="publish">Publish</TabsTrigger>
       </TabsList>
-      <StepNavigation
-        steps={steps}
-        currentIndex={currentStepIndex}
-        onPrev={handlePrev}
-        onNext={handleNext}
-        hasPrev={hasPrev}
-        hasNext={hasNext}
-        variant="top"
-      />
+        <StepNavigation
+          steps={steps}
+          currentIndex={currentStepIndex}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          hasPrev={hasPrev}
+          hasNext={hasNext}
+          variant="top"
+          showNext={hasNext}
+        />
 
       <TabsContent value="setup" className="space-y-6">
         <Card>
@@ -1226,7 +1242,8 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
       </TabsContent>
-    </Tabs>
+      </Tabs>
+    </div>
   );
   return (
     <div className="space-y-5">
@@ -1259,12 +1276,35 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           <WidgetPreview config={config} projectKey={projectKey} widgetVersion={widgetVersion} viewport={viewport} onViewportChange={setViewport} />
         </div>
       </div>
+      <StepNavigation
+        steps={steps}
+        currentIndex={currentStepIndex}
+        onPrev={handlePrev}
+        onNext={activeTab === 'publish' ? handleSave : handleNext}
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        variant="bottom"
+        nextLabel={activeTab === 'publish' ? (saving ? 'Saving...' : 'Save & publish') : 'Next'}
+        nextDisabled={activeTab === 'publish' ? saving || loading || !isDirty : !hasNext}
+        showNext={activeTab === 'publish' ? true : hasNext}
+      />
     </div>
   );
 }
 
 
-function StepNavigation({ steps, currentIndex, onPrev, onNext, hasPrev, hasNext, variant = 'bottom' }: {
+function StepNavigation({
+  steps,
+  currentIndex,
+  onPrev,
+  onNext,
+  hasPrev,
+  hasNext,
+  variant = 'bottom',
+  nextLabel = 'Next',
+  nextDisabled,
+  showNext = true,
+}: {
   steps: Array<{ id: string; label: string }>;
   currentIndex: number;
   onPrev: () => void;
@@ -1272,7 +1312,12 @@ function StepNavigation({ steps, currentIndex, onPrev, onNext, hasPrev, hasNext,
   hasPrev: boolean;
   hasNext: boolean;
   variant?: 'top' | 'bottom';
+  nextLabel?: string;
+  nextDisabled?: boolean;
+  showNext?: boolean;
 }) {
+  const disableNext = typeof nextDisabled === 'boolean' ? nextDisabled : !hasNext;
+  const showArrow = nextLabel === 'Next';
   return (
     <div
       className={cn(
@@ -1293,16 +1338,18 @@ function StepNavigation({ steps, currentIndex, onPrev, onNext, hasPrev, hasNext,
           <ChevronLeft className="h-4 w-4" />
           Previous
         </Button>
-        <Button
-          type="button"
-          size="sm"
-          onClick={onNext}
-          disabled={!hasNext}
-          className={cn('flex items-center gap-1 w-full sm:w-auto', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
-        >
-          Next
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+        {showNext && (
+          <Button
+            type="button"
+            size="sm"
+            onClick={onNext}
+            disabled={disableNext}
+            className={cn('flex items-center gap-1 w-full sm:w-auto', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
+          >
+            {nextLabel}
+            {showArrow && <ChevronRight className="h-4 w-4" />}
+          </Button>
+        )}
       </div>
     </div>
   );

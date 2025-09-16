@@ -159,6 +159,9 @@ class FeedbacksWidget {
       if (shape === 'pill') radius = '9999px';
       else if (shape === 'square') radius = '8px';
       else if (shape === 'rounded') radius = '16px';
+      if (this.config.embedMode === 'inline' && shape === 'pill') {
+        radius = '32px';
+      }
       if (radius) {
         root.style.setProperty('--feedbacks-radius', radius);
       }
