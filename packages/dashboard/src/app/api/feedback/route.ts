@@ -43,6 +43,34 @@ async function rateLimit(route: string, key: string, limit: number, windowMs: nu
   return true;
 }
 
+
+async function loadDefaultWidgetConfig(projectId: string, channel = 'default'): Promise<Record<string, any>> {
+  try {
+    const { data } = await supabaseAdmin
+      .from('widget_configs')
+      .select('config')
+      .eq('project_id', projectId)
+      .eq('channel', channel)
+      .order('is_default', { ascending: false })
+      .order('version', { ascending: false })
+      .limit(1);
+    if (Array.isArray(data) && data.length > 0) {
+      const cfg = data[0]?.config;
+      if (cfg && typeof cfg === 'object') return cfg as Record<string, any>;
+    }
+    const { data: fallback } = await supabaseAdmin
+      .from('widget_configs')
+      .select('config')
+      .eq('project_id', projectId)
+      .order('version', { ascending: false })
+      .limit(1);
+    if (Array.isArray(fallback) && fallback.length > 0) {
+      const cfg = fallback[0]?.config;
+      if (cfg && typeof cfg === 'object') return cfg as Record<string, any>;
+    }
+  } catch {}
+  return {};
+}
 async function verifyTurnstile(token: string, ip?: string) {
   const secret = process.env.TURNSTILE_SECRET;
   if (!secret) return true;
@@ -298,7 +326,7 @@ export async function POST(request: NextRequest) {
     // Find project by API key
     const { data: project, error: projectError } = await supabaseAdmin
       .from('projects')
-      .select('id,name,webhooks,widget_config')
+      .select('id,name,webhooks')
       .eq('api_key', apiKey)
       .single();
 
@@ -371,7 +399,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Enforce captcha if required by project config
-    const widgetCfg: any = (project as any).widget_config || {};
+    const widgetCfg: any = await loadDefaultWidgetConfig(project.id);
     // Per-project rate limits (override)
     const rlCount = typeof widgetCfg.rateLimitCount === 'number' ? widgetCfg.rateLimitCount : 5;
     const rlWindowSec = typeof widgetCfg.rateLimitWindowSec === 'number' ? widgetCfg.rateLimitWindowSec : 60;

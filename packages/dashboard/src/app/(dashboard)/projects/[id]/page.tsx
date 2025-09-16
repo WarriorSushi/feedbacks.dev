@@ -7,15 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CopyButton } from '@/components/copy-button';
+import { WidgetInstallationExperience } from '@/components/widget-installation';
 import { ArrowLeft, ExternalLink, Settings, MessageSquare, Code, Globe, Mail, MonitorSmartphone, Tag, Paperclip, BarChart3, Webhook } from 'lucide-react';
 import Link from 'next/link';
-import { WidgetCodeGenerator } from '@/components/widget-code-generator';
 import { ProjectAnalytics } from '@/components/project-analytics';
 import { ImageLightbox } from '@/components/image-lightbox';
 import { ProjectIntegrations } from '@/components/project-integrations';
 import { ArchiveFeedbackButton } from '@/components/archive-feedback-button';
 import { Shield } from 'lucide-react';
-import { ProjectAntiSpam } from '@/components/project-anti-spam';
 
 interface ProjectPageProps {
   params: { id: string };
@@ -284,43 +283,15 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             </div>
           </TabsContent>
 
-          <TabsContent value="widget-installation" className="space-y-4">
-            {/* Slim top guidance */}
-            <div className="text-xs text-muted-foreground border rounded-md px-3 py-2">
-              <span className="font-medium">Install:</span>
-              <span className="ml-2">1) Choose options 2) Copy code 3) Paste before </span>
-              <code className="text-[10px]">&lt;/body&gt;</code>
-            </div>
+          <TabsContent value="widget-installation" className="space-y-6">
+            <WidgetInstallationExperience
+              projectId={params.id}
+              projectKey={project.api_key}
+              projectName={project.name}
+              widgetVersion={WIDGET_VERSION}
+            />
 
-            {/* Widget Setup (clean, single column) */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Code className="h-5 w-5" />
-                  Widget Installation
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <WidgetCodeGenerator projectKey={project.api_key} widgetVersion={WIDGET_VERSION} projectId={params.id} />
-
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button asChild className="flex-1">
-                    <Link href={`/widget-demo?apiKey=${encodeURIComponent(project.api_key)}`} target="_blank">
-                      Open Demo
-                    </Link>
-                  </Button>
-                  <Button variant="outline" asChild className="flex-1">
-                    <Link href={`/api/projects/${params.id}/feedback.csv`} target="_blank">
-                      Export CSV
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-              {/* Anti-spam controls are now managed within the installation customizer (Ultra). */}
-
-            {/* Project Info and API Key (moved to bottom, de-emphasized) */}
+            {/* Project Info and API Key */}
             <Card>
               <CardHeader>
                 <CardTitle>Project Info</CardTitle>

@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @next/next/no-img-element */
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMemo, useCallback } from 'react';
@@ -67,7 +69,7 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
       url: "/settings",
       icon: Settings,
     },
-  ], [projectsCount]);
+  ], []);
 
   const quickActions = useMemo(() => [
     {
@@ -249,3 +251,5 @@ export function DashboardSidebar({ user, projectsCount = 0 }: DashboardSidebarPr
     </Sidebar>
   );
 }
+
+

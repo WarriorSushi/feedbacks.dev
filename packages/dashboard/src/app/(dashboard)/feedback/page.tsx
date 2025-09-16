@@ -23,7 +23,7 @@ import {
   MonitorSmartphone,
 } from "lucide-react";
 import { ImageLightbox } from "@/components/image-lightbox";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useDashboard } from "@/components/dashboard-client-layout";
 import { createBrowserSupabaseClient } from "@/lib/supabase-browser";
 
@@ -68,9 +68,9 @@ export default function FeedbackPage() {
     return match?.id || null;
   }, [filterProject, projects]);
 
-  const buildFilters = (q: any) => {
+  const buildFilters = useCallback((q: any) => {
     if (selectedProjectId) q = q.eq('project_id', selectedProjectId);
-    else q = q.in('project_id', projects.map(p => p.id));
+    else q = q.in('project_id', projects.map((p) => p.id));
     if (filterStatus !== 'all') {
       if (filterStatus === 'archived') q = q.eq('archived', true);
       else q = q.eq('is_read', filterStatus === 'read');
@@ -82,7 +82,7 @@ export default function FeedbackPage() {
       q = q.or(`message.ilike.${term},email.ilike.${term}`);
     }
     return q;
-  };
+  }, [selectedProjectId, projects, filterStatus, filterType, filterRating, searchTerm]);
 
   useEffect(() => {
     const run = async () => {
@@ -129,7 +129,7 @@ export default function FeedbackPage() {
       setFeedback(mapped);
     };
     run();
-  }, [projects, selectedProjectId, filterStatus, filterType, filterRating, searchTerm, page, pageSize]);
+  }, [projects, selectedProjectId, filterStatus, filterType, filterRating, searchTerm, page, pageSize, buildFilters, supabase]);
 
   const filteredFeedback = useMemo(() => {
     const term = searchTerm.toLowerCase();
@@ -644,3 +644,6 @@ export default function FeedbackPage() {
     </div>
   );
 }
+
+
+

@@ -158,10 +158,10 @@ export default function NewProjectPage() {
 
               <div className="mt-6 p-4 bg-muted rounded-lg">
                 <h3 className="font-medium mb-2">What happens next?</h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• We'll generate a unique API key for your project</li>
-                  <li>• You'll get a code snippet to embed in your website</li>
-                  <li>• Start collecting feedback immediately</li>
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                  <li>We&rsquo;ll generate a unique API key for your project</li>
+                  <li>You&rsquo;ll get a code snippet to embed in your website</li>
+                  <li>Start collecting feedback immediately</li>
                 </ul>
               </div>
             </CardContent>
@@ -171,3 +171,6 @@ export default function NewProjectPage() {
     </div>
   );
 }
+
+
+

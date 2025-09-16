@@ -1,21 +1,152 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 
+const DEFAULT_CHANNEL = 'default';
+const ALLOWED_EMBED_MODES = ['modal', 'inline', 'trigger'] as const;
+const ALLOWED_POSITIONS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const;
+const ALLOWED_CAPTCHA_PROVIDERS = ['turnstile', 'hcaptcha', 'none'] as const;
+
+function sanitizeValue(value: any): any {
+  if (value === null) return null;
+  const type = typeof value;
+  if (type === 'string') {
+    return value.length > 2000 ? value.slice(0, 2000) : value;
+  }
+  if (type === 'number') {
+    return Number.isFinite(value) ? value : undefined;
+  }
+  if (type === 'boolean') {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => sanitizeValue(entry))
+      .filter((entry) => entry !== undefined);
+  }
+  if (type === 'object') {
+    const result: Record<string, any> = {};
+    for (const [key, val] of Object.entries(value)) {
+      if (typeof key !== 'string') continue;
+      const sanitized = sanitizeValue(val);
+      if (sanitized !== undefined) result[key] = sanitized;
+    }
+    return result;
+  }
+  return undefined;
+}
+
+function sanitizeWidgetConfig(input: any): Record<string, any> {
+  if (!input || typeof input !== 'object') return {};
+  const blocked = new Set(['projectKey', 'project_id', 'projectId', 'widgetVersion']);
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(input)) {
+    if (blocked.has(key)) continue;
+    const sanitized = sanitizeValue(value);
+    if (sanitized !== undefined) result[key] = sanitized;
+  }
+  return result;
+}
+
+function validateWidgetConfig(raw: any): { config: Record<string, any>; warnings: string[] } {
+  const warnings: string[] = [];
+  const config = sanitizeWidgetConfig(raw);
+
+  const embedModeRaw = typeof config.embedMode === 'string' ? config.embedMode : 'modal';
+  const embedMode = ALLOWED_EMBED_MODES.includes(embedModeRaw as any) ? embedModeRaw : 'modal';
+  if (!ALLOWED_EMBED_MODES.includes(embedMode as any)) {
+    warnings.push('embedMode reset to modal');
+  }
+  config.embedMode = embedMode;
+
+  if (config.position && !ALLOWED_POSITIONS.includes(config.position)) {
+    warnings.push('position reset to bottom-right');
+    config.position = 'bottom-right';
+  }
+
+  if (typeof config.attachmentMaxMB === 'number') {
+    if (config.attachmentMaxMB < 1 || config.attachmentMaxMB > 50) {
+      config.attachmentMaxMB = Math.min(50, Math.max(1, Math.round(config.attachmentMaxMB)));
+      warnings.push('attachmentMaxMB clamped between 1MB and 50MB');
+    }
+  }
+
+  if (typeof config.scale === 'number') {
+    if (config.scale < 0.5 || config.scale > 2) {
+      config.scale = Number(config.scale.toFixed(2));
+      config.scale = Math.min(2, Math.max(0.5, config.scale));
+      warnings.push('scale clamped between 0.5 and 2');
+    }
+  }
+
+  if (config.captchaProvider) {
+    const provider = String(config.captchaProvider).toLowerCase();
+    if (!ALLOWED_CAPTCHA_PROVIDERS.includes(provider as any)) {
+      warnings.push('captchaProvider set to none');
+      config.captchaProvider = 'none';
+    } else {
+      config.captchaProvider = provider;
+    }
+  }
+
+  if (typeof config.rateLimitCount === 'number') {
+    const value = Math.round(config.rateLimitCount);
+    config.rateLimitCount = Math.min(200, Math.max(1, value));
+  }
+
+  if (typeof config.rateLimitWindowSec === 'number') {
+    const value = Math.round(config.rateLimitWindowSec);
+    config.rateLimitWindowSec = Math.min(3600, Math.max(5, value));
+  }
+
+  return { config, warnings };
+}
+
+function mapRow(row: any) {
+  return {
+    id: row.id,
+    channel: row.channel,
+    version: row.version,
+    label: row.label,
+    isDefault: !!row.is_default,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    config: row.config || {},
+  };
+}
+
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new NextResponse('Unauthorized', { status: 401 });
 
-  const { data, error } = await supabase
+  const { data: project, error: projectError } = await supabase
     .from('projects')
-    .select('widget_config')
+    .select('id')
     .eq('id', params.id)
     .eq('owner_user_id', user.id)
     .single();
 
-  if (error) return NextResponse.json({}, { status: 200 });
+  if (projectError || !project) {
+    return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+  }
 
-  return NextResponse.json(data?.widget_config || {});
+  const { data: rows } = await supabase
+    .from('widget_configs')
+    .select('id, channel, version, label, config, is_default, created_at, updated_at')
+    .eq('project_id', params.id)
+    .order('channel', { ascending: true })
+    .order('is_default', { ascending: false })
+    .order('version', { ascending: false });
+
+  const configs = Array.isArray(rows) ? rows.map(mapRow) : [];
+  const defaultConfig = configs.find((item) => item.isDefault) || configs[0] || null;
+
+  return NextResponse.json({
+    config: defaultConfig?.config || {},
+    defaultConfig: defaultConfig,
+    configs,
+    channel: defaultConfig?.channel || DEFAULT_CHANNEL,
+  });
 }
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
@@ -23,25 +154,82 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new NextResponse('Unauthorized', { status: 401 });
 
-  let body: any = {};
+  let body: any;
   try {
     body = await request.json();
-    if (typeof body !== 'object' || body === null) throw new Error('Invalid body');
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  // Attempt update; if column does not exist in DB yet, return helpful message
-  const { error } = await supabase
-    .from('projects')
-    .update({ widget_config: body })
-    .eq('id', params.id)
-    .eq('owner_user_id', user.id);
+  const payload = typeof body === 'object' && body !== null && 'config' in body ? body.config : body;
+  const channelRaw = typeof body?.channel === 'string' ? body.channel : DEFAULT_CHANNEL;
+  const label = typeof body?.label === 'string' && body.label.trim().length > 0 ? body.label.trim() : undefined;
+  const channel = channelRaw.trim().length > 0 ? channelRaw.trim().toLowerCase() : DEFAULT_CHANNEL;
 
-  if (error) {
-    return NextResponse.json({ error: 'Persist failed. Ensure projects.widget_config JSONB exists.' }, { status: 400 });
+  const { config, warnings } = validateWidgetConfig(payload);
+
+  const { data: project, error: projectError } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('id', params.id)
+    .eq('owner_user_id', user.id)
+    .single();
+
+  if (projectError || !project) {
+    return NextResponse.json({ error: 'Project not found' }, { status: 404 });
   }
 
-  return NextResponse.json({ success: true });
-}
+  // Determine next version number
+  const { data: latest } = await supabase
+    .from('widget_configs')
+    .select('version')
+    .eq('project_id', params.id)
+    .eq('channel', channel)
+    .order('version', { ascending: false })
+    .limit(1);
 
+  const nextVersion = Array.isArray(latest) && latest.length > 0 ? (Number(latest[0].version) || 0) + 1 : 1;
+
+  await supabase
+    .from('widget_configs')
+    .update({ is_default: false })
+    .eq('project_id', params.id)
+    .eq('channel', channel);
+
+  const { data: inserted, error: insertError } = await supabase
+    .from('widget_configs')
+    .insert({
+      project_id: params.id,
+      channel,
+      version: nextVersion,
+      label: label || `Version ${nextVersion}`,
+      config,
+      is_default: true,
+      created_by: user.id,
+    })
+    .select('id, channel, version, label, config, is_default, created_at, updated_at')
+    .single();
+
+  if (insertError || !inserted) {
+    return NextResponse.json({ error: 'Persist failed' }, { status: 400 });
+  }
+
+  await supabase
+    .from('widget_config_events')
+    .insert({
+      widget_config_id: inserted.id,
+      project_id: params.id,
+      user_id: user.id,
+      event_type: 'saved',
+      metadata: { channel, version: nextVersion, label: inserted.label },
+    });
+
+  const response = {
+    config: inserted.config || {},
+    saved: mapRow(inserted),
+    channel,
+    warnings,
+  };
+
+  return NextResponse.json(response, { status: 200 });
+}

@@ -1,0 +1,2 @@
+declare module 'object-hash';
+

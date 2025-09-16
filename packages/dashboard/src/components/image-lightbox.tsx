@@ -1,4 +1,5 @@
-"use client";
+/* eslint-disable @next/next/no-img-element */
+'use client';
 
 import { useEffect, useState } from "react";
 
@@ -36,4 +37,6 @@ export function ImageLightbox({ src, thumbClassName = "h-24 w-auto rounded borde
     </>
   );
 }
+
+
 
