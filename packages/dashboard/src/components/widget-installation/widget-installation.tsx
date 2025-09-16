@@ -525,7 +525,9 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const [selectedPlatform, setSelectedPlatform] = useState<typeof SNIPPET_PLATFORMS[number]>('website');
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
-  \n  const [showAdvancedFields, setShowAdvancedFields] = useState<boolean>(false);\n  const [showAdvancedStyling, setShowAdvancedStyling] = useState<boolean>(false);\n  const [showAdvancedExperience, setShowAdvancedExperience] = useState<boolean>(false);
+  const [showAdvancedFields, setShowAdvancedFields] = useState<boolean>(false);
+  const [showAdvancedStyling, setShowAdvancedStyling] = useState<boolean>(false);
+  const [showAdvancedExperience, setShowAdvancedExperience] = useState<boolean>(false);
 
   const steps = [
     { id: 'setup', label: 'Setup' },
