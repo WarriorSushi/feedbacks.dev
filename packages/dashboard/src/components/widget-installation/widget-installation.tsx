@@ -455,7 +455,12 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <CardTitle className="text-base">Live Preview</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle className="text-base">Live Preview</CardTitle>
+          <Badge variant="secondary" className="px-2 py-0.5 text-[10px] uppercase tracking-wide">
+            Mode: {config.embedMode === 'inline' ? 'Inline' : config.embedMode === 'modal' ? 'Modal' : 'Trigger'}
+          </Badge>
+        </div>
         <div className="inline-flex items-center gap-2 rounded-full bg-muted px-2 py-1 text-xs">
           <Monitor className={cn('h-3 w-3', viewport === 'desktop' ? 'text-foreground' : 'text-muted-foreground')} />
           <Switch
