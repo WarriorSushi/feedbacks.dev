@@ -65,17 +65,14 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
 
           {/* CTA buttons */}
           <div className="flex flex-row gap-3 mb-10">
-            <HoverBorderGradient
-              containerClassName="rounded-full"
-              className="dark:bg-black bg-white text-black dark:text-white flex items-center space-x-2 px-4 md:px-8 text-sm md:text-base"
-            >
-              <Link href={isAuthenticated ? "/dashboard" : "/auth"} className="flex items-center space-x-2">
+            <Button size="lg" asChild>
+              <Link href={isAuthenticated ? "/dashboard" : "/auth"} className="flex items-center gap-2 px-5 md:px-7">
                 <span>{isAuthenticated ? "Go to Dashboard" : "Get Started Free"}</span>
-                <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
+                <ArrowRight className="h-4 w-4" />
               </Link>
-            </HoverBorderGradient>
-            <Button size="sm" variant="outline" className="px-4 md:px-6 text-sm md:text-base md:size-lg" asChild>
-              <Link href="/docs">View Docs</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/docs" className="px-5 md:px-7">View Docs</Link>
             </Button>
           </div>
 

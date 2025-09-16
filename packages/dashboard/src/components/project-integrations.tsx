@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -254,10 +254,10 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
     if (!u) return '';
     if (reveal[u]) return u;
     const max = 36;
-    if (u.length <= max) return u.replace(/.(?=.{4})/g, '•');
+    if (u.length <= max) return u.replace(/.(?=.{4})/g, 'â€¢');
     const head = u.slice(0, 16);
     const tail = u.slice(-8);
-    return `${head}…${tail}`;
+    return `${head}â€¦${tail}`;
   };
 
   const copy = async (text: string) => {
@@ -456,7 +456,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
                       return (
                         <>
                           <span className={`inline-block h-2 w-2 rounded-full ${ok ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                          <span className="text-muted-foreground">Last sent: {timeAgo((last as any).when)}{typeof (last as any).ms === 'number' ? ` • ${(last as any).ms}ms` : ''}</span>
+                          <span className="text-muted-foreground">Last sent: {timeAgo((last as any).when)}{typeof (last as any).ms === 'number' ? ` â€¢ ${(last as any).ms}ms` : ''}</span>
                         </>
                       );
                     })()}
@@ -469,7 +469,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
                     const unhealthy = consec >= 3;
                     return (
                       <div className="text-xs text-muted-foreground">
-                        Health: <span className={unhealthy ? 'text-destructive' : 'text-green-600'}>{unhealthy ? `Unhealthy (${consec} fails)` : 'Healthy'}</span> • Success: {Math.round((successes/total)*100)}%
+                        Health: <span className={unhealthy ? 'text-destructive' : 'text-green-600'}>{unhealthy ? `Unhealthy (${consec} fails)` : 'Healthy'}</span> â€¢ Success: {Math.round((successes/total)*100)}%
                       </div>
                     );
                   })()}
@@ -485,7 +485,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
   return (
     <div className="space-y-4">
       {loading ? (
-        <div className="text-sm text-muted-foreground">Loading…</div>
+        <div className="text-sm text-muted-foreground">Loadingâ€¦</div>
       ) : (
         <>
           {endpointList('Slack', 'slack', 'https://hooks.slack.com/services/...', 'Sends a simple text message')}
@@ -495,7 +495,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
 
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">Saved per project. Toggle to enable delivery.</div>
-            <Button onClick={onSave} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button>
+            <Button onClick={onSave} disabled={saving}>{saving ? 'Savingâ€¦' : 'Save'}</Button>
           </div>
           {message && <div className="text-sm">{message}</div>}
 
@@ -510,7 +510,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
                   <Label>Endpoint</Label>
                   <select className="w-full border rounded h-8 px-2 text-sm" value={logEndpointFilter} onChange={(e)=>{ setLogEndpointFilter(e.target.value); setLogPage(1); }}>
                     <option value="">All</option>
-                    {(['slack','discord','generic'] as const).map(kind => (
+                    {(['slack','discord','generic','github'] as const).map(kind => (
                       (toArray((cfgArrays as any)[kind]?.endpoints) as any[]).map(ep => (
                         <option key={ep.id} value={ep.id}>{ep.name || ep.url}</option>
                       ))
@@ -556,9 +556,9 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
                           {l.status}
                         </Badge>
                         <span className="text-muted-foreground whitespace-nowrap">{new Date(l.created_at).toLocaleString()}</span>
-                        <span className="truncate">{l.event} → {l.kind}</span>
-                        {typeof l.response_time_ms === 'number' && <span className="text-xs text-muted-foreground whitespace-nowrap">• {l.response_time_ms}ms</span>}
-                        {typeof l.status_code === 'number' && <span className="text-xs text-muted-foreground whitespace-nowrap">• {l.status_code}</span>}
+                        <span className="truncate">{l.event} â†’ {l.kind}</span>
+                        {typeof l.response_time_ms === 'number' && <span className="text-xs text-muted-foreground whitespace-nowrap">â€¢ {l.response_time_ms}ms</span>}
+                        {typeof l.status_code === 'number' && <span className="text-xs text-muted-foreground whitespace-nowrap">â€¢ {l.status_code}</span>}
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {l.status === 'failed' && (
@@ -575,7 +575,7 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
                               setResending(m=>({ ...m, [l.id]: false }));
                             }
                           }}>
-                            {resending[l.id] ? 'Resending…' : 'Resend'}
+                            {resending[l.id] ? 'Resendingâ€¦' : 'Resend'}
                           </Button>
                         )}
                         {l.url && (
@@ -616,9 +616,9 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
                           {l.status}
                         </Badge>
                         <span className="text-muted-foreground whitespace-nowrap">{new Date(l.created_at).toLocaleString()}</span>
-                        <span className="truncate">{l.event} → {l.kind}</span>
-                        {typeof l.response_time_ms === 'number' && <span className="text-xs text-muted-foreground whitespace-nowrap">• {l.response_time_ms}ms</span>}
-                        {typeof l.status_code === 'number' && <span className="text-xs text-muted-foreground whitespace-nowrap">• {l.status_code}</span>}
+                        <span className="truncate">{l.event} â†’ {l.kind}</span>
+                        {typeof l.response_time_ms === 'number' && <span className="text-xs text-muted-foreground whitespace-nowrap">â€¢ {l.response_time_ms}ms</span>}
+                        {typeof l.status_code === 'number' && <span className="text-xs text-muted-foreground whitespace-nowrap">â€¢ {l.status_code}</span>}
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {l.url && (
@@ -639,3 +639,5 @@ export function ProjectIntegrations({ projectId }: ProjectIntegrationsProps) {
     </div>
   );
 }
+
+

@@ -74,8 +74,20 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
         'Accept': 'application/vnd.github+json',
         'User-Agent': 'feedbacks.dev'
       } as Record<string,string>;
-      const payload = { title: `feedbacks.dev test webhook for ${name}`, body: `This is a test issue created at ${new Date().toISOString()}`, labels: ['feedbacks-dev'] };
+      const payload = { title: `[test] feedbacks.dev test webhook for ${name}`, body: `This is a test issue created at ${new Date().toISOString()}`, labels: ['feedbacks-dev'] };
       const r = await postJson(url, payload, headers);
+      if (r.ok) {
+        try {
+          const data = await r.json();
+          if (data && data.number) {
+            await fetch(`https://api.github.com/repos/${ep.repo}/issues/${data.number}`, {
+              method: 'PATCH',
+              headers: { ...headers, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ state: 'closed' }),
+            });
+          }
+        } catch {}
+      }
       return NextResponse.json({ ok: r.ok }, { status: r.ok ? 200 : 400 });
     }
     return NextResponse.json({ ok: false, error: 'Webhook not configured or enabled' }, { status: 400 });
