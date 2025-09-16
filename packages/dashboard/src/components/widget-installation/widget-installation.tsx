@@ -210,8 +210,8 @@ const INLINE_STYLE_PRESETS: Array<{ label: string; border: string; shadow: strin
   },
 ];
 
-const PREVIEW_MIN_HEIGHT_DESKTOP = 480;
-const PREVIEW_MIN_HEIGHT_MOBILE = 360;
+const PREVIEW_MIN_HEIGHT_DESKTOP = 360;
+const PREVIEW_MIN_HEIGHT_MOBILE = 240;
 function mergeConfig(base: WidgetConfig, incoming: Record<string, any> | null | undefined): WidgetConfig {
   if (!incoming || typeof incoming !== 'object') return base;
   const merged: WidgetConfig = { ...base };
@@ -342,32 +342,16 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="${cssHref}" />
     <style>
-      :root {
-        font-family: 'Inter', system-ui, sans-serif;
-      }
-      body {
-        margin: 0;
-        min-height: 100vh;
-        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
-        color: #0f172a;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        padding: 24px 12px 32px;
-        overflow: hidden;
-      }
-      #preview-root {
-        position: relative;
-        width: min(760px, 100%);
-        margin: 0 auto;
-      }
+      :root { font-family: 'Inter', system-ui, sans-serif; }
+      body { margin: 0; background: transparent; color: #0f172a; overflow: hidden; }
+      #preview-root { position: relative; width: min(760px, 100%); margin: 0 auto; padding: 0; }
       #inline-anchor {
         display: ${runtime.embedMode === 'inline' ? 'block' : 'none'};
         width: 100%;
       }
       #trigger-anchor {
         display: ${runtime.embedMode === 'trigger' ? 'inline-flex' : 'none'};
-        margin-top: 24px;
+        margin-top: 8px;
         padding: 10px 18px;
         border-radius: 9999px;
         border: 1px solid rgba(15,23,42,0.1);
@@ -376,6 +360,8 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         font-weight: 600;
         box-shadow: 0 10px 30px rgba(15,23,42,0.08);
       }
+      /* Preview-only: avoid inner scroll in modal, let parent iframe grow */
+      .feedbacks-modal { max-height: none !important; }
     </style>
   </head>
   <body>
@@ -405,8 +391,14 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           postHeight();
         }
         function postHeight(){
-          const height = document.body.scrollHeight;
-          parent.postMessage({ type: 'widget-preview:height', height: height }, '*');
+          try {
+            const root = document.getElementById('preview-root');
+            const rect = root ? root.getBoundingClientRect() : null;
+            const height = rect ? Math.ceil(rect.height) : Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight);
+            parent.postMessage({ type: 'widget-preview:height', height: height }, '*');
+          } catch (e) {
+            parent.postMessage({ type: 'widget-preview:height', height: Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight) }, '*');
+          }
         }
         window.addEventListener('message', function(ev){
           if (!ev || !ev.data) return;
@@ -445,7 +437,7 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
       if (typeof ev.data.height === 'number') {
         const min = viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP;
         const max = viewport === 'mobile' ? 960 : 1280;
-        setHeight(Math.min(max, Math.max(min, ev.data.height + 16)));
+        setHeight(Math.min(max, Math.max(min, ev.data.height)));
       }
     }
     window.addEventListener('message', handleMessage);
@@ -751,16 +743,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           <TabsTrigger value="protection">Protection</TabsTrigger>
         <TabsTrigger value="publish">Publish</TabsTrigger>
       </TabsList>
-        <StepNavigation
-          steps={steps}
-          currentIndex={currentStepIndex}
-          onPrev={handlePrev}
-          onNext={handleNext}
-          hasPrev={hasPrev}
-          hasNext={hasNext}
-          variant="top"
-          showNext={hasNext}
-        />
+        {null}
 
       <TabsContent value="setup" className="space-y-6">
         <Card>
@@ -1190,7 +1173,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="website" className="w-full">
-              <TabsList className="flex flex-wrap gap-2">
+              <TabsList className="w-full overflow-x-auto gap-2">
                 {FRAMEWORK_OPTIONS.map((option) => (
                   <TabsTrigger key={option.value} value={option.value} className="px-3 py-1 text-xs sm:text-sm">
                     {option.label}

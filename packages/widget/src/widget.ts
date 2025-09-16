@@ -208,20 +208,18 @@ class FeedbacksWidget {
   }
 
   private createInlineForm(): void {
-    const target = this.config.target ? 
-      document.querySelector(this.config.target) : 
+    const target = this.config.target ?
+      document.querySelector(this.config.target) :
       document.body;
-      
+
     if (!target) {
       this.log('Target element not found, falling back to body');
       return;
     }
 
-    const container = document.createElement('div');
-    container.className = 'feedbacks-inline-container';
+    const container = target as HTMLElement;
     container.innerHTML = this.getFormHTML(false);
-    
-    target.appendChild(container);
+
     // Apply scale if configured
     if (typeof (this.config as any).scale === 'number' && (this.config as any).scale && (this.config as any).scale !== 1) {
       const s = (this.config as any).scale as number;
