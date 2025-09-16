@@ -18,7 +18,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: `img-src 'self' data: ${supabaseOrigin};`,
+            value: `img-src 'self' data: ${supabaseOrigin} https://lh3.googleusercontent.com;`,
           },
         ],
       },
