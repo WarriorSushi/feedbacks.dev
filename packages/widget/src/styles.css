@@ -12,32 +12,66 @@
   position: fixed;
   bottom: 16px;
   right: 16px;
-  width: 56px;
-  height: 56px;
-  border-radius: 28px;
+  min-height: 52px;
+  padding: 0 20px;
+  border-radius: 9999px;
   background: var(--feedbacks-primary, #2563eb);
   border: none;
   cursor: pointer;
   z-index: 999999;
-  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 24px;
+  gap: 10px;
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1;
   font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  max-width: 320px;
+  overflow: hidden;
   backdrop-filter: blur(8px);
+  outline: none;
 }
 
 .feedbacks-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.4);
   background: var(--feedbacks-primary-hover, #1d4ed8);
 }
 
 .feedbacks-button:active {
-  transform: scale(0.98);
+  transform: translateY(0);
+}
+
+.feedbacks-button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feedbacks-button-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.feedbacks-button-text {
+  display: block;
+}
+
+.feedbacks-button-icon-only {
+  padding: 0;
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
+.feedbacks-button-icon-only .feedbacks-button-text {
+  display: none;
 }
 
 /* Position variants */
@@ -61,11 +95,18 @@
 /* Tablet and larger screens */
 @media (min-width: 768px) {
   .feedbacks-button {
-    width: 60px;
-    height: 60px;
     bottom: 24px;
     right: 24px;
-    border-radius: 30px;
+    min-height: 56px;
+    padding: 0 24px;
+    gap: 12px;
+    font-size: 17px;
+  }
+
+  .feedbacks-button-icon-only {
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
   }
   
   .feedbacks-button.position-bottom-left {
@@ -193,13 +234,13 @@
 .feedbacks-title {
   font-size: 20px;
   font-weight: 600;
-  color: #111827;
+  color: var(--feedbacks-text-strong, #111827);
   margin: 0 0 8px 0;
   line-height: 1.3;
 }
 
 .feedbacks-subtitle {
-  color: #6b7280;
+  color: var(--feedbacks-text-muted, #6b7280);
   margin: 0 0 16px 0;
   font-size: 14px;
   line-height: 1.4;
@@ -215,7 +256,7 @@
 .feedbacks-label {
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: var(--feedbacks-text-strong, #374151);
 }
 
 .feedbacks-textarea {
@@ -255,7 +296,7 @@
 
 .feedbacks-char-count {
   font-size: 12px;
-  color: #9ca3af;
+  color: var(--feedbacks-text-muted, #9ca3af);
   text-align: right;
   margin-top: 4px;
 }
@@ -448,31 +489,23 @@
 .feedbacks-header-text { display: flex; flex-direction: column; }
 
 /* Ensure long text wraps inside modal */
-.feedbacks-widget { word-break: break-word; overflow-wrap: anywhere; }
+.feedbacks-widget {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  color: var(--feedbacks-text-strong, #111827);
+}
 
 /* Dark Mode Support - Apply to all widget containers */
 @media (prefers-color-scheme: dark) {
   .feedbacks-modal,
   .feedbacks-inline-container {
     background: var(--feedbacks-bg, #1f2937);
-    color: #f9fafb;
     border-color: #374151;
   }
-  
+
   .feedbacks-widget {
-    color: #f9fafb;
-  }
-  
-  .feedbacks-title {
-    color: #f9fafb;
-  }
-  
-  .feedbacks-subtitle {
-    color: #d1d5db;
-  }
-  
-  .feedbacks-label {
-    color: #d1d5db;
+    --feedbacks-text-strong: #f9fafb;
+    --feedbacks-text-muted: #d1d5db;
   }
   
   .feedbacks-textarea,

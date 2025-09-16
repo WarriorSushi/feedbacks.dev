@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import hash from 'object-hash';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -182,6 +182,24 @@ const MODE_PRESETS: Array<{ mode: EmbedMode; title: string; description: string;
   },
 ];
 
+const INLINE_STYLE_PRESETS: Array<{ label: string; border: string; shadow: string }> = [
+  {
+    label: 'None',
+    border: 'none',
+    shadow: 'none',
+  },
+  {
+    label: 'Subtle card',
+    border: '1px solid rgba(15,23,42,0.08)',
+    shadow: '0 16px 40px rgba(15,23,42,0.12)',
+  },
+  {
+    label: 'Elevated',
+    border: '1px solid rgba(15,23,42,0.12)',
+    shadow: '0 32px 70px rgba(15,23,42,0.18)',
+  },
+];
+
 const PREVIEW_MIN_HEIGHT_DESKTOP = 760;
 const PREVIEW_MIN_HEIGHT_MOBILE = 520;
 function mergeConfig(base: WidgetConfig, incoming: Record<string, any> | null | undefined): WidgetConfig {
@@ -320,35 +338,56 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
       }
       body {
         margin: 0;
-        padding: 24px;
-        background: transparent;
-        color: #0f172a;
         min-height: 100vh;
+        background: #f8fafc;
+        color: #0f172a;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px 32px;
       }
-      .preview-shell {
-        background: white;
-        border-radius: 16px;
+      .preview-stage {
+        position: relative;
+        width: clamp(320px, 100%, 760px);
+        min-height: 720px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(241,245,249,0.9));
+        border-radius: 24px;
         border: 1px solid rgba(15,23,42,0.08);
-        box-shadow: 0 20px 60px rgba(15,23,42,0.16);
+        box-shadow: 0 24px 60px rgba(15,23,42,0.16);
         padding: 24px;
+        overflow: hidden;
       }
       .preview-header {
         font-size: 12px;
         text-transform: uppercase;
         letter-spacing: 0.12em;
         color: rgba(15,23,42,0.5);
-        margin-bottom: 12px;
+        margin-bottom: 16px;
       }
-      button.feedbacks-button {
+      .preview-canvas {
         position: relative;
+        z-index: 1;
+        height: calc(100% - 16px);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .preview-stage .feedbacks-button,
+      .preview-stage .feedbacks-overlay {
+        position: absolute !important;
+      }
+      .preview-stage .feedbacks-overlay {
+        inset: 0;
       }
     </style>
   </head>
   <body>
-    <div class="preview-shell">
+    <div class="preview-stage">
       <div class="preview-header">Widget Preview</div>
-      <div id="inline-anchor" style="display:${runtime.embedMode === 'inline' ? 'block' : 'none'}"></div>
-      <button id="trigger-anchor" style="display:${runtime.embedMode === 'trigger' ? 'inline-flex' : 'none'}" class="px-4 py-2 rounded-md border border-slate-200 bg-slate-50 text-slate-700">Open feedback</button>
+      <div class="preview-canvas">
+        <div id="inline-anchor" style="display:${runtime.embedMode === 'inline' ? 'block' : 'none'}"></div>
+        <button id="trigger-anchor" style="display:${runtime.embedMode === 'trigger' ? 'inline-flex' : 'none'}" class="px-4 py-2 rounded-md border border-slate-200 bg-slate-50 text-slate-700">Open feedback</button>
+      </div>
     </div>
     <script src="${jsHref}"></script>
     <script>
@@ -373,6 +412,15 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
             triggerAnchor.style.display = cfg.embedMode === 'trigger' ? 'inline-flex' : 'none';
           }
           new FeedbacksWidget(cfg);
+          try {
+            const stage = document.querySelector('.preview-stage');
+            if (stage) {
+              const overlay = document.querySelector('.feedbacks-overlay');
+              if (overlay) stage.appendChild(overlay);
+              const launcher = document.querySelector('.feedbacks-button');
+              if (launcher) stage.appendChild(launcher);
+            }
+          } catch(e){}
           postHeight();
         }
         function postHeight(){
@@ -415,7 +463,8 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
       if (!ev.data || ev.data.type !== 'widget-preview:height') return;
       if (typeof ev.data.height === 'number') {
         const min = viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP;
-        setHeight(Math.max(min, ev.data.height + 32));
+        const max = viewport === 'mobile' ? 960 : 1280;
+        setHeight(Math.min(max, Math.max(min, ev.data.height + 32)));
       }
     }
     window.addEventListener('message', handleMessage);
@@ -453,7 +502,7 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
           ref={iframeRef}
           title="Widget Preview"
           srcDoc={previewHtml}
-          style={{ border: '0', width: '100%', height }}
+          style={{ border: '0', width: '100%', height, maxHeight: viewport === 'mobile' ? 960 : 1280 }}
         />
       </div>
       <div className="text-xs text-muted-foreground">
@@ -609,7 +658,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
       }
       return next;
     });
-    setActiveTab('appearance');
   };
 
   const applyPreset = (preset: WidgetPreset) => {
@@ -676,6 +724,27 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
     return presets.find((preset) => hash(mergeConfig(DEFAULT_CONFIG, preset.config)) === savedHash)?.slug || null;
   }, [presets, defaultConfigRow, savedHash]);
 
+  const filteredPresets = useMemo(() => {
+    if (!presets.length) return [] as WidgetPreset[];
+    return presets.filter((preset) => {
+      const presetMode = (preset.config?.embedMode as (EmbedMode | 'any') | undefined) ?? 'modal';
+      if (presetMode === 'any') return true;
+      return presetMode === config.embedMode;
+    });
+  }, [presets, config.embedMode]);
+
+  const inlinePresetActive = useMemo(() => {
+    const borderValue = config.inlineBorder || 'none';
+    const shadowValue = config.inlineShadow || 'none';
+    return INLINE_STYLE_PRESETS.find((preset) => preset.border === borderValue && preset.shadow === shadowValue)?.label || null;
+  }, [config.inlineBorder, config.inlineShadow]);
+
+  const inlinePreviewStyle = useMemo<CSSProperties>(() => ({
+    border: config.inlineBorder || '1px solid rgba(15,23,42,0.08)',
+    boxShadow: config.inlineShadow || 'none',
+    background: config.backgroundColor || '#ffffff',
+  }), [config.inlineBorder, config.inlineShadow, config.backgroundColor]);
+
   const sections = (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid w-full grid-cols-5">
@@ -685,6 +754,15 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         <TabsTrigger value="protection">Protection</TabsTrigger>
         <TabsTrigger value="publish">Publish</TabsTrigger>
       </TabsList>
+      <StepNavigation
+        steps={steps}
+        currentIndex={currentStepIndex}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        variant="top"
+      />
 
       <TabsContent value="setup" className="space-y-6">
         <Card>
@@ -793,13 +871,18 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                 <p className="text-xs text-muted-foreground">Give an existing element this id and the modal will hook into it.</p>
               </div>
               <CodeSnippet code={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give feedback</button>`} language="html" />
-              <div className="space-y-2 text-xs text-muted-foreground">
+              <CodeSnippet code={`<button data-feedbacks-trigger>Open feedback</button>`} language="html" />
+              <div className="space-y-3 text-xs text-muted-foreground">
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>Add the id above to the button or link you want to reuse.</li>
-                  <li>Keep our install script in the Publish step before <code>&lt;/body&gt;</code>; it automatically finds that id.</li>
-                  <li>If the button renders after hydration, run <code>new FeedbacksWidget</code> once the element exists.</li>
+                  <li>Add the id above to the button or link you want to reuse (or add <code>data-feedbacks-trigger</code> as an attribute).</li>
+                  <li>Keep the install script from the Publish step near <code>&lt;/body&gt;</code>; it will attach to matching elements automatically.</li>
+                  <li>If your button renders after hydration, call <code>new FeedbacksWidget</code> once the element is in the DOM.</li>
                 </ol>
-                <p>Prefer the standard floating button? Switch back to &quot;Floating Modal&quot;.</p>
+                <div className="rounded-lg border bg-muted/30 p-3">
+                  <p className="font-medium text-foreground">Where does the modal appear?</p>
+                  <p>The widget keeps the modal content in our overlay. Clicking your button triggers the same modal you preview in the Floating Modal experience.</p>
+                  <p className="mt-2">Prefer the standard floating button instead? Switch back to “Floating Modal”.</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -811,12 +894,106 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <CardDescription>Start from a curated look and fine-tune afterwards.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 md:grid-cols-2">
-            {presets.map((preset) => (
+            {filteredPresets.map((preset) => (
               <PresetCard key={preset.slug} preset={preset} onApply={applyPreset} active={activePresetSlug === preset.slug} />
             ))}
-            {presets.length === 0 && (
-              <div className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">Presets will appear here once configured in Supabase.</div>
+            {filteredPresets.length === 0 && (
+              <div className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
+                {presets.length === 0 ? 'Presets will appear here once configured in Supabase.' : 'Switch experiences to see presets tailored for that embed mode.'}
+              </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Integration snippets</CardTitle>
+            <CardDescription>Quick references for popular frameworks while you configure.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="website" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="website">Website</TabsTrigger>
+                <TabsTrigger value="react">React</TabsTrigger>
+                <TabsTrigger value="vue">Vue</TabsTrigger>
+              </TabsList>
+              <TabsContent value="website">
+                <CodeSnippet code={snippets.get('website') || ''} language="html" />
+              </TabsContent>
+              <TabsContent value="react">
+                <CodeSnippet code={snippets.get('react') || ''} language="tsx" />
+              </TabsContent>
+              <TabsContent value="vue">
+                <CodeSnippet code={snippets.get('vue') || ''} language="html" />
+              </TabsContent>
+              <TabsList className="mt-4 grid w-full grid-cols-4">
+                <TabsTrigger value="react-native">React Native</TabsTrigger>
+                <TabsTrigger value="flutter">Flutter</TabsTrigger>
+                <TabsTrigger value="wordpress">WordPress</TabsTrigger>
+                <TabsTrigger value="shopify">Shopify</TabsTrigger>
+              </TabsList>
+              <TabsContent value="react-native">
+                <CodeSnippet code={snippets.get('react-native') || ''} language="tsx" />
+              </TabsContent>
+              <TabsContent value="flutter">
+                <CodeSnippet code={snippets.get('flutter') || ''} language="dart" />
+              </TabsContent>
+              <TabsContent value="wordpress">
+                <CodeSnippet code={snippets.get('wordpress') || ''} language="php" />
+              </TabsContent>
+              <TabsContent value="shopify">
+                <CodeSnippet code={snippets.get('shopify') || ''} language="liquid" />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Launch checklist</CardTitle>
+            <CardDescription>Validate your install before shipping to production.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ol className="list-decimal space-y-3 pl-4 text-sm">
+              <li><strong>Embed the snippet</strong> in your {selectedPlatform.replace('-', ' ')} project.</li>
+              <li><strong>Save & publish</strong> your configuration to make it live for all visitors.</li>
+              <li><strong>Verify</strong> using the <Link href={`/widget-demo?apiKey=${encodeURIComponent(projectKey)}`} className="underline" target="_blank" rel="noreferrer">widget demo</Link> and your production environment.</li>
+            </ol>
+            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+              Need a different platform? Switch selections above and the publish snippet will update automatically.
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Project API key</CardTitle>
+            <CardDescription>Keep this safe when wiring up the widget server-side.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="text-xs text-muted-foreground">
+              Store it in environment variables and pass it to your deployment pipeline.
+            </div>
+            <Input value={projectKey} readOnly className="font-mono text-xs" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent versions</CardTitle>
+            <CardDescription>Track how your install evolves.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {history.length === 0 && <p className="text-sm text-muted-foreground">Publish your first configuration to see history here.</p>}
+            {history.map((row, idx) => (
+              <div key={row.id} className={cn('flex items-center justify-between rounded-lg border p-3 text-sm', idx === 0 ? 'border-primary/40 bg-primary/5' : 'border-border')}>
+                <div>
+                  <div className="font-medium">{row.label}</div>
+                  <p className="text-xs text-muted-foreground">Version {row.version} · {row.updatedAt ? formatDate(row.updatedAt) : 'Pending'}</p>
+                </div>
+                <Badge variant={idx === 0 ? 'default' : 'secondary'}>{idx === 0 ? 'Current' : 'Past'}</Badge>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </TabsContent>
@@ -855,19 +1032,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Header accent</Label>
-              <Select value={config.headerIcon} onValueChange={(value) => updateConfig({ headerIcon: value as any })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Icon" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ALLOWED_HEADER_ICONS.map((icon) => (
-                    <SelectItem key={icon} value={icon}>{icon.replace('-', ' ')}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
               <Label>Layout</Label>
               <Select value={config.headerLayout} onValueChange={(value) => updateConfig({ headerLayout: value as any })}>
                 <SelectTrigger>
@@ -876,6 +1040,19 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                 <SelectContent>
                   {ALLOWED_HEADER_LAYOUTS.map((layout) => (
                     <SelectItem key={layout} value={layout}>{layout.replace('-', ' ')}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Header accent</Label>
+              <Select value={config.headerIcon} onValueChange={(value) => updateConfig({ headerIcon: value as any })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Icon" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ALLOWED_HEADER_ICONS.map((icon) => (
+                    <SelectItem key={icon} value={icon}>{icon.replace('-', ' ')}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -908,16 +1085,37 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         <Card>
           <CardHeader>
             <CardTitle>Advanced styling</CardTitle>
-            <CardDescription>Optional CSS-like controls for inline presentations.</CardDescription>
+            <CardDescription>Fine-tune inline embeds with visual presets and custom values.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Inline border</Label>
-              <Input value={config.inlineBorder || ''} onChange={(event) => updateConfig({ inlineBorder: event.target.value })} placeholder="1px solid rgba(15,23,42,0.08)" />
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              {INLINE_STYLE_PRESETS.map((preset) => (
+                <Button
+                  key={preset.label}
+                  type="button"
+                  variant={inlinePresetActive === preset.label ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateConfig({ inlineBorder: preset.border, inlineShadow: preset.shadow })}
+                >
+                  {preset.label}
+                </Button>
+              ))}
             </div>
-            <div className="space-y-2">
-              <Label>Inline shadow</Label>
-              <Input value={config.inlineShadow || ''} onChange={(event) => updateConfig({ inlineShadow: event.target.value })} placeholder="0 16px 40px rgba(15,23,42,0.12)" />
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Inline border</Label>
+                <Input value={config.inlineBorder || ''} onChange={(event) => updateConfig({ inlineBorder: event.target.value })} placeholder="1px solid rgba(15,23,42,0.08)" />
+              </div>
+              <div className="space-y-2">
+                <Label>Inline shadow</Label>
+                <Input value={config.inlineShadow || ''} onChange={(event) => updateConfig({ inlineShadow: event.target.value })} placeholder="0 16px 40px rgba(15,23,42,0.12)" />
+              </div>
+            </div>
+            <div className="rounded-lg border bg-muted/30 p-4">
+              <div className="text-xs font-medium text-muted-foreground">Live style preview</div>
+              <div className="mt-3 rounded-lg bg-background p-4" style={inlinePreviewStyle}>
+                <div className="text-xs font-semibold text-muted-foreground">This is how the inline widget shell will look.</div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -1095,45 +1293,16 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <CodeSnippet code={snippetForPlatform} language={snippetLanguage} />
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Launch checklist</CardTitle>
-            <CardDescription>Follow these steps to deploy the widget with confidence.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ol className="list-decimal space-y-3 pl-4 text-sm">
-              <li><strong>Embed the snippet</strong> in your {selectedPlatform.replace('-', ' ')} project.</li>
-              <li><strong>Save & publish</strong> your configuration to make it live for all visitors.</li>
-              <li><strong>Verify</strong> in production using the <Link href={`/widget-demo?apiKey=${encodeURIComponent(projectKey)}`} className="underline" target="_blank" rel="noreferrer">widget demo</Link> and the actual embed.</li>
-            </ol>
-            <div className="flex flex-col gap-3 rounded-lg border p-3 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-              <div>
-                <div className="text-sm font-medium text-foreground">Project API key</div>
-                <p className="text-xs">Include this in your environment variables or serverless config.</p>
-              </div>
-              <Input value={projectKey} readOnly className="font-mono text-xs" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent versions</CardTitle>
-            <CardDescription>Track how your install evolves. Latest save is highlighted.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {history.length === 0 && <p className="text-sm text-muted-foreground">You are about to publish the very first configuration for this project.</p>}
-            {history.map((row, idx) => (
-              <div key={row.id} className={cn('flex items-center justify-between rounded-lg border p-3 text-sm', idx === 0 ? 'border-primary/40 bg-primary/5' : 'border-border')}>
-                <div>
-                  <div className="font-medium">{row.label}</div>
-                  <p className="text-xs text-muted-foreground">Version {row.version} - {row.updatedAt ? formatDate(row.updatedAt) : 'Pending'}</p>
-                </div>
-                {idx === 0 && <Badge variant="default">Current</Badge>}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
       </TabsContent>
+      <StepNavigation
+        steps={steps}
+        currentIndex={currentStepIndex}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        variant="bottom"
+      />
     </Tabs>
   );
   return (
@@ -1167,69 +1336,51 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </div>
         <div className="space-y-6">
           <WidgetPreview config={config} projectKey={projectKey} widgetVersion={widgetVersion} viewport={viewport} onViewportChange={setViewport} />
-          <Card>
-            <CardHeader>
-              <CardTitle>Integration snippets</CardTitle>
-              <CardDescription>Copy-ready code for common frameworks.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="website" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="website">Website</TabsTrigger>
-                  <TabsTrigger value="react">React</TabsTrigger>
-                  <TabsTrigger value="vue">Vue</TabsTrigger>
-                </TabsList>
-                <TabsContent value="website">
-                  <CodeSnippet code={snippets.get('website') || ''} language="html" />
-                </TabsContent>
-                <TabsContent value="react">
-                  <CodeSnippet code={snippets.get('react') || ''} language="tsx" />
-                </TabsContent>
-                <TabsContent value="vue">
-                  <CodeSnippet code={snippets.get('vue') || ''} language="html" />
-                </TabsContent>
-                <TabsList className="mt-4 grid w-full grid-cols-4">
-                  <TabsTrigger value="react-native">React Native</TabsTrigger>
-                  <TabsTrigger value="flutter">Flutter</TabsTrigger>
-                  <TabsTrigger value="wordpress">WordPress</TabsTrigger>
-                  <TabsTrigger value="shopify">Shopify</TabsTrigger>
-                </TabsList>
-                <TabsContent value="react-native">
-                  <CodeSnippet code={snippets.get('react-native') || ''} language="tsx" />
-                </TabsContent>
-                <TabsContent value="flutter">
-                  <CodeSnippet code={snippets.get('flutter') || ''} language="dart" />
-                </TabsContent>
-                <TabsContent value="wordpress">
-                  <CodeSnippet code={snippets.get('wordpress') || ''} language="php" />
-                </TabsContent>
-                <TabsContent value="shopify">
-                  <CodeSnippet code={snippets.get('shopify') || ''} language="liquid" />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
         </div>
       </div>
-
-      <StepNavigation steps={steps} currentIndex={currentStepIndex} onPrev={handlePrev} onNext={handleNext} hasPrev={hasPrev} hasNext={hasNext} />
     </div>
   );
 }
 
 
-function StepNavigation({ steps, currentIndex, onPrev, onNext, hasPrev, hasNext }: { steps: Array<{ id: string; label: string }>; currentIndex: number; onPrev: () => void; onNext: () => void; hasPrev: boolean; hasNext: boolean; }) {
+function StepNavigation({ steps, currentIndex, onPrev, onNext, hasPrev, hasNext, variant = 'bottom' }: {
+  steps: Array<{ id: string; label: string }>;
+  currentIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  hasPrev: boolean;
+  hasNext: boolean;
+  variant?: 'top' | 'bottom';
+}) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border bg-card/60 p-3">
+    <div
+      className={cn(
+        'flex items-center justify-between gap-3 rounded-xl border bg-card/60 p-3',
+        variant === 'top' ? 'mt-3 mb-6' : 'mt-8'
+      )}
+    >
       <div className="text-xs text-muted-foreground">
         Step {currentIndex + 1} of {steps.length}
       </div>
       <div className="flex gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={onPrev} disabled={!hasPrev} className="flex items-center gap-1">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onPrev}
+          disabled={!hasPrev}
+          className={cn('flex items-center gap-1', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
+        >
           <ChevronLeft className="h-4 w-4" />
           Previous
         </Button>
-        <Button type="button" size="sm" onClick={onNext} disabled={!hasNext} className="flex items-center gap-1">
+        <Button
+          type="button"
+          size="sm"
+          onClick={onNext}
+          disabled={!hasNext}
+          className={cn('flex items-center gap-1', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
+        >
           Next
           <ChevronRight className="h-4 w-4" />
         </Button>

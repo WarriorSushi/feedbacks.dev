@@ -1,6 +1,56 @@
 import './styles.css';
 import { FeedbackData, FeedbackResponse, WidgetConfig } from './types';
 
+function parseColor(value?: string): { r: number; g: number; b: number } | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  const hexMatch = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(trimmed);
+  if (hexMatch) {
+    let hex = hexMatch[1];
+    if (hex.length === 3) {
+      hex = hex
+        .split('')
+        .map((char) => char + char)
+        .join('');
+    }
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return { r, g, b };
+  }
+  const rgbMatch = /^rgba?\((\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})(?:\s*,\s*(\d+(?:\.\d+)?))?\)$/i.exec(trimmed);
+  if (rgbMatch) {
+    const clamp = (channel: string) => Math.max(0, Math.min(255, Number(channel)));
+    return {
+      r: clamp(rgbMatch[1]),
+      g: clamp(rgbMatch[2]),
+      b: clamp(rgbMatch[3]),
+    };
+  }
+  return null;
+}
+
+function relativeLuminance(rgb: { r: number; g: number; b: number }): number {
+  const toLinear = (channel: number) => {
+    const value = channel / 255;
+    return value <= 0.03928 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+  };
+  const R = toLinear(rgb.r);
+  const G = toLinear(rgb.g);
+  const B = toLinear(rgb.b);
+  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+
+function pickTextPalette(value?: string): { strong: string; muted: string } | null {
+  const rgb = parseColor(value);
+  if (!rgb) return null;
+  const luminance = relativeLuminance(rgb);
+  if (luminance <= 0.45) {
+    return { strong: '#F8FAFC', muted: 'rgba(248,250,252,0.78)' };
+  }
+  return { strong: '#111827', muted: '#475569' };
+}
+
 class FeedbacksWidget {
   private config: WidgetConfig;
   private isOpen = false;
@@ -80,11 +130,19 @@ class FeedbacksWidget {
   private applyStyleVars(): void {
     try {
       const root = document.documentElement;
+      root.style.setProperty('--feedbacks-text-strong', '#111827');
+      root.style.setProperty('--feedbacks-text-muted', '#475569');
       if ((this.config as any).spacing && typeof (this.config as any).spacing === 'number') {
         root.style.setProperty('--feedbacks-spacing', String((this.config as any).spacing) + 'px');
       }
       if ((this.config as any).backgroundColor && typeof (this.config as any).backgroundColor === 'string') {
-        root.style.setProperty('--feedbacks-bg', String((this.config as any).backgroundColor));
+        const background = String((this.config as any).backgroundColor);
+        root.style.setProperty('--feedbacks-bg', background);
+        const palette = pickTextPalette(background);
+        if (palette) {
+          root.style.setProperty('--feedbacks-text-strong', palette.strong);
+          root.style.setProperty('--feedbacks-text-muted', palette.muted);
+        }
       }
       if ((this.config as any).modalWidth && typeof (this.config as any).modalWidth === 'number') {
         root.style.setProperty('--feedbacks-modal-width', String((this.config as any).modalWidth) + 'px');
@@ -116,19 +174,33 @@ class FeedbacksWidget {
   private createButton(): void {
     this.button = document.createElement('button');
     this.button.className = `feedbacks-button position-${this.config.position}`;
-    // Use a chat bubble icon SVG by default, or custom text if provided
-    this.button.innerHTML = this.config.buttonText || `
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    const iconWrapper = document.createElement('span');
+    iconWrapper.className = 'feedbacks-button-icon';
+    iconWrapper.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
       </svg>
     `;
-    this.button.title = 'Send feedback';
-    this.button.setAttribute('aria-label', 'Open feedback form');
-    
+    this.button.appendChild(iconWrapper);
+
+    const label = (this.config.buttonText ?? 'Feedback').trim();
+    if (label) {
+      const textWrapper = document.createElement('span');
+      textWrapper.className = 'feedbacks-button-text';
+      textWrapper.textContent = label;
+      this.button.appendChild(textWrapper);
+      this.button.setAttribute('aria-label', label);
+      this.button.title = label;
+    } else {
+      this.button.classList.add('feedbacks-button-icon-only');
+      this.button.setAttribute('aria-label', 'Open feedback form');
+      this.button.title = 'Open feedback form';
+    }
+
     if (this.config.primaryColor) {
       this.button.style.background = this.config.primaryColor;
     }
-    
+
     document.body.appendChild(this.button);
   }
 
