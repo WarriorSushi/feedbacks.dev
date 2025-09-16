@@ -256,7 +256,8 @@ create table public.feedback (
   id uuid primary key default uuid_generate_v4(),
   project_id uuid not null references public.projects(id) on delete cascade,
   message text not null check (length(trim(message)) between 2 and 4000),
-  email text check (email is null or email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'),
+  -- Relaxed, safer email validation (avoid over-escaping and false negatives)
+  email text check (email is null or email ~* '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$'),
   url text not null check (url ~ '^https?://'),
   user_agent text not null,
   type text check (type is null or type in ('bug','idea','praise')),

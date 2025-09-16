@@ -443,6 +443,16 @@ export async function POST(request: NextRequest) {
 
     if (feedbackError) {
       console.error('Database error:', feedbackError);
+      const code = (feedbackError as any)?.code as string | undefined;
+      const details = ((feedbackError as any)?.details as string | undefined) || '';
+      if (code === '23514') {
+        // Check constraint violation — map to a helpful 400
+        let err = 'Invalid data';
+        if (details.includes('feedback_email_check')) err = 'Invalid email format';
+        else if (details.toLowerCase().includes('rating')) err = 'Invalid rating value';
+        else if (details.toLowerCase().includes('priority')) err = 'Invalid priority value';
+        return NextResponse.json({ success: false, error: err }, { status: 400, headers: corsHeaders });
+      }
       return NextResponse.json(
         { success: false, error: 'Failed to save feedback' },
         { status: 500, headers: corsHeaders }
