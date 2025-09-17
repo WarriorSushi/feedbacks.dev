@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
@@ -12,6 +12,7 @@ import { MobileBottomNav } from '@/components/mobile-bottom-nav';
 import { RouteLoading } from '@/components/route-loading';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { BottomBar } from '@/components/bottom-bar';
+import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 
 export interface Project {
   id: string;
@@ -28,6 +29,7 @@ export interface Project {
 interface DashboardContextType {
   user: User;
   projects: Project[];
+  refreshProjects: () => Promise<void>;
 }
 
 const DashboardContext = createContext<DashboardContextType | null>(null);
@@ -46,17 +48,76 @@ interface DashboardClientLayoutProps {
   children: React.ReactNode;
 }
 
-export function DashboardClientLayout({ 
-  user, 
-  initialProjects, 
-  children 
+export function DashboardClientLayout({
+  user,
+  initialProjects,
+  children
 }: DashboardClientLayoutProps) {
   const pathname = usePathname();
   const isDashboardPage = pathname === '/dashboard';
   const isProjectDetailPage = pathname.startsWith('/projects/') && pathname.split('/').length > 2;
 
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const supabase = useMemo(() => createBrowserSupabaseClient(), []);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    setProjects(initialProjects);
+  }, [initialProjects]);
+
+  const refreshProjects = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('projects')
+      .select(`
+        *,
+        feedback:feedback(count)
+      `)
+      .eq('owner_user_id', user.id)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Failed to refresh projects', error);
+      return;
+    }
+
+    if (data && mountedRef.current) {
+      setProjects(data as Project[]);
+    }
+  }, [supabase, user.id]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`projects-dashboard-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'projects',
+          filter: `owner_user_id=eq.${user.id}`,
+        },
+        () => {
+          void refreshProjects();
+        },
+      )
+      .subscribe();
+
+    void refreshProjects();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refreshProjects, supabase, user.id]);
+
   return (
-    <DashboardContext.Provider value={{ user, projects: initialProjects }}>
+    <DashboardContext.Provider value={{ user, projects, refreshProjects }}>
       <SidebarProvider>
         <div className="flex h-screen w-full">
           <DashboardSidebar user={user} />
@@ -116,7 +177,7 @@ export function DashboardClientLayout({
             </main>
           </div>
           
-          <MobileBottomNav projectsCount={initialProjects.length} />
+          <MobileBottomNav projectsCount={projects.length} />
         </div>
       </SidebarProvider>
     </DashboardContext.Provider>

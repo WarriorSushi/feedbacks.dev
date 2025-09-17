@@ -932,7 +932,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
   }), [config.inlineBorder, config.inlineShadow, config.backgroundColor]);
 
   const sections = (
-    <div ref={tabsRef} className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+    <div ref={tabsRef} className="space-y-6 sm:space-y-8">
       <Tabs
         value={activeTab}
         onValueChange={(value) => {
@@ -941,16 +941,20 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         }}
         className="w-full"
       >
-        <TabsList className="mb-4 flex w-full gap-1 overflow-x-auto rounded-full border border-border/60 bg-muted/40 p-1 text-[11px] font-medium uppercase tracking-[0.12em] scrollbar-thin sm:gap-2 sm:text-sm sm:tracking-[0.18em]">
-          <TabsTrigger value="setup" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Setup</TabsTrigger>
-          <TabsTrigger value="appearance" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Appearance</TabsTrigger>
-          <TabsTrigger value="fields" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Fields</TabsTrigger>
-          <TabsTrigger value="protection" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Protection</TabsTrigger>
-          <TabsTrigger value="publish" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Publish</TabsTrigger>
+        <TabsList className="mb-4 hidden w-full gap-2 sm:grid sm:grid-cols-2 sm:gap-2 lg:flex lg:flex-wrap">
+          {steps.map((step, index) => (
+            <TabsTrigger
+              key={step.id}
+              value={step.id}
+              className="flex h-11 items-center justify-center rounded-lg border border-border bg-background px-3 text-[11px] font-semibold uppercase tracking-[0.18em] transition data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary sm:flex-1 sm:px-4 sm:text-xs sm:tracking-[0.2em]"
+            >
+              {index + 1}. {step.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
         {null}
 
-      <TabsContent value="setup" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+      <TabsContent value="setup" className="space-y-6 sm:space-y-8">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Choose an experience</CardTitle>
@@ -974,7 +978,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                     <div className="flex-1 space-y-1">
                       <div className="font-medium text-[11px] leading-tight sm:text-sm">{item.title}</div>
                       <p className="text-[10px] text-muted-foreground leading-snug sm:text-xs">{item.description}</p>
-                      {item.helper && <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground sm:text-[11px]">{item.helper}</span>}
                     </div>
                   </button>
                 );
@@ -1028,7 +1031,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         </Card>
       </TabsContent>
 
-      <TabsContent value="appearance" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+      <TabsContent value="appearance" className="space-y-6 sm:space-y-8">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Branding</CardTitle>
@@ -1151,7 +1154,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="fields" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+      <TabsContent value="fields" className="space-y-6 sm:space-y-8">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Inputs & behavior</CardTitle>
@@ -1262,7 +1265,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="protection" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+      <TabsContent value="protection" className="space-y-6 sm:space-y-8">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Spam & abuse controls</CardTitle>
@@ -1325,7 +1328,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         </Card>
         <AlertCard />
       </TabsContent>
-      <TabsContent value="publish" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+      <TabsContent value="publish" className="space-y-6 sm:space-y-8">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle className="text-lg font-semibold leading-tight sm:text-xl">Integration snippets</CardTitle>
@@ -1493,23 +1496,23 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     </div>
   );
   return (
-    <div className="space-y-4 sm:space-y-5 pb-24">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-4 sm:space-y-5 pb-12">
+      <div className="hidden sm:flex sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold tracking-tight">Widget installation</h2>
           <p className="text-sm text-muted-foreground">Fine-tune, preview, and publish the experience for {projectName}.</p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={loading} className="w-full sm:w-auto">Reset</Button>
+              <Button variant="outline" size="sm" disabled={loading}>Reset</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
               <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button onClick={handleSave} disabled={loading || saving || !isDirty} className="w-full sm:w-auto">
+          <Button onClick={handleSave} disabled={loading || saving || !isDirty}>
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
             {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
           </Button>
@@ -1527,7 +1530,27 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
             sections
           )}
         </div>
-        <div className="space-y-5 sm:space-y-6">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex items-center justify-end gap-2 sm:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" disabled={loading} className="h-9 px-3 text-xs">Reset</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              onClick={handleSave}
+              disabled={loading || saving || !isDirty}
+              size="sm"
+              className="h-9 px-3 text-xs"
+            >
+              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+              {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
+            </Button>
+          </div>
           <WidgetPreview config={config} projectKey={projectKey} widgetVersion={widgetVersion} viewport={viewport} onViewportChange={setViewport} />
         </div>
       </div>
@@ -1544,24 +1567,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         showNext={activeTab === 'publish' ? true : hasNext}
       />
 
-      {/* Sticky action bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border">
-        <div className="container mx-auto px-4 py-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={loading} className="w-full sm:w-auto">Reset</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button onClick={handleSave} disabled={loading || saving || !isDirty} className="w-full sm:w-auto">
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
-            {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -1595,19 +1600,24 @@ function StepNavigation({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-xl border bg-card/60 p-3 sm:flex-row sm:items-center sm:justify-between',
-        variant === 'top' ? 'mt-3 mb-6' : 'mt-8'
+        'flex flex-col gap-3 rounded-[28px] border border-border/70 bg-card/80 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between',
+        variant === 'top' ? 'mt-3 mb-6' : 'mt-6'
       )}
     >
-      <div className="text-xs text-muted-foreground">Step {currentIndex + 1} of {steps.length}</div>
-      <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        Step {currentIndex + 1} of {steps.length}
+      </div>
+      <div className="flex items-center gap-2">
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={onPrev}
           disabled={!hasPrev}
-          className={cn('flex items-center gap-1 w-full sm:w-auto', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
+          className={cn(
+            'flex h-9 items-center gap-2 rounded-lg border-border/70 px-3 text-[11px] font-semibold uppercase tracking-[0.18em]',
+            variant === 'top' ? 'md:text-[12px]' : ''
+          )}
         >
           <ChevronLeft className="h-4 w-4" />
           Previous
@@ -1618,7 +1628,10 @@ function StepNavigation({
             size="sm"
             onClick={onNext}
             disabled={disableNext}
-            className={cn('flex items-center gap-1 w-full sm:w-auto', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
+            className={cn(
+              'flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-semibold uppercase tracking-[0.18em]',
+              variant === 'top' ? 'md:text-[12px]' : ''
+            )}
           >
             {nextLabel}
             {showArrow && <ChevronRight className="h-4 w-4" />}
