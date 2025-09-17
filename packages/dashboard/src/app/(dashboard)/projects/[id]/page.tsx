@@ -112,7 +112,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="container mx-auto px-3 sm:px-4 py-6">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-6">
         <ProjectMobileTabs
           projectId={project.id}
           projectName={project.name}
@@ -136,25 +136,56 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
           </div>
         </div>
 
-        <div className="mb-6 space-y-2">
-          <div>
-            <h1 className="text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">
-              {project.name}
-            </h1>
-            <p className="text-sm text-muted-foreground sm:text-base">
-              Manage your feedback collection
-            </p>
+        <div className="mb-6 space-y-4">
+          <div className="lg:hidden">
+            <div className="rounded-2xl border border-border/60 bg-card/60 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground/80">Overview</span>
+                <Badge variant="outline" className="border-border/60 text-[11px] font-semibold uppercase tracking-[0.16em]">
+                  {sectionBadge}
+                </Badge>
+              </div>
+              <div className="mt-3 space-y-3">
+                <div>
+                  <h1 className="text-lg font-semibold text-foreground">{project.name}</h1>
+                  <p className="text-sm text-muted-foreground">Manage your feedback collection</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="rounded-lg bg-muted/30 p-3">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Project ID</p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">{String(project.id).slice(0, 6)}…</p>
+                  </div>
+                  <div className="rounded-lg bg-muted/30 p-3">
+                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Created</p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {new Date(project.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:text-sm">
-            <Badge variant="secondary" className="px-2 py-1">
-              Project ID: {String(project.id).slice(0, 6)}…
-            </Badge>
-            <Badge variant="outline" className="px-2 py-1">
-              Created {new Date(project.created_at).toLocaleDateString()}
-            </Badge>
-            <Badge variant="outline" className="px-2 py-1 text-[11px] sm:text-xs">
-              {sectionBadge}
-            </Badge>
+
+          <div className="hidden lg:block space-y-2">
+            <div>
+              <h1 className="text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">
+                {project.name}
+              </h1>
+              <p className="text-sm text-muted-foreground sm:text-base">
+                Manage your feedback collection
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:text-sm">
+              <Badge variant="secondary" className="px-2 py-1">
+                Project ID: {String(project.id).slice(0, 6)}…
+              </Badge>
+              <Badge variant="outline" className="px-2 py-1">
+                Created {new Date(project.created_at).toLocaleDateString()}
+              </Badge>
+              <Badge variant="outline" className="px-2 py-1 text-[11px] sm:text-xs">
+                {sectionBadge}
+              </Badge>
+            </div>
           </div>
         </div>
 
