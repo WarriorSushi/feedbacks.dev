@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { ArrowLeft, MessageSquare, BarChart3, Webhook, Code } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { RefreshButton } from '@/components/refresh-button';
 import { ProjectSettingsLauncher } from '@/components/project-settings-launcher';
 import { cn } from '@/lib/utils';
 import type { WidgetStep } from '@/components/widget-installation';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 export type ProjectSection = 'widget-installation' | 'feedback' | 'analytics' | 'integrations';
 
@@ -17,17 +18,11 @@ interface ProjectMobileTabsProps {
   widgetStep: WidgetStep;
 }
 
-type SectionTab = {
-  id: ProjectSection;
-  label: string;
-  icon: LucideIcon;
-};
-
-const SECTION_TABS: SectionTab[] = [
-  { id: 'widget-installation', label: 'Widget', icon: Code },
-  { id: 'feedback', label: 'Feedback', icon: MessageSquare },
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'integrations', label: 'Integrations', icon: Webhook },
+const SECTION_TABS: Array<{ id: ProjectSection; label: string }> = [
+  { id: 'widget-installation', label: 'Widget' },
+  { id: 'feedback', label: 'Feedback' },
+  { id: 'analytics', label: 'Analytics' },
+  { id: 'integrations', label: 'Integrations' },
 ];
 
 const WIDGET_SUB_STEPS: Array<{ id: WidgetStep; label: string }> = [
@@ -42,6 +37,9 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const rawWidgetIndex = WIDGET_SUB_STEPS.findIndex((step) => step.id === widgetStep);
+  const activeWidgetIndex = rawWidgetIndex >= 0 ? rawWidgetIndex : 0;
 
   const handleSectionChange = (section: ProjectSection) => {
     if (section === activeSection) {
@@ -80,72 +78,96 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
 
   return (
     <div className="lg:hidden sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-      <div className="flex items-center justify-between px-3 py-2">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-sm text-foreground"
-          aria-label="Go back"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <div className="flex-1 px-3">
-          <p className="truncate text-center text-sm font-semibold leading-tight">{projectName}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <RefreshButton className="h-8 w-8 rounded-full p-0" />
-          <ProjectSettingsLauncher
-            projectId={projectId}
-            projectName={projectName}
-            variant="icon"
-            className="h-8 w-8"
-          />
+      <div className="border-b border-border/60 px-4 pb-3 pt-3">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-sm text-foreground transition-colors hover:bg-muted"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Project</p>
+            <p className="truncate text-base font-semibold leading-tight text-foreground">{projectName}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <RefreshButton className="h-9 w-9 rounded-lg p-0" />
+            <ProjectSettingsLauncher
+              projectId={projectId}
+              projectName={projectName}
+              variant="icon"
+              className="h-9 w-9 rounded-lg"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto px-3 pb-2">
-        {SECTION_TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = tab.id === activeSection;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => handleSectionChange(tab.id)}
-              className={cn(
-                'flex flex-shrink-0 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition',
-                isActive
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+      <div className="px-4 pb-3 pt-3">
+        <div className="grid w-full grid-cols-2 gap-2">
+          {SECTION_TABS.map((tab) => {
+            const isActive = tab.id === activeSection;
+            return (
+              <Button
+                key={tab.id}
+                type="button"
+                variant={isActive ? 'default' : 'secondary'}
+                onClick={() => handleSectionChange(tab.id)}
+                className={cn(
+                  'h-11 w-full justify-center rounded-lg text-sm font-semibold transition-all duration-150',
+                  !isActive && 'bg-muted text-muted-foreground hover:bg-muted/80'
+                )}
+              >
+                {tab.label}
+              </Button>
+            );
+          })}
+        </div>
       </div>
 
       {activeSection === 'widget-installation' && (
-        <div className="flex gap-2 overflow-x-auto px-3 pb-3">
-          {WIDGET_SUB_STEPS.map((step) => {
-            const isStepActive = step.id === widgetStep;
-            return (
-              <button
-                key={step.id}
-                type="button"
-                onClick={() => handleWidgetStepChange(step.id)}
-                className={cn(
-                  'flex flex-shrink-0 items-center justify-center rounded-full px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em]',
-                  isStepActive
-                    ? 'bg-foreground text-background'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                )}
-              >
-                {step.label}
-              </button>
-            );
-          })}
+        <div className="px-4 pb-4 pt-1">
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <h2 className="text-sm font-semibold text-foreground">Widget installation</h2>
+              <p className="text-xs text-muted-foreground">
+                Fine-tune, preview, and publish the experience for {projectName}.
+              </p>
+            </div>
+            <div className="rounded-xl border border-primary/25 bg-primary/5 p-3 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-primary/80">Widget steps</span>
+                <Badge
+                  variant="outline"
+                  className="border-primary/40 bg-primary/10 text-[10px] font-medium uppercase tracking-[0.3em] text-primary"
+                >
+                  {activeWidgetIndex + 1}/{WIDGET_SUB_STEPS.length}
+                </Badge>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {WIDGET_SUB_STEPS.map((step, index) => {
+                  const isStepActive = step.id === widgetStep;
+                  return (
+                    <Button
+                      key={step.id}
+                      type="button"
+                      onClick={() => handleWidgetStepChange(step.id)}
+                      variant={isStepActive ? 'default' : 'outline'}
+                      className={cn(
+                        'h-9 w-full justify-center rounded-lg px-2 text-[11px] font-semibold uppercase tracking-[0.16em]',
+                        isStepActive
+                          ? 'bg-foreground text-background shadow-sm'
+                          : 'border-primary/30 text-primary hover:bg-primary/10'
+                      )}
+                    >
+                      {index + 1}. {step.label}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
