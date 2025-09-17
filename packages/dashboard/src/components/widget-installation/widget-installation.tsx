@@ -139,7 +139,13 @@ export interface WidgetInstallationExperienceProps {
   projectKey: string;
   projectName: string;
   widgetVersion?: string;
+  initialStep?: WidgetStep;
 }
+
+export type WidgetStep = 'setup' | 'appearance' | 'fields' | 'protection' | 'publish';
+
+const DEFAULT_WIDGET_STEP: WidgetStep = 'setup';
+const WIDGET_STEPS: WidgetStep[] = ['setup', 'appearance', 'fields', 'protection', 'publish'];
 
 const DEFAULT_CONFIG: WidgetConfig = {
   embedMode: 'modal',
@@ -666,12 +672,13 @@ function PresetCard({ preset, onApply, active }: { preset: WidgetPreset; onApply
     </button>
   );
 }
-export function WidgetInstallationExperience({ projectId, projectKey, projectName, widgetVersion = DEFAULT_WIDGET_VERSION }: WidgetInstallationExperienceProps) {
+export function WidgetInstallationExperience({ projectId, projectKey, projectName, widgetVersion = DEFAULT_WIDGET_VERSION, initialStep }: WidgetInstallationExperienceProps) {
   const [config, setConfig] = useState<WidgetConfig>(DEFAULT_CONFIG);
   const [defaultConfigRow, setDefaultConfigRow] = useState<WidgetConfigRow | null>(null);
   const [history, setHistory] = useState<WidgetConfigRow[]>([]);
   const [presets, setPresets] = useState<WidgetPreset[]>([]);
-  const [activeTab, setActiveTab] = useState<string>('setup');
+  const normalizedInitialStep = initialStep && WIDGET_STEPS.includes(initialStep) ? initialStep : DEFAULT_WIDGET_STEP;
+  const [activeTab, setActiveTab] = useState<string>(normalizedInitialStep);
   const [viewport, setViewport] = useState<PreviewViewport>('desktop');
   const [selectedPlatform, setSelectedPlatform] = useState<typeof SNIPPET_PLATFORMS[number]>('website');
   const [loading, setLoading] = useState<boolean>(true);
@@ -693,6 +700,16 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
   ];
   const stepOrder = steps.map((step) => step.id);
   const currentStepIndex = Math.max(0, stepOrder.indexOf(activeTab));
+
+  useEffect(() => {
+    if (!initialStep) {
+      return;
+    }
+    if (!WIDGET_STEPS.includes(initialStep)) {
+      return;
+    }
+    setActiveTab(initialStep);
+  }, [initialStep]);
   const currentHash = useMemo(() => hash(config || {}), [config]);
   const savedHash = useMemo(() => hash((defaultConfigRow?.config as Record<string, any>) || {}), [defaultConfigRow]);
   const isDirty = currentHash !== savedHash;
