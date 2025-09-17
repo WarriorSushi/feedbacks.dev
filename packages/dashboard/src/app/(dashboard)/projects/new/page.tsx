@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
+import { useDashboard } from '@/components/dashboard-client-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +20,7 @@ export default function NewProjectPage() {
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createBrowserSupabaseClient();
+  const { refreshProjects } = useDashboard();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -68,6 +70,7 @@ export default function NewProjectPage() {
           description: `${trimmedName} is ready to collect feedback.`,
         });
 
+        await refreshProjects();
         router.push(`/projects/${project.id}`);
       } catch (err: any) {
         setError(err.message || 'Failed to create project');
