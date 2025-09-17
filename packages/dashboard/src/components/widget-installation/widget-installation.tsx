@@ -681,6 +681,8 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const [showAdvancedExperience, setShowAdvancedExperience] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const tabsRef = useRef<HTMLDivElement>(null);
+  const CARD_HEADER = 'p-4 sm:p-6';
+  const CARD_CONTENT = 'p-4 pt-0 sm:p-6 sm:pt-0';
 
   const steps = [
     { id: 'setup', label: 'Setup' },
@@ -913,7 +915,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   }), [config.inlineBorder, config.inlineShadow, config.backgroundColor]);
 
   const sections = (
-    <div ref={tabsRef} className="space-y-8">
+    <div ref={tabsRef} className="space-y-6 sm:space-y-8">
       <Tabs
         value={activeTab}
         onValueChange={(value) => {
@@ -922,22 +924,22 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         }}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="setup">Setup</TabsTrigger>
-          <TabsTrigger value="appearance">Appearance</TabsTrigger>
-          <TabsTrigger value="fields">Fields</TabsTrigger>
-          <TabsTrigger value="protection">Protection</TabsTrigger>
-        <TabsTrigger value="publish">Publish</TabsTrigger>
-      </TabsList>
+        <TabsList className="mb-4 flex w-full gap-2 overflow-x-auto rounded-full border border-border/60 bg-muted/40 p-1 text-xs font-medium uppercase tracking-[0.14em] scrollbar-thin sm:text-sm sm:tracking-[0.18em]">
+          <TabsTrigger value="setup" className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">Setup</TabsTrigger>
+          <TabsTrigger value="appearance" className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">Appearance</TabsTrigger>
+          <TabsTrigger value="fields" className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">Fields</TabsTrigger>
+          <TabsTrigger value="protection" className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">Protection</TabsTrigger>
+          <TabsTrigger value="publish" className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">Publish</TabsTrigger>
+        </TabsList>
         {null}
 
-      <TabsContent value="setup" className="space-y-8">
+      <TabsContent value="setup" className="space-y-6 sm:space-y-8">
         <Card>
-          <CardHeader>
+          <CardHeader className={CARD_HEADER}>
             <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Choose an experience</CardTitle>
             <CardDescription>Select how the widget should appear on your site.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className={CARD_CONTENT}>
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               {MODE_PRESETS.map((item) => {
                 const active = config.embedMode === item.mode;
@@ -965,11 +967,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className={CARD_HEADER}>
             <CardTitle>Select your platform</CardTitle>
             <CardDescription>This controls the snippet we generate for you in the Publish step.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className={cn(CARD_CONTENT, 'space-y-3')}>
             <div className="flex flex-wrap gap-2">
               {SNIPPET_PLATFORMS.map((platform) => (
                 <Button
@@ -989,11 +991,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className={CARD_HEADER}>
             <CardTitle className="flex items-center gap-2"><Palette className="h-4 w-4 text-primary" />Presets</CardTitle>
             <CardDescription>Start from a curated look and fine-tune afterwards.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-2">
+          <CardContent className={cn(CARD_CONTENT, 'grid gap-3 md:grid-cols-2')}>
             {filteredPresets.map((preset) => (
               <PresetCard key={preset.slug} preset={preset} onApply={applyPreset} active={activePresetSlug === preset.slug} />
             ))}
@@ -1006,13 +1008,13 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
       </TabsContent>
 
-      <TabsContent value="appearance" className="space-y-8">
+      <TabsContent value="appearance" className="space-y-6 sm:space-y-8">
         <Card>
-          <CardHeader>
+          <CardHeader className={CARD_HEADER}>
             <CardTitle>Branding</CardTitle>
             <CardDescription>Match the widget to your visual language.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
+          <CardContent className={cn(CARD_CONTENT, 'grid gap-4 md:grid-cols-2')}>
             <div className="space-y-2">
               <Label>Primary accent</Label>
               <div className="flex items-center gap-2">
@@ -1092,11 +1094,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
+          <CardHeader className={CARD_HEADER}>
             <CardTitle>Advanced styling</CardTitle>
             <CardDescription>Fine-tune inline embeds with visual presets and custom values.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className={cn(CARD_CONTENT, 'space-y-4')}>
             <div className="flex flex-wrap gap-2">
               {INLINE_STYLE_PRESETS.map((preset) => (
                 <Button
@@ -1129,13 +1131,13 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="fields" className="space-y-8">
+      <TabsContent value="fields" className="space-y-6 sm:space-y-8">
         <Card>
-          <CardHeader>
+          <CardHeader className={CARD_HEADER}>
             <CardTitle>Inputs & behavior</CardTitle>
             <CardDescription>Show the right amount of friction before submitting feedback.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
+          <CardContent className={cn(CARD_CONTENT, 'grid gap-4 md:grid-cols-2')}>
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <div className="text-sm font-medium">Require email</div>
@@ -1224,11 +1226,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
+          <CardHeader className={CARD_HEADER}>
             <CardTitle>Success messaging</CardTitle>
             <CardDescription>Customize the thank-you screen after submission.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4">
+          <CardContent className={cn(CARD_CONTENT, 'grid gap-4')}>
             <div className="space-y-2">
               <Label>Title</Label>
               <Input value={config.successTitle || ''} onChange={(event) => updateConfig({ successTitle: event.target.value })} placeholder="Thank you!" />
@@ -1240,13 +1242,13 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="protection" className="space-y-8">
+      <TabsContent value="protection" className="space-y-6 sm:space-y-8">
         <Card>
-          <CardHeader>
+          <CardHeader className={CARD_HEADER}>
             <CardTitle>Spam & abuse controls</CardTitle>
             <CardDescription>Keep noise out while preserving great feedback.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
+          <CardContent className={cn(CARD_CONTENT, 'grid gap-4 md:grid-cols-2')}>
             <div className="rounded-lg border p-3 flex items-center justify-between md:col-span-2">
               <div>
                 <div className="text-sm font-medium flex items-center gap-1">
@@ -1286,11 +1288,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
+          <CardHeader className={CARD_HEADER}>
             <CardTitle>Rate limiting</CardTitle>
             <CardDescription>Throttle how frequently feedback can be submitted per user.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
+          <CardContent className={cn(CARD_CONTENT, 'grid gap-4 md:grid-cols-2')}>
             <div className="space-y-2">
               <Label>Submissions per window</Label>
               <Input type="number" min={1} max={200} value={config.rateLimitCount || 5} onChange={(event) => updateConfig({ rateLimitCount: Number(event.target.value) })} />
@@ -1305,11 +1307,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
       </TabsContent>
       <TabsContent value="publish" className="space-y-6 sm:space-y-8">
         <Card>
-          <CardHeader className="p-4 sm:p-6">
+          <CardHeader className={CARD_HEADER}>
             <CardTitle className="text-lg font-semibold leading-tight sm:text-xl">Integration snippets</CardTitle>
             <CardDescription>Copy-paste for your selected platform.</CardDescription>
           </CardHeader>
-          <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+          <CardContent className={CARD_CONTENT}>
             <Tabs value={selectedPlatform} onValueChange={(v) => setSelectedPlatform(v as any)} className="w-full">
               <TabsList className="w-full overflow-x-auto whitespace-nowrap gap-2">
                 {FRAMEWORK_OPTIONS.map((option) => (
@@ -1329,11 +1331,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
 
         <Card>
-          <CardHeader className="p-4 sm:p-6">
+          <CardHeader className={CARD_HEADER}>
             <CardTitle className="text-lg font-semibold leading-tight sm:text-xl">Install guide</CardTitle>
             <CardDescription>Simple, mode-specific steps to ship confidently.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 p-4 pt-0 sm:p-6 sm:pt-0">
+          <CardContent className={cn(CARD_CONTENT, 'space-y-3')}>
             {config.embedMode === 'modal' && (
               <ol className="space-y-3 text-sm">
                 <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
@@ -1372,7 +1374,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="p-4 sm:p-6">
+          <CardHeader className={CARD_HEADER}>
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-lg font-semibold leading-tight sm:text-xl">Experience details</CardTitle>
@@ -1381,7 +1383,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               <Button size="sm" variant="outline" onClick={() => setShowAdvancedExperience((v)=>!v)}>{showAdvancedExperience ? 'Hide' : 'Show'} advanced</Button>
             </div>
           </CardHeader>
-          <CardContent className="space-y-5 p-4 pt-0 sm:p-6 sm:pt-0">
+          <CardContent className={cn(CARD_CONTENT, 'space-y-5')}>
             {config.embedMode === 'modal' && (
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
@@ -1445,11 +1447,11 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className={CARD_HEADER}>
             <CardTitle>Recent versions</CardTitle>
             <CardDescription>Track how your install evolves.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className={cn(CARD_CONTENT, 'space-y-3')}>
             {history.length === 0 && <p className="text-sm text-muted-foreground">Publish your first configuration to see history here.</p>}
             {history.map((row, idx) => (
               <div key={row.id} className={cn('flex flex-col gap-1 rounded-lg border p-3 text-sm sm:flex-row sm:items-center sm:justify-between', idx === 0 ? 'border-primary/40 bg-primary/5' : 'border-border')}>
@@ -1472,22 +1474,22 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   );
   return (
     <div className="space-y-5 pb-24">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold tracking-tight">Widget installation</h2>
           <p className="text-sm text-muted-foreground">Fine-tune, preview, and publish the experience for {projectName}.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={loading}>Reset</Button>
+              <Button variant="outline" size="sm" disabled={loading} className="w-full sm:w-auto">Reset</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
               <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button onClick={handleSave} disabled={loading || saving || !isDirty}>
+          <Button onClick={handleSave} disabled={loading || saving || !isDirty} className="w-full sm:w-auto">
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
             {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
           </Button>
@@ -1497,15 +1499,15 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         <div className="flex items-center gap-2 text-xs text-muted-foreground"><History className="h-3 w-3" />{statusMessage}</div>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)]">
-        <div className="space-y-6">
+      <div className="grid gap-6 lg:gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)]">
+        <div className="space-y-5 sm:space-y-6">
           {loading ? (
             <Card className="h-[520px] animate-pulse" />
           ) : (
             sections
           )}
         </div>
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
           <WidgetPreview config={config} projectKey={projectKey} widgetVersion={widgetVersion} viewport={viewport} onViewportChange={setViewport} />
         </div>
       </div>
@@ -1524,17 +1526,17 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
 
       {/* Sticky action bar */}
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border">
-        <div className="container mx-auto px-4 py-2 flex items-center justify-end gap-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
+        <div className="container mx-auto px-4 py-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={loading}>Reset</Button>
+              <Button variant="outline" size="sm" disabled={loading} className="w-full sm:w-auto">Reset</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
               <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button onClick={handleSave} disabled={loading || saving || !isDirty}>
+          <Button onClick={handleSave} disabled={loading || saving || !isDirty} className="w-full sm:w-auto">
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
             {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
           </Button>
@@ -1610,11 +1612,11 @@ function StepNavigation({
 function AlertCard() {
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="p-4 sm:p-6">
         <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-primary" />Best practices</CardTitle>
         <CardDescription>Balance security with submission friction.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-2 text-sm text-muted-foreground">
+      <CardContent className="space-y-2 text-sm text-muted-foreground p-4 pt-0 sm:p-6 sm:pt-0">
         <p>Consider enabling CAPTCHA for public widgets embedded on marketing pages. Rate limits apply per IP-adjust for highly trafficked products.</p>
         <p>Attachments and screenshots are stored in your Supabase storage bucket <code className="rounded bg-muted px-1.5 py-0.5 text-xs">feedback_attachments</code>. Remember to configure retention policies.</p>
       </CardContent>

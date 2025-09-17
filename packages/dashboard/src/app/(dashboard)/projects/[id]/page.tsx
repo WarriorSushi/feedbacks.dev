@@ -69,45 +69,51 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button variant="ghost" asChild className="gap-2">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Button variant="ghost" asChild className="w-full justify-start gap-2 sm:w-auto">
             <Link href="/dashboard">
               <ArrowLeft className="h-4 w-4" />
               Back to Dashboard
             </Link>
           </Button>
-          <div className="flex items-center gap-2">
-            <RefreshButton />
-            <ProjectSettingsLauncher projectId={project.id} projectName={project.name} />
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <RefreshButton className="w-full sm:w-auto" />
+            <ProjectSettingsLauncher projectId={project.id} projectName={project.name} className="w-full sm:w-auto" />
           </div>
         </div>
 
         {/* Project Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">{project.name}</h1>
-          <p className="text-muted-foreground mt-2">Manage your feedback collection</p>
+        <div className="mb-6 space-y-2">
+          <div>
+            <h1 className="text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">{project.name}</h1>
+            <p className="text-sm text-muted-foreground sm:text-base">Manage your feedback collection</p>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground sm:text-sm">
+            <Badge variant="secondary" className="px-2 py-1">Project ID: {String(project.id).slice(0, 6)}…</Badge>
+            <Badge variant="outline" className="px-2 py-1">Created {new Date(project.created_at).toLocaleDateString()}</Badge>
+          </div>
         </div>
 
         {/* Project Tabs */}
         <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 mb-4">
-            <TabsTrigger value="widget-installation" className="flex items-center gap-2">
+          <TabsList className="mb-5 flex w-full gap-2 overflow-x-auto rounded-full border border-border/60 bg-muted/50 p-1 scrollbar-thin">
+            <TabsTrigger value="widget-installation" className="flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium sm:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Code className="h-4 w-4" />
-              <span className="hidden sm:inline">Widget Installation</span>
+              <span>Widget</span>
             </TabsTrigger>
-            <TabsTrigger value="feedback" className="flex items-center gap-2">
+            <TabsTrigger value="feedback" className="flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium sm:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Feedback</span>
+              <span>Feedback</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <TabsTrigger value="analytics" className="flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium sm:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Analytics</span>
+              <span>Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="integrations" className="flex items-center gap-2">
+            <TabsTrigger value="integrations" className="flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium sm:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
               <Webhook className="h-4 w-4" />
-              <span className="hidden sm:inline">Integrations</span>
+              <span>Integrations</span>
             </TabsTrigger>
           </TabsList>
 
@@ -115,13 +121,13 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             {/* Recent Feedback */}
             <div className="lg:col-span-2 space-y-6">
               <Card>
-                <CardHeader>
+                <CardHeader className="p-4 sm:p-6">
                   <CardTitle className="flex items-center gap-2">
                     <MessageSquare className="h-5 w-5" />
                     Recent Feedback
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                   {feedbacks && feedbacks.length > 0 ? (
                     <div className="space-y-4">
                       {feedbacks.slice(0, 5).map((fb) => (
@@ -236,10 +242,10 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             {/* Project Stats Sidebar */}
             <div className="space-y-6">
               <Card>
-                <CardHeader>
+                <CardHeader className="p-4 sm:p-6">
                   <CardTitle>Project Stats</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                   <div className="space-y-4">
                     <div>
                       <Label>Total Feedback</Label>
@@ -264,10 +270,10 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
               </Card>
 
               <Card>
-                <CardHeader>
+                <CardHeader className="p-4 sm:p-6">
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-2 p-4 pt-0 sm:p-6 sm:pt-0">
                   <Button variant="outline" className="w-full justify-start gap-2">
                     <ExternalLink className="h-4 w-4" />
                     View All Feedback
@@ -278,7 +284,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             </div>
           </TabsContent>
 
-          <TabsContent value="widget-installation" className="space-y-6">
+          <TabsContent value="widget-installation" className="space-y-5 sm:space-y-6">
             <WidgetInstallationExperience
               projectId={params.id}
               projectKey={project.api_key}
@@ -289,10 +295,10 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
           <TabsContent value="analytics" className="space-y-6">
             <Card>
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle>Summary (last 7 days)</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                 <ProjectAnalytics projectId={params.id} />
               </CardContent>
             </Card>
@@ -300,10 +306,10 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
           <TabsContent value="integrations" className="space-y-6">
             <Card>
-              <CardHeader>
+              <CardHeader className="p-4 sm:p-6">
                 <CardTitle>Webhooks</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                 <ProjectIntegrations projectId={params.id} />
               </CardContent>
             </Card>
