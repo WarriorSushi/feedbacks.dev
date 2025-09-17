@@ -37,6 +37,13 @@ const SECTION_LABEL: Record<ProjectSection, string> = {
 };
 
 const WIDGET_STEPS: WidgetStep[] = ['setup', 'appearance', 'fields', 'protection', 'publish'];
+const WIDGET_STEP_LABEL: Record<WidgetStep, string> = {
+  setup: 'Setup',
+  appearance: 'Appearance',
+  fields: 'Fields',
+  protection: 'Protection',
+  publish: 'Publish',
+};
 
 export default async function ProjectPage({ params, searchParams }: ProjectPageProps) {
   const supabase = createServerSupabaseClient();
@@ -111,45 +118,59 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   const sectionBadge = SECTION_LABEL[activeSection];
 
   const mobileOverviewCard = (
-    <div className="lg:hidden">
-      <div className="rounded-2xl border border-border/60 bg-card/60 p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground/80">Overview</span>
-          <Badge variant="outline" className="border-border/60 text-[11px] font-semibold uppercase tracking-[0.16em]">
+    <div className="lg:hidden px-3">
+      <section className="rounded-3xl border border-border/70 bg-card/80 p-4 shadow-sm">
+        <header className="flex items-center justify-between gap-3">
+          <span className="text-[10px] uppercase tracking-[0.32em] text-muted-foreground/80">Overview</span>
+          <Badge variant="outline" className="border-border/60 text-[10px] font-semibold uppercase tracking-[0.28em]">
             {sectionBadge}
           </Badge>
-        </div>
-        <div className="mt-3 space-y-3">
+        </header>
+        <div className="mt-3 space-y-4">
           <div>
             <h1 className="text-lg font-semibold text-foreground">{project.name}</h1>
-            <p className="text-sm text-muted-foreground">Manage your feedback collection</p>
+            <p className="mt-1 text-sm text-muted-foreground">Manage your feedback collection</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="rounded-lg bg-muted/30 p-3">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Project ID</p>
-              <p className="mt-1 text-sm font-semibold text-foreground">{String(project.id).slice(0, 6)}…</p>
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="rounded-xl bg-muted/30 p-3">
+              <p className="text-[9px] uppercase tracking-[0.26em] text-muted-foreground">Project ID</p>
+              <p className="mt-1 truncate text-sm font-semibold text-foreground">{String(project.id).slice(0, 8)}…</p>
             </div>
-            <div className="rounded-lg bg-muted/30 p-3">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Created</p>
+            <div className="rounded-xl bg-muted/30 p-3">
+              <p className="text-[9px] uppercase tracking-[0.26em] text-muted-foreground">Created</p>
               <p className="mt-1 text-sm font-semibold text-foreground">
                 {new Date(project.created_at).toLocaleDateString()}
               </p>
             </div>
+            <div className="rounded-xl bg-muted/30 p-3">
+              <p className="text-[9px] uppercase tracking-[0.26em] text-muted-foreground">Feedback</p>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {typeof count === 'number' ? count : feedbacks?.length || 0}
+              </p>
+            </div>
           </div>
+          {activeSection === 'widget-installation' && (
+            <div className="rounded-2xl border border-primary/30 bg-primary/10 p-3 text-xs">
+              <p className="text-[9px] uppercase tracking-[0.26em] text-primary/80">Active step</p>
+              <p className="mt-1 text-sm font-semibold text-primary">
+                {WIDGET_STEP_LABEL[activeWidgetStep]}
+              </p>
+            </div>
+          )}
         </div>
-      </div>
+      </section>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="mx-auto w-full max-w-6xl px-4 pb-6 pt-0 sm:px-6 sm:pt-6 lg:px-8">
-        <ProjectMobileTabs
-          projectId={project.id}
-          projectName={project.name}
-          activeSection={activeSection}
-          widgetStep={activeWidgetStep}
-        />
+      <ProjectMobileTabs
+        projectId={project.id}
+        projectName={project.name}
+        activeSection={activeSection}
+        widgetStep={activeWidgetStep}
+      />
+      <div className="mx-auto w-full max-w-6xl px-0 pb-8 pt-3 sm:px-6 sm:pt-6 lg:px-8">
         <div className="mb-6 hidden flex-col gap-3 lg:flex lg:flex-row lg:items-center lg:justify-between">
           <Button variant="ghost" asChild className="w-full justify-start gap-2 sm:w-auto">
             <Link href="/dashboard">
@@ -210,7 +231,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
           {activeSection === 'feedback' && (
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <div className="space-y-6 lg:col-span-2">
-                <Card>
+                <Card className="rounded-[30px] border border-border/70 bg-card/80 shadow-sm sm:rounded-2xl">
                   <CardHeader className="p-4 sm:p-6">
                     <CardTitle className="flex items-center gap-2">
                       <MessageSquare className="h-5 w-5" />
@@ -363,7 +384,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
               </div>
 
               <div className="space-y-6">
-                <Card>
+                <Card className="rounded-[30px] border border-border/70 bg-card/80 shadow-sm sm:rounded-2xl">
                   <CardHeader className="p-4 sm:p-6">
                     <CardTitle>Project Stats</CardTitle>
                   </CardHeader>
@@ -387,7 +408,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card className="rounded-[30px] border border-border/70 bg-card/80 shadow-sm sm:rounded-2xl">
                   <CardHeader className="p-4 sm:p-6">
                     <CardTitle>Quick Actions</CardTitle>
                   </CardHeader>
@@ -408,7 +429,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
           )}
 
           {activeSection === 'analytics' && (
-            <Card>
+            <Card className="rounded-[30px] border border-border/70 bg-card/80 shadow-sm sm:rounded-2xl">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
@@ -422,7 +443,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
           )}
 
           {activeSection === 'integrations' && (
-            <Card>
+            <Card className="rounded-[30px] border border-border/70 bg-card/80 shadow-sm sm:rounded-2xl">
               <CardHeader className="p-4 sm:p-6">
                 <CardTitle className="flex items-center gap-2">
                   <Webhook className="h-5 w-5" />

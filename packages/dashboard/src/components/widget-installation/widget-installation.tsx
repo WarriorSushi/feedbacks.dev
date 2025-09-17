@@ -1601,11 +1601,13 @@ function StepNavigation({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-lg border bg-card/60 p-3 sm:flex-row sm:items-center sm:justify-between',
+        'flex flex-col gap-3 rounded-[28px] border border-border/70 bg-card/80 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between',
         variant === 'top' ? 'mt-3 mb-6' : 'mt-6'
       )}
     >
-      <div className="text-xs font-medium text-muted-foreground">Step {currentIndex + 1} of {steps.length}</div>
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        Step {currentIndex + 1} of {steps.length}
+      </div>
       <div className="flex items-center gap-2">
         <Button
           type="button"
@@ -1613,7 +1615,10 @@ function StepNavigation({
           size="sm"
           onClick={onPrev}
           disabled={!hasPrev}
-          className={cn('flex items-center gap-1 h-9 px-3 text-xs', variant === 'top' ? 'md:text-sm' : '')}
+          className={cn(
+            'flex h-9 items-center gap-2 rounded-lg border-border/70 px-3 text-[11px] font-semibold uppercase tracking-[0.18em]',
+            variant === 'top' ? 'md:text-[12px]' : ''
+          )}
         >
           <ChevronLeft className="h-4 w-4" />
           Previous
@@ -1624,7 +1629,10 @@ function StepNavigation({
             size="sm"
             onClick={onNext}
             disabled={disableNext}
-            className={cn('flex items-center gap-1 h-9 px-3 text-xs', variant === 'top' ? 'md:text-sm' : '')}
+            className={cn(
+              'flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-semibold uppercase tracking-[0.18em]',
+              variant === 'top' ? 'md:text-[12px]' : ''
+            )}
           >
             {nextLabel}
             {showArrow && <ChevronRight className="h-4 w-4" />}
