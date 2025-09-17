@@ -915,7 +915,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
   }), [config.inlineBorder, config.inlineShadow, config.backgroundColor]);
 
   const sections = (
-    <div ref={tabsRef} className="space-y-6 sm:space-y-8">
+    <div ref={tabsRef} className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
       <Tabs
         value={activeTab}
         onValueChange={(value) => {
@@ -925,15 +925,15 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         className="w-full"
       >
         <TabsList className="mb-4 flex w-full gap-1 overflow-x-auto rounded-full border border-border/60 bg-muted/40 p-1 text-[11px] font-medium uppercase tracking-[0.12em] scrollbar-thin sm:gap-2 sm:text-sm sm:tracking-[0.18em]">
-          <TabsTrigger value="setup" className="flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Setup</TabsTrigger>
-          <TabsTrigger value="appearance" className="flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Appearance</TabsTrigger>
-          <TabsTrigger value="fields" className="flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Fields</TabsTrigger>
-          <TabsTrigger value="protection" className="flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Protection</TabsTrigger>
-          <TabsTrigger value="publish" className="flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Publish</TabsTrigger>
+          <TabsTrigger value="setup" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Setup</TabsTrigger>
+          <TabsTrigger value="appearance" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Appearance</TabsTrigger>
+          <TabsTrigger value="fields" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Fields</TabsTrigger>
+          <TabsTrigger value="protection" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Protection</TabsTrigger>
+          <TabsTrigger value="publish" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Publish</TabsTrigger>
         </TabsList>
         {null}
 
-      <TabsContent value="setup" className="space-y-6 sm:space-y-8">
+      <TabsContent value="setup" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Choose an experience</CardTitle>
@@ -1011,7 +1011,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         </Card>
       </TabsContent>
 
-      <TabsContent value="appearance" className="space-y-6 sm:space-y-8">
+      <TabsContent value="appearance" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Branding</CardTitle>
@@ -1134,7 +1134,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="fields" className="space-y-6 sm:space-y-8">
+      <TabsContent value="fields" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Inputs & behavior</CardTitle>
@@ -1245,7 +1245,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="protection" className="space-y-6 sm:space-y-8">
+      <TabsContent value="protection" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Spam & abuse controls</CardTitle>
@@ -1308,7 +1308,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         </Card>
         <AlertCard />
       </TabsContent>
-      <TabsContent value="publish" className="space-y-6 sm:space-y-8">
+      <TabsContent value="publish" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle className="text-lg font-semibold leading-tight sm:text-xl">Integration snippets</CardTitle>
@@ -1316,7 +1316,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
           </CardHeader>
           <CardContent className={CARD_CONTENT}>
             <Tabs value={selectedPlatform} onValueChange={(v) => setSelectedPlatform(v as any)} className="w-full">
-              <TabsList className="w-full overflow-x-auto whitespace-nowrap gap-2">
+              <TabsList className="w-full overflow-x-auto  gap-2">
                 {FRAMEWORK_OPTIONS.map((option) => (
                   <TabsTrigger key={option.value} value={option.value} className="px-2.5 py-1 text-[11px] sm:px-3 sm:py-1.5 sm:text-sm">
                     {option.label}

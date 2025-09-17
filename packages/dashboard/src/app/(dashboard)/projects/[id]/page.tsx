@@ -68,7 +68,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   const defaultTab = (typeof count === 'number' && count > 0) ? 'feedback' : 'widget-installation';
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <div className="container mx-auto px-3 sm:px-4 py-6">
         {/* Header */}
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -97,21 +97,21 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
         </div>
 
         {/* Project Tabs */}
-        <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="mb-5 flex w-full gap-1 overflow-x-auto rounded-full border border-border/60 bg-muted/40 p-1 text-[11px] font-medium uppercase tracking-[0.12em] scrollbar-thin sm:gap-2 sm:text-sm sm:tracking-[0.18em]">
-            <TabsTrigger value="widget-installation" className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
+        <Tabs defaultValue={defaultTab} className="w-full mx-auto max-w-[360px] sm:max-w-none">
+          <TabsList className="mb-5 flex w-full flex-wrap gap-1 rounded-full border border-border/60 bg-muted/40 p-1 text-[11px] font-medium tracking-tight sm:gap-2 sm:text-sm">
+            <TabsTrigger value="widget-installation" className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
               <Code className="h-4 w-4" />
               <span>Widget</span>
             </TabsTrigger>
-            <TabsTrigger value="feedback" className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
+            <TabsTrigger value="feedback" className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
               <MessageSquare className="h-4 w-4" />
               <span>Feedback</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
+            <TabsTrigger value="analytics" className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
               <BarChart3 className="h-4 w-4" />
               <span>Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="integrations" className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
+            <TabsTrigger value="integrations" className="flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
               <Webhook className="h-4 w-4" />
               <span>Integrations</span>
             </TabsTrigger>
