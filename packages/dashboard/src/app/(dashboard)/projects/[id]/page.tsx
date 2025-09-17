@@ -98,20 +98,20 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
         {/* Project Tabs */}
         <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="mb-5 flex w-full gap-2 overflow-x-auto rounded-full border border-border/60 bg-muted/50 p-1 scrollbar-thin">
-            <TabsTrigger value="widget-installation" className="flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium sm:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsList className="mb-5 flex w-full gap-1 overflow-x-auto rounded-full border border-border/60 bg-muted/40 p-1 text-[11px] font-medium uppercase tracking-[0.12em] scrollbar-thin sm:gap-2 sm:text-sm sm:tracking-[0.18em]">
+            <TabsTrigger value="widget-installation" className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
               <Code className="h-4 w-4" />
               <span>Widget</span>
             </TabsTrigger>
-            <TabsTrigger value="feedback" className="flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium sm:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="feedback" className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
               <MessageSquare className="h-4 w-4" />
               <span>Feedback</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium sm:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="analytics" className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
               <BarChart3 className="h-4 w-4" />
               <span>Analytics</span>
             </TabsTrigger>
-            <TabsTrigger value="integrations" className="flex flex-shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3 py-2 text-xs font-medium sm:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="integrations" className="flex flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] data-[state=active]:bg-background data-[state=active]:shadow-sm sm:gap-2 sm:px-3 sm:py-2 sm:text-sm">
               <Webhook className="h-4 w-4" />
               <span>Integrations</span>
             </TabsTrigger>
@@ -129,9 +129,9 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                 </CardHeader>
                 <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                   {feedbacks && feedbacks.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {feedbacks.slice(0, 5).map((fb) => (
-                        <details key={fb.id} className="border rounded-lg p-4 group">
+                        <details key={fb.id} className="group rounded-lg border p-3 sm:p-4">
                           <summary className="cursor-pointer outline-none list-none">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
@@ -274,11 +274,11 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                   <CardTitle>Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 p-4 pt-0 sm:p-6 sm:pt-0">
-                  <Button variant="outline" className="w-full justify-start gap-2">
+                  <Button variant="outline" className="w-full justify-start gap-2 text-xs sm:text-sm">
                     <ExternalLink className="h-4 w-4" />
                     View All Feedback
                   </Button>
-                  <ProjectSettingsLauncher projectId={project.id} projectName={project.name} className="w-full justify-start" />
+                  <ProjectSettingsLauncher projectId={project.id} projectName={project.name} className="w-full justify-start text-xs sm:text-sm" />
                 </CardContent>
               </Card>
             </div>

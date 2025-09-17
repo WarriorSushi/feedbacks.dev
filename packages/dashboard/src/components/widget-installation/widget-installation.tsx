@@ -651,18 +651,18 @@ function PresetCard({ preset, onApply, active }: { preset: WidgetPreset; onApply
       type="button"
       onClick={() => onApply(preset)}
       className={cn(
-        'group relative flex flex-col items-start gap-2 rounded-xl border bg-card p-4 text-left transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'group relative flex flex-col items-start gap-1.5 rounded-lg border bg-card p-3 text-left text-[11px] font-medium transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm sm:p-4',
         active ? 'border-primary shadow-lg ring-1 ring-primary/40' : 'border-border'
       )}
     >
       <div className="flex w-full items-center justify-between">
-        <div className="text-sm font-semibold">{preset.name}</div>
+        <div className="text-[11px] font-semibold sm:text-sm">{preset.name}</div>
         {active && <Badge variant="default">Applied</Badge>}
       </div>
       {preset.description && (
-        <p className="text-xs text-muted-foreground leading-relaxed">{preset.description}</p>
+        <p className="text-[10px] text-muted-foreground leading-snug sm:text-xs">{preset.description}</p>
       )}
-      <span className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Click to apply</span>
+      <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground sm:text-[11px]">Tap to apply</span>
     </button>
   );
 }
@@ -681,8 +681,8 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const [showAdvancedExperience, setShowAdvancedExperience] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const tabsRef = useRef<HTMLDivElement>(null);
-  const CARD_HEADER = 'p-4 sm:p-6';
-  const CARD_CONTENT = 'p-4 pt-0 sm:p-6 sm:pt-0';
+const CARD_HEADER = 'p-3 sm:p-6';
+const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
 
   const steps = [
     { id: 'setup', label: 'Setup' },
@@ -924,12 +924,12 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
         }}
         className="w-full"
       >
-        <TabsList className="mb-4 flex w-full gap-2 overflow-x-auto rounded-full border border-border/60 bg-muted/40 p-1 text-xs font-medium uppercase tracking-[0.14em] scrollbar-thin sm:text-sm sm:tracking-[0.18em]">
-          <TabsTrigger value="setup" className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">Setup</TabsTrigger>
-          <TabsTrigger value="appearance" className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">Appearance</TabsTrigger>
-          <TabsTrigger value="fields" className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">Fields</TabsTrigger>
-          <TabsTrigger value="protection" className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">Protection</TabsTrigger>
-          <TabsTrigger value="publish" className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm">Publish</TabsTrigger>
+        <TabsList className="mb-4 flex w-full gap-1 overflow-x-auto rounded-full border border-border/60 bg-muted/40 p-1 text-[11px] font-medium uppercase tracking-[0.12em] scrollbar-thin sm:gap-2 sm:text-sm sm:tracking-[0.18em]">
+          <TabsTrigger value="setup" className="flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Setup</TabsTrigger>
+          <TabsTrigger value="appearance" className="flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Appearance</TabsTrigger>
+          <TabsTrigger value="fields" className="flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Fields</TabsTrigger>
+          <TabsTrigger value="protection" className="flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Protection</TabsTrigger>
+          <TabsTrigger value="publish" className="flex-shrink-0 whitespace-nowrap rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Publish</TabsTrigger>
         </TabsList>
         {null}
 
@@ -940,7 +940,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <CardDescription>Select how the widget should appear on your site.</CardDescription>
           </CardHeader>
           <CardContent className={CARD_CONTENT}>
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
               {MODE_PRESETS.map((item) => {
                 const active = config.embedMode === item.mode;
                 return (
@@ -950,14 +950,14 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                     onClick={() => handleModeChange(item.mode)}
                     aria-pressed={active}
                     className={cn(
-                      'flex min-w-[200px] flex-1 items-start gap-2 rounded-lg border px-3 py-2 text-left transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      'flex min-w-0 flex-1 flex-col items-start gap-1 rounded-md border px-2 py-2 text-left text-[11px] leading-snug transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-w-[200px] sm:px-3 sm:text-sm',
                       active ? 'border-primary bg-primary/5' : 'border-border bg-card'
                     )}
                   >
                     <div className="flex-1 space-y-1">
-                      <div className="text-sm font-medium leading-tight">{item.title}</div>
-                      <p className="text-xs text-muted-foreground leading-snug">{item.description}</p>
-                      {item.helper && <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">{item.helper}</span>}
+                      <div className="font-medium text-[11px] leading-tight sm:text-sm">{item.title}</div>
+                      <p className="text-[10px] text-muted-foreground leading-snug sm:text-xs">{item.description}</p>
+                      {item.helper && <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground sm:text-[11px]">{item.helper}</span>}
                     </div>
                   </button>
                 );
@@ -979,7 +979,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                   type="button"
                   size="sm"
                   variant={selectedPlatform === platform ? 'default' : 'outline'}
-                  className="capitalize"
+                  className="capitalize px-3 py-1.5 text-[11px] sm:text-sm"
                   onClick={() => setSelectedPlatform(platform)}
                 >
                   {platform.replace('-', ' ')}
@@ -995,12 +995,15 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <CardTitle className="flex items-center gap-2"><Palette className="h-4 w-4 text-primary" />Presets</CardTitle>
             <CardDescription>Start from a curated look and fine-tune afterwards.</CardDescription>
           </CardHeader>
-          <CardContent className={cn(CARD_CONTENT, 'grid gap-3 md:grid-cols-2')}>
-            {filteredPresets.map((preset) => (
-              <PresetCard key={preset.slug} preset={preset} onApply={applyPreset} active={activePresetSlug === preset.slug} />
-            ))}
-            {filteredPresets.length === 0 && (
-              <div className="rounded-xl border border-dashed p-6 text-sm text-muted-foreground">
+          <CardContent className={cn(CARD_CONTENT, 'space-y-2')}>
+            {filteredPresets.length > 0 ? (
+              <div className="flex gap-2 overflow-x-auto scrollbar-thin sm:grid sm:grid-cols-2 sm:gap-3">
+                {filteredPresets.map((preset) => (
+                  <PresetCard key={preset.slug} preset={preset} onApply={applyPreset} active={activePresetSlug === preset.slug} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed p-4 text-[11px] text-muted-foreground sm:text-sm">
                 {presets.length === 0 ? 'Presets will appear here once configured in Supabase.' : 'Switch experiences to see presets tailored for that embed mode.'}
               </div>
             )}
@@ -1138,21 +1141,21 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <CardDescription>Show the right amount of friction before submitting feedback.</CardDescription>
           </CardHeader>
           <CardContent className={cn(CARD_CONTENT, 'grid gap-4 md:grid-cols-2')}>
-            <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center justify-between rounded-lg border p-2.5 sm:p-3">
               <div>
                 <div className="text-sm font-medium">Require email</div>
                 <p className="text-xs text-muted-foreground">Force responders to include a contact address.</p>
               </div>
               <Switch checked={!!config.requireEmail} onCheckedChange={(value) => updateConfig({ requireEmail: value })} />
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center justify-between rounded-lg border p-2.5 sm:p-3">
               <div>
                 <div className="text-sm font-medium">Feedback type picker</div>
                 <p className="text-xs text-muted-foreground">Let users classify feedback as bug, idea, or praise.</p>
               </div>
               <Switch checked={config.enableType !== false} onCheckedChange={(value) => updateConfig({ enableType: value })} />
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center justify-between rounded-lg border p-2.5 sm:p-3">
               <div>
                 <div className="text-sm font-medium">Screenshot upload</div>
                 <p className="text-xs text-muted-foreground">Allow users to attach a browser screenshot.</p>
@@ -1166,14 +1169,14 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             )}
             {showAdvancedFields && (
             <>
-            <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center justify-between rounded-lg border p-2.5 sm:p-3">
               <div>
                 <div className="text-sm font-medium">Rating scale</div>
                 <p className="text-xs text-muted-foreground">Collect optional 1-5 star ratings alongside comments.</p>
               </div>
               <Switch checked={config.enableRating !== false} onCheckedChange={(value) => updateConfig({ enableRating: value })} />
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center justify-between rounded-lg border p-2.5 sm:p-3">
               <div>
                 <div className="text-sm font-medium flex items-center gap-1">
                   Require screenshot
@@ -1182,7 +1185,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               </div>
               <Switch checked={!!config.screenshotRequired} disabled={!config.enableScreenshot} onCheckedChange={(value) => updateConfig({ screenshotRequired: value })} />
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center justify-between rounded-lg border p-2.5 sm:p-3">
               <div>
                 <div className="text-sm font-medium">Priority selector</div>
                 <p className="text-xs text-muted-foreground">Capture how urgent the feedback feels.</p>
@@ -1196,7 +1199,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               </div>
               <Switch checked={!!config.enableTags} onCheckedChange={(value) => updateConfig({ enableTags: value })} />
             </div>
-            <div className="flex items-center justify-between rounded-lg border p-3 md:col-span-2">
+            <div className="flex items-center justify-between rounded-lg border p-2.5 sm:p-3 md:col-span-2">
               <div>
                 <div className="text-sm font-medium">File attachments</div>
                 <p className="text-xs text-muted-foreground">Accept supplementary files (PNG, JPG, PDF).</p>
@@ -1315,7 +1318,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
             <Tabs value={selectedPlatform} onValueChange={(v) => setSelectedPlatform(v as any)} className="w-full">
               <TabsList className="w-full overflow-x-auto whitespace-nowrap gap-2">
                 {FRAMEWORK_OPTIONS.map((option) => (
-                  <TabsTrigger key={option.value} value={option.value} className="px-3 py-1 text-xs sm:text-sm">
+                  <TabsTrigger key={option.value} value={option.value} className="px-2.5 py-1 text-[11px] sm:px-3 sm:py-1.5 sm:text-sm">
                     {option.label}
                   </TabsTrigger>
                 ))}
@@ -1337,7 +1340,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
           </CardHeader>
           <CardContent className={cn(CARD_CONTENT, 'space-y-3')}>
             {config.embedMode === 'modal' && (
-              <ol className="space-y-3 text-sm">
+              <ol className="space-y-3 text-[11px] sm:text-sm">
                 <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
                 <li className="flex items-start gap-2"><MousePointer className="h-4 w-4 mt-0.5 text-primary" /> A floating button appears at bottom-right. Tweak label/position below if needed.</li>
                 <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 mt-0.5 text-primary" /> Save & publish your configuration.</li>
@@ -1345,7 +1348,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               </ol>
             )}
             {config.embedMode === 'inline' && (
-              <ol className="space-y-3 text-sm">
+              <ol className="space-y-3 text-[11px] sm:text-sm">
                 <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
                 <li className="flex items-start gap-2">
                   <MousePointer className="h-4 w-4 mt-0.5 text-primary" />
@@ -1357,7 +1360,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
               </ol>
             )}
             {config.embedMode === 'trigger' && (
-              <ol className="space-y-3 text-sm">
+              <ol className="space-y-3 text-[11px] sm:text-sm">
                 <li className="flex items-start gap-2"><Code className="h-4 w-4 mt-0.5 text-primary" /> Add the script and stylesheet shown above.</li>
                 <li className="flex items-start gap-2">
                   <MousePointer className="h-4 w-4 mt-0.5 text-primary" />
@@ -1368,7 +1371,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
                 <li className="flex items-start gap-2"><Rocket className="h-4 w-4 mt-0.5 text-primary" /> Verify in the widget demo and on your site.</li>
               </ol>
             )}
-            <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+            <div className="rounded-lg border bg-muted/30 p-2.5 text-[11px] text-muted-foreground sm:p-3 sm:text-xs">
               Need a different platform? Switch the selection in Setup — snippets update instantly.
             </div>
           </CardContent>
@@ -1473,7 +1476,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
     </div>
   );
   return (
-    <div className="space-y-5 pb-24">
+    <div className="space-y-4 sm:space-y-5 pb-24">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold tracking-tight">Widget installation</h2>
