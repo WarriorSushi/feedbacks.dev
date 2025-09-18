@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import hash from 'object-hash';
 import Link from 'next/link';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,7 +16,27 @@ import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
 import { CopyButton } from '@/components/copy-button';
 import { cn, formatDate } from '@/lib/utils';
-import { Loader2, Monitor, Smartphone, Sparkles, History, ShieldCheck, Palette, ChevronLeft, ChevronRight, Code, MousePointer, CheckCircle, Rocket, Info } from 'lucide-react';
+import {
+  Loader2,
+  Monitor,
+  Smartphone,
+  Sparkles,
+  History,
+  ShieldCheck,
+  Palette,
+  ChevronLeft,
+  ChevronRight,
+  Code,
+  MousePointer,
+  CheckCircle,
+  Rocket,
+  Info,
+  MessageCircle,
+  Heart,
+  Star,
+  ThumbsUp,
+  type LucideIcon,
+} from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const DEFAULT_WIDGET_VERSION = 'latest';
@@ -23,6 +44,19 @@ const ALLOWED_POSITIONS = ['bottom-right', 'bottom-left', 'top-right', 'top-left
 const ALLOWED_SHAPES = ['rounded', 'pill', 'square'] as const;
 const ALLOWED_HEADER_ICONS = ['none', 'chat', 'star', 'lightbulb', 'thumbs-up'] as const;
 const ALLOWED_HEADER_LAYOUTS = ['text-only', 'icon-left', 'icon-top'] as const;
+const ALLOWED_LAUNCHER_VARIANTS = ['label', 'icon'] as const;
+const LAUNCHER_ICON_OPTIONS: Array<{
+  value: string;
+  label: string;
+  icon: LucideIcon;
+  preview: string;
+}> = [
+  { value: 'sparkles', label: 'Sparkles', icon: Sparkles, preview: '✨' },
+  { value: 'message-circle', label: 'Chat bubble', icon: MessageCircle, preview: '💬' },
+  { value: 'star', label: 'Star', icon: Star, preview: '★' },
+  { value: 'heart', label: 'Heart', icon: Heart, preview: '❤' },
+  { value: 'thumbs-up', label: 'Thumbs up', icon: ThumbsUp, preview: '👍' },
+];
 const CAPTCHAS = ['none', 'turnstile', 'hcaptcha'] as const;
 const SNIPPET_PLATFORMS = ['website', 'react', 'vue', 'react-native', 'flutter', 'wordpress', 'shopify'] as const;
 const SNIPPET_LANGUAGES: Record<(typeof SNIPPET_PLATFORMS)[number], string> = {
@@ -106,6 +140,8 @@ export interface WidgetConfig {
   modalShape?: typeof ALLOWED_SHAPES[number];
   headerIcon?: typeof ALLOWED_HEADER_ICONS[number];
   headerLayout?: typeof ALLOWED_HEADER_LAYOUTS[number];
+  launcherVariant?: typeof ALLOWED_LAUNCHER_VARIANTS[number];
+  launcherIcon?: string;
   spacing?: number;
   modalWidth?: number;
   inlineBorder?: string;
@@ -170,6 +206,8 @@ const DEFAULT_CONFIG: WidgetConfig = {
   modalShape: 'rounded',
   headerIcon: 'none',
   headerLayout: 'text-only',
+  launcherVariant: 'label',
+  launcherIcon: 'sparkles',
   spacing: 24,
   modalWidth: 480,
   inlineBorder: '1px solid rgba(15,23,42,0.08)',
@@ -196,6 +234,41 @@ const MODE_PRESETS: Array<{ mode: EmbedMode; title: string; description: string;
     title: 'Attach to an existing button',
     description: 'Use your own CTA or icon and let us power the modal.',
     helper: 'Works with nav menus, floating action buttons, and custom UI.',
+  },
+];
+
+const DEFAULT_MODAL_PRESETS: WidgetPreset[] = [
+  {
+    slug: 'floating-classic',
+    name: 'Floating bubble',
+    description: 'Rounded launcher with a text label for clarity.',
+    category: 'modal',
+    preview_image_url: null,
+    config: {
+      embedMode: 'modal',
+      launcherVariant: 'label',
+      launcherIcon: 'sparkles',
+      buttonText: 'Feedback',
+      modalShape: 'rounded',
+      scale: 1,
+      position: 'bottom-right',
+    },
+  },
+  {
+    slug: 'floating-icon',
+    name: 'Icon floating modal',
+    description: 'Compact icon-only bubble that keeps screens tidy.',
+    category: 'modal',
+    preview_image_url: null,
+    config: {
+      embedMode: 'modal',
+      launcherVariant: 'icon',
+      launcherIcon: 'sparkles',
+      buttonText: '',
+      modalShape: 'rounded',
+      scale: 1,
+      position: 'bottom-right',
+    },
   },
 ];
 
@@ -276,6 +349,12 @@ function buildRuntimeConfig(config: WidgetConfig, projectKey: string) {
   if (config.modalShape) result.modalShape = config.modalShape;
   if (config.headerIcon && config.headerIcon !== 'none') result.headerIcon = config.headerIcon;
   if (config.headerLayout && config.headerLayout !== 'text-only') result.headerLayout = config.headerLayout;
+  if (config.embedMode === 'modal' && config.launcherVariant && config.launcherVariant !== 'label') {
+    result.launcherVariant = config.launcherVariant;
+  }
+  if (config.embedMode === 'modal' && config.launcherIcon) {
+    result.launcherIcon = config.launcherIcon;
+  }
   if (typeof config.spacing === 'number') result.spacing = config.spacing;
   if (typeof config.modalWidth === 'number') result.modalWidth = config.modalWidth;
   if (config.inlineBorder) result.inlineBorder = config.inlineBorder;
@@ -369,6 +448,39 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         font-weight: 600;
         box-shadow: 0 10px 30px rgba(15,23,42,0.08);
       }
+      .feedbacks-button {
+        font-size: 13px !important;
+        font-weight: 600 !important;
+        padding: 0 16px !important;
+        min-height: 48px !important;
+        border-radius: 9999px !important;
+        white-space: nowrap !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      body[data-launcher-variant="icon"] .feedbacks-button {
+        font-size: 0 !important;
+        width: 56px !important;
+        min-width: 56px !important;
+        height: 56px !important;
+        min-height: 56px !important;
+        padding: 0 !important;
+      }
+      body[data-launcher-variant="icon"] .feedbacks-button::after {
+        content: attr(data-preview-icon);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        font-size: 24px;
+      }
+      body[data-launcher-variant="icon"][data-launcher-icon="sparkles"] .feedbacks-button::after { content: '✨'; }
+      body[data-launcher-variant="icon"][data-launcher-icon="message-circle"] .feedbacks-button::after { content: '💬'; }
+      body[data-launcher-variant="icon"][data-launcher-icon="star"] .feedbacks-button::after { content: '★'; }
+      body[data-launcher-variant="icon"][data-launcher-icon="heart"] .feedbacks-button::after { content: '❤'; }
+      body[data-launcher-variant="icon"][data-launcher-icon="thumbs-up"] .feedbacks-button::after { content: '👍'; }
       /* Preview-only: avoid inner scroll in modal, let parent iframe grow */
       .feedbacks-modal { max-height: none !important; }
       .feedbacks-overlay {
@@ -393,6 +505,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         let view = 'launcher'; // 'launcher' | 'form'
         let lastConfig = initial;
         let fallbackLoaded = false;
+        const ICON_MAP = { sparkles: '✨', 'message-circle': '💬', star: '★', heart: '❤', 'thumbs-up': '👍' };
 
         function ensureWidgetLoaded(cb, attempt) {
           const tries = typeof attempt === 'number' ? attempt : 0;
@@ -446,6 +559,16 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           const triggerAnchor = document.getElementById('trigger-anchor');
           if (triggerAnchor) triggerAnchor.style.display = cfg.embedMode === 'trigger' ? 'inline-flex' : 'none';
           try {
+            document.body.dataset.launcherVariant = cfg.embedMode === 'modal' ? (cfg.launcherVariant || 'label') : 'label';
+            if (cfg.launcherIcon) document.body.dataset.launcherIcon = cfg.launcherIcon;
+            else delete document.body.dataset.launcherIcon;
+            document.body.dataset.previewIcon = ICON_MAP[cfg.launcherIcon || 'sparkles'] || '✨';
+          } catch (error) {}
+          if (triggerAnchor && triggerAnchor.dataset.previewBound !== 'true') {
+            triggerAnchor.dataset.previewBound = 'true';
+            triggerAnchor.addEventListener('click', function(){ setTimeout(postHeight, 200); setTimeout(postHeight, 480); });
+          }
+          try {
             if (typeof window !== 'undefined' && window.FeedbacksWidget) {
               new window.FeedbacksWidget(cfg);
             }
@@ -480,7 +603,10 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         }
         function postHeight(){
           try {
-            var height = 0;
+            var root = document.getElementById('preview-root');
+            var rect = root && typeof root.getBoundingClientRect === 'function' ? root.getBoundingClientRect() : null;
+            var height = rect ? Math.ceil(rect.height) : Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight);
+
             if (view === 'form' && lastConfig && lastConfig.embedMode === 'modal') {
               var modal = document.querySelector('.feedbacks-modal');
               if (modal && typeof modal.getBoundingClientRect === 'function') {
@@ -488,24 +614,35 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
                 if (modalRect) {
                   var modalHeight = modalRect.height || (modalRect.bottom - modalRect.top);
                   var modalTop = Math.max(0, modalRect.top);
-                  height = Math.ceil(modalHeight + modalTop + 48);
+                  var modalTotal = Math.ceil((modalHeight || 0) + modalTop + 48);
+                  if (modalTotal > height) height = modalTotal;
                 }
               }
-              if (!height) {
-                var overlay = document.querySelector('.feedbacks-overlay');
-                if (overlay && typeof overlay.getBoundingClientRect === 'function') {
-                  var overlayRect = overlay.getBoundingClientRect();
-                  if (overlayRect) {
-                    height = Math.ceil((overlayRect.height || overlayRect.bottom || 0) + 48);
+              if (height < 480) {
+                var modalOverlay = document.querySelector('.feedbacks-overlay');
+                if (modalOverlay && typeof modalOverlay.getBoundingClientRect === 'function') {
+                  var modalOverlayRect = modalOverlay.getBoundingClientRect();
+                  if (modalOverlayRect) {
+                    var modalOverlayHeight = modalOverlayRect.height || (modalOverlayRect.bottom - modalOverlayRect.top);
+                    var modalOverlayTop = Math.max(0, modalOverlayRect.top);
+                    var modalOverlayTotal = Math.ceil((modalOverlayHeight || 0) + modalOverlayTop + 48);
+                    if (modalOverlayTotal > height) height = modalOverlayTotal;
                   }
                 }
               }
             }
-            if (!height) {
-              var root = document.getElementById('preview-root');
-              var rect = root && typeof root.getBoundingClientRect === 'function' ? root.getBoundingClientRect() : null;
-              height = rect ? Math.ceil(rect.height) : Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight);
+
+            var overlay = document.querySelector('.feedbacks-overlay');
+            if (overlay && typeof overlay.getBoundingClientRect === 'function') {
+              var overlayRect = overlay.getBoundingClientRect();
+              if (overlayRect) {
+                var overlayHeight = overlayRect.height || (overlayRect.bottom - overlayRect.top);
+                var overlayTop = Math.max(0, overlayRect.top);
+                var overlayTotal = Math.ceil((overlayHeight || 0) + overlayTop + 48);
+                if (overlayTotal > height) height = overlayTotal;
+              }
             }
+
             if (height < 320) height = 320;
             parent.postMessage({ type: 'widget-preview:height', height: height }, '*');
           } catch (e) {
@@ -657,13 +794,15 @@ function PresetCard({ preset, onApply, active }: { preset: WidgetPreset; onApply
       type="button"
       onClick={() => onApply(preset)}
       className={cn(
-        'group relative flex flex-col items-start gap-1.5 rounded-lg border bg-card p-3 text-left text-[11px] font-medium transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm sm:p-4',
-        active ? 'border-primary shadow-lg ring-1 ring-primary/40' : 'border-border'
+        'group relative flex flex-col items-start gap-1.5 rounded-lg border bg-card p-3 text-left text-[11px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm sm:p-4',
+        active
+          ? 'border-primary/70 bg-primary/10 shadow-[0_14px_36px_rgba(99,102,241,0.2)]'
+          : 'border-border hover:border-primary/40 hover:bg-primary/5'
       )}
     >
       <div className="flex w-full items-center justify-between">
         <div className="text-[11px] font-semibold sm:text-sm">{preset.name}</div>
-        {active && <Badge variant="default">Applied</Badge>}
+        {active && <Badge variant="default" className="text-[10px] uppercase tracking-[0.12em]">Selected</Badge>}
       </div>
       {preset.description && (
         <p className="text-[10px] text-muted-foreground leading-snug sm:text-xs">{preset.description}</p>
@@ -673,6 +812,9 @@ function PresetCard({ preset, onApply, active }: { preset: WidgetPreset; onApply
   );
 }
 export function WidgetInstallationExperience({ projectId, projectKey, projectName, widgetVersion = DEFAULT_WIDGET_VERSION, initialStep }: WidgetInstallationExperienceProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [config, setConfig] = useState<WidgetConfig>(DEFAULT_CONFIG);
   const [defaultConfigRow, setDefaultConfigRow] = useState<WidgetConfigRow | null>(null);
   const [history, setHistory] = useState<WidgetConfigRow[]>([]);
@@ -688,6 +830,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const [showAdvancedExperience, setShowAdvancedExperience] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const tabsRef = useRef<HTMLDivElement>(null);
+  const previousButtonLabelRef = useRef<string>('Feedback');
 const CARD_HEADER = 'p-3 sm:p-6';
 const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
 
@@ -710,8 +853,12 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     }
     setActiveTab(initialStep);
   }, [initialStep]);
-  const currentHash = useMemo(() => hash(config || {}), [config]);
-  const savedHash = useMemo(() => hash((defaultConfigRow?.config as Record<string, any>) || {}), [defaultConfigRow]);
+  const normalizedConfig = useMemo(() => mergeConfig(DEFAULT_CONFIG, config as Record<string, any>), [config]);
+  const currentHash = useMemo(() => hash(normalizedConfig), [normalizedConfig]);
+  const savedHash = useMemo(() => {
+    const saved = (defaultConfigRow?.config as Record<string, any>) || {};
+    return hash(mergeConfig(DEFAULT_CONFIG, saved));
+  }, [defaultConfigRow]);
   const isDirty = currentHash !== savedHash;
 
   const loadPresets = useCallback(async () => {
@@ -754,11 +901,17 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
       if (fallbackRow?.config?.target && typeof fallbackRow.config.target === 'string') {
         next.target = fallbackRow.config.target;
       }
+      if (next.buttonText && next.buttonText.trim()) {
+        previousButtonLabelRef.current = next.buttonText;
+      } else {
+        previousButtonLabelRef.current = 'Feedback';
+      }
       setConfig(next);
       setStatusMessage('');
     } catch (e: any) {
       console.error(e);
       setStatusMessage('Unable to load saved configuration');
+      previousButtonLabelRef.current = 'Feedback';
       setConfig(DEFAULT_CONFIG);
     } finally {
       setLoading(false);
@@ -777,9 +930,20 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     }
   }, [isDirty, saving]);
 
+  useEffect(() => {
+    if (config.launcherVariant !== 'icon' && config.buttonText && config.buttonText.trim()) {
+      previousButtonLabelRef.current = config.buttonText;
+    }
+  }, [config.buttonText, config.launcherVariant]);
+
   const updateConfig = (updates: Partial<WidgetConfig>) => {
     setConfig((prev) => {
-      const next = { ...prev, ...updates };
+      const next: WidgetConfig = { ...prev, ...updates };
+
+      if (typeof updates.buttonText === 'string' && updates.buttonText.trim()) {
+        previousButtonLabelRef.current = updates.buttonText;
+      }
+
       if (next.embedMode === 'inline') {
         next.target = normalizeTarget(next.target, '#feedback-widget');
       } else if (next.embedMode === 'trigger') {
@@ -787,6 +951,31 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
       } else {
         next.target = undefined;
       }
+
+      if (next.embedMode !== 'modal') {
+        next.launcherVariant = 'label';
+        if (!next.buttonText) {
+          const fallbackLabel = previousButtonLabelRef.current || prev.buttonText || 'Feedback';
+          next.buttonText = fallbackLabel;
+        }
+        return next;
+      }
+
+      if (next.launcherVariant === 'icon') {
+        if (prev.buttonText && prev.buttonText.trim()) {
+          previousButtonLabelRef.current = prev.buttonText;
+        }
+        next.buttonText = '';
+        if (!next.launcherIcon) {
+          next.launcherIcon = prev.launcherIcon || 'sparkles';
+        }
+      } else {
+        const fallback = previousButtonLabelRef.current || prev.buttonText || 'Feedback';
+        if (!next.buttonText) {
+          next.buttonText = fallback;
+        }
+      }
+
       return next;
     });
   };
@@ -801,16 +990,52 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
       } else {
         next.target = undefined;
       }
+      if (mode === 'modal') {
+        const storedLabel = previousButtonLabelRef.current || prev.buttonText || 'Feedback';
+        next.launcherVariant = prev.launcherVariant || 'label';
+        if (next.launcherVariant === 'icon') {
+          if (prev.buttonText && prev.buttonText.trim()) {
+            previousButtonLabelRef.current = prev.buttonText;
+          }
+          next.buttonText = '';
+          next.launcherIcon = prev.launcherIcon || 'sparkles';
+        } else {
+          next.buttonText = prev.buttonText && prev.buttonText.trim() ? prev.buttonText : storedLabel;
+        }
+      } else {
+        if (prev.buttonText && prev.buttonText.trim()) {
+          previousButtonLabelRef.current = prev.buttonText;
+        }
+        next.launcherVariant = 'label';
+        next.buttonText = previousButtonLabelRef.current || prev.buttonText || 'Feedback';
+      }
       return next;
     });
   };
 
   const applyPreset = (preset: WidgetPreset) => {
+    if (config.buttonText && config.buttonText.trim()) {
+      previousButtonLabelRef.current = config.buttonText;
+    }
     const next = mergeConfig(DEFAULT_CONFIG, preset.config);
     if (next.embedMode === 'inline') next.target = normalizeTarget(next.target, '#feedback-widget');
     if (next.embedMode === 'trigger') next.target = normalizeTarget(next.target, '#feedback-button');
+    if (next.embedMode !== 'modal') {
+      next.launcherVariant = 'label';
+      if (!next.buttonText) {
+        next.buttonText = previousButtonLabelRef.current || 'Feedback';
+      }
+    } else if (next.launcherVariant === 'icon') {
+      next.buttonText = '';
+      if (!next.launcherIcon) next.launcherIcon = 'sparkles';
+    } else if (!next.buttonText) {
+      next.buttonText = previousButtonLabelRef.current || 'Feedback';
+    }
     setConfig(next);
-    setStatusMessage(`Applied preset - ${preset.name}`);
+    if (next.launcherVariant === 'label' && next.buttonText && next.buttonText.trim()) {
+      previousButtonLabelRef.current = next.buttonText;
+    }
+    setStatusMessage(`Preset applied · ${preset.name}`);
   };
 
   const scrollTabsIntoView = useCallback(() => {
@@ -818,13 +1043,31 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     tabsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
+  const updateStepInUrl = useCallback((stepId: WidgetStep) => {
+    if (!pathname) return;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('section', 'widget-installation');
+    params.set('widgetStep', stepId);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  const activateStep = useCallback((stepId: string) => {
+    const normalizedStep = (WIDGET_STEPS.includes(stepId as WidgetStep) ? stepId : DEFAULT_WIDGET_STEP) as WidgetStep;
+    if (activeTab === normalizedStep) {
+      updateStepInUrl(normalizedStep);
+      return;
+    }
+    setActiveTab(normalizedStep);
+    updateStepInUrl(normalizedStep);
+    requestAnimationFrame(scrollTabsIntoView);
+  }, [activeTab, updateStepInUrl, scrollTabsIntoView]);
+
   const goToStep = useCallback((direction: 'prev' | 'next') => {
     const nextIndex = direction === 'next'
       ? Math.min(stepOrder.length - 1, currentStepIndex + 1)
       : Math.max(0, currentStepIndex - 1);
-    setActiveTab(stepOrder[nextIndex]);
-    requestAnimationFrame(scrollTabsIntoView);
-  }, [currentStepIndex, stepOrder, scrollTabsIntoView]);
+    activateStep(stepOrder[nextIndex]);
+  }, [activateStep, currentStepIndex, stepOrder]);
   const hasPrev = currentStepIndex > 0;
   const hasNext = currentStepIndex < stepOrder.length - 1;
   const handlePrev = useCallback(() => goToStep('prev'), [goToStep]);
@@ -844,6 +1087,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
       setStatusMessage('Reset to defaults (preserved mode)');
     }
     setConfig(next);
+    previousButtonLabelRef.current = next.buttonText && next.buttonText.trim() ? next.buttonText : 'Feedback';
     // Reset auxiliary UI state
     setSelectedPlatform('website');
     setViewport('desktop');
@@ -854,6 +1098,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     if (config.embedMode === 'inline') next.target = normalizeTarget(config.target, '#feedback-widget');
     if (config.embedMode === 'trigger') next.target = normalizeTarget(config.target, '#feedback-button');
     setConfig(next);
+    previousButtonLabelRef.current = next.buttonText && next.buttonText.trim() ? next.buttonText : 'Feedback';
     setSelectedPlatform('website');
     setViewport('desktop');
     setStatusMessage('Reset to defaults (preserved mode)');
@@ -905,11 +1150,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
   const snippetLanguage = SNIPPET_LANGUAGES[selectedPlatform];
   const platformInstructions = PLATFORM_INSTRUCTIONS[selectedPlatform];
 
-  const activePresetSlug = useMemo(() => {
-    if (!presets.length || !defaultConfigRow) return null;
-    return presets.find((preset) => hash(mergeConfig(DEFAULT_CONFIG, preset.config)) === savedHash)?.slug || null;
-  }, [presets, defaultConfigRow, savedHash]);
-
   const filteredPresets = useMemo(() => {
     if (!presets.length) return [] as WidgetPreset[];
     return presets.filter((preset) => {
@@ -918,6 +1158,26 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
       return presetMode === config.embedMode;
     });
   }, [presets, config.embedMode]);
+
+  const presetGallery = useMemo(() => {
+    if (config.embedMode !== 'modal') {
+      return filteredPresets;
+    }
+    const ordered = new Map<string, WidgetPreset>();
+    DEFAULT_MODAL_PRESETS.forEach((preset) => ordered.set(preset.slug, preset));
+    filteredPresets.forEach((preset) => ordered.set(preset.slug, preset));
+    return Array.from(ordered.values());
+  }, [filteredPresets, config.embedMode]);
+
+  const activePresetSlug = useMemo(() => {
+    if (!presetGallery.length) return null;
+    for (const preset of presetGallery) {
+      if (hash(mergeConfig(DEFAULT_CONFIG, preset.config)) === currentHash) {
+        return preset.slug;
+      }
+    }
+    return null;
+  }, [presetGallery, currentHash]);
 
   const inlinePresetActive = useMemo(() => {
     const borderValue = config.inlineBorder || 'none';
@@ -932,25 +1192,26 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
   }), [config.inlineBorder, config.inlineShadow, config.backgroundColor]);
 
   const sections = (
-    <div ref={tabsRef} className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+    <div ref={tabsRef} className="space-y-6 sm:space-y-8">
       <Tabs
         value={activeTab}
-        onValueChange={(value) => {
-          setActiveTab(value);
-          requestAnimationFrame(scrollTabsIntoView);
-        }}
+        onValueChange={(value) => activateStep(value)}
         className="w-full"
       >
-        <TabsList className="mb-4 flex w-full gap-1 overflow-x-auto rounded-full border border-border/60 bg-muted/40 p-1 text-[11px] font-medium uppercase tracking-[0.12em] scrollbar-thin sm:gap-2 sm:text-sm sm:tracking-[0.18em]">
-          <TabsTrigger value="setup" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Setup</TabsTrigger>
-          <TabsTrigger value="appearance" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Appearance</TabsTrigger>
-          <TabsTrigger value="fields" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Fields</TabsTrigger>
-          <TabsTrigger value="protection" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Protection</TabsTrigger>
-          <TabsTrigger value="publish" className="flex-shrink-0  rounded-full px-2.5 py-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm sm:px-3 sm:py-2">Publish</TabsTrigger>
+        <TabsList className="mb-4 hidden w-full gap-2 sm:grid sm:grid-cols-2 sm:gap-2 lg:flex lg:flex-wrap">
+          {steps.map((step, index) => (
+            <TabsTrigger
+              key={step.id}
+              value={step.id}
+              className="flex h-11 items-center justify-center rounded-lg border border-border bg-background px-3 text-[11px] font-semibold uppercase tracking-[0.18em] transition data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary sm:flex-1 sm:px-4 sm:text-xs sm:tracking-[0.2em]"
+            >
+              {index + 1}. {step.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
         {null}
 
-      <TabsContent value="setup" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+      <TabsContent value="setup" className="space-y-6 sm:space-y-8">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Choose an experience</CardTitle>
@@ -974,7 +1235,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                     <div className="flex-1 space-y-1">
                       <div className="font-medium text-[11px] leading-tight sm:text-sm">{item.title}</div>
                       <p className="text-[10px] text-muted-foreground leading-snug sm:text-xs">{item.description}</p>
-                      {item.helper && <span className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground sm:text-[11px]">{item.helper}</span>}
                     </div>
                   </button>
                 );
@@ -1013,9 +1273,9 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
             <CardDescription>Start from a curated look and fine-tune afterwards.</CardDescription>
           </CardHeader>
           <CardContent className={cn(CARD_CONTENT, 'space-y-2')}>
-            {filteredPresets.length > 0 ? (
+            {presetGallery.length > 0 ? (
               <div className="flex gap-2 overflow-x-auto scrollbar-thin sm:grid sm:grid-cols-2 sm:gap-3">
-                {filteredPresets.map((preset) => (
+                {presetGallery.map((preset) => (
                   <PresetCard key={preset.slug} preset={preset} onApply={applyPreset} active={activePresetSlug === preset.slug} />
                 ))}
               </div>
@@ -1024,11 +1284,46 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                 {presets.length === 0 ? 'Presets will appear here once configured in Supabase.' : 'Switch experiences to see presets tailored for that embed mode.'}
               </div>
             )}
+            {config.embedMode === 'modal' && config.launcherVariant === 'icon' && (
+              <div className="rounded-lg border border-primary/40 bg-primary/10 p-3 sm:p-4 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-primary/80">Launcher icon</span>
+                  <Badge variant="outline" className="border-primary/60 bg-primary/15 text-[10px] uppercase tracking-[0.24em] text-primary">
+                    Icon mode
+                  </Badge>
+                </div>
+                <p className="text-[10px] leading-snug text-primary/80 sm:text-xs">
+                  Pick the glyph for your floating bubble. The live preview updates as soon as you choose a new icon.
+                </p>
+                <Select
+                  value={config.launcherIcon || 'sparkles'}
+                  onValueChange={(value) => updateConfig({ launcherIcon: value, launcherVariant: 'icon' })}
+                >
+                  <SelectTrigger className="h-9 text-xs sm:h-10 sm:text-sm">
+                    <SelectValue placeholder="Select icon" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LAUNCHER_ICON_OPTIONS.map((option) => {
+                      const IconComponent = option.icon;
+                      return (
+                        <SelectItem key={option.value} value={option.value}>
+                          <div className="flex items-center gap-2">
+                            <IconComponent className="h-4 w-4" />
+                            <span className="text-sm">{option.label}</span>
+                            <span className="text-base leading-none">{option.preview}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </CardContent>
         </Card>
       </TabsContent>
 
-      <TabsContent value="appearance" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+      <TabsContent value="appearance" className="space-y-6 sm:space-y-8">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Branding</CardTitle>
@@ -1151,7 +1446,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="fields" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+      <TabsContent value="fields" className="space-y-6 sm:space-y-8">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Inputs & behavior</CardTitle>
@@ -1262,7 +1557,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent value="protection" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+      <TabsContent value="protection" className="space-y-6 sm:space-y-8">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Spam & abuse controls</CardTitle>
@@ -1325,7 +1620,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         </Card>
         <AlertCard />
       </TabsContent>
-      <TabsContent value="publish" className="space-y-6 sm:space-y-8 mx-auto max-w-[360px] sm:max-w-none">
+      <TabsContent value="publish" className="space-y-6 sm:space-y-8">
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle className="text-lg font-semibold leading-tight sm:text-xl">Integration snippets</CardTitle>
@@ -1493,23 +1788,23 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     </div>
   );
   return (
-    <div className="space-y-4 sm:space-y-5 pb-24">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-4 sm:space-y-5 pb-12">
+      <div className="hidden sm:flex sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h2 className="text-xl font-semibold tracking-tight">Widget installation</h2>
           <p className="text-sm text-muted-foreground">Fine-tune, preview, and publish the experience for {projectName}.</p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={loading} className="w-full sm:w-auto">Reset</Button>
+              <Button variant="outline" size="sm" disabled={loading}>Reset</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
               <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button onClick={handleSave} disabled={loading || saving || !isDirty} className="w-full sm:w-auto">
+          <Button onClick={handleSave} disabled={loading || saving || !isDirty}>
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
             {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
           </Button>
@@ -1527,7 +1822,27 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
             sections
           )}
         </div>
-        <div className="space-y-5 sm:space-y-6">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex items-center justify-end gap-2 sm:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" disabled={loading} className="h-9 px-3 text-xs">Reset</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              onClick={handleSave}
+              disabled={loading || saving || !isDirty}
+              size="sm"
+              className="h-9 px-3 text-xs"
+            >
+              {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+              {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
+            </Button>
+          </div>
           <WidgetPreview config={config} projectKey={projectKey} widgetVersion={widgetVersion} viewport={viewport} onViewportChange={setViewport} />
         </div>
       </div>
@@ -1544,24 +1859,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         showNext={activeTab === 'publish' ? true : hasNext}
       />
 
-      {/* Sticky action bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border">
-        <div className="container mx-auto px-4 py-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" disabled={loading} className="w-full sm:w-auto">Reset</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button onClick={handleSave} disabled={loading || saving || !isDirty} className="w-full sm:w-auto">
-            {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
-            {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
@@ -1595,19 +1892,24 @@ function StepNavigation({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-xl border bg-card/60 p-3 sm:flex-row sm:items-center sm:justify-between',
-        variant === 'top' ? 'mt-3 mb-6' : 'mt-8'
+        'flex flex-col gap-3 rounded-[28px] border border-border/70 bg-card/80 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between',
+        variant === 'top' ? 'mt-3 mb-6' : 'mt-6'
       )}
     >
-      <div className="text-xs text-muted-foreground">Step {currentIndex + 1} of {steps.length}</div>
-      <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        Step {currentIndex + 1} of {steps.length}
+      </div>
+      <div className="flex items-center gap-2">
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={onPrev}
           disabled={!hasPrev}
-          className={cn('flex items-center gap-1 w-full sm:w-auto', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
+          className={cn(
+            'flex h-9 items-center gap-2 rounded-lg border-border/70 px-3 text-[11px] font-semibold uppercase tracking-[0.18em]',
+            variant === 'top' ? 'md:text-[12px]' : ''
+          )}
         >
           <ChevronLeft className="h-4 w-4" />
           Previous
@@ -1618,7 +1920,10 @@ function StepNavigation({
             size="sm"
             onClick={onNext}
             disabled={disableNext}
-            className={cn('flex items-center gap-1 w-full sm:w-auto', variant === 'top' ? 'px-3 text-xs md:text-sm' : '')}
+            className={cn(
+              'flex h-9 items-center gap-2 rounded-lg px-3 text-[11px] font-semibold uppercase tracking-[0.18em]',
+              variant === 'top' ? 'md:text-[12px]' : ''
+            )}
           >
             {nextLabel}
             {showArrow && <ChevronRight className="h-4 w-4" />}

@@ -25,6 +25,13 @@ const SECTION_TABS: Array<{ id: ProjectSection; label: string }> = [
   { id: 'integrations', label: 'Integrations' },
 ];
 
+const SECTION_LABEL: Record<ProjectSection, string> = {
+  'widget-installation': 'Widget',
+  feedback: 'Feedback',
+  analytics: 'Analytics',
+  integrations: 'Integrations',
+};
+
 const WIDGET_SUB_STEPS: Array<{ id: WidgetStep; label: string }> = [
   { id: 'setup', label: 'Setup' },
   { id: 'appearance', label: 'Appearance' },
@@ -77,46 +84,61 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
   };
 
   return (
-    <div className="lg:hidden sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-      <div className="border-b border-border/60 px-4 pb-3 pt-3">
-        <div className="flex items-center gap-3">
-          <button
+
+    <div className="lg:hidden sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+      <div className="px-3 pb-3 pt-[max(env(safe-area-inset-top),0.75rem)]">
+        <div className="flex items-center justify-between gap-3">
+          <Button
             type="button"
-            onClick={() => router.back()}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-border text-sm text-foreground transition-colors hover:bg-muted"
-            aria-label="Go back"
+            variant="ghost"
+            onClick={() => router.push('/dashboard')}
+            className="h-9 min-w-0 flex-1 justify-start gap-2 rounded-md border border-border/70 px-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground/90 transition-colors hover:bg-muted"
           >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <div className="min-w-0 flex-1">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Project</p>
-            <p className="truncate text-base font-semibold leading-tight text-foreground">{projectName}</p>
-          </div>
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back
+          </Button>
           <div className="flex items-center gap-2">
-            <RefreshButton className="h-9 w-9 rounded-lg p-0" />
+            <RefreshButton className="h-9 w-9 rounded-md border border-border/70 bg-background/80 p-0" />
+
             <ProjectSettingsLauncher
               projectId={projectId}
               projectName={projectName}
               variant="icon"
-              className="h-9 w-9 rounded-lg"
+
+              className="h-9 w-9 rounded-md border border-border/70 bg-background/80"
+
             />
           </div>
         </div>
-      </div>
 
-      <div className="px-4 pb-3 pt-3">
-        <div className="grid w-full grid-cols-2 gap-2">
+
+        <div className="mt-3 flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] uppercase tracking-[0.26em] text-muted-foreground/80">Project</p>
+            <p className="truncate text-base font-semibold leading-tight text-foreground">{projectName}</p>
+          </div>
+          <Badge variant="outline" className="border-border/70 text-[10px] font-semibold uppercase tracking-[0.32em]">
+            {SECTION_LABEL[activeSection]}
+          </Badge>
+        </div>
+
+        <div className="mt-4 grid grid-cols-4 gap-1">
+
           {SECTION_TABS.map((tab) => {
             const isActive = tab.id === activeSection;
             return (
               <Button
                 key={tab.id}
                 type="button"
-                variant={isActive ? 'default' : 'secondary'}
+
+                variant="ghost"
                 onClick={() => handleSectionChange(tab.id)}
                 className={cn(
-                  'h-11 w-full justify-center rounded-lg text-sm font-semibold transition-all duration-150',
-                  !isActive && 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  'relative h-[34px] min-w-0 justify-center rounded-md border px-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] transition-all duration-150',
+                  isActive
+                    ? 'border-foreground bg-foreground text-background shadow-sm'
+                    : 'border-border/70 bg-muted/40 text-muted-foreground hover:bg-muted/70'
+
                 )}
               >
                 {tab.label}
@@ -124,39 +146,51 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
             );
           })}
         </div>
-      </div>
 
-      {activeSection === 'widget-installation' && (
-        <div className="px-4 pb-4">
-          <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 shadow-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-primary/80">Widget steps</span>
-              <Badge variant="outline" className="border-primary/40 bg-primary/10 text-[11px] font-medium uppercase tracking-widest text-primary">
-                {activeWidgetIndex + 1}/{WIDGET_SUB_STEPS.length}
-              </Badge>
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {WIDGET_SUB_STEPS.map((step) => {
-                const isStepActive = step.id === widgetStep;
-                return (
-                  <Button
-                    key={step.id}
-                    type="button"
-                    onClick={() => handleWidgetStepChange(step.id)}
-                    variant={isStepActive ? 'default' : 'outline'}
-                    className={cn(
-                      'h-10 w-full justify-center rounded-lg text-xs font-semibold uppercase tracking-[0.2em]',
-                      isStepActive ? 'bg-foreground text-background shadow-sm' : 'border-primary/30 text-primary hover:bg-primary/15'
-                    )}
-                  >
-                    {step.label}
-                  </Button>
-                );
-              })}
+
+        {activeSection === 'widget-installation' && (
+          <div className="mt-4">
+            <div className="rounded-2xl border border-primary/35 bg-primary/10 p-3 shadow-sm">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.32em] text-primary/80">
+                  Widget steps
+                </span>
+                <Badge
+                  variant="outline"
+                  className="border-primary/40 bg-primary/15 text-[9px] font-semibold uppercase tracking-[0.26em] text-primary"
+                >
+                  {activeWidgetIndex + 1}/{WIDGET_SUB_STEPS.length}
+                </Badge>
+              </div>
+              <div className="mt-3 grid grid-cols-5 gap-1">
+                {WIDGET_SUB_STEPS.map((step, index) => {
+                  const isStepActive = step.id === widgetStep;
+                  return (
+                    <Button
+                      key={step.id}
+                      type="button"
+                      onClick={() => handleWidgetStepChange(step.id)}
+                      variant="ghost"
+                      className={cn(
+                        'h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-lg border px-0.5 text-[9px] font-medium tracking-[0.06em] transition-colors',
+                        isStepActive
+                          ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                          : 'border-primary/30 text-primary hover:bg-primary/10'
+                      )}
+                    >
+                      <span className="text-[11px] font-semibold leading-none">{index + 1}</span>
+                      <span className="truncate text-[8px] font-medium leading-tight">
+                        {step.label.toLowerCase()}
+                      </span>
+                    </Button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
     </div>
   );
 }
