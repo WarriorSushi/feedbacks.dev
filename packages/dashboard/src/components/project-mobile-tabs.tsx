@@ -84,6 +84,7 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
   };
 
   return (
+
     <div className="lg:hidden sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/75">
       <div className="px-3 pb-3 pt-[max(env(safe-area-inset-top),0.75rem)]">
         <div className="flex items-center justify-between gap-3">
@@ -98,14 +99,18 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
           </Button>
           <div className="flex items-center gap-2">
             <RefreshButton className="h-9 w-9 rounded-md border border-border/70 bg-background/80 p-0" />
+
             <ProjectSettingsLauncher
               projectId={projectId}
               projectName={projectName}
               variant="icon"
+
               className="h-9 w-9 rounded-md border border-border/70 bg-background/80"
+
             />
           </div>
         </div>
+
 
         <div className="mt-3 flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
@@ -118,12 +123,14 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
         </div>
 
         <div className="mt-4 grid grid-cols-4 gap-1">
+
           {SECTION_TABS.map((tab) => {
             const isActive = tab.id === activeSection;
             return (
               <Button
                 key={tab.id}
                 type="button"
+
                 variant="ghost"
                 onClick={() => handleSectionChange(tab.id)}
                 className={cn(
@@ -131,6 +138,7 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
                   isActive
                     ? 'border-foreground bg-foreground text-background shadow-sm'
                     : 'border-border/70 bg-muted/40 text-muted-foreground hover:bg-muted/70'
+
                 )}
               >
                 {tab.label}
@@ -138,6 +146,7 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
             );
           })}
         </div>
+
 
         {activeSection === 'widget-installation' && (
           <div className="mt-4">
@@ -181,6 +190,7 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
           </div>
         )}
       </div>
+
     </div>
   );
 }

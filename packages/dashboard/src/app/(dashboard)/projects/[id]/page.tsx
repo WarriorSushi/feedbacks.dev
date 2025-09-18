@@ -164,6 +164,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
+
       <ProjectMobileTabs
         projectId={project.id}
         projectName={project.name}
@@ -171,6 +172,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
         widgetStep={activeWidgetStep}
       />
       <div className="mx-auto w-full max-w-6xl px-[2px] pb-8 pt-3 sm:px-6 sm:pt-6 lg:px-8">
+
         <div className="mb-6 hidden flex-col gap-3 lg:flex lg:flex-row lg:items-center lg:justify-between">
           <Button variant="ghost" asChild className="w-full justify-start gap-2 sm:w-auto">
             <Link href="/dashboard">
@@ -189,7 +191,9 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
         </div>
 
         <div className="mb-6 space-y-4">
+
           {activeSection !== 'widget-installation' && mobileOverviewCard}
+
           <div className="hidden lg:block space-y-2">
             <div>
               <h1 className="text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">
