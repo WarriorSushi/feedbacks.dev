@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition, useEffect, useCallback, useRef } from 'react';
 import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -10,9 +10,230 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { Github, Mail, ArrowLeft, Chrome, MessageSquare, Key } from 'lucide-react';
+import { Github, Mail, ArrowLeft, Chrome, Key } from 'lucide-react';
 import Link from 'next/link';
 import { BottomBar } from '@/components/bottom-bar';
+
+type CaptchaProvider = 'turnstile' | 'hcaptcha';
+
+interface CaptchaConfig {
+  provider: CaptchaProvider | null;
+  siteKey: string | null;
+}
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (container: HTMLElement, options: Record<string, unknown>) => string;
+      reset: (widgetId: string) => void;
+      remove: (widgetId: string) => void;
+    };
+    hcaptcha?: {
+      render: (container: HTMLElement, options: Record<string, unknown>) => string;
+      reset: (widgetId: string | number) => void;
+      remove?: (widgetId: string | number) => void;
+    };
+  }
+}
+
+const rawCaptchaProvider = process.env.NEXT_PUBLIC_SUPABASE_CAPTCHA_PROVIDER?.toLowerCase();
+const explicitCaptchaProvider: CaptchaProvider | null =
+  rawCaptchaProvider === 'turnstile' || rawCaptchaProvider === 'hcaptcha'
+    ? (rawCaptchaProvider as CaptchaProvider)
+    : null;
+const disableCaptcha = rawCaptchaProvider === 'none';
+const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+const hcaptchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
+
+const captchaConfig: CaptchaConfig = (() => {
+  if (disableCaptcha) {
+    return { provider: null, siteKey: null };
+  }
+
+  if (explicitCaptchaProvider === 'turnstile') {
+    return { provider: 'turnstile', siteKey: turnstileSiteKey ?? null };
+  }
+
+  if (explicitCaptchaProvider === 'hcaptcha') {
+    return { provider: 'hcaptcha', siteKey: hcaptchaSiteKey ?? null };
+  }
+
+  if (turnstileSiteKey) {
+    return { provider: 'turnstile', siteKey: turnstileSiteKey };
+  }
+
+  if (hcaptchaSiteKey) {
+    return { provider: 'hcaptcha', siteKey: hcaptchaSiteKey };
+  }
+
+  return { provider: null, siteKey: null };
+})();
+
+interface CaptchaChallengeProps {
+  provider: CaptchaProvider;
+  siteKey: string;
+  onToken: (token: string | null) => void;
+  onResetRef: (resetFn: (() => void) | null) => void;
+}
+
+function CaptchaChallenge({ provider, siteKey, onToken, onResetRef }: CaptchaChallengeProps) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<string | number | null>(null);
+  const scriptLoadHandlerRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    onToken(null);
+
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+
+    let isUnmounted = false;
+
+    const renderCaptcha = () => {
+      if (!containerRef.current || isUnmounted) {
+        return;
+      }
+
+      if (provider === 'turnstile') {
+        const turnstile = window.turnstile;
+        if (!turnstile) {
+          return;
+        }
+
+        if (widgetIdRef.current !== null) {
+          turnstile.remove(widgetIdRef.current as string);
+          widgetIdRef.current = null;
+        }
+
+        const widgetId = turnstile.render(containerRef.current, {
+          sitekey: siteKey,
+          callback: (token: string) => onToken(token),
+          'error-callback': () => onToken(null),
+          'timeout-callback': () => {
+            onToken(null);
+            if (widgetIdRef.current) {
+              turnstile.reset(widgetIdRef.current as string);
+            }
+          },
+          'expired-callback': () => {
+            onToken(null);
+            if (widgetIdRef.current) {
+              turnstile.reset(widgetIdRef.current as string);
+            }
+          },
+        });
+
+        widgetIdRef.current = widgetId;
+        onResetRef(() => {
+          if (widgetIdRef.current) {
+            turnstile.reset(widgetIdRef.current as string);
+          }
+          onToken(null);
+        });
+      } else {
+        const hcaptcha = window.hcaptcha;
+        if (!hcaptcha) {
+          return;
+        }
+
+        if (widgetIdRef.current !== null) {
+          hcaptcha.reset(widgetIdRef.current);
+          hcaptcha.remove?.(widgetIdRef.current);
+          widgetIdRef.current = null;
+        }
+
+        const widgetId = hcaptcha.render(containerRef.current, {
+          sitekey: siteKey,
+          callback: (token: string) => onToken(token),
+          'error-callback': () => onToken(null),
+          'expired-callback': () => {
+            onToken(null);
+            if (widgetIdRef.current !== null) {
+              hcaptcha.reset(widgetIdRef.current);
+            }
+          },
+        });
+
+        widgetIdRef.current = widgetId;
+        onResetRef(() => {
+          if (widgetIdRef.current !== null) {
+            hcaptcha.reset(widgetIdRef.current);
+          }
+          onToken(null);
+        });
+      }
+    };
+
+    const scriptSrc =
+      provider === 'turnstile'
+        ? 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+        : 'https://js.hcaptcha.com/1/api.js?render=explicit';
+
+    const attachLoadListener = (script: HTMLScriptElement) => {
+      const handler = () => {
+        renderCaptcha();
+      };
+      scriptLoadHandlerRef.current = handler;
+      script.addEventListener('load', handler);
+    };
+
+    const scripts = Array.from(document.scripts) as HTMLScriptElement[];
+    const existingScript = scripts.find((script) => script.src === scriptSrc);
+
+    if (existingScript) {
+      const ready =
+        (provider === 'turnstile' && window.turnstile) ||
+        (provider === 'hcaptcha' && window.hcaptcha);
+
+      if (ready) {
+        renderCaptcha();
+      } else {
+        attachLoadListener(existingScript);
+      }
+    } else {
+      const script = document.createElement('script');
+      script.src = scriptSrc;
+      script.async = true;
+      script.defer = true;
+      script.onload = () => {
+        renderCaptcha();
+      };
+      document.body.appendChild(script);
+    }
+
+    return () => {
+      isUnmounted = true;
+      onResetRef(null);
+
+      if (scriptLoadHandlerRef.current && existingScript) {
+        existingScript.removeEventListener('load', scriptLoadHandlerRef.current);
+      }
+
+      if (provider === 'turnstile') {
+        const turnstile = window.turnstile;
+        if (turnstile && widgetIdRef.current) {
+          turnstile.remove(widgetIdRef.current as string);
+        }
+      } else {
+        const hcaptcha = window.hcaptcha;
+        if (hcaptcha && widgetIdRef.current !== null) {
+          hcaptcha.remove?.(widgetIdRef.current);
+        }
+      }
+
+      widgetIdRef.current = null;
+      scriptLoadHandlerRef.current = null;
+    };
+  }, [provider, siteKey, onToken, onResetRef]);
+
+  return (
+    <div className="flex justify-center">
+      <div ref={containerRef} className="flex justify-center" />
+    </div>
+  );
+}
 
 export default function AuthPage() {
   const [email, setEmail] = useState('');
@@ -21,9 +242,30 @@ export default function AuthPage() {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaResetRef = useRef<(() => void) | null>(null);
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createBrowserSupabaseClient();
+  const requiresCaptcha =
+    isSignUp && captchaConfig.provider !== null && Boolean(captchaConfig.siteKey);
+  const captchaUnavailable =
+    isSignUp && captchaConfig.provider !== null && !captchaConfig.siteKey;
+
+  const handleCaptchaToken = useCallback((token: string | null) => {
+    setCaptchaToken(token);
+  }, []);
+
+  const handleCaptchaResetRef = useCallback((resetFn: (() => void) | null) => {
+    captchaResetRef.current = resetFn;
+  }, []);
+
+  useEffect(() => {
+    if (!requiresCaptcha) {
+      setCaptchaToken(null);
+      captchaResetRef.current = null;
+    }
+  }, [requiresCaptcha]);
 
   // Check if user is already authenticated and redirect to dashboard
   useEffect(() => {
@@ -137,13 +379,44 @@ export default function AuthPage() {
 
   const handlePasswordAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (captchaUnavailable) {
+      const description = 'Sign-ups are temporarily unavailable. Please contact support.';
+      setMessage(description);
+      setMessageType('error');
+      toast({
+        variant: 'destructive',
+        title: 'Sign-up unavailable',
+        description,
+      });
+      return;
+    }
+
+    if (requiresCaptcha && !captchaToken) {
+      const description = 'Please complete the captcha challenge before creating an account.';
+      setMessage(description);
+      setMessageType('error');
+      toast({
+        variant: 'destructive',
+        title: 'Captcha required',
+        description,
+      });
+      return;
+    }
+
     startTransition(async () => {
       setMessage('');
 
       try {
-        const authMethod = isSignUp 
-          ? supabase.auth.signUp({ email, password })
+        const authMethod = isSignUp
+          ? supabase.auth.signUp({
+              email,
+              password,
+              options: {
+                emailRedirectTo: `${window.location.origin}/auth/callback`,
+                captchaToken: requiresCaptcha ? captchaToken || undefined : undefined,
+              },
+            })
           : supabase.auth.signInWithPassword({ email, password });
 
         const { error, data } = await authMethod;
@@ -159,7 +432,15 @@ export default function AuthPage() {
             title: 'Account created!',
             description: 'Check your email to confirm your account.',
           });
+          if (requiresCaptcha) {
+            captchaResetRef.current?.();
+            setCaptchaToken(null);
+          }
         } else {
+          if (requiresCaptcha) {
+            captchaResetRef.current?.();
+            setCaptchaToken(null);
+          }
           router.push('/dashboard');
         }
       } catch (error: any) {
@@ -170,6 +451,10 @@ export default function AuthPage() {
           title: isSignUp ? 'Sign-up failed' : 'Sign-in failed',
           description: error.message,
         });
+        if (requiresCaptcha) {
+          captchaResetRef.current?.();
+          setCaptchaToken(null);
+        }
       }
     });
   };
@@ -291,10 +576,36 @@ export default function AuthPage() {
                   )}
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full gap-2 h-11" 
-                  disabled={isPending || !email.trim() || !password.trim()}
+                {requiresCaptcha && captchaConfig.provider && captchaConfig.siteKey && (
+                  <div className="space-y-2 rounded-md border border-border/60 bg-muted/40 p-3">
+                    <CaptchaChallenge
+                      provider={captchaConfig.provider}
+                      siteKey={captchaConfig.siteKey}
+                      onToken={handleCaptchaToken}
+                      onResetRef={handleCaptchaResetRef}
+                    />
+                    <p className="text-center text-xs text-muted-foreground">
+                      Protected by {captchaConfig.provider === 'turnstile' ? 'Cloudflare Turnstile' : 'hCaptcha'}.
+                    </p>
+                  </div>
+                )}
+
+                {captchaUnavailable && (
+                  <p className="text-xs text-destructive">
+                    Sign-ups are temporarily unavailable. Please contact support.
+                  </p>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full gap-2 h-11"
+                  disabled={
+                    isPending ||
+                    !email.trim() ||
+                    !password.trim() ||
+                    (requiresCaptcha && !captchaToken) ||
+                    captchaUnavailable
+                  }
                 >
                   {isPending ? (
                     <>
