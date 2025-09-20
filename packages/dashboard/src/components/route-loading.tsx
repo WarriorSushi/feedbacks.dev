@@ -38,9 +38,12 @@ export function RouteLoading({ className }: RouteLoadingProps) {
   if (!isLoading) return null;
 
   return (
-    <div className={cn("fixed top-0 left-0 right-0 z-50", className)}>
-      <Progress 
-        value={progress} 
+    <div
+      className={cn('fixed left-0 right-0 z-50 pointer-events-none', className)}
+      style={{ top: 'max(env(safe-area-inset-top, 0px), 0px)' }}
+    >
+      <Progress
+        value={progress}
         className="h-1 bg-transparent border-none"
       />
       <div className="absolute top-1 left-1/2 transform -translate-x-1/2 -translate-y-full">
