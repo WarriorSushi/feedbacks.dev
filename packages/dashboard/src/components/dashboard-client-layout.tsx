@@ -60,6 +60,14 @@ export function DashboardClientLayout({
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const supabase = useMemo(() => createBrowserSupabaseClient(), []);
   const mountedRef = useRef(true);
+  const mobileLayoutMetrics = useMemo(
+    () =>
+      ({
+        '--dashboard-mobile-header-height': 'calc(4rem + env(safe-area-inset-top, 0px))',
+        '--dashboard-mobile-bottom-offset': 'calc(4.5rem + env(safe-area-inset-bottom, 0px))',
+      }) as React.CSSProperties,
+    [],
+  );
 
   useEffect(() => {
     mountedRef.current = true;
@@ -119,34 +127,41 @@ export function DashboardClientLayout({
   return (
     <DashboardContext.Provider value={{ user, projects, refreshProjects }}>
       <SidebarProvider>
-        <div className="flex h-screen w-full">
+        <div className="flex min-h-dvh w-full bg-background">
           <DashboardSidebar user={user} />
-          
+
           {/* Desktop: No top bar, just main content */}
           <div className="hidden lg:flex flex-1 flex-col overflow-hidden">
             <main className="flex-1 overflow-auto w-full bg-background prevent-bounce">
-              <div className="min-h-screen bg-background transition-opacity duration-200 ease-in-out flex flex-col">
+              <div className="min-h-dvh bg-background transition-opacity duration-200 ease-in-out flex flex-col">
                 <div className="flex-1 pb-8 sm:pb-12 md:pb-16">
                   <RouteLoading />
-                  {children}
+                  <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-10">
+                    {children}
+                  </div>
                 </div>
                 <div className="mt-auto">
-                  <div className="h-8"></div>
                   <BottomBar />
                 </div>
               </div>
             </main>
           </div>
-          
+
           {/* Mobile: Simple header with logo and theme toggle only */}
-          <div className="flex lg:hidden flex-1 flex-col overflow-hidden">
+          <div
+            className="flex lg:hidden flex-1 flex-col overflow-hidden"
+            style={mobileLayoutMetrics}
+          >
             {!isProjectDetailPage && (
-              <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <header
+                className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 pb-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+                style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}
+              >
                 {/* Left: Logo and text */}
                 <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                   <div className="h-8 w-8 flex items-center justify-center">
-                    <img 
-                    src="/logo.svg" 
+                    <img
+                    src="/logo.svg"
                     alt="feedbacks.dev" 
                     className="h-8 w-8 rounded"
                   />
@@ -160,17 +175,24 @@ export function DashboardClientLayout({
                 </div>
               </header>
             )}
-            
+
             <main className="flex-1 overflow-auto w-full bg-background prevent-bounce">
               <div
-                className={'min-h-screen bg-background transition-opacity duration-200 ease-in-out flex flex-col ' + (isProjectDetailPage ? 'pt-4 ' : 'pt-16 ') + ' pb-20'}
+                className="min-h-dvh bg-background transition-opacity duration-200 ease-in-out flex flex-col"
+                style={{
+                  paddingTop: isProjectDetailPage
+                    ? 'calc(env(safe-area-inset-top, 0px) + 1rem)'
+                    : 'var(--dashboard-mobile-header-height)',
+                  paddingBottom: 'var(--dashboard-mobile-bottom-offset)',
+                }}
               >
                 <div className="flex-1 pb-8 sm:pb-12 md:pb-16">
                   <RouteLoading />
-                  {children}
+                  <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+                    {children}
+                  </div>
                 </div>
                 <div className="mt-auto">
-                  <div className="h-8"></div>
                   <BottomBar />
                 </div>
               </div>

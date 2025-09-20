@@ -67,7 +67,7 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="p-6 md:p-6 lg:p-8 space-y-8 md:space-y-8 page-illumination">
+    <div className="py-6 lg:py-8 space-y-8 md:space-y-8 page-illumination">
         {/* Welcome Section */}
         <div className="relative rounded-2xl p-4 md:p-6 bg-gradient-to-r from-background via-background to-primary/5">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -113,7 +113,7 @@ export default function DashboardPage() {
           
           <TabsContent value="overview" className="space-y-6 md:space-y-8">
             {/* Stats Overview - Enhanced Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-6">
               <StatsCard
                 title="Total Projects"
                 value={projects?.length || 0}
@@ -201,7 +201,7 @@ export default function DashboardPage() {
               </div>
 
               {projects && projects.length > 0 ? (
-                <div className="grid grid-cols-2 gap-3 md:gap-4 lg:gap-6 xl:grid-cols-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4 lg:gap-6">
                   {projects.map((project: any, index: number) => (
                     <div 
                       key={project.id} 
