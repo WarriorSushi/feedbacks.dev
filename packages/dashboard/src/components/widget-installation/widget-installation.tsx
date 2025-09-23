@@ -308,7 +308,9 @@ function mergeConfig(base: WidgetConfig, incoming: Record<string, any> | null | 
 
 function normalizeTarget(value: string | undefined, fallback: string) {
   if (!value || typeof value !== 'string') return fallback;
-  return value.startsWith('#') ? value : `#${value}`;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === '#') return fallback;
+  return trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
 }
 
 function buildRuntimeConfig(config: WidgetConfig, projectKey: string) {
@@ -826,7 +828,6 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
   const [showAdvancedFields, setShowAdvancedFields] = useState<boolean>(false);
-  const [showAdvancedStyling, setShowAdvancedStyling] = useState<boolean>(false);
   const [showAdvancedExperience, setShowAdvancedExperience] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const tabsRef = useRef<HTMLDivElement>(null);
@@ -853,13 +854,32 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     }
     setActiveTab(initialStep);
   }, [initialStep]);
+
+  useEffect(() => {
+    if (!searchParams) return;
+    const widgetStepParam = (searchParams.get('widgetStep') || '').toLowerCase();
+    const normalizedStep = (WIDGET_STEPS.includes(widgetStepParam as WidgetStep)
+      ? widgetStepParam
+      : DEFAULT_WIDGET_STEP) as WidgetStep;
+    if (normalizedStep !== activeTab) {
+      setActiveTab(normalizedStep);
+    }
+  }, [activeTab, searchParams]);
   const normalizedConfig = useMemo(() => mergeConfig(DEFAULT_CONFIG, config as Record<string, any>), [config]);
   const currentHash = useMemo(() => hash(normalizedConfig), [normalizedConfig]);
   const savedHash = useMemo(() => {
     const saved = (defaultConfigRow?.config as Record<string, any>) || {};
     return hash(mergeConfig(DEFAULT_CONFIG, saved));
   }, [defaultConfigRow]);
-  const isDirty = currentHash !== savedHash;
+  const hasPublishedConfig = !!defaultConfigRow;
+  const isDirty = !hasPublishedConfig || currentHash !== savedHash;
+  const captchaProvider = config.captchaProvider || 'none';
+  const captchaRequiresKey = !!config.requireCaptcha && captchaProvider !== 'none';
+  const captchaKeyMissing = captchaRequiresKey && (
+    (captchaProvider === 'turnstile' && !(config.turnstileSiteKey && config.turnstileSiteKey.trim())) ||
+    (captchaProvider === 'hcaptcha' && !(config.hcaptchaSiteKey && config.hcaptchaSiteKey.trim()))
+  );
+  const hasBlockingValidation = captchaKeyMissing;
 
   const loadPresets = useCallback(async () => {
     try {
@@ -924,11 +944,21 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
   }, [loadConfig, loadPresets]);
 
   useEffect(() => {
-    if (!saving) {
-      if (isDirty) setStatusMessage('Unsaved changes');
-      else setStatusMessage('');
+    if (saving) return;
+    if (hasBlockingValidation) {
+      setStatusMessage('Add your CAPTCHA site key before saving.');
+      return;
     }
-  }, [isDirty, saving]);
+    if (!hasPublishedConfig) {
+      setStatusMessage('Publish to activate your default configuration');
+      return;
+    }
+    if (isDirty) {
+      setStatusMessage('Unsaved changes');
+      return;
+    }
+    setStatusMessage('');
+  }, [hasBlockingValidation, hasPublishedConfig, isDirty, saving]);
 
   useEffect(() => {
     if (config.launcherVariant !== 'icon' && config.buttonText && config.buttonText.trim()) {
@@ -1209,46 +1239,50 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
             </TabsTrigger>
           ))}
         </TabsList>
-        {null}
 
-      <TabsContent value="setup" className="space-y-6 sm:space-y-8">
-        <Card>
-          <CardHeader className={CARD_HEADER}>
-            <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Choose an experience</CardTitle>
-            <CardDescription>Select how the widget should appear on your site.</CardDescription>
-          </CardHeader>
-          <CardContent className={CARD_CONTENT}>
-            <div className="grid grid-cols-3 gap-1.5 lg:gap-2">
-              {MODE_PRESETS.map((item) => {
-                const active = config.embedMode === item.mode;
-                return (
-                  <button
-                    type="button"
-                    key={item.mode}
-                    onClick={() => handleModeChange(item.mode)}
-                    aria-pressed={active}
-                    className={cn(
-                      'flex min-w-0 flex-1 flex-col items-start gap-1 rounded-md border px-1.5 py-1.5 text-left text-[10px] leading-tight transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-2 sm:py-2 lg:px-3 lg:text-[11px]',
-                      active ? 'border-primary bg-primary/5' : 'border-border bg-card'
-                    )}
-                  >
-                    <div className="flex-1 space-y-0.5">
-                      <div className="font-medium text-[10px] leading-tight sm:text-[11px] lg:text-sm truncate">{item.title}</div>
-                      <p className="text-[9px] text-muted-foreground leading-tight sm:text-[10px] lg:text-xs">{item.description}</p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="setup" className="space-y-6 sm:space-y-8">
+          <Card>
+            <CardHeader className={CARD_HEADER}>
+              <CardTitle className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Choose an experience</CardTitle>
+              <CardDescription>Select how the widget should appear on your site.</CardDescription>
+            </CardHeader>
+            <CardContent className={CARD_CONTENT}>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {MODE_PRESETS.map((item) => {
+                  const active = config.embedMode === item.mode;
+                  return (
+                    <button
+                      type="button"
+                      key={item.mode}
+                      onClick={() => handleModeChange(item.mode)}
+                      aria-pressed={active}
+                      className={cn(
+                        'flex min-w-0 flex-1 flex-col items-start gap-1 rounded-md border px-2 py-2 text-left text-[10px] leading-tight transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-3 sm:py-3 lg:text-[11px]',
+                        active ? 'border-primary bg-primary/5 shadow-sm' : 'border-border bg-card'
+                      )}
+                    >
+                      <div className="flex-1 space-y-0.5">
+                        <div className="font-medium text-[10px] leading-tight sm:text-[11px] lg:text-sm truncate">{item.title}</div>
+                        <p className="text-[9px] text-muted-foreground leading-tight sm:text-[10px] lg:text-xs">{item.description}</p>
+                        {item.helper && (
+                          <p className="text-[9px] text-muted-foreground/80 leading-tight sm:text-[10px] lg:text-xs">
+                            {item.helper}
+                          </p>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
 
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Select your platform</CardTitle>
             <CardDescription>This controls the snippet we generate for you in the Publish step.</CardDescription>
           </CardHeader>
-          <CardContent className={cn(CARD_CONTENT, 'space-y-3')}>
+          <CardContent className={cn(CARD_CONTENT, 'space-y-4')}>
             <div className="flex flex-wrap gap-2">
               {SNIPPET_PLATFORMS.map((platform) => (
                 <Button
@@ -1264,6 +1298,25 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
               ))}
             </div>
             <p className="text-xs text-muted-foreground">We&#39;ll tailor the installation snippet and guidance based on this choice.</p>
+            {platformInstructions?.length ? (
+              <div className="rounded-lg border bg-muted/20 p-3 sm:p-4">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground sm:text-xs">Quick setup notes</div>
+                <ul className="mt-2 space-y-1.5 text-[11px] text-muted-foreground sm:text-sm">
+                  {platformInstructions.map((instruction, index) => (
+                    <li key={`${selectedPlatform}-${index}`} className="flex gap-2">
+                      <span className="text-muted-foreground/70">•</span>
+                      <span className="flex-1 leading-snug">{instruction}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {snippetForPlatform ? (
+              <div className="space-y-2">
+                <Label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-xs">Snippet preview</Label>
+                <CodeSnippet code={snippetForPlatform.trim()} language={snippetLanguage} />
+              </div>
+            ) : null}
           </CardContent>
         </Card>
 
@@ -1494,6 +1547,10 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                   Require screenshot
                   <span title="Active only when screenshot uploads are enabled"><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
                 </div>
+                <p className="text-xs text-muted-foreground">Ensure bug reports include visual context when screenshots are on.</p>
+                {!config.enableScreenshot && (
+                  <p className="mt-1 text-xs text-destructive/80">Enable screenshot uploads above to require them from submitters.</p>
+                )}
               </div>
               <Switch checked={!!config.screenshotRequired} disabled={!config.enableScreenshot} onCheckedChange={(value) => updateConfig({ screenshotRequired: value })} />
             </div>
@@ -1531,6 +1588,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                     <SelectItem value="10">10 MB</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">Higher caps are great for detailed reports but may slow uploads on poor networks.</p>
               </div>
             )}
             <div className="md:col-span-2">
@@ -1571,7 +1629,17 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                   <span title="Enforce CAPTCHA on submit (Turnstile or hCaptcha)."><Info className="h-3.5 w-3.5 text-muted-foreground" /></span>
                 </div>
               </div>
-              <Switch checked={!!config.requireCaptcha} onCheckedChange={(value) => updateConfig({ requireCaptcha: value })} />
+              <Switch
+                checked={!!config.requireCaptcha}
+                onCheckedChange={(value) =>
+                  updateConfig({
+                    requireCaptcha: value,
+                    captchaProvider: value
+                      ? (config.captchaProvider && config.captchaProvider !== 'none' ? config.captchaProvider : 'turnstile')
+                      : 'none',
+                  })
+                }
+              />
             </div>
             <div className="grid gap-3">
               <div className="space-y-2">
@@ -1586,18 +1654,27 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                     ))}
                   </SelectContent>
                 </Select>
+                {config.requireCaptcha && (
+                  <p className="text-xs text-muted-foreground">Choose your provider, then paste the corresponding site key.</p>
+                )}
               </div>
             </div>
             {config.captchaProvider === 'turnstile' && (
               <div className="space-y-2">
                 <Label>Turnstile site key</Label>
-                <Input value={config.turnstileSiteKey || ''} onChange={(event) => updateConfig({ turnstileSiteKey: event.target.value })} placeholder="0xAAAA..." />
+                <Input value={config.turnstileSiteKey || ''} onChange={(event) => updateConfig({ turnstileSiteKey: event.target.value })} placeholder="0xAAAA..." aria-invalid={captchaKeyMissing && captchaProvider === 'turnstile'} />
+                {captchaKeyMissing && captchaProvider === 'turnstile' && (
+                  <p className="text-xs text-destructive/80">Add a valid Cloudflare Turnstile site key to enable submissions.</p>
+                )}
               </div>
             )}
             {config.captchaProvider === 'hcaptcha' && (
               <div className="space-y-2">
                 <Label>hCaptcha site key</Label>
-                <Input value={config.hcaptchaSiteKey || ''} onChange={(event) => updateConfig({ hcaptchaSiteKey: event.target.value })} placeholder="10000000-ffff-ffff-ffff-000000000001" />
+                <Input value={config.hcaptchaSiteKey || ''} onChange={(event) => updateConfig({ hcaptchaSiteKey: event.target.value })} placeholder="10000000-ffff-ffff-ffff-000000000001" aria-invalid={captchaKeyMissing && captchaProvider === 'hcaptcha'} />
+                {captchaKeyMissing && captchaProvider === 'hcaptcha' && (
+                  <p className="text-xs text-destructive/80">Enter your hCaptcha site key before publishing.</p>
+                )}
               </div>
             )}
           </CardContent>
@@ -1733,7 +1810,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                   <Input value={normalizeTarget(config.target, '#feedback-widget').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-widget" />
                 </div>
                 <CodeSnippet code={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}"></div>`} language="html" />
-                <p className="text-xs text-muted-foreground">Drop the div anywhere in your layout. The widget renders directly inside itâ€”no wrapper shell needed.</p>
+                <p className="text-xs text-muted-foreground">Drop the div anywhere in your layout. The widget renders directly inside it—no wrapper shell needed.</p>
               </div>
             )}
 
@@ -1804,7 +1881,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
               <DropdownMenuItem onClick={() => resetToDefaults()}>Reset to Defaults</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button onClick={handleSave} disabled={loading || saving || !isDirty}>
+          <Button onClick={handleSave} disabled={loading || saving || !isDirty || hasBlockingValidation}>
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
             {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
           </Button>
@@ -1835,7 +1912,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
             </DropdownMenu>
             <Button
               onClick={handleSave}
-              disabled={loading || saving || !isDirty}
+              disabled={loading || saving || !isDirty || hasBlockingValidation}
               size="sm"
               className="h-9 px-3 text-xs"
             >
@@ -1855,7 +1932,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         hasNext={hasNext}
         variant="bottom"
         nextLabel={activeTab === 'publish' ? (saving ? 'Saving...' : 'Save & publish') : 'Next'}
-        nextDisabled={activeTab === 'publish' ? saving || loading || !isDirty : !hasNext}
+        nextDisabled={activeTab === 'publish' ? saving || loading || !isDirty || hasBlockingValidation : !hasNext}
         showNext={activeTab === 'publish' ? true : hasNext}
       />
 
