@@ -4,7 +4,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import hash from 'object-hash';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,6 +37,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useWidgetStepContext } from './widget-step-context';
 
 const DEFAULT_WIDGET_VERSION = 'latest';
 const ALLOWED_POSITIONS = ['bottom-right', 'bottom-left', 'top-right', 'top-left'] as const;
@@ -78,39 +78,6 @@ const FRAMEWORK_OPTIONS: Array<{ value: (typeof SNIPPET_PLATFORMS)[number]; labe
   { value: 'wordpress', label: 'WordPress' },
   { value: 'shopify', label: 'Shopify' },
 ];
-
-const PLATFORM_INSTRUCTIONS: Record<(typeof SNIPPET_PLATFORMS)[number], string[]> = {
-  website: [
-    'Paste the snippet just before the closing </body> tag on your site.',
-    'Make sure any inline container id or trigger button id exists in the HTML.',
-  ],
-  react: [
-    'Add this helper component to your app and render it once in your layout.',
-    'The widget script loads after hydration, so render inline targets or trigger buttons in the component tree.',
-  ],
-  vue: [
-    'Include the script in index.html and run the init code inside onMounted.',
-    'Ensure the container or trigger id is present when the component mounts.',
-  ],
-  'react-native': [
-    'Drop this snippet into a WebView for your mobile app.',
-    'Swap the inline HTML if you need to customise colours or ids.',
-  ],
-  flutter: [
-    'Load the HTML snippet inside webview_flutter or a similar widget.',
-    'Adjust the inline HTML if you need to customise ids or styling.',
-  ],
-  wordpress: [
-    'Register the scripts in your theme or plugin, for example in functions.php.',
-    'If you are attaching to an existing button, add the chosen id in your theme markup.',
-  ],
-  shopify: [
-    'Add the script to theme.liquid so it loads on every page.',
-    'Include the init snippet in the template where you want the widget to appear.',
-  ],
-};
-
-
 
 export type EmbedMode = 'modal' | 'inline' | 'trigger';
 
@@ -814,15 +781,13 @@ function PresetCard({ preset, onApply, active }: { preset: WidgetPreset; onApply
   );
 }
 export function WidgetInstallationExperience({ projectId, projectKey, projectName, widgetVersion = DEFAULT_WIDGET_VERSION, initialStep }: WidgetInstallationExperienceProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const widgetStepContext = useWidgetStepContext();
   const [config, setConfig] = useState<WidgetConfig>(DEFAULT_CONFIG);
   const [defaultConfigRow, setDefaultConfigRow] = useState<WidgetConfigRow | null>(null);
   const [history, setHistory] = useState<WidgetConfigRow[]>([]);
   const [presets, setPresets] = useState<WidgetPreset[]>([]);
   const normalizedInitialStep = initialStep && WIDGET_STEPS.includes(initialStep) ? initialStep : DEFAULT_WIDGET_STEP;
-  const [activeTab, setActiveTab] = useState<string>(normalizedInitialStep);
+  const [localStep, setLocalStep] = useState<WidgetStep>(normalizedInitialStep);
   const [viewport, setViewport] = useState<PreviewViewport>('desktop');
   const [selectedPlatform, setSelectedPlatform] = useState<typeof SNIPPET_PLATFORMS[number]>('website');
   const [loading, setLoading] = useState<boolean>(true);
@@ -843,6 +808,21 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     { id: 'publish', label: 'Publish' },
   ];
   const stepOrder = steps.map((step) => step.id);
+  const activeTab = (widgetStepContext?.step ?? localStep) as WidgetStep;
+  const setActiveTab = useCallback((step: WidgetStep, options?: { skipUrl?: boolean }) => {
+    if (widgetStepContext) {
+      widgetStepContext.setStep(step, options);
+      return;
+    }
+    setLocalStep(step);
+    if (!options?.skipUrl && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      params.set('section', 'widget-installation');
+      params.set('widgetStep', step);
+      const url = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState(null, '', url);
+    }
+  }, [widgetStepContext]);
   const currentStepIndex = Math.max(0, stepOrder.indexOf(activeTab));
 
   useEffect(() => {
@@ -852,19 +832,8 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     if (!WIDGET_STEPS.includes(initialStep)) {
       return;
     }
-    setActiveTab(initialStep);
-  }, [initialStep]);
-
-  useEffect(() => {
-    if (!searchParams) return;
-    const widgetStepParam = (searchParams.get('widgetStep') || '').toLowerCase();
-    const normalizedStep = (WIDGET_STEPS.includes(widgetStepParam as WidgetStep)
-      ? widgetStepParam
-      : DEFAULT_WIDGET_STEP) as WidgetStep;
-    if (normalizedStep !== activeTab) {
-      setActiveTab(normalizedStep);
-    }
-  }, [activeTab, searchParams]);
+    setActiveTab(initialStep, { skipUrl: true });
+  }, [initialStep, setActiveTab]);
   const normalizedConfig = useMemo(() => mergeConfig(DEFAULT_CONFIG, config as Record<string, any>), [config]);
   const currentHash = useMemo(() => hash(normalizedConfig), [normalizedConfig]);
   const savedHash = useMemo(() => {
@@ -1073,24 +1042,14 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     tabsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const updateStepInUrl = useCallback((stepId: WidgetStep) => {
-    if (!pathname) return;
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('section', 'widget-installation');
-    params.set('widgetStep', stepId);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [pathname, router, searchParams]);
-
   const activateStep = useCallback((stepId: string) => {
     const normalizedStep = (WIDGET_STEPS.includes(stepId as WidgetStep) ? stepId : DEFAULT_WIDGET_STEP) as WidgetStep;
     if (activeTab === normalizedStep) {
-      updateStepInUrl(normalizedStep);
       return;
     }
     setActiveTab(normalizedStep);
-    updateStepInUrl(normalizedStep);
     requestAnimationFrame(scrollTabsIntoView);
-  }, [activeTab, updateStepInUrl, scrollTabsIntoView]);
+  }, [activeTab, scrollTabsIntoView, setActiveTab]);
 
   const goToStep = useCallback((direction: 'prev' | 'next') => {
     const nextIndex = direction === 'next'
@@ -1176,9 +1135,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
   };
 
   const snippets = useMemo(() => buildSnippets(config, projectKey, widgetVersion), [config, projectKey, widgetVersion]);
-  const snippetForPlatform = snippets.get(selectedPlatform) || '';
-  const snippetLanguage = SNIPPET_LANGUAGES[selectedPlatform];
-  const platformInstructions = PLATFORM_INSTRUCTIONS[selectedPlatform];
 
   const filteredPresets = useMemo(() => {
     if (!presets.length) return [] as WidgetPreset[];
@@ -1223,6 +1179,18 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
 
   const sections = (
     <div ref={tabsRef} className="space-y-6 sm:space-y-8">
+      <StepNavigation
+        steps={steps}
+        currentIndex={currentStepIndex}
+        onPrev={handlePrev}
+        onNext={activeTab === 'publish' ? handleSave : handleNext}
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        variant="top"
+        nextLabel={activeTab === 'publish' ? (saving ? 'Saving...' : 'Save & publish') : 'Next'}
+        nextDisabled={activeTab === 'publish' ? saving || loading || !isDirty || hasBlockingValidation : !hasNext}
+        showNext={activeTab === 'publish' ? true : hasNext}
+      />
       <Tabs
         value={activeTab}
         onValueChange={(value) => activateStep(value)}
@@ -1282,7 +1250,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
             <CardTitle>Select your platform</CardTitle>
             <CardDescription>This controls the snippet we generate for you in the Publish step.</CardDescription>
           </CardHeader>
-          <CardContent className={cn(CARD_CONTENT, 'space-y-4')}>
+          <CardContent className={cn(CARD_CONTENT, 'space-y-3')}>
             <div className="flex flex-wrap gap-2">
               {SNIPPET_PLATFORMS.map((platform) => (
                 <Button
@@ -1298,25 +1266,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
               ))}
             </div>
             <p className="text-xs text-muted-foreground">We&#39;ll tailor the installation snippet and guidance based on this choice.</p>
-            {platformInstructions?.length ? (
-              <div className="rounded-lg border bg-muted/20 p-3 sm:p-4">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground sm:text-xs">Quick setup notes</div>
-                <ul className="mt-2 space-y-1.5 text-[11px] text-muted-foreground sm:text-sm">
-                  {platformInstructions.map((instruction, index) => (
-                    <li key={`${selectedPlatform}-${index}`} className="flex gap-2">
-                      <span className="text-muted-foreground/70">•</span>
-                      <span className="flex-1 leading-snug">{instruction}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-            {snippetForPlatform ? (
-              <div className="space-y-2">
-                <Label className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-xs">Snippet preview</Label>
-                <CodeSnippet code={snippetForPlatform.trim()} language={snippetLanguage} />
-              </div>
-            ) : null}
           </CardContent>
         </Card>
 

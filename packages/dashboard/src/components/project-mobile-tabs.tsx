@@ -6,6 +6,7 @@ import { RefreshButton } from '@/components/refresh-button';
 import { ProjectSettingsLauncher } from '@/components/project-settings-launcher';
 import { cn } from '@/lib/utils';
 import type { WidgetStep } from '@/components/widget-installation';
+import { useWidgetStepContext } from '@/components/widget-installation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -15,7 +16,7 @@ interface ProjectMobileTabsProps {
   projectId: string;
   projectName: string;
   activeSection: ProjectSection;
-  widgetStep: WidgetStep;
+  widgetStep?: WidgetStep;
 }
 
 const SECTION_TABS: Array<{ id: ProjectSection; label: string }> = [
@@ -40,10 +41,12 @@ const WIDGET_SUB_STEPS: Array<{ id: WidgetStep; label: string }> = [
   { id: 'publish', label: 'Publish' },
 ];
 
-export function ProjectMobileTabs({ projectId, projectName, activeSection, widgetStep }: ProjectMobileTabsProps) {
+export function ProjectMobileTabs({ projectId, projectName, activeSection, widgetStep: widgetStepProp }: ProjectMobileTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const widgetStepContext = useWidgetStepContext();
+  const widgetStep = widgetStepContext?.step ?? widgetStepProp ?? 'setup';
 
   const rawWidgetIndex = WIDGET_SUB_STEPS.findIndex((step) => step.id === widgetStep);
   const activeWidgetIndex = rawWidgetIndex >= 0 ? rawWidgetIndex : 0;
@@ -75,6 +78,10 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
 
   const handleWidgetStepChange = (step: WidgetStep) => {
     if (step === widgetStep) {
+      return;
+    }
+    if (widgetStepContext) {
+      widgetStepContext.setStep(step);
       return;
     }
     const params = new URLSearchParams(searchParams.toString());

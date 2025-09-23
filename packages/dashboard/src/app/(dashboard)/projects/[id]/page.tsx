@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { WidgetInstallationExperience, type WidgetStep } from '@/components/widget-installation';
+import { WidgetInstallationExperience, WidgetStepProvider, type WidgetStep } from '@/components/widget-installation';
 import { ArrowLeft, ExternalLink, MessageSquare, Globe, Mail, MonitorSmartphone, Tag, Paperclip, BarChart3, Webhook } from 'lucide-react';
 import { ProjectSettingsLauncher } from '@/components/project-settings-launcher';
 import { RefreshButton } from '@/components/refresh-button';
@@ -163,15 +163,15 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   );
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <WidgetStepProvider initialStep={activeWidgetStep}>
+      <div className="min-h-screen bg-background overflow-x-hidden">
 
-      <ProjectMobileTabs
-        projectId={project.id}
-        projectName={project.name}
-        activeSection={activeSection}
-        widgetStep={activeWidgetStep}
-      />
-      <div className="mx-auto w-full max-w-6xl px-[2px] pb-8 pt-3 sm:px-6 sm:pt-6 lg:px-8">
+        <ProjectMobileTabs
+          projectId={project.id}
+          projectName={project.name}
+          activeSection={activeSection}
+        />
+        <div className="mx-auto w-full max-w-6xl px-[2px] pb-8 pt-3 sm:px-6 sm:pt-6 lg:px-8">
 
         <div className="mb-6 hidden flex-col gap-3 lg:flex lg:flex-row lg:items-center lg:justify-between">
           <Button variant="ghost" asChild className="w-full justify-start gap-2 sm:w-auto">
@@ -459,7 +459,8 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             </Card>
           )}
         </div>
+        </div>
       </div>
-    </div>
+    </WidgetStepProvider>
   );
 }
