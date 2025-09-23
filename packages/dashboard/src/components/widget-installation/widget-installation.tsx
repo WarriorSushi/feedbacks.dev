@@ -184,7 +184,7 @@ const DEFAULT_WIDGET_STEP: WidgetStep = 'setup';
 const WIDGET_STEPS: WidgetStep[] = ['setup', 'appearance', 'fields', 'protection', 'publish'];
 
 const DEFAULT_CONFIG: WidgetConfig = {
-  embedMode: 'modal',
+  embedMode: 'inline',
   position: 'bottom-right',
   buttonText: 'Feedback',
   primaryColor: '#6366F1',
@@ -220,19 +220,19 @@ const MODE_PRESETS: Array<{ mode: EmbedMode; title: string; description: string;
   {
     mode: 'inline',
     title: 'Inline Section',
-    description: 'Embed the form directly inside your page layout.',
+    description: 'Embed form in page',
     helper: 'Perfect for docs, help centers, and support hubs.',
   },
   {
     mode: 'modal',
     title: 'Floating Modal',
-    description: 'Premium launcher button that opens a layered experience.',
+    description: 'Launcher button + modal',
     helper: 'Ideal for marketing sites and SaaS dashboards.',
   },
   {
     mode: 'trigger',
-    title: 'Attach to an existing button',
-    description: 'Use your own CTA or icon and let us power the modal.',
+    title: 'Attach to Button',
+    description: 'Use your own button',
     helper: 'Works with nav menus, floating action buttons, and custom UI.',
   },
 ];
@@ -1198,12 +1198,12 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         onValueChange={(value) => activateStep(value)}
         className="w-full"
       >
-        <TabsList className="mb-4 hidden w-full gap-2 sm:grid sm:grid-cols-2 sm:gap-2 lg:flex lg:flex-wrap">
+        <TabsList className="mb-6 hidden w-full gap-1.5 sm:grid sm:grid-cols-2 sm:gap-2 lg:flex lg:flex-nowrap lg:justify-center">
           {steps.map((step, index) => (
             <TabsTrigger
               key={step.id}
               value={step.id}
-              className="flex h-11 items-center justify-center rounded-lg border border-border bg-background px-3 text-[11px] font-semibold uppercase tracking-[0.18em] transition data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary sm:flex-1 sm:px-4 sm:text-xs sm:tracking-[0.2em]"
+              className="flex h-9 items-center justify-center rounded-lg border border-border bg-background px-2 text-[10px] font-medium tracking-normal transition data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary sm:flex-1 sm:px-3 sm:text-xs lg:flex-1 lg:text-[11px]"
             >
               {index + 1}. {step.label}
             </TabsTrigger>
@@ -1218,7 +1218,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
             <CardDescription>Select how the widget should appear on your site.</CardDescription>
           </CardHeader>
           <CardContent className={CARD_CONTENT}>
-            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap">
+            <div className="grid grid-cols-3 gap-1.5 lg:gap-2">
               {MODE_PRESETS.map((item) => {
                 const active = config.embedMode === item.mode;
                 return (
@@ -1228,13 +1228,13 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                     onClick={() => handleModeChange(item.mode)}
                     aria-pressed={active}
                     className={cn(
-                      'flex min-w-0 flex-1 flex-col items-start gap-1 rounded-md border px-2 py-2 text-left text-[11px] leading-snug transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-w-[200px] sm:px-3 sm:text-sm',
+                      'flex min-w-0 flex-1 flex-col items-start gap-1 rounded-md border px-1.5 py-1.5 text-left text-[10px] leading-tight transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:px-2 sm:py-2 lg:px-3 lg:text-[11px]',
                       active ? 'border-primary bg-primary/5' : 'border-border bg-card'
                     )}
                   >
-                    <div className="flex-1 space-y-1">
-                      <div className="font-medium text-[11px] leading-tight sm:text-sm">{item.title}</div>
-                      <p className="text-[10px] text-muted-foreground leading-snug sm:text-xs">{item.description}</p>
+                    <div className="flex-1 space-y-0.5">
+                      <div className="font-medium text-[10px] leading-tight sm:text-[11px] lg:text-sm truncate">{item.title}</div>
+                      <p className="text-[9px] text-muted-foreground leading-tight sm:text-[10px] lg:text-xs">{item.description}</p>
                     </div>
                   </button>
                 );

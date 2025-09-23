@@ -136,7 +136,7 @@ export function DashboardClientLayout({
               <div className="min-h-dvh bg-background transition-opacity duration-200 ease-in-out flex flex-col">
                 <div className="flex-1 pb-8 sm:pb-12 md:pb-16">
                   <RouteLoading />
-                  <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-10">
+                  <div className="mx-auto w-full max-w-6xl">
                     {children}
                   </div>
                 </div>
@@ -188,7 +188,7 @@ export function DashboardClientLayout({
               >
                 <div className="flex-1 pb-8 sm:pb-12 md:pb-16">
                   <RouteLoading />
-                  <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+                  <div className="mx-auto w-full max-w-6xl">
                     {children}
                   </div>
                 </div>

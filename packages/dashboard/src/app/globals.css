@@ -401,36 +401,22 @@
     background: var(--gradient-warm);
   }
 
-  /* Custom Gradient Tiles with Specified Colors */
+  /* Custom Solid Color Tiles - No Hover Effects */
   .gradient-tile,
   .gradient-tile-warm,
   .gradient-tile-accent {
     @apply relative overflow-hidden rounded-xl;
-    background: var(--gradient-tiles);
+    background: hsl(var(--muted));
     color: var(--text-dashboard);
     border: 1px solid hsl(var(--border) / 0.3);
-    transition: var(--transition-smooth);
   }
 
-  .gradient-tile:hover,
-  .gradient-tile-warm:hover,
-  .gradient-tile-accent:hover {
-    box-shadow: var(--shadow-glow);
-    transform: translateY(-2px);
+  .gradient-tile-warm {
+    background: hsl(var(--muted) / 0.8);
   }
 
-  .gradient-tile::before,
-  .gradient-tile-warm::before,
-  .gradient-tile-accent::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.05), transparent 70%);
-    border-radius: 50%;
-    transform: translate(40px, -40px);
+  .gradient-tile-accent {
+    background: hsl(var(--muted) / 0.6);
   }
 
   /* Clean Project List */

@@ -79,8 +79,8 @@ export default function HelpPage() {
   return (
     <div className="p-6 lg:p-8 space-y-8">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
-            <HelpCircle className="h-6 w-6 text-accent" />
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <HelpCircle className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h1 className="text-3xl font-bold">Help Center</h1>
@@ -96,8 +96,8 @@ export default function HelpPage() {
             <Card key={index} className="hover-lift group cursor-pointer">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-                    <link.icon className="h-5 w-5 text-accent" />
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <link.icon className="h-5 w-5 text-primary" />
                   </div>
                   {link.badge && (
                     <Badge variant="secondary" className="bg-accent/10 text-accent text-xs">
@@ -111,7 +111,7 @@ export default function HelpPage() {
                 <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
                   {link.description}
                 </p>
-                <div className="flex items-center text-accent text-sm font-medium">
+                <div className="flex items-center text-primary text-sm font-medium">
                   Learn more <ChevronRight className="h-4 w-4 ml-1" />
                 </div>
               </CardContent>
@@ -123,7 +123,7 @@ export default function HelpPage() {
         <Card className="hover-lift">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5 text-accent" />
+              <MessageCircle className="h-5 w-5 text-primary" />
               <CardTitle>Contact Support</CardTitle>
             </div>
             <CardDescription>
@@ -133,7 +133,7 @@ export default function HelpPage() {
           <CardContent>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="flex flex-col items-center text-center p-3 rounded-lg bg-muted/30">
-                <Mail className="h-5 w-5 text-accent mb-2" />
+                <Mail className="h-5 w-5 text-primary mb-2" />
                 <h3 className="font-medium mb-1 text-sm">Email Support</h3>
                 <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                   Get help via email within 24 hours
@@ -143,7 +143,7 @@ export default function HelpPage() {
                 </Button>
               </div>
               <div className="flex flex-col items-center text-center p-3 rounded-lg bg-muted/30">
-                <MessageCircle className="h-5 w-5 text-accent mb-2" />
+                <MessageCircle className="h-5 w-5 text-primary mb-2" />
                 <h3 className="font-medium mb-1 text-sm">Live Chat</h3>
                 <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                   Chat with us in real-time
@@ -153,7 +153,7 @@ export default function HelpPage() {
                 </Button>
               </div>
               <div className="flex flex-col items-center text-center p-3 rounded-lg bg-muted/30">
-                <Book className="h-5 w-5 text-accent mb-2" />
+                <Book className="h-5 w-5 text-primary mb-2" />
                 <h3 className="font-medium mb-1 text-sm">Documentation</h3>
                 <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
                   Browse our complete docs
@@ -171,7 +171,7 @@ export default function HelpPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5 text-accent" />
+              <Search className="h-5 w-5 text-primary" />
               Frequently Asked Questions
             </CardTitle>
             <CardDescription>
@@ -194,7 +194,7 @@ export default function HelpPage() {
           <Card className="hover-lift">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-2">
-                <Video className="h-5 w-5 text-accent" />
+                <Video className="h-5 w-5 text-primary" />
                 <CardTitle className="text-lg">Video Tutorials</CardTitle>
               </div>
               <CardDescription className="text-sm">
@@ -230,7 +230,7 @@ export default function HelpPage() {
           <Card className="hover-lift">
             <CardHeader className="pb-4">
               <div className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-accent" />
+                <FileText className="h-5 w-5 text-primary" />
                 <CardTitle className="text-lg">Guides & Articles</CardTitle>
               </div>
               <CardDescription className="text-sm">

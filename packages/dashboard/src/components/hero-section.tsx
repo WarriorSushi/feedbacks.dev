@@ -5,7 +5,7 @@ import { ArrowRight, Code, Zap, Globe, Shield, Users, Star, TrendingUp } from 'l
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CodeSnippet } from '@/components/code-snippet';
-import { FlipWords } from '@/components/ui/flip-words';
+import { TypewriterText } from '@/components/ui/typewriter-text';
 import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
 
 interface HeroSectionProps {
@@ -50,7 +50,13 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4 max-w-4xl">
             <span>
               <span className="block text-center">
-                <FlipWords words={rotatingWords} className="text-4xl md:text-6xl lg:text-7xl font-bold text-primary" duration={2000} />
+                <TypewriterText
+                  words={rotatingWords}
+                  className="text-4xl md:text-6xl lg:text-7xl font-bold text-primary"
+                  typeSpeed={60}
+                  deleteSpeed={40}
+                  pauseDuration={150}
+                />
               </span>
               <span className="block mt-1 text-center">
                 with one line of code
