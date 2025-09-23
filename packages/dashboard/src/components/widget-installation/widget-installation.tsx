@@ -25,6 +25,7 @@ import {
   Palette,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Code,
   MousePointer,
   CheckCircle,
@@ -67,6 +68,29 @@ const SNIPPET_LANGUAGES: Record<(typeof SNIPPET_PLATFORMS)[number], string> = {
   flutter: 'dart',
   wordpress: 'php',
   shopify: 'liquid',
+};
+
+const CAPTCHA_GUIDES: Record<'turnstile' | 'hcaptcha', { title: string; steps: string[]; href: string; cta: string }> = {
+  turnstile: {
+    title: 'How to get your Turnstile site key',
+    steps: [
+      'Log in to Cloudflare and open the Turnstile dashboard.',
+      'Create a new site, choose “Invisible” or “Managed” based on your UX, and save.',
+      'Copy the generated site key and paste it here. Keep the secret key safe in your backend.',
+    ],
+    href: 'https://developers.cloudflare.com/turnstile/get-started/',
+    cta: 'Cloudflare Turnstile docs',
+  },
+  hcaptcha: {
+    title: 'How to get your hCaptcha site key',
+    steps: [
+      'Sign in to the hCaptcha dashboard and create a new site.',
+      'Pick the integration type (usually “Checkbox” for web widgets) and configure allowed domains.',
+      'Copy the site key from the dashboard and paste it here. Store the secret key in your server.',
+    ],
+    href: 'https://docs.hcaptcha.com/configuration',
+    cta: 'hCaptcha configuration guide',
+  },
 };
 
 const FRAMEWORK_OPTIONS: Array<{ value: (typeof SNIPPET_PLATFORMS)[number]; label: string }> = [
@@ -135,6 +159,40 @@ interface WidgetPreset {
   category?: string | null;
   preview_image_url?: string | null;
   config: Record<string, any>;
+}
+
+let widgetPresetCache: WidgetPreset[] | null = null;
+let widgetPresetPromise: Promise<WidgetPreset[]> | null = null;
+
+async function fetchWidgetPresets(): Promise<WidgetPreset[]> {
+  if (widgetPresetCache) {
+    return widgetPresetCache;
+  }
+  if (widgetPresetPromise) {
+    return widgetPresetPromise;
+  }
+  widgetPresetPromise = (async () => {
+    try {
+      const res = await fetch('/api/widget-presets', { cache: 'no-store' });
+      if (!res.ok) {
+        throw new Error('Failed to load presets');
+      }
+      const body = await res.json();
+      const items = Array.isArray(body?.items) ? body.items : [];
+      widgetPresetCache = items;
+      return items;
+    } catch (error) {
+      widgetPresetCache = null;
+      throw error;
+    } finally {
+      widgetPresetPromise = null;
+    }
+  })();
+  return widgetPresetPromise;
+}
+
+export function invalidateWidgetPresetCache() {
+  widgetPresetCache = null;
 }
 
 export interface WidgetInstallationExperienceProps {
@@ -590,12 +648,16 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
               if (height < 480) {
                 var modalOverlay = document.querySelector('.feedbacks-overlay');
                 if (modalOverlay && typeof modalOverlay.getBoundingClientRect === 'function') {
+                  var modalOverlayStyle = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(modalOverlay) : null;
+                  var modalOverlayVisible = !modalOverlayStyle || (modalOverlayStyle.visibility !== 'hidden' && modalOverlayStyle.display !== 'none' && Number(modalOverlayStyle.opacity || 1) > 0.01);
                   var modalOverlayRect = modalOverlay.getBoundingClientRect();
-                  if (modalOverlayRect) {
+                  if (modalOverlayVisible && modalOverlayRect) {
                     var modalOverlayHeight = modalOverlayRect.height || (modalOverlayRect.bottom - modalOverlayRect.top);
-                    var modalOverlayTop = Math.max(0, modalOverlayRect.top);
-                    var modalOverlayTotal = Math.ceil((modalOverlayHeight || 0) + modalOverlayTop + 48);
-                    if (modalOverlayTotal > height) height = modalOverlayTotal;
+                    if (modalOverlayHeight > 0) {
+                      var modalOverlayTop = Math.max(0, modalOverlayRect.top);
+                      var modalOverlayTotal = Math.ceil((modalOverlayHeight || 0) + modalOverlayTop + 48);
+                      if (modalOverlayTotal > height) height = modalOverlayTotal;
+                    }
                   }
                 }
               }
@@ -603,12 +665,16 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
 
             var overlay = document.querySelector('.feedbacks-overlay');
             if (overlay && typeof overlay.getBoundingClientRect === 'function') {
+              var overlayStyle = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(overlay) : null;
+              var overlayVisible = !overlayStyle || (overlayStyle.visibility !== 'hidden' && overlayStyle.display !== 'none' && Number(overlayStyle.opacity || 1) > 0.01);
               var overlayRect = overlay.getBoundingClientRect();
-              if (overlayRect) {
+              if (overlayVisible && overlayRect) {
                 var overlayHeight = overlayRect.height || (overlayRect.bottom - overlayRect.top);
-                var overlayTop = Math.max(0, overlayRect.top);
-                var overlayTotal = Math.ceil((overlayHeight || 0) + overlayTop + 48);
-                if (overlayTotal > height) height = overlayTotal;
+                if (overlayHeight > 0) {
+                  var overlayTop = Math.max(0, overlayRect.top);
+                  var overlayTotal = Math.ceil((overlayHeight || 0) + overlayTop + 48);
+                  if (overlayTotal > height) height = overlayTotal;
+                }
               }
             }
 
@@ -663,6 +729,7 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP);
   const [previewView, setPreviewView] = useState<'launcher' | 'form'>('launcher');
+  const previousEmbedModeRef = useRef<EmbedMode>(config.embedMode);
   useEffect(() => {
     setHeight(viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP);
   }, [viewport]);
@@ -671,6 +738,15 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
       setPreviewView('launcher');
     }
   }, [config.embedMode, previewView]);
+  useEffect(() => {
+    const previous = previousEmbedModeRef.current;
+    if (previous === 'modal' && config.embedMode !== 'modal') {
+      const min = viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP;
+      setHeight(min);
+      setPreviewView('launcher');
+    }
+    previousEmbedModeRef.current = config.embedMode;
+  }, [config.embedMode, viewport]);
   const previewHtml = useMemo(() => buildPreviewHtml(config, projectKey, widgetVersion), [config, projectKey, widgetVersion]);
 
   useEffect(() => {
@@ -794,6 +870,7 @@ export function WidgetInstallationExperience({ projectId, projectKey, projectNam
   const [saving, setSaving] = useState<boolean>(false);
   const [showAdvancedFields, setShowAdvancedFields] = useState<boolean>(false);
   const [showAdvancedExperience, setShowAdvancedExperience] = useState<boolean>(false);
+  const [openCaptchaGuide, setOpenCaptchaGuide] = useState<'turnstile' | 'hcaptcha' | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const tabsRef = useRef<HTMLDivElement>(null);
   const previousButtonLabelRef = useRef<string>('Feedback');
@@ -852,10 +929,8 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
 
   const loadPresets = useCallback(async () => {
     try {
-      const res = await fetch('/api/widget-presets');
-      if (!res.ok) return;
-      const body = await res.json();
-      if (Array.isArray(body.items)) setPresets(body.items);
+      const items = await fetchWidgetPresets();
+      if (Array.isArray(items)) setPresets(items);
     } catch {}
   }, []);
 
@@ -911,6 +986,10 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     loadConfig();
     loadPresets();
   }, [loadConfig, loadPresets]);
+
+  useEffect(() => {
+    setOpenCaptchaGuide(null);
+  }, [config.captchaProvider]);
 
   useEffect(() => {
     if (saving) return;
@@ -1171,6 +1250,34 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     return INLINE_STYLE_PRESETS.find((preset) => preset.border === borderValue && preset.shadow === shadowValue)?.label || null;
   }, [config.inlineBorder, config.inlineShadow]);
 
+  const experienceSummary = useMemo(() => {
+    switch (config.embedMode) {
+      case 'modal':
+        return config.launcherVariant === 'icon' ? 'Modal · icon bubble launcher' : 'Modal · labeled launcher';
+      case 'inline':
+        return 'Inline · embeds inside your layout';
+      case 'trigger':
+        return 'Trigger · attaches to your button';
+      default:
+        return 'Modal experience';
+    }
+  }, [config.embedMode, config.launcherVariant]);
+
+  const targetSummary = useMemo(() => {
+    if (config.embedMode === 'inline') {
+      return `Inline target · ${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}`;
+    }
+    if (config.embedMode === 'trigger') {
+      return `Trigger id · ${normalizeTarget(config.target, '#feedback-button').replace('#', '')}`;
+    }
+    return 'Launcher position · ' + (config.position || 'bottom-right');
+  }, [config.embedMode, config.position, config.target]);
+
+  const selectedPlatformLabel = useMemo(() => {
+    const match = FRAMEWORK_OPTIONS.find((option) => option.value === selectedPlatform);
+    return match ? match.label : selectedPlatform.replace('-', ' ');
+  }, [selectedPlatform]);
+
   const inlinePreviewStyle = useMemo<CSSProperties>(() => ({
     border: config.inlineBorder || '1px solid rgba(15,23,42,0.08)',
     boxShadow: config.inlineShadow || 'none',
@@ -1241,6 +1348,31 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                     </button>
                   );
                 })}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className={CARD_HEADER}>
+              <CardTitle className="text-sm font-semibold uppercase tracking-[0.22em] text-muted-foreground">Quick start</CardTitle>
+              <CardDescription>Snapshot of your current setup so teammates can follow along.</CardDescription>
+            </CardHeader>
+            <CardContent className={cn(CARD_CONTENT, 'grid gap-3 text-sm sm:grid-cols-2')}>
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Experience</p>
+                <p className="font-medium text-foreground">{experienceSummary}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Snippet platform</p>
+                <p className="font-medium text-foreground">{selectedPlatformLabel}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Target details</p>
+                <p className="font-medium text-foreground">{targetSummary}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next milestone</p>
+                <p className="font-medium text-foreground">Save & publish when the preview matches your brand.</p>
               </div>
             </CardContent>
           </Card>
@@ -1476,11 +1608,9 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
               </div>
               <Switch checked={!!config.enableScreenshot} onCheckedChange={(value) => updateConfig({ enableScreenshot: value })} />
             </div>
-            {!showAdvancedFields && (
-              <div className="md:col-span-2">
-                <Button type="button" variant="outline" size="sm" onClick={() => setShowAdvancedFields(true)}>Show advanced inputs</Button>
-              </div>
-            )}
+            <div className="md:col-span-2 border-t border-dashed border-border/60 pt-3">
+              <DisclosureToggle open={showAdvancedFields} onToggle={() => setShowAdvancedFields((v) => !v)} label="Advanced inputs" />
+            </div>
             {showAdvancedFields && (
             <>
             <div className="flex items-center justify-between rounded-lg border p-2.5 sm:p-3">
@@ -1540,9 +1670,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                 <p className="text-xs text-muted-foreground">Higher caps are great for detailed reports but may slow uploads on poor networks.</p>
               </div>
             )}
-            <div className="md:col-span-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setShowAdvancedFields(false)}>Hide advanced inputs</Button>
-            </div>
             </>
             )}
           </CardContent>
@@ -1609,22 +1736,40 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
               </div>
             </div>
             {config.captchaProvider === 'turnstile' && (
-              <div className="space-y-2">
-                <Label>Turnstile site key</Label>
-                <Input value={config.turnstileSiteKey || ''} onChange={(event) => updateConfig({ turnstileSiteKey: event.target.value })} placeholder="0xAAAA..." aria-invalid={captchaKeyMissing && captchaProvider === 'turnstile'} />
-                {captchaKeyMissing && captchaProvider === 'turnstile' && (
-                  <p className="text-xs text-destructive/80">Add a valid Cloudflare Turnstile site key to enable submissions.</p>
-                )}
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label>Turnstile site key</Label>
+                  <Input value={config.turnstileSiteKey || ''} onChange={(event) => updateConfig({ turnstileSiteKey: event.target.value })} placeholder="0xAAAA..." aria-invalid={captchaKeyMissing && captchaProvider === 'turnstile'} />
+                  {captchaKeyMissing && captchaProvider === 'turnstile' && (
+                    <p className="text-xs text-destructive/80">Add a valid Cloudflare Turnstile site key to enable submissions.</p>
+                  )}
+                </div>
+                <div className="md:col-span-2">
+                  <ProviderGuide
+                    open={openCaptchaGuide === 'turnstile'}
+                    onToggle={() => setOpenCaptchaGuide((current) => (current === 'turnstile' ? null : 'turnstile'))}
+                    guide={CAPTCHA_GUIDES.turnstile}
+                  />
+                </div>
+              </>
             )}
             {config.captchaProvider === 'hcaptcha' && (
-              <div className="space-y-2">
-                <Label>hCaptcha site key</Label>
-                <Input value={config.hcaptchaSiteKey || ''} onChange={(event) => updateConfig({ hcaptchaSiteKey: event.target.value })} placeholder="10000000-ffff-ffff-ffff-000000000001" aria-invalid={captchaKeyMissing && captchaProvider === 'hcaptcha'} />
-                {captchaKeyMissing && captchaProvider === 'hcaptcha' && (
-                  <p className="text-xs text-destructive/80">Enter your hCaptcha site key before publishing.</p>
-                )}
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label>hCaptcha site key</Label>
+                  <Input value={config.hcaptchaSiteKey || ''} onChange={(event) => updateConfig({ hcaptchaSiteKey: event.target.value })} placeholder="10000000-ffff-ffff-ffff-000000000001" aria-invalid={captchaKeyMissing && captchaProvider === 'hcaptcha'} />
+                  {captchaKeyMissing && captchaProvider === 'hcaptcha' && (
+                    <p className="text-xs text-destructive/80">Enter your hCaptcha site key before publishing.</p>
+                  )}
+                </div>
+                <div className="md:col-span-2">
+                  <ProviderGuide
+                    open={openCaptchaGuide === 'hcaptcha'}
+                    onToggle={() => setOpenCaptchaGuide((current) => (current === 'hcaptcha' ? null : 'hcaptcha'))}
+                    guide={CAPTCHA_GUIDES.hcaptcha}
+                  />
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -1721,7 +1866,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                 <CardTitle className="text-lg font-semibold leading-tight sm:text-xl">Experience details</CardTitle>
                 <CardDescription>Fine-tune options for the current embed mode.</CardDescription>
               </div>
-              <Button size="sm" variant="outline" onClick={() => setShowAdvancedExperience((v)=>!v)}>{showAdvancedExperience ? 'Hide' : 'Show'} advanced</Button>
             </div>
           </CardHeader>
           <CardContent className={cn(CARD_CONTENT, 'space-y-5')}>
@@ -1746,9 +1890,12 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                     <Input value={config.buttonText || ''} onChange={(event) => updateConfig({ buttonText: event.target.value })} placeholder="Feedback" />
                   </div>
                 </div>
-                {showAdvancedExperience && (
-                  <p className="text-xs text-muted-foreground">Floating button updates instantly in the preview. Position defaults to bottom right for the polished concierge look.</p>
-                )}
+                <div className="border-t border-dashed border-border/60 pt-3">
+                  <DisclosureToggle open={showAdvancedExperience} onToggle={() => setShowAdvancedExperience((v) => !v)} label="Advanced launcher tips" />
+                  {showAdvancedExperience && (
+                    <p className="mt-3 text-xs text-muted-foreground">Floating button updates instantly in the preview. Position defaults to bottom right for the polished concierge look.</p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1758,8 +1905,15 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                   <Label>Container ID</Label>
                   <Input value={normalizeTarget(config.target, '#feedback-widget').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-widget" />
                 </div>
-                <CodeSnippet code={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}"></div>`} language="html" />
-                <p className="text-xs text-muted-foreground">Drop the div anywhere in your layout. The widget renders directly inside it—no wrapper shell needed.</p>
+                <div className="border-t border-dashed border-border/60 pt-3">
+                  <DisclosureToggle open={showAdvancedExperience} onToggle={() => setShowAdvancedExperience((v) => !v)} label="Advanced embed instructions" />
+                  {showAdvancedExperience && (
+                    <div className="mt-3 space-y-3">
+                      <CodeSnippet code={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}"></div>`} language="html" />
+                      <p className="text-xs text-muted-foreground">Drop the div anywhere in your layout. The widget renders directly inside it—no wrapper shell needed.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -1769,19 +1923,22 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                   <Label>Button ID</Label>
                   <Input value={normalizeTarget(config.target, '#feedback-button').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-button" />
                 </div>
-                {showAdvancedExperience && (
-                  <>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <CodeSnippet code={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give feedback</button>`} language="html" />
-                      <CodeSnippet code={`<button data-feedbacks-trigger>Open feedback</button>`} language="html" />
+                <div className="border-t border-dashed border-border/60 pt-3">
+                  <DisclosureToggle open={showAdvancedExperience} onToggle={() => setShowAdvancedExperience((v) => !v)} label="Advanced trigger setup" />
+                  {showAdvancedExperience && (
+                    <div className="mt-3 space-y-3">
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <CodeSnippet code={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give feedback</button>`} language="html" />
+                        <CodeSnippet code={`<button data-feedbacks-trigger>Open feedback</button>`} language="html" />
+                      </div>
+                      <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground space-y-2">
+                        <p className="font-medium text-foreground">How it works</p>
+                        <p>Give any element the chosen id or <code>data-feedbacks-trigger</code> attribute. The widget script discovers it automatically after load.</p>
+                        <p>If the button renders after hydration, instantiate <code>new FeedbacksWidget</code> once the element exists.</p>
+                      </div>
                     </div>
-                    <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground space-y-2">
-                      <p className="font-medium text-foreground">How it works</p>
-                      <p>Give any element the chosen id or <code>data-feedbacks-trigger</code> attribute. The widget script discovers it automatically after load.</p>
-                      <p>If the button renders after hydration, instantiate <code>new FeedbacksWidget</code> once the element exists.</p>
-                    </div>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
             )}
           </CardContent>
@@ -1889,6 +2046,46 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
   );
 }
 
+
+function ProviderGuide({ open, onToggle, guide }: { open: boolean; onToggle: () => void; guide: { title: string; steps: string[]; href: string; cta: string } }) {
+  return (
+    <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 px-4 py-3">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground transition hover:text-foreground"
+      >
+        <span className="text-left">{guide.title}</span>
+        <ChevronDown className={cn('h-4 w-4 transition-transform', open ? 'rotate-180 text-foreground' : '')} />
+      </button>
+      {open && (
+        <div className="mt-3 space-y-2 text-xs text-muted-foreground">
+          <ol className="list-decimal space-y-1.5 pl-4">
+            {guide.steps.map((step, index) => (
+              <li key={index} className="leading-snug">{step}</li>
+            ))}
+          </ol>
+          <Link href={guide.href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+            {guide.cta}
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DisclosureToggle({ label, open, onToggle }: { label: string; open: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="flex w-full items-center justify-between gap-2 rounded-lg border border-dashed border-border/60 bg-background/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground transition hover:bg-muted/40 hover:text-foreground"
+    >
+      <span>{label}</span>
+      <ChevronDown className={cn('h-4 w-4 transition-transform', open ? 'rotate-180' : '')} />
+    </button>
+  );
+}
 
 function StepNavigation({
   steps,

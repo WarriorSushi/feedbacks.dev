@@ -430,8 +430,8 @@ values
     jsonb_build_object(
       'embedMode', 'inline',
       'target', '#feedback-widget',
-      'backgroundColor', '#0F172A',
-      'primaryColor', '#FACC15',
+      'backgroundColor', '#dbdde1',
+      'primaryColor', '#242424',
       'inlineBorder', '1px solid rgba(248, 250, 252, 0.25)',
       'inlineShadow', '0 40px 80px rgba(15,23,42,0.45)',
       'headerLayout', 'icon-left',

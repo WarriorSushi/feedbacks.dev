@@ -130,22 +130,55 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Project not found' }, { status: 404 });
   }
 
-  const { data: rows } = await supabase
+  const HISTORY_LIMIT = 5;
+
+  const { data: defaultRows } = await supabase
     .from('widget_configs')
     .select('id, channel, version, label, config, is_default, created_at, updated_at')
     .eq('project_id', params.id)
-    .order('channel', { ascending: true })
-    .order('is_default', { ascending: false })
-    .order('version', { ascending: false });
+    .eq('is_default', true)
+    .order('updated_at', { ascending: false })
+    .limit(1);
 
-  const configs = Array.isArray(rows) ? rows.map(mapRow) : [];
-  const defaultConfig = configs.find((item) => item.isDefault) || configs[0] || null;
+  let defaultRow = Array.isArray(defaultRows) && defaultRows.length > 0 ? defaultRows[0] : null;
+
+  if (!defaultRow) {
+    const { data: latestRows } = await supabase
+      .from('widget_configs')
+      .select('id, channel, version, label, config, is_default, created_at, updated_at')
+      .eq('project_id', params.id)
+      .order('updated_at', { ascending: false })
+      .limit(1);
+    if (Array.isArray(latestRows) && latestRows.length > 0) {
+      defaultRow = latestRows[0];
+    }
+  }
+
+  const historyChannel = defaultRow?.channel || DEFAULT_CHANNEL;
+
+  const { data: rows, count } = await supabase
+    .from('widget_configs')
+    .select('id, channel, version, label, config, is_default, created_at, updated_at', { count: 'exact' })
+    .eq('project_id', params.id)
+    .eq('channel', historyChannel)
+    .order('version', { ascending: false })
+    .limit(HISTORY_LIMIT);
+
+  const history = Array.isArray(rows) ? rows.map(mapRow) : [];
+  const defaultConfig = defaultRow ? mapRow(defaultRow) : null;
+  const existingIdx = defaultConfig ? history.findIndex((item) => item.id === defaultConfig.id) : -1;
+  if (defaultConfig && existingIdx === -1) {
+    history.unshift(defaultConfig);
+  }
+  const trimmedHistory = history.slice(0, HISTORY_LIMIT);
+  const hasMoreHistory = typeof count === 'number' ? count > HISTORY_LIMIT : false;
 
   return NextResponse.json({
     config: defaultConfig?.config || {},
-    defaultConfig: defaultConfig,
-    configs,
-    channel: defaultConfig?.channel || DEFAULT_CHANNEL,
+    defaultConfig,
+    configs: trimmedHistory,
+    channel: defaultConfig?.channel || historyChannel,
+    hasMoreHistory,
   });
 }
 

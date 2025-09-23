@@ -156,14 +156,22 @@ class FeedbacksWidget {
       // Radius via shape
       const shape = (this.config as any).modalShape as any;
       let radius = '';
-      if (shape === 'pill') radius = '9999px';
-      else if (shape === 'square') radius = '8px';
-      else if (shape === 'rounded') radius = '16px';
-      if (this.config.embedMode === 'inline' && shape === 'pill') {
-        radius = '32px';
+      if (shape === 'pill') {
+        radius = this.config.embedMode === 'modal' ? '48px' : '32px';
+      } else if (shape === 'square') {
+        radius = '8px';
+      } else if (shape === 'rounded') {
+        radius = '16px';
       }
       if (radius) {
         root.style.setProperty('--feedbacks-radius', radius);
+      }
+      if (typeof document !== 'undefined' && document.body) {
+        if (shape) {
+          document.body.dataset.feedbacksModalShape = shape;
+        } else {
+          delete document.body.dataset.feedbacksModalShape;
+        }
       }
     } catch {}
   }

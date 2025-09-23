@@ -162,6 +162,43 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
     </div>
   );
 
+  const desktopOverviewCard = (
+    <section className="hidden lg:block">
+      <div className="rounded-2xl border border-border/70 bg-card/90 p-5 shadow-sm">
+        <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.28em] text-muted-foreground/80">
+          <span>Project Snapshot</span>
+          <Badge variant="outline" className="border-border/60 bg-background/90 text-[10px] font-semibold uppercase tracking-[0.26em]">
+            {sectionBadge}
+          </Badge>
+        </div>
+        <div className="mt-4 grid grid-cols-4 gap-3 text-sm">
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/80">Project</p>
+            <p className="truncate font-medium text-foreground">{project.name}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/80">ID</p>
+            <p className="font-medium text-foreground">{String(project.id).slice(0, 8)}…</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/80">Created</p>
+            <p className="font-medium text-foreground">{new Date(project.created_at).toLocaleDateString()}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground/80">Feedback</p>
+            <p className="font-medium text-foreground">{typeof count === 'number' ? count : feedbacks?.length || 0}</p>
+          </div>
+        </div>
+        {activeSection === 'widget-installation' && (
+          <div className="mt-4 rounded-xl border border-primary/20 bg-primary/10 px-4 py-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-primary/80">Active step</p>
+            <p className="text-sm font-semibold text-primary">{WIDGET_STEP_LABEL[activeWidgetStep]}</p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+
   return (
     <WidgetStepProvider initialStep={activeWidgetStep}>
       <div className="min-h-screen bg-background overflow-x-hidden">
@@ -194,23 +231,23 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
           {activeSection !== 'widget-installation' && mobileOverviewCard}
 
-          <div className="hidden lg:block space-y-2">
-            <div>
-              <h1 className="text-xl font-semibold text-foreground sm:text-2xl md:text-3xl">
+          <div className="hidden lg:flex items-start justify-between gap-8">
+            <div className="space-y-1">
+              <h1 className="text-lg font-semibold text-foreground">
                 {project.name}
               </h1>
-              <p className="text-sm text-muted-foreground sm:text-base">
+              <p className="text-sm text-muted-foreground">
                 Manage your feedback collection
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:text-sm">
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
               <Badge variant="secondary" className="px-2 py-1">
-                Project ID: {String(project.id).slice(0, 6)}…
+                ID: {String(project.id).slice(0, 8)}…
               </Badge>
               <Badge variant="outline" className="px-2 py-1">
                 Created {new Date(project.created_at).toLocaleDateString()}
               </Badge>
-              <Badge variant="outline" className="px-2 py-1 text-[11px] sm:text-xs">
+              <Badge variant="outline" className="px-2 py-1">
                 {sectionBadge}
               </Badge>
             </div>
@@ -227,6 +264,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                 widgetVersion={WIDGET_VERSION}
                 initialStep={activeWidgetStep}
               />
+              {desktopOverviewCard}
               {mobileOverviewCard}
             </>
           )}
