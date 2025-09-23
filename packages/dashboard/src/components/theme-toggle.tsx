@@ -12,26 +12,21 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  if (!mounted) {
-    return (
-      <div className={`flex items-center gap-2 ${className}`}>
-        <Sun className="h-4 w-4 text-muted-foreground" />
-        <Switch disabled />
-        <Moon className="h-4 w-4 text-muted-foreground" />
-      </div>
-    );
-  }
-
+  const isDark = theme === 'dark';
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <Sun className={`h-4 w-4 transition-colors ${theme === 'light' ? 'text-orange-500' : 'text-muted-foreground/50'}`} />
+      <Sun
+        className={`h-4 w-4 transition-colors ${mounted && !isDark ? 'text-orange-500' : 'text-muted-foreground/50'}`}
+      />
       <Switch
-        checked={theme === 'dark'}
+        checked={mounted ? isDark : false}
+        disabled={!mounted}
         onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
         className="data-[state=checked]:bg-slate-700 data-[state=unchecked]:bg-orange-400"
       />
-      <Moon className={`h-4 w-4 transition-colors ${theme === 'dark' ? 'text-slate-300' : 'text-muted-foreground/50'}`} />
+      <Moon
+        className={`h-4 w-4 transition-colors ${mounted && isDark ? 'text-slate-300' : 'text-muted-foreground/50'}`}
+      />
     </div>
   );
 }

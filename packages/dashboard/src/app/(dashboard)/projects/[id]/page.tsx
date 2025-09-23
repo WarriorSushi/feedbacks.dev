@@ -221,7 +221,6 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
           {activeSection === 'widget-installation' && (
             <>
               <WidgetInstallationExperience
-                key={project.id + '-' + activeWidgetStep}
                 projectId={params.id}
                 projectKey={project.api_key}
                 projectName={project.name}
