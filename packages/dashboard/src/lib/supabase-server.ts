@@ -5,10 +5,12 @@ export function createServerSupabaseClient() {
   const cookieStore = cookies();
   const isProd = process.env.NODE_ENV === 'production';
   const cookieDomain = process.env.COOKIE_DOMAIN || '.feedbacks.dev';
+  const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
+  const supabaseAnonKey = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         get(name: string) {
@@ -30,4 +32,3 @@ export function createServerSupabaseClient() {
     }
   );
 }
-

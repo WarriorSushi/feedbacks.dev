@@ -41,6 +41,12 @@ function relativeLuminance(rgb: { r: number; g: number; b: number }): number {
   return 0.2126 * R + 0.7152 * G + 0.0722 * B;
 }
 
+const DEFAULT_LAUNCHER_SVG = `
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+  </svg>
+`;
+
 function pickTextPalette(value?: string): { strong: string; muted: string } | null {
   const rgb = parseColor(value);
   if (!rgb) return null;
@@ -187,15 +193,12 @@ class FeedbacksWidget {
     this.button.className = `feedbacks-button position-${this.config.position}`;
     const iconWrapper = document.createElement('span');
     iconWrapper.className = 'feedbacks-button-icon';
-    iconWrapper.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-      </svg>
-    `;
+    const launcherVariant = ((this.config as any).launcherVariant as string) || 'label';
+    this.renderLauncherIcon(iconWrapper, launcherVariant);
     this.button.appendChild(iconWrapper);
 
     const label = (this.config.buttonText ?? 'Feedback').trim();
-    if (label) {
+    if (launcherVariant !== 'icon' && label) {
       const textWrapper = document.createElement('span');
       textWrapper.className = 'feedbacks-button-text';
       textWrapper.textContent = label;
@@ -204,15 +207,63 @@ class FeedbacksWidget {
       this.button.title = label;
     } else {
       this.button.classList.add('feedbacks-button-icon-only');
-      this.button.setAttribute('aria-label', 'Open feedback form');
-      this.button.title = 'Open feedback form';
+      const iconLabel = this.getLauncherIconLabel();
+      this.button.setAttribute('aria-label', iconLabel);
+      this.button.title = iconLabel;
     }
 
     if (this.config.primaryColor) {
       this.button.style.background = this.config.primaryColor;
     }
 
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.dataset.feedbacksLauncher = launcherVariant;
+    }
+
     document.body.appendChild(this.button);
+  }
+
+  private renderLauncherIcon(wrapper: HTMLElement, variant: string): void {
+    const iconChoice = ((this.config as any).launcherIcon as string) || 'sparkles';
+    if (variant === 'icon') {
+      const emoji = this.getLauncherEmoji(iconChoice);
+      wrapper.innerHTML = `<span class="feedbacks-button-emoji">${emoji}</span>`;
+    } else {
+      wrapper.innerHTML = DEFAULT_LAUNCHER_SVG;
+    }
+  }
+
+  private getLauncherEmoji(icon: string): string {
+    switch (icon) {
+      case 'message-circle':
+        return '💬';
+      case 'star':
+        return '★';
+      case 'heart':
+        return '❤';
+      case 'thumbs-up':
+        return '👍';
+      case 'sparkles':
+      default:
+        return '✨';
+    }
+  }
+
+  private getLauncherIconLabel(): string {
+    const iconChoice = ((this.config as any).launcherIcon as string) || 'sparkles';
+    switch (iconChoice) {
+      case 'message-circle':
+        return 'Open chat feedback form';
+      case 'star':
+        return 'Open star feedback form';
+      case 'heart':
+        return 'Open feedback form';
+      case 'thumbs-up':
+        return 'Leave positive feedback';
+      case 'sparkles':
+      default:
+        return 'Open feedback form';
+    }
   }
 
   private createInlineForm(): void {

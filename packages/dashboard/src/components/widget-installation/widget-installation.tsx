@@ -478,7 +478,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
       .feedbacks-button {
         font-size: 13px !important;
         font-weight: 600 !important;
-        padding: 0 16px !important;
+        padding: 0 24px !important;
         min-height: 48px !important;
         border-radius: 9999px !important;
         white-space: nowrap !important;
@@ -486,28 +486,6 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         align-items: center !important;
         justify-content: center !important;
       }
-      body[data-launcher-variant="icon"] .feedbacks-button {
-        font-size: 0 !important;
-        width: 56px !important;
-        min-width: 56px !important;
-        height: 56px !important;
-        min-height: 56px !important;
-        padding: 0 !important;
-      }
-      body[data-launcher-variant="icon"] .feedbacks-button::after {
-        content: attr(data-preview-icon);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-        font-size: 24px;
-      }
-      body[data-launcher-variant="icon"][data-launcher-icon="sparkles"] .feedbacks-button::after { content: '✨'; }
-      body[data-launcher-variant="icon"][data-launcher-icon="message-circle"] .feedbacks-button::after { content: '💬'; }
-      body[data-launcher-variant="icon"][data-launcher-icon="star"] .feedbacks-button::after { content: '★'; }
-      body[data-launcher-variant="icon"][data-launcher-icon="heart"] .feedbacks-button::after { content: '❤'; }
-      body[data-launcher-variant="icon"][data-launcher-icon="thumbs-up"] .feedbacks-button::after { content: '👍'; }
       /* Preview-only: avoid inner scroll in modal, let parent iframe grow */
       .feedbacks-modal { max-height: none !important; }
       .feedbacks-overlay {
@@ -532,7 +510,6 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         let view = 'launcher'; // 'launcher' | 'form'
         let lastConfig = initial;
         let fallbackLoaded = false;
-        const ICON_MAP = { sparkles: '✨', 'message-circle': '💬', star: '★', heart: '❤', 'thumbs-up': '👍' };
 
         function ensureWidgetLoaded(cb, attempt) {
           const tries = typeof attempt === 'number' ? attempt : 0;
@@ -586,10 +563,9 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           const triggerAnchor = document.getElementById('trigger-anchor');
           if (triggerAnchor) triggerAnchor.style.display = cfg.embedMode === 'trigger' ? 'inline-flex' : 'none';
           try {
-            document.body.dataset.launcherVariant = cfg.embedMode === 'modal' ? (cfg.launcherVariant || 'label') : 'label';
+            document.body.dataset.feedbacksLauncher = cfg.embedMode === 'modal' ? (cfg.launcherVariant || 'label') : 'label';
             if (cfg.launcherIcon) document.body.dataset.launcherIcon = cfg.launcherIcon;
             else delete document.body.dataset.launcherIcon;
-            document.body.dataset.previewIcon = ICON_MAP[cfg.launcherIcon || 'sparkles'] || '✨';
           } catch (error) {}
           if (triggerAnchor && triggerAnchor.dataset.previewBound !== 'true') {
             triggerAnchor.dataset.previewBound = 'true';
@@ -687,7 +663,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         window.addEventListener('message', function(ev){
           if (!ev || !ev.data) return;
           if (ev.data.type === 'widget-preview:update') {
-            setTimeout(function(){ ensureWidgetLoaded(function(){ mount(ev.data.config || initial); setTimeout(postHeight, 150); }); }, 50);
+            setTimeout(function(){ ensureWidgetLoaded(function(){ mount(ev.data.config || initial); setTimeout(postHeight, 120); setTimeout(postHeight, 300); setTimeout(postHeight, 650); }); }, 50);
           }
           if (ev.data.type === 'widget-preview:view') {
             view = ev.data.view === 'form' ? 'form' : 'launcher';
@@ -708,7 +684,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
             setTimeout(postHeight, 160);
           }
         });
-        window.addEventListener('load', function(){ ensureWidgetLoaded(function(){ mount(initial); postHeight(); }); });
+        window.addEventListener('load', function(){ ensureWidgetLoaded(function(){ mount(initial); postHeight(); setTimeout(postHeight, 150); setTimeout(postHeight, 400); setTimeout(postHeight, 800); }); });
         new MutationObserver(function(){ setTimeout(postHeight, 60); }).observe(document.body, { childList: true, subtree: true });
       })();
     </script>
