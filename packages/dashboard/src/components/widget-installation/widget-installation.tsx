@@ -586,6 +586,29 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
             ensureWidgetLoaded(cb, tries + 1);
           }, 120);
         }
+        function waitForWidgetContent(cfg, callback, attempts = 0) {
+          const maxAttempts = 50; // 50 * 20ms = 1000ms max wait
+          const checkInterval = 20;
+
+          // Check if widget content is rendered based on embed mode
+          var hasContent = false;
+          if (cfg.embedMode === 'inline') {
+            hasContent = document.querySelector('#inline-anchor .feedbacks-inline-container, #inline-anchor .feedbacks-form') !== null;
+          } else if (cfg.embedMode === 'trigger') {
+            hasContent = document.querySelector('#trigger-anchor') !== null && document.querySelector('#trigger-anchor').textContent.trim().length > 0;
+          } else if (cfg.embedMode === 'modal') {
+            hasContent = document.querySelector('.feedbacks-button') !== null;
+          }
+
+          if (hasContent || attempts >= maxAttempts) {
+            callback();
+          } else {
+            setTimeout(function() {
+              waitForWidgetContent(cfg, callback, attempts + 1);
+            }, checkInterval);
+          }
+        }
+
         function mount(cfg){
           try { document.querySelectorAll('.feedbacks-overlay').forEach(el => el.remove()); } catch(e){}
           try { document.querySelectorAll('.feedbacks-inline-container').forEach(el => el.remove()); } catch(e){}
@@ -620,7 +643,11 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
               closeModal();
             }
           }
-          postHeight();
+
+          // Wait for widget content to be rendered before calculating height
+          waitForWidgetContent(cfg, function() {
+            postHeight();
+          });
         }
         function closeModal(){
           try {
@@ -724,7 +751,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
             setTimeout(postHeight, 160);
           }
         });
-        window.addEventListener('load', function(){ ensureWidgetLoaded(function(){ mount(initial); postHeight(); setTimeout(postHeight, 150); setTimeout(postHeight, 400); setTimeout(postHeight, 800); }); });
+        window.addEventListener('load', function(){ ensureWidgetLoaded(function(){ mount(initial); setTimeout(postHeight, 150); setTimeout(postHeight, 400); setTimeout(postHeight, 800); }); });
         new MutationObserver(function(){ setTimeout(postHeight, 60); }).observe(document.body, { childList: true, subtree: true });
       })();
     </script>
