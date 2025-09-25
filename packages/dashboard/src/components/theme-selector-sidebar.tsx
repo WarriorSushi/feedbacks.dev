@@ -50,10 +50,10 @@ export function ThemeSelectorSidebar() {
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" side="right" align="start">
-        <div className="p-4">
-          <h4 className="font-medium text-sm mb-3">Choose a theme</h4>
-          <div className="grid grid-cols-1 gap-3">
+      <PopoverContent className="w-72 p-0" side="right" align="start">
+        <div className="p-3">
+          <h4 className="font-medium text-sm mb-2">Choose a theme</h4>
+          <div className="grid grid-cols-1 gap-1.5">
             {themes.map((theme) => (
               <ThemeOption
                 key={theme.id}
@@ -79,61 +79,53 @@ function ThemeOption({ theme, isSelected, onClick }: ThemeOptionProps) {
   return (
     <div
       className={cn(
-        "relative cursor-pointer rounded-lg border p-3",
-        isSelected ? 'ring-2 ring-primary ring-offset-2 bg-accent/50' : ''
+        "relative cursor-pointer rounded border p-2 hover:bg-accent/30 transition-colors",
+        isSelected ? 'ring-1 ring-primary bg-accent/50' : ''
       )}
       onClick={onClick}
     >
-      <div className="flex items-center gap-3">
-        {/* Theme Preview */}
-        <div className="relative h-12 w-16 rounded-md overflow-hidden border flex-shrink-0">
-          <div 
-            className="h-full w-full flex"
+      <div className="flex items-center gap-2">
+        {/* Theme Preview - Smaller */}
+        <div className="relative flex-shrink-0">
+          <div
+            className="h-6 w-10 rounded overflow-hidden border flex"
             style={{ backgroundColor: theme.preview.background }}
           >
-            {/* Primary section */}
-            <div 
+            <div
               className="w-1/3 h-full"
               style={{ backgroundColor: theme.preview.primary }}
             />
-            {/* Secondary section */}
-            <div 
+            <div
               className="w-1/3 h-full"
               style={{ backgroundColor: theme.preview.secondary }}
             />
-            {/* Accent section */}
-            <div 
+            <div
               className="w-1/3 h-full"
               style={{ backgroundColor: theme.preview.accent }}
             />
           </div>
-          
+
           {/* Selected indicator */}
           {isSelected && (
-            <div className="absolute top-1 right-1 bg-primary text-primary-foreground rounded-full p-0.5">
-              <Check className="h-3 w-3" />
+            <div className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground rounded-full p-0.5">
+              <Check className="h-2.5 w-2.5" />
             </div>
           )}
         </div>
 
-        {/* Theme Info */}
+        {/* Theme Info - Compact */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-1">
             <h3 className="font-medium text-sm truncate">{theme.name}</h3>
             {isSelected && (
-              <Badge variant="default" className="text-xs ml-2">
+              <Badge variant="default" className="text-xs px-1.5 py-0 h-4">
                 Active
               </Badge>
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+          <p className="text-xs text-muted-foreground truncate">
             {theme.description}
           </p>
-          {theme.fonts && (
-            <p className="text-xs text-muted-foreground/70 mt-1">
-              {theme.fonts.sans.split(',')[0]}
-            </p>
-          )}
         </div>
       </div>
     </div>

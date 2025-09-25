@@ -4,24 +4,49 @@ import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Switch } from '@/components/ui/switch';
 import { useEffect, useState } from 'react';
+import { useThemeAnimation, ThemeAnimationType } from '@space-man/react-theme-animation';
+import { applyTheme, getCurrentTheme } from '@/lib/themes';
 
 export function ThemeToggle({ className = '' }: { className?: string }) {
-  const { theme, setTheme } = useTheme();
+  const { theme: nextTheme, setTheme: setNextTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+
+  // Use the animation hook for smooth transitions
+  const { theme: animTheme, switchTheme, ref } = useThemeAnimation({
+    themes: ['light', 'dark'],
+    theme: nextTheme === 'dark' ? 'dark' : 'light',
+    animationType: ThemeAnimationType.CIRCLE,
+    duration: 600,
+    onThemeChange: (newTheme) => {
+      // Sync with next-themes
+      setNextTheme(newTheme);
+
+      // Apply current color theme with new light/dark mode
+      const currentColorTheme = getCurrentTheme();
+      const isDark = newTheme === 'dark';
+      applyTheme(currentColorTheme, isDark);
+    }
+  });
 
   useEffect(() => {
     setMounted(true);
   }, []);
-  const isDark = theme === 'dark';
+
+  const isDark = mounted ? nextTheme === 'dark' : false;
+
+  const handleToggle = (checked: boolean) => {
+    switchTheme(checked ? 'dark' : 'light');
+  };
+
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div ref={ref} className={`flex items-center gap-2 ${className}`}>
       <Sun
         className={`h-4 w-4 transition-colors ${mounted && !isDark ? 'text-orange-500' : 'text-muted-foreground/50'}`}
       />
       <Switch
-        checked={mounted ? isDark : false}
+        checked={isDark}
         disabled={!mounted}
-        onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+        onCheckedChange={handleToggle}
         className="data-[state=checked]:bg-slate-700 data-[state=unchecked]:bg-orange-400"
       />
       <Moon

@@ -21,6 +21,114 @@ export interface Theme {
 
 export const themes: Theme[] = [
   {
+    id: 'doom-64',
+    name: 'Doom 64',
+    description: 'Retro gaming aesthetics with sharp edges',
+    preview: {
+      primary: '#A52A2A',
+      secondary: '#4B7C59',
+      accent: '#5B9BD5',
+      background: '#CCCCCC'
+    },
+    fonts: {
+      sans: 'Oxanium, sans-serif',
+      serif: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+      mono: 'Source Code Pro, monospace'
+    },
+    css: {
+      light: {
+        '--background': '0 0% 80%',
+        '--foreground': '0 0% 12.1569%',
+        '--card': '0 0% 69.0196%',
+        '--card-foreground': '0 0% 12.1569%',
+        '--popover': '0 0% 69.0196%',
+        '--popover-foreground': '0 0% 12.1569%',
+        '--primary': '0 73.4597% 41.3725%',
+        '--primary-foreground': '0 0% 100%',
+        '--secondary': '82 38.9610% 30.1961%',
+        '--secondary-foreground': '0 0% 100%',
+        '--muted': '0 0% 72.1569%',
+        '--muted-foreground': '0 0% 29.0196%',
+        '--accent': '207.2727 44% 49.0196%',
+        '--accent-foreground': '0 0% 100%',
+        '--destructive': '26.1176 100% 50%',
+        '--destructive-foreground': '0 0% 0%',
+        '--border': '0 0% 31.3725%',
+        '--input': '0 0% 31.3725%',
+        '--ring': '0 73.4597% 41.3725%',
+        '--chart-1': '0 73.4597% 41.3725%',
+        '--chart-2': '82 38.9610% 30.1961%',
+        '--chart-3': '207.2727 44% 49.0196%',
+        '--chart-4': '26.1176 100% 50%',
+        '--chart-5': '15.7143 17.5000% 47.0588%',
+        '--sidebar': '0 0% 69.0196%',
+        '--sidebar-foreground': '0 0% 12.1569%',
+        '--sidebar-primary': '0 73.4597% 41.3725%',
+        '--sidebar-primary-foreground': '0 0% 100%',
+        '--sidebar-accent': '207.2727 44% 49.0196%',
+        '--sidebar-accent-foreground': '0 0% 100%',
+        '--sidebar-border': '0 0% 31.3725%',
+        '--sidebar-ring': '0 73.4597% 41.3725%',
+        '--radius': '0px',
+        '--shadow-2xs': '0px 2px 4px 0px hsl(0 0% 0% / 0.20)',
+        '--shadow-xs': '0px 2px 4px 0px hsl(0 0% 0% / 0.20)',
+        '--shadow-sm': '0px 2px 4px 0px hsl(0 0% 0% / 0.40), 0px 1px 2px -1px hsl(0 0% 0% / 0.40)',
+        '--shadow': '0px 2px 4px 0px hsl(0 0% 0% / 0.40), 0px 1px 2px -1px hsl(0 0% 0% / 0.40)',
+        '--shadow-md': '0px 2px 4px 0px hsl(0 0% 0% / 0.40), 0px 2px 4px -1px hsl(0 0% 0% / 0.40)',
+        '--shadow-lg': '0px 2px 4px 0px hsl(0 0% 0% / 0.40), 0px 4px 6px -1px hsl(0 0% 0% / 0.40)',
+        '--shadow-xl': '0px 2px 4px 0px hsl(0 0% 0% / 0.40), 0px 8px 10px -1px hsl(0 0% 0% / 0.40)',
+        '--shadow-2xl': '0px 2px 4px 0px hsl(0 0% 0% / 1.00)',
+        '--tracking-normal': '0em',
+        '--spacing': '0.25rem'
+      },
+      dark: {
+        '--background': '0 0% 10.1961%',
+        '--foreground': '0 0% 87.8431%',
+        '--card': '0 0% 16.4706%',
+        '--card-foreground': '0 0% 87.8431%',
+        '--popover': '0 0% 16.4706%',
+        '--popover-foreground': '0 0% 87.8431%',
+        '--primary': '1.3636 77.1930% 55.2941%',
+        '--primary-foreground': '0 0% 100%',
+        '--secondary': '92.0388 47.9070% 42.1569%',
+        '--secondary-foreground': '0 0% 0%',
+        '--muted': '0 0% 14.5098%',
+        '--muted-foreground': '0 0% 62.7451%',
+        '--accent': '206.7123 89.0244% 67.8431%',
+        '--accent-foreground': '0 0% 0%',
+        '--destructive': '37.6471 100% 50%',
+        '--destructive-foreground': '0 0% 0%',
+        '--border': '0 0% 29.0196%',
+        '--input': '0 0% 29.0196%',
+        '--ring': '1.3636 77.1930% 55.2941%',
+        '--chart-1': '1.3636 77.1930% 55.2941%',
+        '--chart-2': '92.0388 47.9070% 42.1569%',
+        '--chart-3': '206.7123 89.0244% 67.8431%',
+        '--chart-4': '37.6471 100% 50%',
+        '--chart-5': '15.8824 15.3153% 56.4706%',
+        '--sidebar': '0 0% 7.8431%',
+        '--sidebar-foreground': '0 0% 87.8431%',
+        '--sidebar-primary': '1.3636 77.1930% 55.2941%',
+        '--sidebar-primary-foreground': '0 0% 100%',
+        '--sidebar-accent': '206.7123 89.0244% 67.8431%',
+        '--sidebar-accent-foreground': '0 0% 0%',
+        '--sidebar-border': '0 0% 29.0196%',
+        '--sidebar-ring': '1.3636 77.1930% 55.2941%',
+        '--radius': '0px',
+        '--shadow-2xs': '0px 2px 5px 0px hsl(0 0% 0% / 0.30)',
+        '--shadow-xs': '0px 2px 5px 0px hsl(0 0% 0% / 0.30)',
+        '--shadow-sm': '0px 2px 5px 0px hsl(0 0% 0% / 0.60), 0px 1px 2px -1px hsl(0 0% 0% / 0.60)',
+        '--shadow': '0px 2px 5px 0px hsl(0 0% 0% / 0.60), 0px 1px 2px -1px hsl(0 0% 0% / 0.60)',
+        '--shadow-md': '0px 2px 5px 0px hsl(0 0% 0% / 0.60), 0px 2px 4px -1px hsl(0 0% 0% / 0.60)',
+        '--shadow-lg': '0px 2px 5px 0px hsl(0 0% 0% / 0.60), 0px 4px 6px -1px hsl(0 0% 0% / 0.60)',
+        '--shadow-xl': '0px 2px 5px 0px hsl(0 0% 0% / 0.60), 0px 8px 10px -1px hsl(0 0% 0% / 0.60)',
+        '--shadow-2xl': '0px 2px 5px 0px hsl(0 0% 0% / 1.50)',
+        '--tracking-normal': '0em',
+        '--spacing': '0.25rem'
+      }
+    }
+  },
+  {
     id: 'claude',
     name: 'Claude',
     description: 'Warm beige tones with orange-red accents',
@@ -357,122 +465,6 @@ export const themes: Theme[] = [
         '--tracking-widest': '0.05em'
       }
     }
-  },
-  {
-    id: 'claymorphism',
-    name: 'Claymorphism',
-    description: 'Soft clay textures with purple accents',
-    preview: {
-      primary: '#6366F1',
-      secondary: '#F3F4F6',
-      accent: '#F0E6FF',
-      background: '#F5F5F0'
-    },
-    fonts: {
-      sans: 'Plus Jakarta Sans, sans-serif',
-      serif: 'Lora, serif',
-      mono: 'Roboto Mono, monospace'
-    },
-    css: {
-      light: {
-        '--background': '20 5.8824% 90%',
-        '--foreground': '217.2414 32.5843% 17.4510%',
-        '--card': '60 4.7619% 95.8824%',
-        '--card-foreground': '217.2414 32.5843% 17.4510%',
-        '--popover': '60 4.7619% 95.8824%',
-        '--popover-foreground': '217.2414 32.5843% 17.4510%',
-        '--primary': '238.7324 83.5294% 66.6667%',
-        '--primary-foreground': '0 0% 100%',
-        '--secondary': '24.0000 5.7471% 82.9412%',
-        '--secondary-foreground': '215 13.7931% 34.1176%',
-        '--muted': '20 5.8824% 90%',
-        '--muted-foreground': '220 8.9362% 46.0784%',
-        '--accent': '292.5000 44.4444% 92.9412%',
-        '--accent-foreground': '216.9231 19.1176% 26.6667%',
-        '--destructive': '0 84.2365% 60.1961%',
-        '--destructive-foreground': '0 0% 100%',
-        '--border': '24.0000 5.7471% 82.9412%',
-        '--input': '24.0000 5.7471% 82.9412%',
-        '--ring': '238.7324 83.5294% 66.6667%',
-        '--chart-1': '238.7324 83.5294% 66.6667%',
-        '--chart-2': '243.3962 75.3555% 58.6275%',
-        '--chart-3': '244.5205 57.9365% 50.5882%',
-        '--chart-4': '243.6522 54.5024% 41.3725%',
-        '--chart-5': '242.1687 47.4286% 34.3137%',
-        '--sidebar': '24.0000 5.7471% 82.9412%',
-        '--sidebar-foreground': '217.2414 32.5843% 17.4510%',
-        '--sidebar-primary': '238.7324 83.5294% 66.6667%',
-        '--sidebar-primary-foreground': '0 0% 100%',
-        '--sidebar-accent': '292.5000 44.4444% 92.9412%',
-        '--sidebar-accent-foreground': '216.9231 19.1176% 26.6667%',
-        '--sidebar-border': '24.0000 5.7471% 82.9412%',
-        '--sidebar-ring': '238.7324 83.5294% 66.6667%',
-        '--radius': '1.25rem',
-        '--shadow-2xs': '0 2px 8px 0px hsl(238.7324 83.5294% 66.6667% / 0.10)',
-        '--shadow-xs': '0 2px 8px 0px hsl(238.7324 83.5294% 66.6667% / 0.10)',
-        '--shadow-sm': '0 4px 16px 0px hsl(238.7324 83.5294% 66.6667% / 0.15), 0 2px 8px -1px hsl(238.7324 83.5294% 66.6667% / 0.10)',
-        '--shadow': '0 4px 16px 0px hsl(238.7324 83.5294% 66.6667% / 0.15), 0 2px 8px -1px hsl(238.7324 83.5294% 66.6667% / 0.10)',
-        '--shadow-md': '0 8px 24px 0px hsl(238.7324 83.5294% 66.6667% / 0.20), 0 4px 16px -2px hsl(238.7324 83.5294% 66.6667% / 0.15)',
-        '--shadow-lg': '0 16px 32px 0px hsl(238.7324 83.5294% 66.6667% / 0.25), 0 8px 24px -4px hsl(238.7324 83.5294% 66.6667% / 0.20)',
-        '--shadow-xl': '0 24px 48px 0px hsl(238.7324 83.5294% 66.6667% / 0.30), 0 16px 32px -8px hsl(238.7324 83.5294% 66.6667% / 0.25)',
-        '--shadow-2xl': '0 32px 64px 0px hsl(238.7324 83.5294% 66.6667% / 0.35)',
-        '--tracking-tighter': '-0.05em',
-        '--tracking-tight': '-0.025em',
-        '--tracking-normal': '0em',
-        '--tracking-wide': '0.025em',
-        '--tracking-wider': '0.05em',
-        '--tracking-widest': '0.1em'
-      },
-      dark: {
-        '--background': '30 11.1111% 10.5882%',
-        '--foreground': '214.2857 31.8182% 91.3725%',
-        '--card': '25.7143 8.6420% 15.8824%',
-        '--card-foreground': '214.2857 31.8182% 91.3725%',
-        '--popover': '25.7143 8.6420% 15.8824%',
-        '--popover-foreground': '214.2857 31.8182% 91.3725%',
-        '--primary': '234.4538 89.4737% 73.9216%',
-        '--primary-foreground': '30 11.1111% 10.5882%',
-        '--secondary': '25.7143 6.4220% 21.3725%',
-        '--secondary-foreground': '216.0000 12.1951% 83.9216%',
-        '--muted': '25.7143 8.6420% 15.8824%',
-        '--muted-foreground': '217.8947 10.6145% 64.9020%',
-        '--accent': '25.7143 5.1095% 26.8627%',
-        '--accent-foreground': '216.0000 12.1951% 83.9216%',
-        '--destructive': '0 84.2365% 60.1961%',
-        '--destructive-foreground': '30 11.1111% 10.5882%',
-        '--border': '25.7143 6.4220% 21.3725%',
-        '--input': '25.7143 6.4220% 21.3725%',
-        '--ring': '234.4538 89.4737% 73.9216%',
-        '--chart-1': '234.4538 89.4737% 73.9216%',
-        '--chart-2': '238.7324 83.5294% 66.6667%',
-        '--chart-3': '243.3962 75.3555% 58.6275%',
-        '--chart-4': '244.5205 57.9365% 50.5882%',
-        '--chart-5': '243.6522 54.5024% 41.3725%',
-        '--sidebar': '25.7143 6.4220% 21.3725%',
-        '--sidebar-foreground': '214.2857 31.8182% 91.3725%',
-        '--sidebar-primary': '234.4538 89.4737% 73.9216%',
-        '--sidebar-primary-foreground': '30 11.1111% 10.5882%',
-        '--sidebar-accent': '25.7143 5.1095% 26.8627%',
-        '--sidebar-accent-foreground': '216.0000 12.1951% 83.9216%',
-        '--sidebar-border': '25.7143 6.4220% 21.3725%',
-        '--sidebar-ring': '234.4538 89.4737% 73.9216%',
-        '--radius': '1.25rem',
-        '--shadow-2xs': '0 2px 8px 0px hsl(234.4538 89.4737% 73.9216% / 0.15)',
-        '--shadow-xs': '0 2px 8px 0px hsl(234.4538 89.4737% 73.9216% / 0.15)',
-        '--shadow-sm': '0 4px 16px 0px hsl(234.4538 89.4737% 73.9216% / 0.20), 0 2px 8px -1px hsl(234.4538 89.4737% 73.9216% / 0.15)',
-        '--shadow': '0 4px 16px 0px hsl(234.4538 89.4737% 73.9216% / 0.20), 0 2px 8px -1px hsl(234.4538 89.4737% 73.9216% / 0.15)',
-        '--shadow-md': '0 8px 24px 0px hsl(234.4538 89.4737% 73.9216% / 0.25), 0 4px 16px -2px hsl(234.4538 89.4737% 73.9216% / 0.20)',
-        '--shadow-lg': '0 16px 32px 0px hsl(234.4538 89.4737% 73.9216% / 0.30), 0 8px 24px -4px hsl(234.4538 89.4737% 73.9216% / 0.25)',
-        '--shadow-xl': '0 24px 48px 0px hsl(234.4538 89.4737% 73.9216% / 0.35), 0 16px 32px -8px hsl(234.4538 89.4737% 73.9216% / 0.30)',
-        '--shadow-2xl': '0 32px 64px 0px hsl(234.4538 89.4737% 73.9216% / 0.40)',
-        '--tracking-tighter': '-0.05em',
-        '--tracking-tight': '-0.025em',
-        '--tracking-normal': '0em',
-        '--tracking-wide': '0.025em',
-        '--tracking-wider': '0.05em',
-        '--tracking-widest': '0.1em'
-      }
-    }
   }
 ];
 
@@ -522,13 +514,13 @@ export function applyTheme(themeId: string, isDark: boolean = false) {
       root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(151.3274, 66.8639%, 66.8627%) 0%, hsl(0, 0%, 92.9412%) 100%)');
       root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(151.3274, 66.8639%, 66.8627%) 0%, hsl(0, 0%, 99.2157%) 100%)');
     }
-  } else if (themeId === 'claymorphism') {
+  } else if (themeId === 'doom-64') {
     if (isDark) {
-      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(234.4538, 89.4737%, 73.9216%) 0%, hsl(30, 11.1111%, 10.5882%) 100%)');
-      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(234.4538, 89.4737%, 73.9216%) 0%, hsl(25.7143, 8.6420%, 15.8824%) 100%)');
+      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(1.3636, 77.1930%, 55.2941%) 0%, hsl(0, 0%, 10.1961%) 100%)');
+      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(1.3636, 77.1930%, 55.2941%) 0%, hsl(92.0388, 47.9070%, 42.1569%) 100%)');
     } else {
-      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(238.7324, 83.5294%, 66.6667%) 0%, hsl(20, 5.8824%, 90%) 100%)');
-      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(238.7324, 83.5294%, 66.6667%) 0%, hsl(292.5000, 44.4444%, 92.9412%) 100%)');
+      root.style.setProperty('--gradient-primary', 'linear-gradient(135deg, hsl(0, 73.4597%, 41.3725%) 0%, hsl(0, 0%, 80%) 100%)');
+      root.style.setProperty('--gradient-secondary', 'linear-gradient(135deg, hsl(0, 73.4597%, 41.3725%) 0%, hsl(82, 38.9610%, 30.1961%) 100%)');
     }
   }
   
@@ -537,8 +529,8 @@ export function applyTheme(themeId: string, isDark: boolean = false) {
 }
 
 export function getCurrentTheme(): string {
-  if (typeof window === 'undefined') return 'claude';
-  return localStorage.getItem('feedbacks-theme') || 'claude';
+  if (typeof window === 'undefined') return 'doom-64';
+  return localStorage.getItem('feedbacks-theme') || 'doom-64';
 }
 
 export function initializeTheme() {
