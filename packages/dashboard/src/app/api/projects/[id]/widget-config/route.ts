@@ -101,8 +101,8 @@ function validateWidgetConfig(raw: any): { config: Record<string, any>; warnings
   return { config, warnings };
 }
 
-function mapRow(row: any) {
-  return {
+function mapRow(row: any, includeConfig = true) {
+  const mapped: any = {
     id: row.id,
     channel: row.channel,
     version: row.version,
@@ -110,14 +110,22 @@ function mapRow(row: any) {
     isDefault: !!row.is_default,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    config: row.config || {},
   };
+
+  if (includeConfig) {
+    mapped.config = row.config || {};
+  }
+
+  return mapped;
 }
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const supabase = createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return new NextResponse('Unauthorized', { status: 401 });
+
+  const url = new URL(request.url);
+  const withConfig = url.searchParams.get('withConfig') === '1';
 
   const { data: project, error: projectError } = await supabase
     .from('projects')
@@ -156,16 +164,20 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
   const historyChannel = defaultRow?.channel || DEFAULT_CHANNEL;
 
+  const historySelect = withConfig
+    ? 'id, channel, version, label, config, is_default, created_at, updated_at'
+    : 'id, channel, version, label, is_default, created_at, updated_at';
+
   const { data: rows, count } = await supabase
     .from('widget_configs')
-    .select('id, channel, version, label, config, is_default, created_at, updated_at', { count: 'exact' })
+    .select(historySelect, { count: 'exact' })
     .eq('project_id', params.id)
     .eq('channel', historyChannel)
     .order('version', { ascending: false })
     .limit(HISTORY_LIMIT);
 
-  const history = Array.isArray(rows) ? rows.map(mapRow) : [];
-  const defaultConfig = defaultRow ? mapRow(defaultRow) : null;
+  const history = Array.isArray(rows) ? rows.map((row) => mapRow(row, withConfig)) : [];
+  const defaultConfig = defaultRow ? mapRow(defaultRow, true) : null;
   const existingIdx = defaultConfig ? history.findIndex((item) => item.id === defaultConfig.id) : -1;
   if (defaultConfig && existingIdx === -1) {
     history.unshift(defaultConfig);

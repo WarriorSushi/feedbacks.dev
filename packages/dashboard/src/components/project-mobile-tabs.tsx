@@ -141,7 +141,7 @@ export function ProjectMobileTabs({ projectId, projectName, activeSection, widge
                 variant="ghost"
                 onClick={() => handleSectionChange(tab.id)}
                 className={cn(
-                  'relative h-[34px] min-w-0 justify-center rounded-md border px-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] transition-all duration-150',
+                  'relative h-11 min-w-0 justify-center rounded-md border px-0.5 text-[9px] font-semibold uppercase tracking-[0.12em] transition-all duration-150',
                   isActive
                     ? 'border-foreground bg-foreground text-background shadow-sm'
                     : 'border-border/70 bg-muted/40 text-muted-foreground hover:bg-muted/70'

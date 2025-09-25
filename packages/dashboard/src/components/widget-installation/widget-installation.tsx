@@ -35,6 +35,8 @@ import {
   Heart,
   Star,
   ThumbsUp,
+  Plus,
+  Minus,
   type LucideIcon,
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -165,9 +167,25 @@ let widgetPresetCache: WidgetPreset[] | null = null;
 let widgetPresetPromise: Promise<WidgetPreset[]> | null = null;
 
 async function fetchWidgetPresets(): Promise<WidgetPreset[]> {
+  // Check module cache first
   if (widgetPresetCache) {
     return widgetPresetCache;
   }
+
+  // Check sessionStorage cache
+  if (typeof window !== 'undefined') {
+    try {
+      const cached = sessionStorage.getItem('feedbacks-widget-presets');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.timestamp && Date.now() - parsed.timestamp < 300000) { // 5min TTL
+          widgetPresetCache = parsed.data;
+          return parsed.data;
+        }
+      }
+    } catch {}
+  }
+
   if (widgetPresetPromise) {
     return widgetPresetPromise;
   }
@@ -180,6 +198,17 @@ async function fetchWidgetPresets(): Promise<WidgetPreset[]> {
       const body = await res.json();
       const items = Array.isArray(body?.items) ? body.items : [];
       widgetPresetCache = items;
+
+      // Cache in sessionStorage
+      if (typeof window !== 'undefined' && widgetPresetCache) {
+        try {
+          sessionStorage.setItem('feedbacks-widget-presets', JSON.stringify({
+            data: widgetPresetCache,
+            timestamp: Date.now()
+          }));
+        } catch {}
+      }
+
       return items;
     } catch (error) {
       widgetPresetCache = null;
@@ -193,6 +222,11 @@ async function fetchWidgetPresets(): Promise<WidgetPreset[]> {
 
 export function invalidateWidgetPresetCache() {
   widgetPresetCache = null;
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.removeItem('feedbacks-widget-presets');
+    } catch {}
+  }
 }
 
 export interface WidgetInstallationExperienceProps {
@@ -201,6 +235,7 @@ export interface WidgetInstallationExperienceProps {
   projectName: string;
   widgetVersion?: string;
   initialStep?: WidgetStep;
+  projectSummary?: React.ReactNode;
 }
 
 export type WidgetStep = 'setup' | 'appearance' | 'fields' | 'protection' | 'publish';
@@ -639,17 +674,20 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
               }
             }
 
-            var overlay = document.querySelector('.feedbacks-overlay');
-            if (overlay && typeof overlay.getBoundingClientRect === 'function') {
-              var overlayStyle = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(overlay) : null;
-              var overlayVisible = !overlayStyle || (overlayStyle.visibility !== 'hidden' && overlayStyle.display !== 'none' && Number(overlayStyle.opacity || 1) > 0.01);
-              var overlayRect = overlay.getBoundingClientRect();
-              if (overlayVisible && overlayRect) {
-                var overlayHeight = overlayRect.height || (overlayRect.bottom - overlayRect.top);
-                if (overlayHeight > 0) {
-                  var overlayTop = Math.max(0, overlayRect.top);
-                  var overlayTotal = Math.ceil((overlayHeight || 0) + overlayTop + 48);
-                  if (overlayTotal > height) height = overlayTotal;
+            // Only apply overlay calculations when actually viewing form in modal mode
+            if (view === 'form' && lastConfig && lastConfig.embedMode === 'modal') {
+              var overlay = document.querySelector('.feedbacks-overlay');
+              if (overlay && typeof overlay.getBoundingClientRect === 'function') {
+                var overlayStyle = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(overlay) : null;
+                var overlayVisible = !overlayStyle || (overlayStyle.visibility !== 'hidden' && overlayStyle.display !== 'none' && Number(overlayStyle.opacity || 1) > 0.01);
+                var overlayRect = overlay.getBoundingClientRect();
+                if (overlayVisible && overlayRect) {
+                  var overlayHeight = overlayRect.height || (overlayRect.bottom - overlayRect.top);
+                  if (overlayHeight > 0) {
+                    var overlayTop = Math.max(0, overlayRect.top);
+                    var overlayTotal = Math.ceil((overlayHeight || 0) + overlayTop + 48);
+                    if (overlayTotal > height) height = overlayTotal;
+                  }
                 }
               }
             }
@@ -667,6 +705,8 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           }
           if (ev.data.type === 'widget-preview:view') {
             view = ev.data.view === 'form' ? 'form' : 'launcher';
+            // Send state change notification to prevent delayed timers firing inappropriately
+            parent.postMessage({ type: 'widget-preview:state', view: view }, '*');
             try {
               const current = lastConfig && lastConfig.embedMode ? lastConfig.embedMode : initial.embedMode;
               if (current === 'modal') {
@@ -832,7 +872,7 @@ function PresetCard({ preset, onApply, active }: { preset: WidgetPreset; onApply
     </button>
   );
 }
-export function WidgetInstallationExperience({ projectId, projectKey, projectName, widgetVersion = DEFAULT_WIDGET_VERSION, initialStep }: WidgetInstallationExperienceProps) {
+export function WidgetInstallationExperience({ projectId, projectKey, projectName, widgetVersion = DEFAULT_WIDGET_VERSION, initialStep, projectSummary }: WidgetInstallationExperienceProps) {
   const widgetStepContext = useWidgetStepContext();
   const [config, setConfig] = useState<WidgetConfig>(DEFAULT_CONFIG);
   const [defaultConfigRow, setDefaultConfigRow] = useState<WidgetConfigRow | null>(null);
@@ -1284,7 +1324,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
             <TabsTrigger
               key={step.id}
               value={step.id}
-              className="flex h-9 items-center justify-center rounded-lg border border-border bg-background px-2 text-[10px] font-medium tracking-normal transition data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary sm:flex-1 sm:px-3 sm:text-xs lg:flex-1 lg:text-[11px]"
+              className="flex h-11 items-center justify-center rounded-lg border border-border bg-background px-2 text-[10px] font-medium tracking-normal transition data-[state=active]:border-primary data-[state=active]:bg-primary/10 data-[state=active]:text-primary sm:flex-1 sm:px-3 sm:text-xs lg:flex-1 lg:text-[11px]"
             >
               {index + 1}. {step.label}
             </TabsTrigger>
@@ -1328,30 +1368,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className={CARD_HEADER}>
-              <CardTitle className="text-sm font-semibold uppercase tracking-[0.22em] text-muted-foreground">Quick start</CardTitle>
-              <CardDescription>Snapshot of your current setup so teammates can follow along.</CardDescription>
-            </CardHeader>
-            <CardContent className={cn(CARD_CONTENT, 'grid gap-3 text-sm sm:grid-cols-2')}>
-              <div className="space-y-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Experience</p>
-                <p className="font-medium text-foreground">{experienceSummary}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Snippet platform</p>
-                <p className="font-medium text-foreground">{selectedPlatformLabel}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Target details</p>
-                <p className="font-medium text-foreground">{targetSummary}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Next milestone</p>
-                <p className="font-medium text-foreground">Save & publish when the preview matches your brand.</p>
-              </div>
-            </CardContent>
-          </Card>
 
         <Card>
           <CardHeader className={CARD_HEADER}>
@@ -1585,7 +1601,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
               <Switch checked={!!config.enableScreenshot} onCheckedChange={(value) => updateConfig({ enableScreenshot: value })} />
             </div>
             <div className="md:col-span-2 border-t border-dashed border-border/60 pt-3">
-              <DisclosureToggle open={showAdvancedFields} onToggle={() => setShowAdvancedFields((v) => !v)} label="Advanced inputs" />
+              <DisclosureToggle open={showAdvancedFields} onToggle={() => setShowAdvancedFields((v) => !v)} label="advanced settings" />
             </div>
             {showAdvancedFields && (
             <>
@@ -1812,7 +1828,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                 <li className="flex items-start gap-2">
                   <MousePointer className="h-4 w-4 mt-0.5 text-primary" />
                   <div className="flex-1">Place <code>&lt;div id=&quot;{normalizeTarget(config.target, '#feedback-widget').replace('#','')}&quot;/&gt;</code> where the form should render.</div>
-                  <CopyButton className="h-7 px-2 text-[11px]" text={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#','')}"/>`} />
+                  <CopyButton className="h-11 px-2 text-[11px]" text={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#','')}"/>`} />
                 </li>
                 <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 mt-0.5 text-primary" /> Save & publish your configuration.</li>
                 <li className="flex items-start gap-2"><Rocket className="h-4 w-4 mt-0.5 text-primary" /> Verify in the widget demo and on your site.</li>
@@ -1824,7 +1840,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                 <li className="flex items-start gap-2">
                   <MousePointer className="h-4 w-4 mt-0.5 text-primary" />
                   <div className="flex-1">Give your button the id <code>{normalizeTarget(config.target, '#feedback-button')}</code> or add <code>data-feedbacks-trigger</code>.</div>
-                  <CopyButton className="h-7 px-2 text-[11px]" text={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#','')}">Give feedback</button>`} />
+                  <CopyButton className="h-11 px-2 text-[11px]" text={`<button id="${normalizeTarget(config.target, '#feedback-button').replace('#','')}">Give feedback</button>`} />
                 </li>
                 <li className="flex items-start gap-2"><CheckCircle className="h-4 w-4 mt-0.5 text-primary" /> Save & publish your configuration.</li>
                 <li className="flex items-start gap-2"><Rocket className="h-4 w-4 mt-0.5 text-primary" /> Verify in the widget demo and on your site.</li>
@@ -1867,7 +1883,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                   </div>
                 </div>
                 <div className="border-t border-dashed border-border/60 pt-3">
-                  <DisclosureToggle open={showAdvancedExperience} onToggle={() => setShowAdvancedExperience((v) => !v)} label="Advanced launcher tips" />
+                  <DisclosureToggle open={showAdvancedExperience} onToggle={() => setShowAdvancedExperience((v) => !v)} label="launcher tips" />
                   {showAdvancedExperience && (
                     <p className="mt-3 text-xs text-muted-foreground">Floating button updates instantly in the preview. Position defaults to bottom right for the polished concierge look.</p>
                   )}
@@ -1882,7 +1898,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                   <Input value={normalizeTarget(config.target, '#feedback-widget').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-widget" />
                 </div>
                 <div className="border-t border-dashed border-border/60 pt-3">
-                  <DisclosureToggle open={showAdvancedExperience} onToggle={() => setShowAdvancedExperience((v) => !v)} label="Advanced embed instructions" />
+                  <DisclosureToggle open={showAdvancedExperience} onToggle={() => setShowAdvancedExperience((v) => !v)} label="embed instructions" />
                   {showAdvancedExperience && (
                     <div className="mt-3 space-y-3">
                       <CodeSnippet code={`<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}"></div>`} language="html" />
@@ -1900,7 +1916,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                   <Input value={normalizeTarget(config.target, '#feedback-button').replace('#', '')} onChange={(event) => updateConfig({ target: `#${event.target.value}` })} placeholder="feedback-button" />
                 </div>
                 <div className="border-t border-dashed border-border/60 pt-3">
-                  <DisclosureToggle open={showAdvancedExperience} onToggle={() => setShowAdvancedExperience((v) => !v)} label="Advanced trigger setup" />
+                  <DisclosureToggle open={showAdvancedExperience} onToggle={() => setShowAdvancedExperience((v) => !v)} label="trigger setup" />
                   {showAdvancedExperience && (
                     <div className="mt-3 space-y-3">
                       <div className="grid gap-3 md:grid-cols-2">
@@ -1985,7 +2001,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
           <div className="flex items-center justify-end gap-2 sm:hidden">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" disabled={loading} className="h-9 px-3 text-xs">Reset</Button>
+                <Button variant="outline" size="sm" disabled={loading} className="h-11 px-3 text-xs">Reset</Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => resetToSaved()}>Reset to Last Published</DropdownMenuItem>
@@ -1996,12 +2012,13 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
               onClick={handleSave}
               disabled={loading || saving || !isDirty || hasBlockingValidation}
               size="sm"
-              className="h-9 px-3 text-xs"
+              className="h-11 px-3 text-xs"
             >
               {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
               {saving ? 'Saving...' : isDirty ? 'Save & publish' : 'Saved'}
             </Button>
           </div>
+          {projectSummary}
           <WidgetPreview config={config} projectKey={projectKey} widgetVersion={widgetVersion} viewport={viewport} onViewportChange={setViewport} />
         </div>
       </div>
@@ -2051,14 +2068,23 @@ function ProviderGuide({ open, onToggle, guide }: { open: boolean; onToggle: () 
 }
 
 function DisclosureToggle({ label, open, onToggle }: { label: string; open: boolean; onToggle: () => void }) {
+  const disclosureId = `disclosure-${label.toLowerCase().replace(/\s+/g, '-')}`;
+  const actionLabel = `Show ${label.toLowerCase()}`;
+
   return (
     <button
       type="button"
       onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={disclosureId}
       className="flex w-full items-center justify-between gap-2 rounded-lg border border-dashed border-border/60 bg-background/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground transition hover:bg-muted/40 hover:text-foreground"
     >
-      <span>{label}</span>
-      <ChevronDown className={cn('h-4 w-4 transition-transform', open ? 'rotate-180' : '')} />
+      <span>{actionLabel}</span>
+      {open ? (
+        <Minus className="h-4 w-4 transition-transform" />
+      ) : (
+        <Plus className="h-4 w-4 transition-transform" />
+      )}
     </button>
   );
 }

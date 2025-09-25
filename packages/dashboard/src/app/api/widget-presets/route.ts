@@ -16,7 +16,14 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ items: [], error: 'Failed to load presets' }, { status: 200 });
   }
 
-  return NextResponse.json({
-    items: Array.isArray(data) ? data : [],
-  });
+  return NextResponse.json(
+    {
+      items: Array.isArray(data) ? data : [],
+    },
+    {
+      headers: {
+        'Cache-Control': 's-maxage=300, stale-while-revalidate=600', // 5min cache, 10min stale
+      }
+    }
+  );
 }
