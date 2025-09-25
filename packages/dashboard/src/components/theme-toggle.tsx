@@ -28,6 +28,9 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
     }
   });
 
+  // Type the ref properly for div element using unknown first
+  const divRef = ref as unknown as React.RefObject<HTMLDivElement>;
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -39,7 +42,7 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
   };
 
   return (
-    <div ref={ref} className={`flex items-center gap-2 ${className}`}>
+    <div ref={divRef} className={`flex items-center gap-2 ${className}`}>
       <Sun
         className={`h-4 w-4 transition-colors ${mounted && !isDark ? 'text-orange-500' : 'text-muted-foreground/50'}`}
       />
