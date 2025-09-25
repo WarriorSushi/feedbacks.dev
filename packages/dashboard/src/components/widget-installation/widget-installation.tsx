@@ -688,8 +688,8 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
             var hasValidRect = rect && rect.height > 0 && rect.width > 0;
             var height = hasValidRect ? Math.ceil(rect.height) : Math.min(800, Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight));
 
-            // Always check for modal overlay when it exists, regardless of view mode
-            if (lastConfig && lastConfig.embedMode === 'modal') {
+            // Always check for modal overlay when it exists (for modal and trigger modes)
+            if (lastConfig && (lastConfig.embedMode === 'modal' || lastConfig.embedMode === 'trigger')) {
               var overlay = document.querySelector('.feedbacks-overlay');
               if (overlay && typeof overlay.getBoundingClientRect === 'function') {
                 var overlayStyle = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(overlay) : null;
