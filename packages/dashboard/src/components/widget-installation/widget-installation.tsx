@@ -2156,14 +2156,14 @@ function StepNavigation({
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-[28px] border border-border/70 bg-card/80 p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between',
+        'flex flex-row items-center justify-between gap-3 rounded-[28px] border bg-black dark:bg-[#2F2E2D] p-3',
         variant === 'top' ? 'mt-3 mb-6' : 'mt-6'
       )}
     >
-      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white dark:text-white">
         Step {currentIndex + 1} of {steps.length}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <Button
           type="button"
           variant="outline"
