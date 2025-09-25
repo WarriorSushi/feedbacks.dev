@@ -13,6 +13,7 @@ import { ProjectAnalytics } from '@/components/project-analytics';
 import { ImageLightbox } from '@/components/image-lightbox';
 import { ProjectIntegrations } from '@/components/project-integrations';
 import { ArchiveFeedbackButton } from '@/components/archive-feedback-button';
+import { formatDateOnly, formatDateTime } from '@/lib/utils';
 import { ProjectMobileTabs } from '@/components/project-mobile-tabs';
 
 type ProjectSection = 'widget-installation' | 'feedback' | 'analytics' | 'integrations';
@@ -139,7 +140,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             <div className="rounded-xl bg-muted/30 p-3">
               <p className="text-[9px] uppercase tracking-[0.26em] text-muted-foreground">Created</p>
               <p className="mt-1 text-sm font-semibold text-foreground">
-                {new Date(project.created_at).toLocaleDateString()}
+                {formatDateOnly(project.created_at)}
               </p>
             </div>
             <div className="rounded-xl bg-muted/30 p-3">
@@ -231,7 +232,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                                       {fb.type || 'general'}
                                     </Badge>
                                     <span className="text-sm text-muted-foreground">
-                                      {new Date(fb.created_at).toLocaleDateString()}
+                                      {formatDateOnly(fb.created_at)}
                                     </span>
                                   </div>
                                   <p className="line-clamp-2 text-foreground">{fb.message}</p>
@@ -287,7 +288,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                                   </div>
                                 )}
                                 <div className="text-muted-foreground">
-                                  Created: {new Date(fb.created_at).toLocaleString()}
+                                  Created: {formatDateTime(fb.created_at)}
                                 </div>
                               </div>
                               <div>
@@ -381,7 +382,7 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                       <div>
                         <Label>Created</Label>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(project.created_at).toLocaleDateString()}
+                          {formatDateOnly(project.created_at)}
                         </p>
                       </div>
                     </div>

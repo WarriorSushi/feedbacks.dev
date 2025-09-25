@@ -8,6 +8,7 @@ import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
 import { BackgroundLines } from '@/components/ui/background-lines';
 import { Plus, BarChart3, Calendar, ExternalLink, Users, Clock } from 'lucide-react';
 import { useDashboard } from '@/components/dashboard-client-layout';
+import { ClientDate } from '@/components/client-date';
 
 export default function ProjectsPage() {
   const { user, projects } = useDashboard();
@@ -45,7 +46,7 @@ export default function ProjectsPage() {
                   </div>
                   <CardDescription className="flex items-center gap-2 text-sm">
                     <Calendar className="h-3 w-3" />
-                    <span className="truncate">Created {new Date(project.created_at).toLocaleDateString()}</span>
+                    <ClientDate date={project.created_at} prefix="Created " className="truncate" />
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">

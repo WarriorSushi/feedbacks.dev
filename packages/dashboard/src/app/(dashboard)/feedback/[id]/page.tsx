@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ImageLightbox } from '@/components/image-lightbox';
 import { ArrowLeft, Globe, Mail, MonitorSmartphone, Tag, Paperclip } from 'lucide-react';
+import { formatDateTime } from '@/lib/utils';
 
 interface PageProps { params: { id: string } }
 
@@ -52,7 +53,7 @@ export default async function FeedbackDetailPage({ params }: PageProps) {
               <Badge variant="outline">Rating: {row.rating}/5</Badge>
             )}
           </CardTitle>
-          <div className="text-sm text-muted-foreground">{projectName} • {new Date(row.created_at).toLocaleString()}</div>
+          <div className="text-sm text-muted-foreground">{projectName} • {formatDateTime(row.created_at)}</div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>

@@ -26,6 +26,7 @@ import { ImageLightbox } from "@/components/image-lightbox";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useDashboard } from "@/components/dashboard-client-layout";
 import { createBrowserSupabaseClient } from "@/lib/supabase-browser";
+import { ClientDate } from "@/components/client-date";
 
 interface FeedbackItem {
   id: string;
@@ -599,7 +600,7 @@ export default function FeedbackPage() {
                         <div className="flex items-center gap-2"><Mail className="h-4 w-4" /> {item.email || 'anonymous'}</div>
                         <div className="flex items-center gap-2 truncate"><MonitorSmartphone className="h-4 w-4" /> <span title={item.url}>{item.url}</span></div>
                         {item.type && <div className="capitalize">Type: {item.type}</div>}
-                        <div>Created: {new Date(item.created_at).toLocaleString()}</div>
+                        <ClientDate date={item.created_at} prefix="Created: " format="datetime" />
                       </div>
                       {item.screenshot_url && (
                         <ImageLightbox src={item.screenshot_url} thumbClassName="h-24 w-auto rounded border" />

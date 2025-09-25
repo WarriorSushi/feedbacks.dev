@@ -24,6 +24,7 @@ import {
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useDashboard } from '@/components/dashboard-client-layout';
+import { ClientDate } from '@/components/client-date';
 
 export default function ProfilePage() {
   const { user } = useDashboard();
@@ -245,13 +246,7 @@ export default function ProfilePage() {
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-medium">Member since</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(user.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
+                    <ClientDate date={user.created_at} format="date" className="text-sm text-muted-foreground" />
                   </div>
                 </div>
                 {profileData.location && (

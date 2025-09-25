@@ -15,6 +15,7 @@ import { ProjectsComparison } from '@/components/projects-comparison';
 import { useEffect, useState } from 'react';
 import { useDashboard } from '@/components/dashboard-client-layout';
 import { createBrowserSupabaseClient } from '@/lib/supabase-browser';
+import { ClientDate } from '@/components/client-date';
 
 export default function DashboardPage() {
   const { user, projects } = useDashboard();
@@ -229,7 +230,7 @@ export default function DashboardPage() {
                         <div className="space-y-1.5 md:space-y-2 text-xs text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-3 w-3 flex-shrink-0" />
-                            <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
+                            <ClientDate date={project.created_at} prefix="Created " />
                           </div>
                           <div className="flex items-center gap-2">
                             <Users className="h-3 w-3 flex-shrink-0" />
