@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { WidgetStep } from './widget-installation';
 
 const STEP_ORDER: WidgetStep[] = ['setup', 'appearance', 'fields', 'protection', 'publish'];
@@ -22,15 +23,16 @@ function normalizeStep(step: string | null | undefined): WidgetStep {
 export function WidgetStepProvider({ initialStep, children }: { initialStep: WidgetStep; children: React.ReactNode }) {
   const [step, setStepState] = useState<WidgetStep>(initialStep);
   const skipEffectRef = useRef(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const syncUrl = useCallback((nextStep: WidgetStep) => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(searchParams.toString());
     params.set('section', 'widget-installation');
     params.set('widgetStep', nextStep);
     const url = `${window.location.pathname}?${params.toString()}`;
-    window.history.replaceState(null, '', url);
-  }, []);
+    router.replace(url, { scroll: false });
+  }, [router, searchParams]);
 
   const setStep = useCallback((nextStep: WidgetStep, options?: { skipUrl?: boolean }) => {
     setStepState((prev) => {
@@ -54,15 +56,13 @@ export function WidgetStepProvider({ initialStep, children }: { initialStep: Wid
 
   useEffect(() => {
     const handlePopstate = () => {
-      if (typeof window === 'undefined') return;
-      const params = new URLSearchParams(window.location.search);
-      const next = normalizeStep(params.get('widgetStep'));
+      const next = normalizeStep(searchParams.get('widgetStep'));
       skipEffectRef.current = true;
       setStep(next, { skipUrl: true });
     };
     window.addEventListener('popstate', handlePopstate);
     return () => window.removeEventListener('popstate', handlePopstate);
-  }, [setStep]);
+  }, [searchParams, setStep]);
 
   const value = useMemo<WidgetStepContextValue>(() => ({
     step,
