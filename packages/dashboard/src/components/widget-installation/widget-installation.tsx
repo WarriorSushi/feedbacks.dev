@@ -345,7 +345,7 @@ const INLINE_STYLE_PRESETS: Array<{ label: string; border: string; shadow: strin
   },
 ];
 
-const PREVIEW_MIN_HEIGHT_DESKTOP = 500;
+const PREVIEW_MIN_HEIGHT_DESKTOP = 700;
 const PREVIEW_MIN_HEIGHT_MOBILE = 240;
 function mergeConfig(base: WidgetConfig, incoming: Record<string, any> | null | undefined): WidgetConfig {
   if (!incoming || typeof incoming !== 'object') return base;
@@ -768,9 +768,6 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
   const [previewView, setPreviewView] = useState<'launcher' | 'form'>('launcher');
   const previousEmbedModeRef = useRef<EmbedMode>(config.embedMode);
   useEffect(() => {
-    setHeight(viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP);
-  }, [viewport]);
-  useEffect(() => {
     if (config.embedMode !== 'modal' && previewView !== 'launcher') {
       setPreviewView('launcher');
     }
@@ -827,7 +824,6 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
             checked={viewport === 'mobile'}
             onCheckedChange={(checked) => {
               const next = checked ? 'mobile' : 'desktop';
-              setHeight(next === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP);
               onViewportChange(next as PreviewViewport);
             }}
             className="mx-1"
