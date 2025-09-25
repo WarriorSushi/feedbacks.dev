@@ -22,7 +22,6 @@ import {
   Sparkles,
   History,
   ShieldCheck,
-  Palette,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -152,80 +151,7 @@ interface WidgetConfigRow {
   config: Record<string, any>;
 }
 
-interface WidgetPreset {
-  slug: string;
-  name: string;
-  description?: string | null;
-  category?: string | null;
-  preview_image_url?: string | null;
-  config: Record<string, any>;
-}
 
-let widgetPresetCache: WidgetPreset[] | null = null;
-let widgetPresetPromise: Promise<WidgetPreset[]> | null = null;
-
-async function fetchWidgetPresets(): Promise<WidgetPreset[]> {
-  // Check module cache first
-  if (widgetPresetCache) {
-    return widgetPresetCache;
-  }
-
-  // Check sessionStorage cache
-  if (typeof window !== 'undefined') {
-    try {
-      const cached = sessionStorage.getItem('feedbacks-widget-presets');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed.timestamp && Date.now() - parsed.timestamp < 300000) { // 5min TTL
-          widgetPresetCache = parsed.data;
-          return parsed.data;
-        }
-      }
-    } catch {}
-  }
-
-  if (widgetPresetPromise) {
-    return widgetPresetPromise;
-  }
-  widgetPresetPromise = (async () => {
-    try {
-      const res = await fetch('/api/widget-presets', { cache: 'no-store' });
-      if (!res.ok) {
-        throw new Error('Failed to load presets');
-      }
-      const body = await res.json();
-      const items = Array.isArray(body?.items) ? body.items : [];
-      widgetPresetCache = items;
-
-      // Cache in sessionStorage
-      if (typeof window !== 'undefined' && widgetPresetCache) {
-        try {
-          sessionStorage.setItem('feedbacks-widget-presets', JSON.stringify({
-            data: widgetPresetCache,
-            timestamp: Date.now()
-          }));
-        } catch {}
-      }
-
-      return items;
-    } catch (error) {
-      widgetPresetCache = null;
-      throw error;
-    } finally {
-      widgetPresetPromise = null;
-    }
-  })();
-  return widgetPresetPromise;
-}
-
-export function invalidateWidgetPresetCache() {
-  widgetPresetCache = null;
-  if (typeof window !== 'undefined') {
-    try {
-      sessionStorage.removeItem('feedbacks-widget-presets');
-    } catch {}
-  }
-}
 
 export interface WidgetInstallationExperienceProps {
   projectId: string;
@@ -294,38 +220,6 @@ const MODE_PRESETS: Array<{ mode: EmbedMode; title: string; description: string;
   },
 ];
 
-const DEFAULT_MODAL_PRESETS: WidgetPreset[] = [
-  {
-    slug: 'floating-classic',
-    name: 'Floating bubble',
-    description: 'Rounded launcher with a text label for clarity.',
-    category: 'modal',
-    preview_image_url: null,
-    config: {
-      embedMode: 'modal',
-      launcherVariant: 'label',
-      launcherIcon: 'sparkles',
-      buttonText: 'Feedback',
-          scale: 1,
-      position: 'bottom-right',
-    },
-  },
-  {
-    slug: 'floating-icon',
-    name: 'Icon floating modal',
-    description: 'Compact icon-only bubble that keeps screens tidy.',
-    category: 'modal',
-    preview_image_url: null,
-    config: {
-      embedMode: 'modal',
-      launcherVariant: 'icon',
-      launcherIcon: 'sparkles',
-      buttonText: '',
-          scale: 1,
-      position: 'bottom-right',
-    },
-  },
-];
 
 const INLINE_STYLE_PRESETS: Array<{ label: string; border: string; shadow: string }> = [
   {
@@ -868,35 +762,11 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
   );
 }
 
-function PresetCard({ preset, onApply, active }: { preset: WidgetPreset; onApply: (preset: WidgetPreset) => void; active: boolean }) {
-  return (
-    <button
-      type="button"
-      onClick={() => onApply(preset)}
-      className={cn(
-        'group relative flex flex-col items-start gap-1.5 rounded-lg border bg-card p-3 text-left text-[11px] font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm sm:p-4',
-        active
-          ? 'border-primary/70 bg-primary/10 shadow-[0_14px_36px_rgba(99,102,241,0.2)]'
-          : 'border-border hover:border-primary/40 hover:bg-primary/5'
-      )}
-    >
-      <div className="flex w-full items-center justify-between">
-        <div className="text-[11px] font-semibold sm:text-sm">{preset.name}</div>
-        {active && <Badge variant="default" className="text-[10px] uppercase tracking-[0.12em]">Selected</Badge>}
-      </div>
-      {preset.description && (
-        <p className="text-[10px] text-muted-foreground leading-snug sm:text-xs">{preset.description}</p>
-      )}
-      <span className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground sm:text-[11px]">Tap to apply</span>
-    </button>
-  );
-}
 export function WidgetInstallationExperience({ projectId, projectKey, projectName, widgetVersion = DEFAULT_WIDGET_VERSION, initialStep, projectSummary }: WidgetInstallationExperienceProps) {
   const widgetStepContext = useWidgetStepContext();
   const [config, setConfig] = useState<WidgetConfig>(DEFAULT_CONFIG);
   const [defaultConfigRow, setDefaultConfigRow] = useState<WidgetConfigRow | null>(null);
   const [history, setHistory] = useState<WidgetConfigRow[]>([]);
-  const [presets, setPresets] = useState<WidgetPreset[]>([]);
   const normalizedInitialStep = initialStep && WIDGET_STEPS.includes(initialStep) ? initialStep : DEFAULT_WIDGET_STEP;
   const [localStep, setLocalStep] = useState<WidgetStep>(normalizedInitialStep);
   const [viewport, setViewport] = useState<PreviewViewport>('desktop');
@@ -962,12 +832,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
   );
   const hasBlockingValidation = captchaKeyMissing;
 
-  const loadPresets = useCallback(async () => {
-    try {
-      const items = await fetchWidgetPresets();
-      if (Array.isArray(items)) setPresets(items);
-    } catch {}
-  }, []);
 
   const loadConfig = useCallback(async () => {
     setLoading(true);
@@ -1019,8 +883,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
 
   useEffect(() => {
     loadConfig();
-    loadPresets();
-  }, [loadConfig, loadPresets]);
+  }, [loadConfig]);
 
   useEffect(() => {
     setOpenCaptchaGuide(null);
@@ -1126,30 +989,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
     });
   };
 
-  const applyPreset = (preset: WidgetPreset) => {
-    if (config.buttonText && config.buttonText.trim()) {
-      previousButtonLabelRef.current = config.buttonText;
-    }
-    const next = mergeConfig(DEFAULT_CONFIG, preset.config);
-    if (next.embedMode === 'inline') next.target = normalizeTarget(next.target, '#feedback-widget');
-    if (next.embedMode === 'trigger') next.target = normalizeTarget(next.target, '#feedback-button');
-    if (next.embedMode !== 'modal') {
-      next.launcherVariant = 'label';
-      if (!next.buttonText) {
-        next.buttonText = previousButtonLabelRef.current || 'Feedback';
-      }
-    } else if (next.launcherVariant === 'icon') {
-      next.buttonText = '';
-      if (!next.launcherIcon) next.launcherIcon = 'sparkles';
-    } else if (!next.buttonText) {
-      next.buttonText = previousButtonLabelRef.current || 'Feedback';
-    }
-    setConfig(next);
-    if (next.launcherVariant === 'label' && next.buttonText && next.buttonText.trim()) {
-      previousButtonLabelRef.current = next.buttonText;
-    }
-    setStatusMessage(`Preset applied · ${preset.name}`);
-  };
 
   const scrollTabsIntoView = useCallback(() => {
     if (!tabsRef.current) return;
@@ -1250,34 +1089,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
 
   const snippets = useMemo(() => buildSnippets(config, projectKey, widgetVersion), [config, projectKey, widgetVersion]);
 
-  const filteredPresets = useMemo(() => {
-    if (!presets.length) return [] as WidgetPreset[];
-    return presets.filter((preset) => {
-      const presetMode = (preset.config?.embedMode as (EmbedMode | 'any') | undefined) ?? 'modal';
-      if (presetMode === 'any') return true;
-      return presetMode === config.embedMode;
-    });
-  }, [presets, config.embedMode]);
-
-  const presetGallery = useMemo(() => {
-    if (config.embedMode !== 'modal') {
-      return filteredPresets;
-    }
-    const ordered = new Map<string, WidgetPreset>();
-    DEFAULT_MODAL_PRESETS.forEach((preset) => ordered.set(preset.slug, preset));
-    filteredPresets.forEach((preset) => ordered.set(preset.slug, preset));
-    return Array.from(ordered.values());
-  }, [filteredPresets, config.embedMode]);
-
-  const activePresetSlug = useMemo(() => {
-    if (!presetGallery.length) return null;
-    for (const preset of presetGallery) {
-      if (hash(mergeConfig(DEFAULT_CONFIG, preset.config)) === currentHash) {
-        return preset.slug;
-      }
-    }
-    return null;
-  }, [presetGallery, currentHash]);
 
   const inlinePresetActive = useMemo(() => {
     const borderValue = config.inlineBorder || 'none';
@@ -1412,60 +1223,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className={CARD_HEADER}>
-            <CardTitle className="flex items-center gap-2"><Palette className="h-4 w-4 text-primary" />Presets</CardTitle>
-            <CardDescription>Start from a curated look and fine-tune afterwards.</CardDescription>
-          </CardHeader>
-          <CardContent className={cn(CARD_CONTENT, 'space-y-2')}>
-            {presetGallery.length > 0 ? (
-              <div className="flex gap-2 overflow-x-auto scrollbar-thin sm:grid sm:grid-cols-2 sm:gap-3">
-                {presetGallery.map((preset) => (
-                  <PresetCard key={preset.slug} preset={preset} onApply={applyPreset} active={activePresetSlug === preset.slug} />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-lg border border-dashed p-4 text-[11px] text-muted-foreground sm:text-sm">
-                {presets.length === 0 ? 'Presets will appear here once configured in Supabase.' : 'Switch experiences to see presets tailored for that embed mode.'}
-              </div>
-            )}
-            {config.embedMode === 'modal' && config.launcherVariant === 'icon' && (
-              <div className="rounded-lg border border-primary/40 bg-primary/10 p-3 sm:p-4 space-y-3">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-primary/80">Launcher icon</span>
-                  <Badge variant="outline" className="border-primary/60 bg-primary/15 text-[10px] uppercase tracking-[0.24em] text-primary">
-                    Icon mode
-                  </Badge>
-                </div>
-                <p className="text-[10px] leading-snug text-primary/80 sm:text-xs">
-                  Pick the glyph for your floating bubble. The live preview updates as soon as you choose a new icon.
-                </p>
-                <Select
-                  value={config.launcherIcon || 'sparkles'}
-                  onValueChange={(value) => updateConfig({ launcherIcon: value, launcherVariant: 'icon' })}
-                >
-                  <SelectTrigger className="h-9 text-xs sm:h-10 sm:text-sm">
-                    <SelectValue placeholder="Select icon" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LAUNCHER_ICON_OPTIONS.map((option) => {
-                      const IconComponent = option.icon;
-                      return (
-                        <SelectItem key={option.value} value={option.value}>
-                          <div className="flex items-center gap-2">
-                            <IconComponent className="h-4 w-4" />
-                            <span className="text-sm">{option.label}</span>
-                            <span className="text-base leading-none">{option.preview}</span>
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </TabsContent>
 
       <TabsContent value="appearance" className="space-y-6 sm:space-y-8">
