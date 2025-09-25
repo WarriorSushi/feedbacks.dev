@@ -1371,7 +1371,7 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         onValueChange={(value) => activateStep(value)}
         className="w-full"
       >
-        <TabsList className="mb-6 hidden w-full gap-1.5 sm:grid sm:grid-cols-2 sm:gap-2 lg:flex lg:flex-nowrap lg:justify-center">
+        <TabsList className="mb-6 hidden w-full gap-1.5 bg-transparent border-0 p-0 sm:grid sm:grid-cols-2 sm:gap-2 lg:flex lg:flex-nowrap lg:justify-center">
           {steps.map((step, index) => (
             <TabsTrigger
               key={step.id}
@@ -2156,11 +2156,11 @@ function StepNavigation({
   return (
     <div
       className={cn(
-        'flex flex-row items-center justify-between gap-3 rounded-[28px] border bg-black dark:bg-[#2F2E2D] p-3',
+        'flex flex-row items-center justify-between gap-3 rounded-[3px] border bg-accent dark:bg-accent p-3',
         variant === 'top' ? 'mt-3 mb-6' : 'mt-6'
       )}
     >
-      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white dark:text-white">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-accent-foreground">
         Step {currentIndex + 1} of {steps.length}
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">

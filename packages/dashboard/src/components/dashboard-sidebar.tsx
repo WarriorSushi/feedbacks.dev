@@ -289,8 +289,21 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
                       <SidebarMenuButton
                         type="button"
                         isActive={isProjectActive}
-                        onClick={() => handleProjectNavigate(project)}
-                        className="justify-between"
+                        onClick={() => {
+                          if (isProjectActive && isExpanded) {
+                            toggleProjectExpanded(project.id);
+                          } else if (!isExpanded) {
+                            toggleProjectExpanded(project.id);
+                          } else {
+                            handleProjectNavigate(project);
+                          }
+                        }}
+                        className={cn(
+                          "justify-between",
+                          isProjectActive && isExpanded && currentSection ?
+                            "!bg-muted/40 !text-foreground data-[active=true]:!bg-muted/40 data-[active=true]:!text-foreground hover:!bg-muted/50" :
+                            ""
+                        )}
                       >
                         <span className="flex min-w-0 items-center gap-2">
                           <MonitorSmartphone className="h-4 w-4 text-muted-foreground" />
