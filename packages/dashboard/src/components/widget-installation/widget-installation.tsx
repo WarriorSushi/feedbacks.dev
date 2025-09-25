@@ -44,7 +44,6 @@ import { useWidgetStepContext } from './widget-step-context';
 
 const DEFAULT_WIDGET_VERSION = 'latest';
 const ALLOWED_POSITIONS = ['bottom-right', 'bottom-left', 'top-right', 'top-left'] as const;
-const ALLOWED_SHAPES = ['rounded', 'pill', 'square'] as const;
 const ALLOWED_HEADER_ICONS = ['none', 'chat', 'star', 'lightbulb', 'thumbs-up'] as const;
 const ALLOWED_HEADER_LAYOUTS = ['text-only', 'icon-left', 'icon-top'] as const;
 const ALLOWED_LAUNCHER_VARIANTS = ['label', 'icon'] as const;
@@ -130,7 +129,6 @@ export interface WidgetConfig {
   turnstileSiteKey?: string;
   hcaptchaSiteKey?: string;
   scale?: number;
-  modalShape?: typeof ALLOWED_SHAPES[number];
   headerIcon?: typeof ALLOWED_HEADER_ICONS[number];
   headerLayout?: typeof ALLOWED_HEADER_LAYOUTS[number];
   launcherVariant?: typeof ALLOWED_LAUNCHER_VARIANTS[number];
@@ -263,7 +261,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
   requireCaptcha: false,
   captchaProvider: 'none',
   scale: 1,
-  modalShape: 'rounded',
   headerIcon: 'none',
   headerLayout: 'text-only',
   launcherVariant: 'label',
@@ -309,8 +306,7 @@ const DEFAULT_MODAL_PRESETS: WidgetPreset[] = [
       launcherVariant: 'label',
       launcherIcon: 'sparkles',
       buttonText: 'Feedback',
-      modalShape: 'rounded',
-      scale: 1,
+          scale: 1,
       position: 'bottom-right',
     },
   },
@@ -325,8 +321,7 @@ const DEFAULT_MODAL_PRESETS: WidgetPreset[] = [
       launcherVariant: 'icon',
       launcherIcon: 'sparkles',
       buttonText: '',
-      modalShape: 'rounded',
-      scale: 1,
+          scale: 1,
       position: 'bottom-right',
     },
   },
@@ -350,7 +345,7 @@ const INLINE_STYLE_PRESETS: Array<{ label: string; border: string; shadow: strin
   },
 ];
 
-const PREVIEW_MIN_HEIGHT_DESKTOP = 360;
+const PREVIEW_MIN_HEIGHT_DESKTOP = 500;
 const PREVIEW_MIN_HEIGHT_MOBILE = 240;
 function mergeConfig(base: WidgetConfig, incoming: Record<string, any> | null | undefined): WidgetConfig {
   if (!incoming || typeof incoming !== 'object') return base;
@@ -408,7 +403,6 @@ function buildRuntimeConfig(config: WidgetConfig, projectKey: string) {
     }
   }
   if (config.scale && config.scale !== 1) result.scale = Number(config.scale.toFixed(2));
-  if (config.modalShape) result.modalShape = config.modalShape;
   if (config.headerIcon && config.headerIcon !== 'none') result.headerIcon = config.headerIcon;
   if (config.headerLayout && config.headerLayout !== 'text-only') result.headerLayout = config.headerLayout;
   if (config.embedMode === 'modal' && config.launcherVariant && config.launcherVariant !== 'label') {
@@ -1496,19 +1490,6 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                 <Input value={config.backgroundColor || ''} onChange={(event) => updateConfig({ backgroundColor: event.target.value })} placeholder="#ffffff" />
                 <input type="color" value={config.backgroundColor || '#ffffff'} onChange={(event) => updateConfig({ backgroundColor: event.target.value })} className="h-10 w-14 rounded-md border" />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Modal shape</Label>
-              <Select value={config.modalShape} onValueChange={(value) => updateConfig({ modalShape: value as any })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Rounded" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ALLOWED_SHAPES.map((shape) => (
-                    <SelectItem key={shape} value={shape}>{shape}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
             <div className="space-y-2">
               <Label>Layout</Label>

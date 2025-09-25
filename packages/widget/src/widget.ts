@@ -159,26 +159,6 @@ class FeedbacksWidget {
       if ((this.config as any).inlineShadow && typeof (this.config as any).inlineShadow === 'string') {
         root.style.setProperty('--feedbacks-shadow', String((this.config as any).inlineShadow));
       }
-      // Radius via shape
-      const shape = (this.config as any).modalShape as any;
-      let radius = '';
-      if (shape === 'pill') {
-        radius = this.config.embedMode === 'modal' ? '48px' : '32px';
-      } else if (shape === 'square') {
-        radius = '8px';
-      } else if (shape === 'rounded') {
-        radius = '16px';
-      }
-      if (radius) {
-        root.style.setProperty('--feedbacks-radius', radius);
-      }
-      if (typeof document !== 'undefined' && document.body) {
-        if (shape) {
-          document.body.dataset.feedbacksModalShape = shape;
-        } else {
-          delete document.body.dataset.feedbacksModalShape;
-        }
-      }
     } catch {}
   }
 
@@ -923,7 +903,6 @@ class FeedbacksWidget {
         primaryColor: script.getAttribute('data-color') || undefined,
         backgroundColor: script.getAttribute('data-bg') || undefined,
         scale: script.getAttribute('data-scale') ? Number(script.getAttribute('data-scale')) : undefined,
-        modalShape: (script.getAttribute('data-shape') as any) || undefined,
         modalWidth: script.getAttribute('data-modal-width') ? Number(script.getAttribute('data-modal-width')) : undefined,
         headerIcon: (script.getAttribute('data-header-icon') as any) || undefined,
         headerLayout: (script.getAttribute('data-header-layout') as any) || undefined,

@@ -29,7 +29,6 @@ export interface WidgetConfig {
   backgroundColor?: string; // form/modal background
   scale?: number; // overall scale (e.g., 0.8–1.4)
   // Ultra customization
-  modalShape?: 'rounded' | 'pill' | 'square';
   headerIcon?: 'none' | 'chat' | 'star' | 'lightbulb' | 'thumbs-up';
   headerLayout?: 'text-only' | 'icon-left' | 'icon-top';
   spacing?: number; // base spacing in px (e.g., 16–32)
