@@ -640,7 +640,14 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
 
           // Wait for widget content to be rendered before calculating height
           waitForWidgetContent(cfg, function() {
-            postHeight();
+            // Add additional delay to ensure widget is fully laid out
+            setTimeout(function() {
+              postHeight();
+            }, 100);
+            // Also post height after longer delay to catch any slow rendering
+            setTimeout(function() {
+              postHeight();
+            }, 300);
           });
         }
         function closeModal(){
