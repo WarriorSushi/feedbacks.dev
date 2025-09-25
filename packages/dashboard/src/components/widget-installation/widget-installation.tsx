@@ -481,6 +481,7 @@ function buildSnippets(config: WidgetConfig, projectKey: string, widgetVersion: 
     ['shopify', shopify],
   ]);
 }
+
 function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersion: string) {
   // Respect selected experience; we enhance modal with a view toggle via messages
   const runtime = buildRuntimeConfig(config, projectKey);
@@ -517,7 +518,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         box-shadow: 0 10px 30px rgba(15,23,42,0.08);
       }
       .feedbacks-button {
-        font-size: 13px !important;
+        font-size: 12px !important;
         font-weight: 600 !important;
         padding: 0 24px !important;
         min-height: 48px !important;
@@ -644,7 +645,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           }
           if (cfg.embedMode === 'modal') {
             if (view === 'form') {
-              setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 100);
+              setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 200);
             } else {
               closeModal();
             }
@@ -715,6 +716,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
                   if (modalTotal > height) height = modalTotal;
                 }
               }
+
             }
 
             if (height < 320) height = 320;
@@ -726,6 +728,10 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
         window.addEventListener('message', function(ev){
           if (!ev || !ev.data) return;
           if (ev.data.type === 'widget-preview:update') {
+            // Update view state from the message if provided
+            if (ev.data.view) {
+              view = ev.data.view === 'form' ? 'form' : 'launcher';
+            }
             setTimeout(function(){ ensureWidgetLoaded(function(){ mount(ev.data.config || initial); setTimeout(postHeight, 200); setTimeout(postHeight, 500); }); }, 50);
           }
           if (ev.data.type === 'widget-preview:view') {
@@ -736,7 +742,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
               const current = lastConfig && lastConfig.embedMode ? lastConfig.embedMode : initial.embedMode;
               if (current === 'modal') {
                 if (view === 'form') {
-                  setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 60);
+                  setTimeout(function(){ try { document.querySelector('.feedbacks-button')?.dispatchEvent(new Event('click', { bubbles: true })); } catch(e){} }, 200);
                   setTimeout(postHeight, 200);
                 } else {
                   closeModal();
@@ -787,25 +793,10 @@ type WidgetPreviewProps = {
   onViewportChange: (viewport: PreviewViewport) => void;
 };
 
+
 function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewportChange }: WidgetPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(getMinHeight(viewport, config.embedMode, 'launcher'));
-  const [previewView, setPreviewView] = useState<'launcher' | 'form'>('launcher');
-  const previousEmbedModeRef = useRef<EmbedMode>(config.embedMode);
-  useEffect(() => {
-    if (config.embedMode !== 'modal' && previewView !== 'launcher') {
-      setPreviewView('launcher');
-    }
-  }, [config.embedMode, previewView]);
-  useEffect(() => {
-    const previous = previousEmbedModeRef.current;
-    if (previous === 'modal' && config.embedMode !== 'modal') {
-      const min = getMinHeight(viewport, config.embedMode, 'launcher');
-      setHeight(min);
-      setPreviewView('launcher');
-    }
-    previousEmbedModeRef.current = config.embedMode;
-  }, [config.embedMode, viewport]);
   const previewHtml = useMemo(() => buildPreviewHtml(config, projectKey, widgetVersion), [config, projectKey, widgetVersion]);
 
   useEffect(() => {
@@ -813,7 +804,7 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
       if (!ev.data) return;
 
       if (ev.data.type === 'widget-preview:height' && typeof ev.data.height === 'number') {
-        const min = getMinHeight(viewport, config.embedMode, previewView);
+        const min = getMinHeight(viewport, config.embedMode, 'launcher');
         const max = viewport === 'mobile' ? 960 : 1280;
         setHeight(Math.min(max, Math.max(min, ev.data.height)));
       }
@@ -821,29 +812,19 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
     }
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [viewport, config.embedMode, previewView]);
-
-  // Adjust height when switching between launcher and form views for modal
-  useEffect(() => {
-    if (config.embedMode === 'modal') {
-      const min = getMinHeight(viewport, config.embedMode, previewView);
-      // Only adjust to minimum if current height is less than minimum
-      setHeight(prev => Math.max(prev, min));
-    }
-  }, [previewView, viewport, config.embedMode]);
+  }, [viewport, config.embedMode]);
 
   useEffect(() => {
     const win = iframeRef.current?.contentWindow;
     if (!win) return;
     try {
-      win.postMessage({ type: 'widget-preview:update', config: buildRuntimeConfig(config, projectKey) }, '*');
-      if (config.embedMode === 'modal') {
-        win.postMessage({ type: 'widget-preview:view', view: previewView }, '*');
-      } else {
-        win.postMessage({ type: 'widget-preview:view', view: 'launcher' }, '*');
-      }
+      win.postMessage({
+        type: 'widget-preview:update',
+        config: buildRuntimeConfig(config, projectKey),
+        view: 'launcher'
+      }, '*');
     } catch {}
-  }, [config, projectKey, previewView]);
+  }, [config, projectKey]);
 
   return (
     <div className="space-y-4">
@@ -868,24 +849,9 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
         </div>
       </div>
       {config.embedMode === 'modal' && (
-        <div className="flex items-center gap-2 text-xs">
-          <div className="inline-flex rounded-full border bg-muted p-1">
-            <button
-              type="button"
-              className={cn('px-3 py-1 rounded-full', previewView === 'launcher' ? 'bg-background text-foreground' : 'text-muted-foreground')}
-              onClick={() => setPreviewView('launcher')}
-            >
-              Launcher
-            </button>
-            <button
-              type="button"
-              className={cn('px-3 py-1 rounded-full', previewView === 'form' ? 'bg-background text-foreground' : 'text-muted-foreground')}
-              onClick={() => setPreviewView('form')}
-            >
-              Form (opens on click)
-            </button>
-          </div>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Click on the feedback button to see the form
+        </p>
       )}
       <div className="rounded-2xl border bg-white shadow-lg overflow-hidden">
         <iframe
