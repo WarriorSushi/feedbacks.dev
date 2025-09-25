@@ -185,6 +185,8 @@ body[data-feedbacks-modal-shape="pill"] .feedbacks-modal {
 
   body[data-feedbacks-modal-shape="pill"] .feedbacks-modal {
     border-radius: var(--feedbacks-radius, 48px);
+    max-width: min(520px, calc(100vw - 32px));
+    overflow: hidden;
   }
 }
 
@@ -219,9 +221,9 @@ body[data-feedbacks-modal-shape="pill"] .feedbacks-modal {
 }
 
 body[data-feedbacks-modal-shape="pill"] .feedbacks-header {
-  padding-top: calc(var(--feedbacks-spacing, 24px) + 8px);
-  padding-left: calc(var(--feedbacks-spacing, 24px) + 4px);
-  padding-right: calc(var(--feedbacks-spacing, 24px) + 4px);
+  padding-top: calc(var(--feedbacks-spacing, 24px) + 12px);
+  padding-left: calc(var(--feedbacks-spacing, 24px) + 6px);
+  padding-right: calc(var(--feedbacks-spacing, 24px) + 6px);
 }
 
 .feedbacks-close {
@@ -242,8 +244,8 @@ body[data-feedbacks-modal-shape="pill"] .feedbacks-header {
 }
 
 body[data-feedbacks-modal-shape="pill"] .feedbacks-close {
-  top: calc(var(--feedbacks-spacing, 24px) - 6px);
-  right: calc(var(--feedbacks-spacing, 24px) - 6px);
+  top: calc(var(--feedbacks-spacing, 24px) - 4px);
+  right: calc(var(--feedbacks-spacing, 24px) - 4px);
 }
 
 .feedbacks-close:hover {
