@@ -346,7 +346,19 @@ const INLINE_STYLE_PRESETS: Array<{ label: string; border: string; shadow: strin
 ];
 
 const PREVIEW_MIN_HEIGHT_DESKTOP = 700;
+const PREVIEW_MIN_HEIGHT_DESKTOP_MODAL_LAUNCHER = 250;
 const PREVIEW_MIN_HEIGHT_MOBILE = 240;
+
+function getMinHeight(viewport: PreviewViewport, embedMode: EmbedMode, previewView: 'launcher' | 'form'): number {
+  if (viewport === 'mobile') {
+    return PREVIEW_MIN_HEIGHT_MOBILE;
+  }
+  // For desktop modal launcher view, use smaller minimum height
+  if (embedMode === 'modal' && previewView === 'launcher') {
+    return PREVIEW_MIN_HEIGHT_DESKTOP_MODAL_LAUNCHER;
+  }
+  return PREVIEW_MIN_HEIGHT_DESKTOP;
+}
 function mergeConfig(base: WidgetConfig, incoming: Record<string, any> | null | undefined): WidgetConfig {
   if (!incoming || typeof incoming !== 'object') return base;
   const merged: WidgetConfig = { ...base };
@@ -673,37 +685,8 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
             var rect = root && typeof root.getBoundingClientRect === 'function' ? root.getBoundingClientRect() : null;
             var height = rect ? Math.ceil(rect.height) : Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight);
 
-            if (view === 'form' && lastConfig && lastConfig.embedMode === 'modal') {
-              var modal = document.querySelector('.feedbacks-modal');
-              if (modal && typeof modal.getBoundingClientRect === 'function') {
-                var modalRect = modal.getBoundingClientRect();
-                if (modalRect) {
-                  var modalHeight = modalRect.height || (modalRect.bottom - modalRect.top);
-                  var modalTop = Math.max(0, modalRect.top);
-                  var modalTotal = Math.ceil((modalHeight || 0) + modalTop + 48);
-                  if (modalTotal > height) height = modalTotal;
-                }
-              }
-              if (height < 480) {
-                var modalOverlay = document.querySelector('.feedbacks-overlay');
-                if (modalOverlay && typeof modalOverlay.getBoundingClientRect === 'function') {
-                  var modalOverlayStyle = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(modalOverlay) : null;
-                  var modalOverlayVisible = !modalOverlayStyle || (modalOverlayStyle.visibility !== 'hidden' && modalOverlayStyle.display !== 'none' && Number(modalOverlayStyle.opacity || 1) > 0.01);
-                  var modalOverlayRect = modalOverlay.getBoundingClientRect();
-                  if (modalOverlayVisible && modalOverlayRect) {
-                    var modalOverlayHeight = modalOverlayRect.height || (modalOverlayRect.bottom - modalOverlayRect.top);
-                    if (modalOverlayHeight > 0) {
-                      var modalOverlayTop = Math.max(0, modalOverlayRect.top);
-                      var modalOverlayTotal = Math.ceil((modalOverlayHeight || 0) + modalOverlayTop + 48);
-                      if (modalOverlayTotal > height) height = modalOverlayTotal;
-                    }
-                  }
-                }
-              }
-            }
-
-            // Only apply overlay calculations when actually viewing form in modal mode
-            if (view === 'form' && lastConfig && lastConfig.embedMode === 'modal') {
+            // Always check for modal overlay when it exists, regardless of view mode
+            if (lastConfig && lastConfig.embedMode === 'modal') {
               var overlay = document.querySelector('.feedbacks-overlay');
               if (overlay && typeof overlay.getBoundingClientRect === 'function') {
                 var overlayStyle = typeof window !== 'undefined' && window.getComputedStyle ? window.getComputedStyle(overlay) : null;
@@ -716,6 +699,18 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
                     var overlayTotal = Math.ceil((overlayHeight || 0) + overlayTop + 48);
                     if (overlayTotal > height) height = overlayTotal;
                   }
+                }
+              }
+
+              // Also check modal content
+              var modal = document.querySelector('.feedbacks-modal');
+              if (modal && typeof modal.getBoundingClientRect === 'function') {
+                var modalRect = modal.getBoundingClientRect();
+                if (modalRect) {
+                  var modalHeight = modalRect.height || (modalRect.bottom - modalRect.top);
+                  var modalTop = Math.max(0, modalRect.top);
+                  var modalTotal = Math.ceil((modalHeight || 0) + modalTop + 48);
+                  if (modalTotal > height) height = modalTotal;
                 }
               }
             }
@@ -753,7 +748,29 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           }
         });
         window.addEventListener('load', function(){ ensureWidgetLoaded(function(){ mount(initial); setTimeout(postHeight, 150); setTimeout(postHeight, 400); setTimeout(postHeight, 800); }); });
-        new MutationObserver(function(){ setTimeout(postHeight, 60); }).observe(document.body, { childList: true, subtree: true });
+        new MutationObserver(function(mutations){
+          setTimeout(postHeight, 60);
+          // Also post height when modal overlay changes
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+              var hasModalChange = false;
+              mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1 && (node.classList.contains('feedbacks-overlay') || node.querySelector && node.querySelector('.feedbacks-overlay'))) {
+                  hasModalChange = true;
+                }
+              });
+              mutation.removedNodes.forEach(function(node) {
+                if (node.nodeType === 1 && (node.classList.contains('feedbacks-overlay') || node.querySelector && node.querySelector('.feedbacks-overlay'))) {
+                  hasModalChange = true;
+                }
+              });
+              if (hasModalChange) {
+                setTimeout(postHeight, 150);
+                setTimeout(postHeight, 300);
+              }
+            }
+          });
+        }).observe(document.body, { childList: true, subtree: true });
       })();
     </script>
   </body>
@@ -771,7 +788,7 @@ type WidgetPreviewProps = {
 
 function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewportChange }: WidgetPreviewProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [height, setHeight] = useState(viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP);
+  const [height, setHeight] = useState(getMinHeight(viewport, config.embedMode, 'launcher'));
   const [previewView, setPreviewView] = useState<'launcher' | 'form'>('launcher');
   const previousEmbedModeRef = useRef<EmbedMode>(config.embedMode);
   useEffect(() => {
@@ -782,7 +799,7 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
   useEffect(() => {
     const previous = previousEmbedModeRef.current;
     if (previous === 'modal' && config.embedMode !== 'modal') {
-      const min = viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP;
+      const min = getMinHeight(viewport, config.embedMode, 'launcher');
       setHeight(min);
       setPreviewView('launcher');
     }
@@ -792,16 +809,27 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
 
   useEffect(() => {
     function handleMessage(ev: MessageEvent) {
-      if (!ev.data || ev.data.type !== 'widget-preview:height') return;
-      if (typeof ev.data.height === 'number') {
-        const min = viewport === 'mobile' ? PREVIEW_MIN_HEIGHT_MOBILE : PREVIEW_MIN_HEIGHT_DESKTOP;
+      if (!ev.data) return;
+
+      if (ev.data.type === 'widget-preview:height' && typeof ev.data.height === 'number') {
+        const min = getMinHeight(viewport, config.embedMode, previewView);
         const max = viewport === 'mobile' ? 960 : 1280;
         setHeight(Math.min(max, Math.max(min, ev.data.height)));
       }
+
     }
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [viewport]);
+  }, [viewport, config.embedMode, previewView]);
+
+  // Adjust height when switching between launcher and form views for modal
+  useEffect(() => {
+    if (config.embedMode === 'modal') {
+      const min = getMinHeight(viewport, config.embedMode, previewView);
+      // Only adjust to minimum if current height is less than minimum
+      setHeight(prev => Math.max(prev, min));
+    }
+  }, [previewView, viewport, config.embedMode]);
 
   useEffect(() => {
     const win = iframeRef.current?.contentWindow;
