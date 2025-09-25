@@ -199,16 +199,13 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
 
         <div className="space-y-6">
           {activeSection === 'widget-installation' && (
-            <>
-              <WidgetInstallationExperience
-                projectId={params.id}
-                projectKey={project.api_key}
-                projectName={project.name}
-                widgetVersion={WIDGET_VERSION}
-                initialStep={activeWidgetStep}
-              />
-              {mobileOverviewCard}
-            </>
+            <WidgetInstallationExperience
+              projectId={params.id}
+              projectKey={project.api_key}
+              projectName={project.name}
+              widgetVersion={WIDGET_VERSION}
+              initialStep={activeWidgetStep}
+            />
           )}
 
           {activeSection === 'feedback' && (
