@@ -633,7 +633,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           } catch (error) {}
           if (triggerAnchor && triggerAnchor.dataset.previewBound !== 'true') {
             triggerAnchor.dataset.previewBound = 'true';
-            triggerAnchor.addEventListener('click', function(){ setTimeout(postHeight, 200); setTimeout(postHeight, 480); });
+            triggerAnchor.addEventListener('click', function(){ setTimeout(postHeight, 300); });
           }
           try {
             if (typeof window !== 'undefined' && window.FeedbacksWidget) {
@@ -683,7 +683,9 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
           try {
             var root = document.getElementById('preview-root');
             var rect = root && typeof root.getBoundingClientRect === 'function' ? root.getBoundingClientRect() : null;
-            var height = rect ? Math.ceil(rect.height) : Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight);
+            // Check if rect is valid and element is at least partially visible
+            var hasValidRect = rect && rect.height > 0 && rect.width > 0;
+            var height = hasValidRect ? Math.ceil(rect.height) : Math.min(800, Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight));
 
             // Always check for modal overlay when it exists, regardless of view mode
             if (lastConfig && lastConfig.embedMode === 'modal') {
@@ -718,13 +720,13 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
             if (height < 320) height = 320;
             parent.postMessage({ type: 'widget-preview:height', height: height }, '*');
           } catch (e) {
-            parent.postMessage({ type: 'widget-preview:height', height: Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight) }, '*');
+            parent.postMessage({ type: 'widget-preview:height', height: Math.min(800, Math.ceil(document.documentElement.scrollHeight || document.body.scrollHeight)) }, '*');
           }
         }
         window.addEventListener('message', function(ev){
           if (!ev || !ev.data) return;
           if (ev.data.type === 'widget-preview:update') {
-            setTimeout(function(){ ensureWidgetLoaded(function(){ mount(ev.data.config || initial); setTimeout(postHeight, 120); setTimeout(postHeight, 300); setTimeout(postHeight, 650); }); }, 50);
+            setTimeout(function(){ ensureWidgetLoaded(function(){ mount(ev.data.config || initial); setTimeout(postHeight, 200); setTimeout(postHeight, 500); }); }, 50);
           }
           if (ev.data.type === 'widget-preview:view') {
             view = ev.data.view === 'form' ? 'form' : 'launcher';
@@ -747,7 +749,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
             setTimeout(postHeight, 160);
           }
         });
-        window.addEventListener('load', function(){ ensureWidgetLoaded(function(){ mount(initial); setTimeout(postHeight, 150); setTimeout(postHeight, 400); setTimeout(postHeight, 800); }); });
+        window.addEventListener('load', function(){ ensureWidgetLoaded(function(){ mount(initial); setTimeout(postHeight, 200); setTimeout(postHeight, 600); }); });
         new MutationObserver(function(mutations){
           setTimeout(postHeight, 60);
           // Also post height when modal overlay changes
@@ -765,8 +767,7 @@ function buildPreviewHtml(config: WidgetConfig, projectKey: string, widgetVersio
                 }
               });
               if (hasModalChange) {
-                setTimeout(postHeight, 150);
-                setTimeout(postHeight, 300);
+                setTimeout(postHeight, 200);
               }
             }
           });
