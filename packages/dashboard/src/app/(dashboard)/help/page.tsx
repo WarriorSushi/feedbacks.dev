@@ -34,10 +34,11 @@ export default function HelpPage() {
       badge: "Popular"
     },
     {
-      title: "Widget Integration",
-      description: "Embed the feedback widget on your website",
+      title: "Website Integration",
+      description: "Embed the feedback widget on websites and web applications",
       icon: Code,
-      href: "#widget-integration"
+      href: "#widget-integration",
+      badge: "Ready"
     },
     {
       title: "API Documentation",
@@ -56,7 +57,7 @@ export default function HelpPage() {
   const faqItems = [
     {
       question: "How do I integrate the widget on my website?",
-      answer: "Simply copy the provided script tag from your project settings and paste it before the closing </body> tag of your website."
+      answer: "Copy the provided script and CSS tags from your project settings and paste them in your HTML. Works perfectly with vanilla JavaScript, and has beta support for React, Vue, WordPress, and Shopify."
     },
     {
       question: "Is there a limit to how much feedback I can collect?",

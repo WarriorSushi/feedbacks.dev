@@ -22,9 +22,9 @@ export function FeaturesSection() {
     },
     {
       icon: Globe,
-      title: "Cross-Platform", 
-      description: "Works everywhere - websites, React Native, Flutter, PWAs. One API for all your projects.",
-      badge: "Universal",
+      title: "Web-First",
+      description: "Perfect for websites, SPAs, and web applications. Works with any framework or vanilla JavaScript.",
+      badge: "Web Ready",
       highlight: true
     },
     {

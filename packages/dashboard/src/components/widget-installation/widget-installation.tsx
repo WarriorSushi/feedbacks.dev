@@ -59,13 +59,11 @@ const LAUNCHER_ICON_OPTIONS: Array<{
   { value: 'thumbs-up', label: 'Thumbs up', icon: ThumbsUp, preview: '👍' },
 ];
 const CAPTCHAS = ['none', 'turnstile', 'hcaptcha'] as const;
-const SNIPPET_PLATFORMS = ['website', 'react', 'vue', 'react-native', 'flutter', 'wordpress', 'shopify'] as const;
+const SNIPPET_PLATFORMS = ['website', 'react', 'vue', 'wordpress', 'shopify'] as const;
 const SNIPPET_LANGUAGES: Record<(typeof SNIPPET_PLATFORMS)[number], string> = {
   website: 'html',
   react: 'tsx',
   vue: 'html',
-  'react-native': 'tsx',
-  flutter: 'dart',
   wordpress: 'php',
   shopify: 'liquid',
 };
@@ -93,14 +91,12 @@ const CAPTCHA_GUIDES: Record<'turnstile' | 'hcaptcha', { title: string; steps: s
   },
 };
 
-const FRAMEWORK_OPTIONS: Array<{ value: (typeof SNIPPET_PLATFORMS)[number]; label: string }> = [
-  { value: 'website', label: 'Website' },
-  { value: 'react', label: 'React' },
-  { value: 'vue', label: 'Vue' },
-  { value: 'react-native', label: 'React Native' },
-  { value: 'flutter', label: 'Flutter' },
-  { value: 'wordpress', label: 'WordPress' },
-  { value: 'shopify', label: 'Shopify' },
+const FRAMEWORK_OPTIONS: Array<{ value: (typeof SNIPPET_PLATFORMS)[number]; label: string; status: 'ready' | 'beta' }> = [
+  { value: 'website', label: 'Website', status: 'ready' },
+  { value: 'react', label: 'React', status: 'ready' },
+  { value: 'vue', label: 'Vue', status: 'ready' },
+  { value: 'wordpress', label: 'WordPress', status: 'beta' },
+  { value: 'shopify', label: 'Shopify', status: 'beta' },
 ];
 
 export type EmbedMode = 'modal' | 'inline' | 'trigger';
@@ -346,6 +342,111 @@ function formatConfig(config: Record<string, any>) {
   return JSON.stringify(config, null, 2);
 }
 
+function generateReactSnippet(cssHref: string, jsHref: string, configString: string, config: WidgetConfig) {
+  const inlineElement = config.embedMode === 'inline' ? `<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}" />` : '';
+  const triggerElement = config.embedMode === 'trigger' ? `<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give Feedback</button>` : '';
+
+  return `import { useEffect, useRef } from 'react';
+
+export default function FeedbackWidget() {
+  const widgetRef = useRef(null);
+  const configRef = useRef(${configString});
+
+  useEffect(() => {
+    let cleanup = null;
+
+    // Load CSS if not already loaded
+    if (!document.querySelector('link[href="${cssHref}"]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '${cssHref}';
+      document.head.appendChild(link);
+    }
+
+    // Load and initialize widget
+    const initWidget = () => {
+      if (window.FeedbacksWidget) {
+        widgetRef.current = new window.FeedbacksWidget(configRef.current);
+      }
+    };
+
+    if (!window.FeedbacksWidget) {
+      const script = document.createElement('script');
+      script.src = '${jsHref}';
+      script.onload = initWidget;
+      script.onerror = () => console.error('Failed to load FeedbacksWidget');
+      document.head.appendChild(script);
+    } else {
+      initWidget();
+    }
+
+    // Cleanup function
+    return () => {
+      if (widgetRef.current && typeof widgetRef.current.destroy === 'function') {
+        widgetRef.current.destroy();
+        widgetRef.current = null;
+      }
+    };
+  }, []);
+
+  return (
+    <>
+      ${inlineElement}${triggerElement}
+    </>
+  );
+}`;
+}
+
+function generateVueSnippet(cssHref: string, jsHref: string, configString: string, config: WidgetConfig) {
+  const inlineElement = config.embedMode === 'inline' ? `<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}" />` : '';
+  const triggerElement = config.embedMode === 'trigger' ? `<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give Feedback</button>` : '';
+
+  return `<!-- FeedbackWidget.vue -->
+<script setup>
+import { onMounted, onUnmounted, ref } from 'vue'
+
+const widget = ref(null)
+
+onMounted(() => {
+  // Load CSS if not already loaded
+  if (!document.querySelector('link[href="${cssHref}"]')) {
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = '${cssHref}'
+    document.head.appendChild(link)
+  }
+
+  // Load and initialize widget
+  const initWidget = () => {
+    if (window.FeedbacksWidget) {
+      widget.value = new window.FeedbacksWidget(${configString})
+    }
+  }
+
+  if (!window.FeedbacksWidget) {
+    const script = document.createElement('script')
+    script.src = '${jsHref}'
+    script.onload = initWidget
+    script.onerror = () => console.error('Failed to load FeedbacksWidget')
+    document.head.appendChild(script)
+  } else {
+    initWidget()
+  }
+})
+
+onUnmounted(() => {
+  if (widget.value && typeof widget.value.destroy === 'function') {
+    widget.value.destroy()
+    widget.value = null
+  }
+})
+</script>
+
+<template>
+  ${inlineElement}${triggerElement}
+</template>`;
+}
+
 function buildSnippets(config: WidgetConfig, projectKey: string, widgetVersion: string) {
   const runtime = buildRuntimeConfig(config, projectKey);
   const jsHref = `https://app.feedbacks.dev/cdn/widget/${widgetVersion}.js`;
@@ -367,15 +468,8 @@ function buildSnippets(config: WidgetConfig, projectKey: string, widgetVersion: 
     '</script>',
   ].join('\n');
 
-  const react = `import Script from "next/script";\nimport { useEffect } from "react";\n\nexport default function FeedbackWidget() {\n  useEffect(() => {\n    if (typeof window !== 'undefined' && (window as any).FeedbacksWidget) {\n      new (window as any).FeedbacksWidget(${configString});\n    }\n  }, []);\n\n  return (\n    <>\n      <link rel="stylesheet" href="${cssHref}" />\n      <Script src="${jsHref}" strategy="afterInteractive" />\n      ${config.embedMode === 'inline' ? `<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}" />` : config.embedMode === 'trigger' ? `<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give Feedback</button>` : ''}\n    </>\n  );\n}`;
-
-  const vue = `<!-- main.vue -->\n<template>\n  <link rel="stylesheet" href="${cssHref}" />\n  ${config.embedMode === 'inline' ? `<div id="${normalizeTarget(config.target, '#feedback-widget').replace('#', '')}"></div>` : config.embedMode === 'trigger' ? `<button id="${normalizeTarget(config.target, '#feedback-button').replace('#', '')}">Give Feedback</button>` : ''}\n</template>\n\n<script setup>\nimport { onMounted } from 'vue'\n\nonMounted(() => {\n  new window.FeedbacksWidget(${configString})\n})\n</script>\n\n<!-- Include once in index.html -->\n<script src="${jsHref}"></script>`;
-
-  const reactNative = `// React Native example using WebView\nimport { WebView } from 'react-native-webview';\n\nexport default function FeedbackWidget() {\n  const html = \
-\`<link rel=\"stylesheet\" href=\"${cssHref}\" />\n<script src=\"${jsHref}\"></script>\n<div id=\"root\"></div>\n<script>new FeedbacksWidget(${configString});</script>\`;
-  return <WebView originWhitelist={["*"]} source={{ html }} />;\n}`;
-
-  const flutter = `// Flutter (webview_flutter) pseudo-code\n// Load an HTML string similar to the React Native example above.\n// Instantiate new FeedbacksWidget(${configString.replace(/\n/g, ' ')}) inside the WebView.`;
+  const react = generateReactSnippet(cssHref, jsHref, configString, config);
+  const vue = generateVueSnippet(cssHref, jsHref, configString, config);
 
   const wordpress = `<!-- functions.php -->\nfunction feedbacks_assets() {\n  wp_enqueue_style('feedbacks-css', '${cssHref}');\n  wp_enqueue_script('feedbacks-js', '${jsHref}', array(), null, true);\n  wp_add_inline_script('feedbacks-js', 'new FeedbacksWidget(${configString});');\n}\nadd_action('wp_enqueue_scripts', 'feedbacks_assets');`;
 
@@ -385,8 +479,6 @@ function buildSnippets(config: WidgetConfig, projectKey: string, widgetVersion: 
     ['website', website],
     ['react', react],
     ['vue', vue],
-    ['react-native', reactNative],
-    ['flutter', flutter],
     ['wordpress', wordpress],
     ['shopify', shopify],
   ]);
@@ -1220,24 +1312,29 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Select your platform</CardTitle>
-            <CardDescription>This controls the snippet we generate for you in the Publish step.</CardDescription>
+            <CardDescription>This controls the snippet we generate for you in the Publish step. Beta platforms are actively being improved.</CardDescription>
           </CardHeader>
           <CardContent className={cn(CARD_CONTENT, 'space-y-3')}>
             <div className="flex flex-wrap gap-2">
-              {SNIPPET_PLATFORMS.map((platform) => (
+              {FRAMEWORK_OPTIONS.map((option) => (
                 <Button
-                  key={platform}
+                  key={option.value}
                   type="button"
                   size="sm"
-                  variant={selectedPlatform === platform ? 'default' : 'outline'}
-                  className="capitalize px-3 py-1.5 text-[11px] sm:text-sm"
-                  onClick={() => setSelectedPlatform(platform)}
+                  variant={selectedPlatform === option.value ? 'default' : 'outline'}
+                  className="capitalize px-3 py-1.5 text-[11px] sm:text-sm flex items-center gap-1.5"
+                  onClick={() => setSelectedPlatform(option.value)}
                 >
-                  {platform.replace('-', ' ')}
+                  {option.label}
+                  {option.status === 'beta' && (
+                    <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+                      Beta
+                    </Badge>
+                  )}
                 </Button>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">We&#39;ll tailor the installation snippet and guidance based on this choice.</p>
+            <p className="text-xs text-muted-foreground">We&#39;ll tailor the installation snippet and guidance based on this choice. Website, React, and Vue are production-ready.</p>
           </CardContent>
         </Card>
 

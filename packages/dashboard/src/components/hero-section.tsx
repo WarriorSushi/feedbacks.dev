@@ -96,7 +96,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
             {[
               { icon: Code, title: "One Line" },
               { icon: Zap, title: "<20KB" },
-              { icon: Globe, title: "Universal" },
+              { icon: Globe, title: "Web Ready" },
               { icon: Shield, title: "Secure" }
             ].map((feature, index) => (
               <div 
