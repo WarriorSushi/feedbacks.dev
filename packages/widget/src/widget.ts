@@ -297,24 +297,33 @@ class FeedbacksWidget {
     const headerTop = layout === 'icon-top' && icon !== 'none' ? `<div class="feedbacks-header-icon">${iconSVG}</div>` : '';
     const headerLeftStart = layout === 'icon-left' && icon !== 'none' ? `<div class="feedbacks-header-row"><div class="feedbacks-header-icon">${iconSVG}</div><div class="feedbacks-header-text">` : '';
     const headerLeftEnd = layout === 'icon-left' && icon !== 'none' ? `</div></div>` : '';
+
+    // Dynamic text with fallbacks
+    const formTitle = this.config.formTitle || 'Send Feedback';
+    const formSubtitle = this.config.formSubtitle || 'Help us improve by sharing your thoughts';
+    const messageLabel = this.config.messageLabel || 'Your feedback *';
+    const messagePlaceholder = this.config.messagePlaceholder || 'What\'s on your mind? Any bugs, suggestions, or general feedback...';
+    const emailLabel = this.config.emailLabel || 'Email';
+    const submitButtonText = this.config.submitButtonText || 'Send Feedback';
+    const cancelButtonText = this.config.cancelButtonText || 'Cancel';
     return `
       <div class="feedbacks-widget">
         <div class="feedbacks-header">
           ${headerTop}
           ${headerLeftStart}
-          <h3 class="feedbacks-title">Send Feedback</h3>
-          <p class="feedbacks-subtitle">Help us improve by sharing your thoughts</p>
+          <h3 class="feedbacks-title">${formTitle}</h3>
+          <p class="feedbacks-subtitle">${formSubtitle}</p>
           ${headerLeftEnd}
           ${isModal ? '<button type="button" class="feedbacks-close" aria-label="Close feedback form">✕</button>' : ''}
         </div>
         <div class="feedbacks-content">
           <form class="feedbacks-form">
             <div class="feedbacks-field">
-              <label for="feedbacks-message${idSuffix}" class="feedbacks-label">Your feedback *</label>
+              <label for="feedbacks-message${idSuffix}" class="feedbacks-label">${messageLabel}</label>
               <textarea
                 id="feedbacks-message${idSuffix}"
                 class="feedbacks-textarea"
-                placeholder="What's on your mind? Any bugs, suggestions, or general feedback..."
+                placeholder="${messagePlaceholder}"
                 required
                 maxlength="2000"
               ></textarea>
@@ -343,7 +352,7 @@ class FeedbacksWidget {
               </select>
             </div>` : ''}
             <div class="feedbacks-field">
-              <label for="feedbacks-email${idSuffix}" class="feedbacks-label">Email ${this.config.requireEmail ? '(required)' : '(optional)'} </label>
+              <label for="feedbacks-email${idSuffix}" class="feedbacks-label">${emailLabel} ${this.config.requireEmail ? '(required)' : '(optional)'}</label>
               <input
                 id="feedbacks-email${idSuffix}"
                 type="email"
@@ -391,9 +400,9 @@ class FeedbacksWidget {
               ${this.config.captchaProvider === 'hcaptcha' ? `<input type=\"hidden\" id=\"feedbacks-hcaptcha-token${idSuffix}\" name=\"hcaptchaToken\" />` : ''}
             </div>` : ''}
             <div class="feedbacks-actions">
-              ${isModal ? '<button type="button" class="feedbacks-btn feedbacks-btn-secondary">Cancel</button>' : ''}
+              ${isModal ? `<button type="button" class="feedbacks-btn feedbacks-btn-secondary">${cancelButtonText}</button>` : ''}
               <button type="submit" class="feedbacks-btn feedbacks-btn-primary">
-                Send Feedback
+                ${submitButtonText}
               </button>
             </div>
           </form>
@@ -815,7 +824,7 @@ class FeedbacksWidget {
         Sending...
       `;
     } else {
-      button.innerHTML = 'Send Feedback';
+      button.innerHTML = this.config.submitButtonText || 'Send Feedback';
     }
   }
 

@@ -4,15 +4,11 @@ const fs = require('fs');
 const path = require('path');
 const packageJson = require('./package.json');
 
-// Configuration for different CDN providers
+// Configuration for self-hosted CDN
 const CDN_CONFIG = {
-  jsdelivr: {
-    baseUrl: 'https://cdn.jsdelivr.net/gh/WarriorSushi/feedbacks.dev@main/packages/widget/dist',
-    name: 'jsDelivr'
-  },
-  github: {
-    baseUrl: 'https://raw.githubusercontent.com/WarriorSushi/feedbacks.dev/main/packages/widget/dist',
-    name: 'GitHub Raw'
+  production: {
+    baseUrl: 'https://app.feedbacks.dev/cdn/widget',
+    name: 'Self-Hosted CDN'
   }
 };
 
@@ -26,13 +22,17 @@ function generateInstallationCode() {
 Add this script tag to your HTML:
 
 \`\`\`html
-<!-- Load from jsDelivr CDN (recommended) -->
-<script src="${CDN_CONFIG.jsdelivr.baseUrl}/widget-${version}.js"></script>
-<link rel="stylesheet" href="${CDN_CONFIG.jsdelivr.baseUrl}/widget-${version}.css">
+<!-- Production (exact version - never changes) -->
+<script src="${CDN_CONFIG.production.baseUrl}/${version}.js"></script>
+<link rel="stylesheet" href="${CDN_CONFIG.production.baseUrl}/${version}.css">
 
-<!-- Alternative: Load from GitHub Raw -->
-<script src="${CDN_CONFIG.github.baseUrl}/widget-${version}.js"></script>
-<link rel="stylesheet" href="${CDN_CONFIG.github.baseUrl}/widget-${version}.css">
+<!-- Stable (major version - gets features & bug fixes) -->
+<script src="${CDN_CONFIG.production.baseUrl}/${version.split('.')[0]}.js"></script>
+<link rel="stylesheet" href="${CDN_CONFIG.production.baseUrl}/${version.split('.')[0]}.css">
+
+<!-- Latest (cutting edge - always newest) -->
+<script src="${CDN_CONFIG.production.baseUrl}/latest.js"></script>
+<link rel="stylesheet" href="${CDN_CONFIG.production.baseUrl}/latest.css">
 \`\`\`
 
 ## Usage Examples

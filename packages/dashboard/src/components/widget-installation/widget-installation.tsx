@@ -41,7 +41,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useWidgetStepContext } from './widget-step-context';
 
-const DEFAULT_WIDGET_VERSION = 'latest';
+const DEFAULT_WIDGET_VERSION = '1.1.0';
 const ALLOWED_POSITIONS = ['bottom-right', 'bottom-left', 'top-right', 'top-left'] as const;
 const ALLOWED_HEADER_ICONS = ['none', 'chat', 'star', 'lightbulb', 'thumbs-up'] as const;
 const ALLOWED_HEADER_LAYOUTS = ['text-only', 'icon-left', 'icon-top'] as const;
@@ -123,6 +123,14 @@ export interface WidgetConfig {
   attachmentMaxMB?: number;
   successTitle?: string;
   successDescription?: string;
+  // Form text customization
+  formTitle?: string;
+  formSubtitle?: string;
+  messageLabel?: string;
+  messagePlaceholder?: string;
+  emailLabel?: string;
+  submitButtonText?: string;
+  cancelButtonText?: string;
   requireCaptcha?: boolean;
   captchaProvider?: 'turnstile' | 'hcaptcha' | 'none';
   turnstileSiteKey?: string;
@@ -298,6 +306,14 @@ function buildRuntimeConfig(config: WidgetConfig, projectKey: string) {
   }
   if (config.successTitle) result.successTitle = config.successTitle;
   if (config.successDescription) result.successDescription = config.successDescription;
+  // Form text customization
+  if (config.formTitle) result.formTitle = config.formTitle;
+  if (config.formSubtitle) result.formSubtitle = config.formSubtitle;
+  if (config.messageLabel) result.messageLabel = config.messageLabel;
+  if (config.messagePlaceholder) result.messagePlaceholder = config.messagePlaceholder;
+  if (config.emailLabel) result.emailLabel = config.emailLabel;
+  if (config.submitButtonText) result.submitButtonText = config.submitButtonText;
+  if (config.cancelButtonText) result.cancelButtonText = config.cancelButtonText;
   if (config.requireCaptcha) result.requireCaptcha = true;
   if (config.captchaProvider && config.captchaProvider !== 'none') {
     result.captchaProvider = config.captchaProvider;
@@ -692,6 +708,7 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [height, setHeight] = useState(getMinHeight(viewport, config.embedMode, 'launcher'));
   const previewHtml = useMemo(() => buildPreviewHtml(config, projectKey, widgetVersion), [config, projectKey, widgetVersion]);
+  const configKey = useMemo(() => JSON.stringify(config), [config]);
 
   useEffect(() => {
     function handleMessage(ev: MessageEvent) {
@@ -750,6 +767,7 @@ function WidgetPreview({ config, projectKey, widgetVersion, viewport, onViewport
       <div className="rounded-2xl border bg-white shadow-lg overflow-hidden">
         <iframe
           ref={iframeRef}
+          key={configKey}
           title="Widget Preview"
           srcDoc={previewHtml}
           style={{ border: '0', width: '100%', height, maxHeight: viewport === 'mobile' ? 960 : 1280 }}
@@ -1429,6 +1447,76 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
             )}
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className={CARD_HEADER}>
+            <CardTitle>Form text</CardTitle>
+            <CardDescription>Customize the form headlines and input labels to match your tone.</CardDescription>
+          </CardHeader>
+          <CardContent className={cn(CARD_CONTENT, 'grid gap-4')}>
+            <div className="space-y-2">
+              <Label>Form title</Label>
+              <Input
+                value={config.formTitle || ''}
+                onChange={(event) => updateConfig({ formTitle: event.target.value })}
+                placeholder="Send Feedback"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Form subtitle</Label>
+              <Input
+                value={config.formSubtitle || ''}
+                onChange={(event) => updateConfig({ formSubtitle: event.target.value })}
+                placeholder="Help us improve by sharing your thoughts"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Message field label</Label>
+              <Input
+                value={config.messageLabel || ''}
+                onChange={(event) => updateConfig({ messageLabel: event.target.value })}
+                placeholder="Your feedback *"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Message placeholder</Label>
+              <Input
+                value={config.messagePlaceholder || ''}
+                onChange={(event) => updateConfig({ messagePlaceholder: event.target.value })}
+                placeholder="What's on your mind? Any bugs, suggestions, or general feedback..."
+              />
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>Email field label</Label>
+                <Input
+                  value={config.emailLabel || ''}
+                  onChange={(event) => updateConfig({ emailLabel: event.target.value })}
+                  placeholder="Email"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Submit button text</Label>
+                <Input
+                  value={config.submitButtonText || ''}
+                  onChange={(event) => updateConfig({ submitButtonText: event.target.value })}
+                  placeholder="Send Feedback"
+                />
+              </div>
+            </div>
+            {config.embedMode === 'modal' && (
+              <div className="space-y-2">
+                <Label>Cancel button text</Label>
+                <Input
+                  value={config.cancelButtonText || ''}
+                  onChange={(event) => updateConfig({ cancelButtonText: event.target.value })}
+                  placeholder="Cancel"
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className={CARD_HEADER}>
             <CardTitle>Success messaging</CardTitle>

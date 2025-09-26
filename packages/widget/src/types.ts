@@ -53,6 +53,14 @@ export interface WidgetConfig {
   allowedAttachmentMimes?: string[]; // default [png,jpeg,pdf]
   successTitle?: string;
   successDescription?: string;
+  // Form text customization
+  formTitle?: string; // Default: "Send Feedback"
+  formSubtitle?: string; // Default: "Help us improve by sharing your thoughts"
+  messageLabel?: string; // Default: "Your feedback *"
+  messagePlaceholder?: string; // Default: "What's on your mind? Any bugs, suggestions, or general feedback..."
+  emailLabel?: string; // Default: "Email (optional)"
+  submitButtonText?: string; // Default: "Send Feedback"
+  cancelButtonText?: string; // Default: "Cancel"
   openOnKey?: string; // e.g., 'Shift+F'
   openAfterMs?: number; // open automatically after N ms (modal)
 }

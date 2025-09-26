@@ -17,6 +17,9 @@ declare class FeedbacksWidget {
     private applyStyleVars;
     private log;
     private createButton;
+    private renderLauncherIcon;
+    private getLauncherEmoji;
+    private getLauncherIconLabel;
     private createInlineForm;
     private attachTriggerListeners;
     private getFormHTML;

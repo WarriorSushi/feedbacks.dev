@@ -1,39 +1,57 @@
-# Widget Versioning Guide
+# Widget Versioning Guide - AUTOMATED SYSTEM 🚀
 
-## Version Format
-We use **semantic versioning** with clean, simple version numbers:
-- `widget-1.0.js` - Major version 1, minor version 0
-- `widget-1.1.js` - New features (backward compatible)  
-- `widget-2.0.js` - Breaking changes
+## 🎯 Zero-Memory Workflow (Recommended)
 
-## Release Process
+The widget now has **full automation**! You literally don't need to remember any commands:
 
-### 1. Minor Release (New Features)
 ```bash
-npm run version:minor  # 1.0 → 1.1
-npm run build
-git commit -m "Release widget v1.1"
-git push origin main
+# Edit widget source files (add features, fix bugs, etc.)
+git add .
+git commit -m "feat: add form text customization"  # 'feat:' triggers minor version
+git push  # ← Everything else happens automatically! ✨
 ```
 
-### 2. Major Release (Breaking Changes)
+### What Happens Automatically:
+1. **Pre-push hook detects** widget changes
+2. **Analyzes your commit** to determine version bump type
+3. **Builds widget** with new version number
+4. **Creates all version aliases** (exact, minor, major, latest)
+5. **Updates dashboard** to use new version
+6. **Commits version bump** automatically
+7. **Continues with your push**
+
+## 📊 Version Types (Auto-Detected from Commits)
+
+| Commit Pattern | Version Bump | Example |
+|---|---|---|
+| `feat:`, `feature:`, `add ` | **Minor** | 1.0.0 → 1.1.0 |
+| `fix:`, `bug`, `patch` | **Patch** | 1.0.0 → 1.0.1 |
+| `breaking`, `!:` | **Major** | 1.0.0 → 2.0.0 |
+
+## 🎮 Manual Commands (If Needed)
+
+### Version Management:
 ```bash
-npm run version:major  # 1.0 → 2.0
-npm run build
-git commit -m "Release widget v2.0"
-git push origin main
+npm run version              # Show current version info
+npm run version:list         # List all available versions
+npm run version:preview      # Preview what next version would be
+npm run version:minor        # Manually bump minor version
+npm run version:patch        # Manually bump patch version
+npm run version:major        # Manually bump major version
 ```
 
-### 3. What Happens Automatically
-- ✅ Updates `package.json` version
-- ✅ Updates dashboard template to use new version
-- ✅ Builds new `widget-X.X.js` and `widget-X.X.css` files
-- ✅ Updates CDN documentation
+### Build & Release:
+```bash
+npm run auto-build           # Smart build + deploy system
+npm run release:minor        # Version bump + build + deploy
+npm run build                # Just build widget (old way)
+```
 
-### 4. Manual Steps
-- Update changelog/release notes
-- Test the new version
-- Commit and push to trigger CDN update
+### Skip Automation:
+Add `[skip-build]` to your commit message to bypass automation:
+```bash
+git commit -m "docs: update README [skip-build]"
+```
 
 ## CDN URLs
 - **Exact**: `https://app.feedbacks.dev/cdn/widget/1.0.0.js` (never changes)

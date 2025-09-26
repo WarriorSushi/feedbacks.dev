@@ -1,17 +1,24 @@
 {
   "name": "@feedbacks/widget",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "main": "dist/widget-1.0.0.js",
   "scripts": {
     "dev": "webpack serve --mode development",
     "build": "webpack --mode production",
     "type-check": "tsc --noEmit",
-    "deploy": "npm run build && node deploy.js",
-    "version:patch": "node version-bump.js patch",
-    "version:minor": "node version-bump.js minor",
-    "version:major": "node version-bump.js major",
-    "release": "npm run build && npm run deploy && git add -A"
+    "auto-build": "node auto-build.js",
+    "version": "node version-manager.js",
+    "version:patch": "node version-manager.js bump patch",
+    "version:minor": "node version-manager.js bump minor",
+    "version:major": "node version-manager.js bump major",
+    "version:preview": "node version-manager.js preview",
+    "version:list": "node version-manager.js list",
+    "release": "node auto-build.js",
+    "release:patch": "node version-manager.js bump patch && node auto-build.js",
+    "release:minor": "node version-manager.js bump minor && node auto-build.js",
+    "release:major": "node version-manager.js bump major && node auto-build.js",
+    "deploy": "npm run build && node deploy.js"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

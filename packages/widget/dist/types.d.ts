@@ -26,7 +26,6 @@ export interface WidgetConfig {
     primaryColor?: string;
     backgroundColor?: string;
     scale?: number;
-    modalShape?: 'rounded' | 'pill' | 'square';
     headerIcon?: 'none' | 'chat' | 'star' | 'lightbulb' | 'thumbs-up';
     headerLayout?: 'text-only' | 'icon-left' | 'icon-top';
     spacing?: number;
@@ -51,6 +50,13 @@ export interface WidgetConfig {
     allowedAttachmentMimes?: string[];
     successTitle?: string;
     successDescription?: string;
+    formTitle?: string;
+    formSubtitle?: string;
+    messageLabel?: string;
+    messagePlaceholder?: string;
+    emailLabel?: string;
+    submitButtonText?: string;
+    cancelButtonText?: string;
     openOnKey?: string;
     openAfterMs?: number;
 }
