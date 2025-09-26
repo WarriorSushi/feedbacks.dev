@@ -86,8 +86,7 @@ FeedbacksWidget.init({
 
 ## CDN Information
 
-- **jsDelivr CDN**: ${CDN_CONFIG.jsdelivr.baseUrl}/
-- **GitHub Raw**: ${CDN_CONFIG.github.baseUrl}/
+- **Self-Hosted CDN**: ${CDN_CONFIG.production.baseUrl}/
 
 Files available:
 - \`widget-${version}.js\` - Main widget JavaScript (minified)
