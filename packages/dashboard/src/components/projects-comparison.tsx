@@ -60,9 +60,9 @@ export function ProjectsComparison({ projects }: { projects: ProjectLite[] }) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Project Comparison</CardTitle>
-        <CardDescription>Last 30 days submissions and average rating</CardDescription>
+      <CardHeader className="pb-3 md:pb-6">
+        <CardTitle className="text-base md:text-lg">Project Comparison</CardTitle>
+        <CardDescription className="text-xs md:text-sm">Last 30 days submissions and average rating</CardDescription>
       </CardHeader>
       <CardContent>
         {/* Filters */}
@@ -71,38 +71,38 @@ export function ProjectsComparison({ projects }: { projects: ProjectLite[] }) {
             value={query}
             onChange={(e)=>setQuery(e.target.value)}
             placeholder="Search projects…"
-            className="w-full rounded-md border bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="w-full rounded-md border bg-background px-3 py-2 text-xs md:text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[44px] md:min-h-0"
           />
           <div className="md:col-span-2 flex flex-wrap gap-2 max-h-24 overflow-auto border rounded p-2">
             {filteredProjects.map(p => (
               <label key={p.id} className="flex items-center gap-1 text-xs">
-                <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={()=>toggle(p.id)} />
-                <span className="truncate max-w-[160px]">{p.name}</span>
+                <input type="checkbox" checked={selectedIds.includes(p.id)} onChange={()=>toggle(p.id)} className="min-h-[20px] min-w-[20px] md:min-h-0 md:min-w-0" />
+                <span className="truncate max-w-[120px] sm:max-w-[160px]">{p.name}</span>
               </label>
             ))}
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" className="text-xs underline" onClick={()=>setSelectedIds(projects.map(p=>p.id))}>Select all</button>
-            <button type="button" className="text-xs underline" onClick={()=>setSelectedIds([])}>Clear</button>
+            <button type="button" className="text-xs underline min-h-[44px] md:min-h-0" onClick={()=>setSelectedIds(projects.map(p=>p.id))}>Select all</button>
+            <button type="button" className="text-xs underline min-h-[44px] md:min-h-0" onClick={()=>setSelectedIds([])}>Clear</button>
           </div>
         </div>
 
         {loading && rows.length === 0 ? (
-          <div className="text-sm text-muted-foreground">Loading…</div>
+          <div className="text-xs md:text-sm text-muted-foreground">Loading…</div>
         ) : rows.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No data yet.</div>
+          <div className="text-xs md:text-sm text-muted-foreground">No data yet.</div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             {rows.map((r) => (
-              <div key={r.id} className="grid grid-cols-1 sm:grid-cols-5 gap-2 items-center border rounded p-2">
+              <div key={r.id} className="grid grid-cols-1 sm:grid-cols-5 gap-2 items-center border rounded p-2 md:p-3">
                 <div className="sm:col-span-2 flex items-center justify-between sm:justify-start gap-2">
-                  <div className="font-medium truncate" title={r.name}>{r.name}</div>
-                  <div className="text-xs text-muted-foreground">{r.last30} in 30d</div>
+                  <div className="text-sm md:text-base font-medium truncate min-w-0" title={r.name}>{r.name}</div>
+                  <div className="text-xs text-muted-foreground flex-shrink-0">{r.last30} in 30d</div>
                 </div>
                 <div className="sm:col-span-2">
-                  <Sparkline data={r.perDay} width={200} height={40} className="w-full" />
+                  <Sparkline data={r.perDay} width={200} height={32} className="w-full h-8" />
                 </div>
-                <div className="sm:col-span-1 text-sm text-muted-foreground sm:text-right">Avg ★ {r.avgRating ? r.avgRating.toFixed(1) : '—'}</div>
+                <div className="sm:col-span-1 text-xs md:text-sm text-muted-foreground sm:text-right">Avg ★ {r.avgRating ? r.avgRating.toFixed(1) : '—'}</div>
               </div>
             ))}
           </div>

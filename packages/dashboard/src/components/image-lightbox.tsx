@@ -28,10 +28,10 @@ export function ImageLightbox({ src, thumbClassName = "h-24 w-auto rounded borde
         <img src={src} alt={alt} className={thumbClassName} />
       </button>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4" onClick={() => setOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-2 md:p-4" onClick={() => setOpen(false)}>
           {/* Stop propagation to avoid closing when clicking image */}
           <img src={src} alt={alt} className={className} onClick={(e) => e.stopPropagation()} />
-          <button type="button" aria-label="Close" className="absolute top-4 right-4 text-white/80 hover:text-white text-sm px-3 py-1 bg-white/10 rounded" onClick={() => setOpen(false)}>Close</button>
+          <button type="button" aria-label="Close" className="absolute top-2 right-2 md:top-4 md:right-4 text-white/80 hover:text-white text-sm px-4 py-2 md:px-3 md:py-1 bg-white/10 rounded min-h-[44px] md:min-h-0 flex items-center justify-center" onClick={() => setOpen(false)}>Close</button>
         </div>
       )}
     </>

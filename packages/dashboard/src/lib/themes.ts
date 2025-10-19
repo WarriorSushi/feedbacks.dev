@@ -529,8 +529,8 @@ export function applyTheme(themeId: string, isDark: boolean = false) {
 }
 
 export function getCurrentTheme(): string {
-  if (typeof window === 'undefined') return 'doom-64';
-  return localStorage.getItem('feedbacks-theme') || 'doom-64';
+  if (typeof window === 'undefined') return 'claude';
+  return localStorage.getItem('feedbacks-theme') || 'claude';
 }
 
 export function initializeTheme() {

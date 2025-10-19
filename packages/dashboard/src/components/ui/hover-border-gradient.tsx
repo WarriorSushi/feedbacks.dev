@@ -66,6 +66,7 @@ export function HoverBorderGradient({
     <Tag
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onTouchStart={() => setHovered(true)}
       className={cn(
         "relative flex rounded-full border border-border/50 content-center bg-background/50 hover:bg-accent/20 transition duration-500 items-center flex-col flex-nowrap gap-10 h-min justify-center overflow-hidden p-[1px] decoration-clone w-fit",
         containerClassName
@@ -74,7 +75,7 @@ export function HoverBorderGradient({
     >
       <div
         className={cn(
-          "w-full sm:w-auto z-10 bg-background text-foreground px-4 py-2 rounded-[inherit] border border-transparent text-center",
+          "w-full sm:w-auto z-10 bg-background text-foreground px-3 py-2 md:px-4 rounded-[inherit] border border-transparent text-center",
           className
         )}
       >

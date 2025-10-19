@@ -51,27 +51,27 @@ export function FeaturesSection() {
   ];
 
   return (
-    <section className="py-32 relative overflow-hidden">
+    <section className="py-16 md:py-24 lg:py-32 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0" />
       <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_800px_at_50%_200px,hsl(var(--primary)/0.05),transparent)]" />
-      
+
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-20">
+        <div className="text-center mb-12 md:mb-16 lg:mb-20">
           <Badge variant="outline" className="mb-6 px-4 py-2 bg-background/80 backdrop-blur-sm border-primary/20">
             <CheckCircle className="w-4 h-4 mr-2 text-primary" />
             Production Ready
           </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 gradient-text">
             Everything you need to collect feedback
           </h2>
-          <p className="text-xl max-w-3xl mx-auto text-muted-foreground leading-relaxed">
-            Built for developers, designed for users. Get the insights you need 
+          <p className="text-base md:text-lg lg:text-xl max-w-3xl mx-auto text-muted-foreground leading-relaxed px-4">
+            Built for developers, designed for users. Get the insights you need
             without compromising on performance or user experience.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-7xl mx-auto">
           {features.map((feature, index) => (
             <Card 
               key={feature.title} 

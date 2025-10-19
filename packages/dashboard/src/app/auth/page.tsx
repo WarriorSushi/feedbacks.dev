@@ -474,13 +474,13 @@ export default function AuthPage() {
       <div className="container mx-auto px-4 flex items-center justify-center min-h-[calc(100vh-120px)]">
         <div className="w-full max-w-md">
           <Card className="border-0 shadow-lg bg-background/95 backdrop-blur">
-            <CardHeader className="text-center space-y-1">
-              <CardTitle className="text-2xl font-bold">
+            <CardHeader className="text-center space-y-1 pb-4 md:pb-6">
+              <CardTitle className="text-xl md:text-2xl font-bold">
                 <Link href="https://www.feedbacks.dev" className="hover:text-primary/80 transition-colors">
                   Welcome to feedbacks.dev
                 </Link>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Sign in to start collecting feedback in minutes
               </CardDescription>
             </CardHeader>

@@ -55,8 +55,8 @@ export default function ProjectsPage() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          <span>{Math.floor(Math.random() * 100) + 10}</span>
+                          <BarChart3 className="h-3 w-3" />
+                          <span>{project.feedback?.[0]?.count || 0} feedback</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />

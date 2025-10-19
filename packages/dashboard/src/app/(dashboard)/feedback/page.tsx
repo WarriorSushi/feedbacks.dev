@@ -400,22 +400,24 @@ export default function FeedbackPage() {
               })()}
             </div>
             {selected.size > 0 && (
-              <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border rounded mb-4 p-3 flex items-center gap-2">
-                <span className="text-sm">{selected.size} selected</span>
-                <Button size="sm" variant="outline" onClick={() => markRead(true)}>Mark read</Button>
-                <Button size="sm" variant="outline" onClick={() => markRead(false)}>Mark unread</Button>
-                <Button size="sm" variant="outline" onClick={() => bulkArchive(true)}>Archive</Button>
-                <Button size="sm" variant="outline" onClick={() => bulkArchive(false)}>Unarchive</Button>
-                <div className="flex items-center gap-2">
-                  <Input value={bulkTag} onChange={(e)=>setBulkTag(e.target.value)} placeholder="Add tag" className="h-8 w-32" />
-                  <Button size="sm" onClick={applyTag} disabled={!bulkTag.trim()}>Apply</Button>
+              <div className="sticky top-0 z-10 bg-background/80 backdrop-blur border rounded mb-4 p-3 overflow-x-auto">
+                <div className="flex items-center gap-2 min-w-max">
+                  <span className="text-sm">{selected.size} selected</span>
+                  <Button size="sm" variant="outline" onClick={() => markRead(true)}>Mark read</Button>
+                  <Button size="sm" variant="outline" onClick={() => markRead(false)}>Mark unread</Button>
+                  <Button size="sm" variant="outline" onClick={() => bulkArchive(true)}>Archive</Button>
+                  <Button size="sm" variant="outline" onClick={() => bulkArchive(false)}>Unarchive</Button>
+                  <div className="flex items-center gap-2">
+                    <Input value={bulkTag} onChange={(e)=>setBulkTag(e.target.value)} placeholder="Add tag" className="h-8 w-32" />
+                    <Button size="sm" onClick={applyTag} disabled={!bulkTag.trim()}>Apply</Button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input value={removeTagValue} onChange={(e)=>setRemoveTagValue(e.target.value)} placeholder="Remove tag" className="h-8 w-32" />
+                    <Button size="sm" variant="destructive" onClick={removeTag} disabled={!removeTagValue.trim()}>Remove</Button>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => setSelected(new Set(feedback.map(f => f.id)))}>Select all</Button>
+                  <Button size="sm" variant="ghost" onClick={clearSelection}>Clear</Button>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Input value={removeTagValue} onChange={(e)=>setRemoveTagValue(e.target.value)} placeholder="Remove tag" className="h-8 w-32" />
-                  <Button size="sm" variant="destructive" onClick={removeTag} disabled={!removeTagValue.trim()}>Remove</Button>
-                </div>
-                <Button size="sm" variant="outline" onClick={() => setSelected(new Set(feedback.map(f => f.id)))}>Select all</Button>
-                <Button size="sm" variant="ghost" onClick={clearSelection}>Clear</Button>
               </div>
             )}
             {/* Pagination controls */}
@@ -432,7 +434,7 @@ export default function FeedbackPage() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                   <Input
@@ -444,7 +446,7 @@ export default function FeedbackPage() {
                 </div>
               </div>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-full sm:w-[140px]">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -456,7 +458,7 @@ export default function FeedbackPage() {
               </Select>
 
               <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-full sm:w-[140px]">
                   <SelectValue placeholder="Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -468,7 +470,7 @@ export default function FeedbackPage() {
               </Select>
 
               <Select value={filterRating} onValueChange={setFilterRating}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-full sm:w-[140px]">
                   <SelectValue placeholder="Rating" />
                 </SelectTrigger>
                 <SelectContent>
@@ -481,7 +483,7 @@ export default function FeedbackPage() {
                 </SelectContent>
               </Select>
               <Select value={filterProject} onValueChange={setFilterProject}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-full sm:w-[140px]">
                   <SelectValue placeholder="Project" />
                 </SelectTrigger>
                 <SelectContent>

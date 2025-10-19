@@ -16,13 +16,13 @@ export default function PrivacyPage() {
         </Button>
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-6 md:py-8 max-w-4xl">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">Privacy Policy</CardTitle>
-            <p className="text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+          <CardHeader className="pb-4 md:pb-6">
+            <CardTitle className="text-2xl md:text-3xl">Privacy Policy</CardTitle>
+            <p className="text-sm md:text-base text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
           </CardHeader>
-          <CardContent className="prose prose-slate dark:prose-invert max-w-none">
+          <CardContent className="prose prose-sm md:prose-base prose-slate dark:prose-invert max-w-none">
             <h2>Information We Collect</h2>
             <p>
               When you use feedbacks.dev, we collect information you provide directly to us, such as:

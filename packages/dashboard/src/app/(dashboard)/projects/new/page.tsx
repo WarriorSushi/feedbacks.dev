@@ -98,12 +98,12 @@ export default function NewProjectPage() {
       <div className="container mx-auto px-4 flex items-center justify-center min-h-[calc(100vh-120px)]">
         <div className="w-full max-w-md">
           <Card className="border-0 shadow-lg bg-background/95 backdrop-blur">
-            <CardHeader className="text-center space-y-1">
-              <CardTitle className="text-2xl font-bold flex items-center justify-center gap-2">
-                <Plus className="h-6 w-6 text-primary" />
+            <CardHeader className="text-center space-y-1 pb-4 md:pb-6">
+              <CardTitle className="text-xl md:text-2xl font-bold flex items-center justify-center gap-2">
+                <Plus className="h-5 w-5 md:h-6 md:w-6 text-primary" />
                 New Project
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm">
                 Create a new project to start collecting feedback
               </CardDescription>
             </CardHeader>

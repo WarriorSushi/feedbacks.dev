@@ -61,23 +61,23 @@ export function MobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center space-x-3 rounded-lg px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors duration-150"
+                className="flex items-center space-x-3 rounded-lg px-3 py-3 text-sm hover:bg-accent hover:text-accent-foreground transition-colors duration-150 min-h-[44px]"
                 onClick={closeMenu}
               >
-                <IconComponent className="h-4 w-4" />
+                <IconComponent className="h-5 w-5" />
                 <span>{item.label}</span>
               </Link>
             );
           })}
-          
+
           <button
-            className="flex items-center space-x-3 rounded-lg px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground w-full text-left transition-colors duration-150"
+            className="flex items-center space-x-3 rounded-lg px-3 py-3 text-sm hover:bg-accent hover:text-accent-foreground w-full text-left transition-colors duration-150 min-h-[44px]"
             onClick={() => {
               // Add logout functionality later
               closeMenu();
             }}
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-5 w-5" />
             <span>Sign Out</span>
           </button>
         </nav>

@@ -206,20 +206,20 @@ export function PlatformIntegration() {
   const activePlatform = platforms.find(p => p.id === activeTab) || platforms[0];
 
   return (
-    <section className="py-16 relative overflow-hidden">
+    <section className="py-12 md:py-16 relative overflow-hidden">
       {/* Subtle Background */}
       <div className="absolute inset-0" />
-      
+
       <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8 md:mb-12">
           <Badge variant="outline" className="mb-4 px-3 py-1 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
             <Code className="w-3 h-3 mr-1.5" />
             Integration
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-3">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3">
             <span className="gradient-text">Web-first integration</span>
           </h2>
-          <p className="text-lg max-w-xl mx-auto text-gray-600 dark:text-gray-400">
+          <p className="text-sm md:text-base lg:text-lg max-w-xl mx-auto text-gray-600 dark:text-gray-400 px-4">
             Perfect for websites and web applications. Choose your platform and get the code instantly.
           </p>
         </div>
@@ -227,15 +227,16 @@ export function PlatformIntegration() {
         {/* Sidebar Layout */}
         <div className="max-w-5xl mx-auto">
           <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 shadow-premium-xl overflow-hidden">
-            <div className="grid lg:grid-cols-[280px_1fr] min-h-[500px]">
+            <div className="grid lg:grid-cols-[280px_1fr] min-h-[400px] md:min-h-[500px]">
               {/* Left Sidebar - Platform Tabs */}
-              <div className="border-r border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
-                <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
-                  <h3 className="font-semibold text-foreground">Choose Platform</h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Select your framework</p>
+              <div className="border-b lg:border-b-0 lg:border-r border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
+                <div className="p-3 md:p-4 border-b border-gray-200/50 dark:border-gray-700/50">
+                  <h3 className="font-semibold text-sm md:text-base text-foreground">Choose Platform</h3>
+                  <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-1">Select your framework</p>
                 </div>
-                
-                <div className="p-1">
+
+                <div className="p-1 overflow-x-auto lg:overflow-x-visible">
+                  <div className="flex lg:flex-col gap-1 min-w-max lg:min-w-0">
                   {platforms.map((platform) => {
                     const Icon = platform.icon;
                     const isActive = activeTab === platform.id;
@@ -244,9 +245,9 @@ export function PlatformIntegration() {
                       <button
                         key={platform.id}
                         onClick={() => setActiveTab(platform.id)}
-                        className={`w-full flex items-center gap-2 p-2 rounded-lg border transition-all duration-200 mb-1 text-left ${
-                          isActive 
-                            ? 'bg-primary text-primary-foreground border-primary shadow-sm' 
+                        className={`w-auto lg:w-full flex items-center gap-2 p-2 rounded-lg border transition-all duration-200 text-left whitespace-nowrap lg:whitespace-normal ${
+                          isActive
+                            ? 'bg-primary text-primary-foreground border-primary shadow-sm'
                             : 'bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80 border-gray-200/30 dark:border-gray-700/30 hover:border-primary/30'
                         }`}
                       >
@@ -274,20 +275,21 @@ export function PlatformIntegration() {
                       </button>
                     );
                   })}
+                  </div>
                 </div>
               </div>
 
               {/* Right Side - Code Display */}
-              <div className="p-6 flex flex-col h-full">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-                    <activePlatform.icon className="w-5 h-5 text-primary" />
+              <div className="p-4 md:p-6 flex flex-col h-full">
+                <div className="flex items-center gap-2 md:gap-3 mb-4">
+                  <div className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center flex-shrink-0">
+                    <activePlatform.icon className="w-4 h-4 md:w-5 md:h-5 text-primary" />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-foreground text-lg">
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-foreground text-base md:text-lg">
                       {activePlatform.name}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 truncate">
                       {activePlatform.description}
                     </p>
                   </div>
@@ -305,8 +307,8 @@ export function PlatformIntegration() {
                 </div>
                 
                 {/* Quick tip - Sticky to bottom */}
-                <div className="mt-4 p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/50">
-                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-tight">
+                <div className="mt-3 md:mt-4 p-2 md:p-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/50">
+                  <p className="text-[10px] md:text-xs text-gray-600 dark:text-gray-400 leading-tight">
                     💡 Key will be automatically replaced with your personalized key in the dashboard.
                   </p>
                 </div>

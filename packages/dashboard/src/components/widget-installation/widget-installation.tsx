@@ -1937,8 +1937,8 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
         <div className="flex items-center gap-2 text-xs text-muted-foreground"><History className="h-3 w-3" />{statusMessage}</div>
       )}
 
-      <div className="grid gap-6 lg:gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)]">
-        <div className="space-y-5 sm:space-y-6">
+      <div className="grid gap-4 md:gap-6 lg:gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(340px,1fr)]">
+        <div className="space-y-4 sm:space-y-5 md:space-y-6">
           {loading ? (
             <Card className="h-[520px] animate-pulse" />
           ) : (

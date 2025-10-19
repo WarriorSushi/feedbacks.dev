@@ -233,8 +233,8 @@ export default function DashboardPage() {
                             <ClientDate date={project.created_at} prefix="Created " />
                           </div>
                           <div className="flex items-center gap-2">
-                            <Users className="h-3 w-3 flex-shrink-0" />
-                            <span>{Math.floor(Math.random() * 100) + 10} users</span>
+                            <MessageSquare className="h-3 w-3 flex-shrink-0" />
+                            <span>{project.feedback?.[0]?.count || 0} feedback</span>
                           </div>
                         </div>
                         

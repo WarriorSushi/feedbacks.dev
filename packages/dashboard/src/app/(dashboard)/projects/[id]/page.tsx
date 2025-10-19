@@ -340,17 +340,17 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                 </Card>
 
                 <div className="flex items-center justify-between">
-                  <div className="space-x-2">
+                  <div className="flex gap-2">
                     <Link
                       href={'/projects/' + params.id + '?' + previousParams.toString()}
-                      className="rounded border px-3 py-1 text-sm disabled:opacity-50"
+                      className="rounded border px-3 py-2 md:py-1 text-sm disabled:opacity-50 min-h-[44px] md:min-h-0 flex items-center"
                       aria-disabled={page <= 1}
                     >
                       Previous
                     </Link>
                     <Link
                       href={'/projects/' + params.id + '?' + nextParams.toString()}
-                      className="rounded border px-3 py-1 text-sm"
+                      className="rounded border px-3 py-2 md:py-1 text-sm min-h-[44px] md:min-h-0 flex items-center"
                     >
                       Next
                     </Link>

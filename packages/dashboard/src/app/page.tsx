@@ -116,8 +116,8 @@ export default function HomePage() {
       </header>
 
       <div className="flex-1 pt-16">
-        {/* Sticky Corner Controls */}
-        <div className="fixed top-20 left-4 z-40">
+        {/* Sticky Corner Controls - Hidden on mobile to save space */}
+        <div className="hidden md:block fixed top-20 left-4 z-40">
           <Button variant="ghost" size="sm" asChild className="h-10 w-10 px-0 bg-white/20 hover:bg-white/30 dark:bg-black/20 dark:hover:bg-black/30 backdrop-blur-sm rounded-full">
             <a
               href="https://github.com/WarriorSushi/feedbacks.dev"
@@ -129,7 +129,7 @@ export default function HomePage() {
             </a>
           </Button>
         </div>
-        <div className="fixed top-20 right-4 z-40">
+        <div className="hidden md:block fixed top-20 right-4 z-40">
           <div className="bg-white/20 hover:bg-white/30 dark:bg-black/20 dark:hover:bg-black/30 backdrop-blur-sm rounded-full p-2">
             <ThemeToggle />
           </div>
