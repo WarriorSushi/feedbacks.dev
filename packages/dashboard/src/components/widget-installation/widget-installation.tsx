@@ -60,12 +60,14 @@ const LAUNCHER_ICON_OPTIONS: Array<{
 ];
 const CAPTCHAS = ['none', 'turnstile', 'hcaptcha'] as const;
 const SNIPPET_PLATFORMS = ['website', 'react', 'vue', 'wordpress', 'shopify'] as const;
-const SNIPPET_LANGUAGES: Record<(typeof SNIPPET_PLATFORMS)[number], string> = {
+const SNIPPET_LANGUAGES: Record<(typeof SNIPPET_PLATFORMS)[number] | 'android' | 'ios', string> = {
   website: 'html',
   react: 'tsx',
   vue: 'html',
   wordpress: 'php',
   shopify: 'liquid',
+  android: 'kotlin',
+  ios: 'swift',
 };
 
 const CAPTCHA_GUIDES: Record<'turnstile' | 'hcaptcha', { title: string; steps: string[]; href: string; cta: string }> = {
@@ -91,12 +93,14 @@ const CAPTCHA_GUIDES: Record<'turnstile' | 'hcaptcha', { title: string; steps: s
   },
 };
 
-const FRAMEWORK_OPTIONS: Array<{ value: (typeof SNIPPET_PLATFORMS)[number]; label: string; status: 'ready' | 'beta' }> = [
+const FRAMEWORK_OPTIONS: Array<{ value: (typeof SNIPPET_PLATFORMS)[number] | 'android' | 'ios'; label: string; status: 'ready' | 'beta' | 'coming-soon' }> = [
   { value: 'website', label: 'Website', status: 'ready' },
   { value: 'react', label: 'React', status: 'ready' },
   { value: 'vue', label: 'Vue', status: 'ready' },
   { value: 'wordpress', label: 'WordPress', status: 'beta' },
   { value: 'shopify', label: 'Shopify', status: 'beta' },
+  { value: 'android', label: 'Android', status: 'coming-soon' },
+  { value: 'ios', label: 'iOS', status: 'coming-soon' },
 ];
 
 export type EmbedMode = 'modal' | 'inline' | 'trigger';
@@ -1323,7 +1327,8 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                   size="sm"
                   variant={selectedPlatform === option.value ? 'default' : 'outline'}
                   className="capitalize px-3 py-1.5 text-[11px] sm:text-sm flex items-center gap-1.5"
-                  onClick={() => setSelectedPlatform(option.value)}
+                  onClick={() => option.status !== 'coming-soon' && setSelectedPlatform(option.value as typeof selectedPlatform)}
+                  disabled={option.status === 'coming-soon'}
                 >
                   {option.label}
                   {option.status === 'beta' && (
@@ -1331,10 +1336,15 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
                       Beta
                     </Badge>
                   )}
+                  {option.status === 'coming-soon' && (
+                    <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 border-muted-foreground/30 text-muted-foreground">
+                      Coming Soon
+                    </Badge>
+                  )}
                 </Button>
               ))}
             </div>
-            <p className="text-xs text-muted-foreground">We&#39;ll tailor the installation snippet and guidance based on this choice. Website, React, and Vue are production-ready.</p>
+            <p className="text-xs text-muted-foreground">We&#39;ll tailor the installation snippet and guidance based on this choice. Website, React, and Vue are production-ready. Mobile app support coming soon!</p>
           </CardContent>
         </Card>
 
@@ -1740,13 +1750,13 @@ const CARD_CONTENT = 'p-3 pt-0 sm:p-6 sm:pt-0';
           <CardContent className={CARD_CONTENT}>
             <Tabs value={selectedPlatform} onValueChange={(v) => setSelectedPlatform(v as any)} className="w-full">
               <TabsList className="w-full overflow-x-auto  gap-2">
-                {FRAMEWORK_OPTIONS.map((option) => (
+                {FRAMEWORK_OPTIONS.filter(opt => opt.status !== 'coming-soon').map((option) => (
                   <TabsTrigger key={option.value} value={option.value} className="px-2.5 py-1 text-[11px] sm:px-3 sm:py-1.5 sm:text-sm">
                     {option.label}
                   </TabsTrigger>
                 ))}
               </TabsList>
-              {FRAMEWORK_OPTIONS.map((option) => (
+              {FRAMEWORK_OPTIONS.filter(opt => opt.status !== 'coming-soon').map((option) => (
                 <TabsContent key={option.value} value={option.value} className="pt-3">
                   <div className="mb-2 text-xs text-muted-foreground">Platform: <span className="font-medium text-foreground">{option.label}</span></div>
                   <CodeSnippet code={snippets.get(option.value) || ''} language={SNIPPET_LANGUAGES[option.value]} />
