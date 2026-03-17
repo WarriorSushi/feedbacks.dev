@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.30.3",
   "scripts": {
     "dev": "pnpm --filter @feedbacks/dashboard dev",
-    "build": "pnpm --filter @feedbacks/widget build && pnpm run widget:copy && pnpm --filter @feedbacks/dashboard build",
+    "build": "pnpm --filter @feedbacks/widget build && pnpm run widget:copy && pnpm --filter @feedbacks/mcp-server build && pnpm --filter @feedbacks/dashboard build",
     "widget:dev": "pnpm --filter @feedbacks/widget dev",
     "widget:build": "pnpm --filter @feedbacks/widget build",
     "widget:copy": "node -e \"const fs=require('fs');const p='packages/dashboard/public/widget';fs.mkdirSync(p,{recursive:true});fs.copyFileSync('packages/widget/dist/widget.js',p+'/latest.js');fs.copyFileSync('packages/widget/dist/widget.js',p+'/v2.js');console.log('Widget copied to public/widget/')\"",

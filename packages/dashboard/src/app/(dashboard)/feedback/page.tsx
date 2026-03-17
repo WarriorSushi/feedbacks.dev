@@ -66,6 +66,7 @@ function FeedbackInboxInner() {
   const status = searchParams.get('status') || ''
   const type = searchParams.get('type') || ''
   const search = searchParams.get('q') || ''
+  const agent = searchParams.get('agent') || ''
   const [searchInput, setSearchInput] = React.useState(search)
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
@@ -82,13 +83,14 @@ function FeedbackInboxInner() {
     if (status) query = query.eq('status', status)
     if (type) query = query.eq('type', type)
     if (search) query = query.ilike('message', `%${search}%`)
+    if (agent) query = query.not('agent_name', 'is', null)
 
     const { data, count } = await query
     setFeedbacks((data as Feedback[]) || [])
     setTotal(count || 0)
     setSelected(new Set())
     setLoading(false)
-  }, [supabase, page, status, type, search])
+  }, [supabase, page, status, type, search, agent])
 
   React.useEffect(() => {
     fetchFeedback()
@@ -139,7 +141,7 @@ function FeedbackInboxInner() {
 
   const clearBulkSelection = () => setSelected(new Set())
 
-  const hasFilters = status || type || search
+  const hasFilters = status || type || search || agent
 
   return (
     <div className="animate-fade-in space-y-4 pb-24">

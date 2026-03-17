@@ -1,29 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase } from '@/lib/supabase-server'
+import { getAuthedUserAndProject } from '@/lib/api-auth'
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const supabase = await createServerSupabase()
+  const result = await getAuthedUserAndProject(id)
+  if ('error' in result) return result.error
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return new NextResponse('Unauthorized', { status: 401 })
+  const { admin } = result
 
-  // Verify ownership
-  const { data: project } = await supabase
-    .from('projects')
-    .select('id')
-    .eq('id', id)
-    .eq('owner_user_id', user.id)
-    .single()
-
-  if (!project) return new NextResponse('Not found', { status: 404 })
-
-  const { data, error } = await supabase
+  const { data, error } = await admin
     .from('feedback')
     .select('created_at, message, email, type, rating, priority, status, url, tags')
     .eq('project_id', id)
