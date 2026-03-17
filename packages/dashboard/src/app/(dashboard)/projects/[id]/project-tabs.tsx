@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { createClient } from '@/lib/supabase-browser'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { Project, WidgetConfig } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,10 +11,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { CodeSnippet } from '@/components/code-snippet'
-import { ArrowLeft, Copy, Check, Loader2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Copy, Check, Loader2, Trash2, Download } from 'lucide-react'
 import Link from 'next/link'
 import { BoardSettingsTab } from './board-settings'
 import { ApiDocs } from './api-docs'
+import { toast } from '@/hooks/use-toast'
+import { Suspense } from 'react'
 
 interface ProjectTabsProps {
   project: Project
@@ -32,7 +34,24 @@ const tabs: { id: TabId; label: string }[] = [
 ]
 
 export function ProjectTabs({ project }: ProjectTabsProps) {
-  const [activeTab, setActiveTab] = React.useState<TabId>('install')
+  return (
+    <Suspense>
+      <ProjectTabsInner project={project} />
+    </Suspense>
+  )
+}
+
+function ProjectTabsInner({ project }: ProjectTabsProps) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const tabParam = searchParams.get('tab') as TabId | null
+  const activeTab = tabs.some((t) => t.id === tabParam) ? tabParam! : 'install'
+
+  const setActiveTab = (tab: TabId) => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('tab', tab)
+    router.push(`?${params.toString()}`)
+  }
 
   return (
     <div className="space-y-6">
@@ -46,23 +65,33 @@ export function ProjectTabs({ project }: ProjectTabsProps) {
           </Link>
           <h1 className="mt-2 text-2xl font-bold">{project.name}</h1>
         </div>
-        <ApiKeyBadge apiKey={project.api_key} />
+        <div className="flex items-center gap-2">
+          <a href={`/api/projects/${project.id}/feedback.csv`} download>
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs font-medium">
+              <Download className="h-3.5 w-3.5" />
+              Export CSV
+            </Button>
+          </a>
+          <ApiKeyBadge apiKey={project.api_key} />
+        </div>
       </div>
 
-      <div className="flex gap-1 border-b">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === tab.id
-                ? 'border-primary text-foreground'
-                : 'border-transparent text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="overflow-x-auto">
+        <div className="flex gap-1 border-b">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-shrink-0 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {activeTab === 'install' && <InstallTab project={project} />}
@@ -83,7 +112,7 @@ function ApiKeyBadge({ apiKey }: { apiKey: string }) {
     setTimeout(() => setCopied(false), 2000)
   }
   return (
-    <button onClick={copy} className="flex items-center gap-1.5">
+    <button onClick={copy} className="flex items-center gap-1.5" aria-label="Copy API key">
       <Badge variant="outline" className="font-mono text-xs">
         {apiKey.slice(0, 8)}••••
       </Badge>
@@ -187,7 +216,7 @@ function CustomizeTab({ project }: { project: Project }) {
 
   const handleSave = async () => {
     setSaving(true)
-    await supabase
+    const { error } = await supabase
       .from('projects')
       .update({
         settings: { ...project.settings, widget_config: config },
@@ -195,6 +224,11 @@ function CustomizeTab({ project }: { project: Project }) {
       })
       .eq('id', project.id)
     setSaving(false)
+    if (error) {
+      toast({ title: 'Failed to save', description: error.message, variant: 'destructive' })
+      return
+    }
+    toast({ title: 'Widget settings saved' })
     router.refresh()
   }
 
@@ -206,10 +240,11 @@ function CustomizeTab({ project }: { project: Project }) {
       <CardContent className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>Primary Color</Label>
+            <Label htmlFor="primary-color">Primary Color</Label>
             <div className="flex gap-2">
               <input
                 type="color"
+                id="primary-color"
                 value={config.primaryColor || '#6366f1'}
                 onChange={(e) => updateConfig('primaryColor', e.target.value)}
                 className="h-10 w-10 cursor-pointer rounded border"
@@ -217,19 +252,23 @@ function CustomizeTab({ project }: { project: Project }) {
               <Input
                 value={config.primaryColor || ''}
                 onChange={(e) => updateConfig('primaryColor', e.target.value)}
+                aria-label="Primary color hex value"
               />
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Button Text</Label>
+            <Label htmlFor="button-text">Button Text</Label>
             <Input
+              id="button-text"
               value={config.buttonText || ''}
               onChange={(e) => updateConfig('buttonText', e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label>Position</Label>
+            <Label htmlFor="position-select">Position</Label>
             <select
+              id="position-select"
+              aria-label="Widget position"
               className="h-10 w-full rounded-md border bg-background px-3 text-sm"
               value={config.position || 'bottom-right'}
               onChange={(e) => updateConfig('position', e.target.value)}
@@ -241,15 +280,17 @@ function CustomizeTab({ project }: { project: Project }) {
             </select>
           </div>
           <div className="space-y-2">
-            <Label>Form Title</Label>
+            <Label htmlFor="form-title">Form Title</Label>
             <Input
+              id="form-title"
               value={config.formTitle || ''}
               onChange={(e) => updateConfig('formTitle', e.target.value)}
             />
           </div>
           <div className="space-y-2">
-            <Label>Message Placeholder</Label>
+            <Label htmlFor="msg-placeholder">Message Placeholder</Label>
             <Input
+              id="msg-placeholder"
               value={config.messagePlaceholder || ''}
               onChange={(e) => updateConfig('messagePlaceholder', e.target.value)}
             />
@@ -312,11 +353,16 @@ function IntegrationsTab({ project }: { project: Project }) {
       discord: discordUrl ? { url: discordUrl, enabled: true } : undefined,
       generic: webhookUrl ? { url: webhookUrl, enabled: true } : undefined,
     }
-    await supabase
+    const { error } = await supabase
       .from('projects')
       .update({ webhooks, updated_at: new Date().toISOString() })
       .eq('id', project.id)
     setSaving(false)
+    if (error) {
+      toast({ title: 'Failed to save integrations', description: error.message, variant: 'destructive' })
+      return
+    }
+    toast({ title: 'Integrations saved' })
     router.refresh()
   }
 
@@ -356,10 +402,11 @@ function SettingsTab({ project }: { project: Project }) {
   const [saving, setSaving] = React.useState(false)
   const [deleting, setDeleting] = React.useState(false)
   const [confirmDelete, setConfirmDelete] = React.useState(false)
+  const [deleteInput, setDeleteInput] = React.useState('')
 
   const handleSave = async () => {
     setSaving(true)
-    await supabase
+    const { error } = await supabase
       .from('projects')
       .update({
         name: name.trim(),
@@ -368,12 +415,22 @@ function SettingsTab({ project }: { project: Project }) {
       })
       .eq('id', project.id)
     setSaving(false)
+    if (error) {
+      toast({ title: 'Failed to save settings', description: error.message, variant: 'destructive' })
+      return
+    }
+    toast({ title: 'Project settings saved' })
     router.refresh()
   }
 
   const handleDelete = async () => {
     setDeleting(true)
-    await supabase.from('projects').delete().eq('id', project.id)
+    const { error } = await supabase.from('projects').delete().eq('id', project.id)
+    if (error) {
+      toast({ title: 'Failed to delete project', description: error.message, variant: 'destructive' })
+      setDeleting(false)
+      return
+    }
     router.push('/projects')
   }
 
@@ -385,12 +442,13 @@ function SettingsTab({ project }: { project: Project }) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Project Name</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Label htmlFor="project-name">Project Name</Label>
+            <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Domain</Label>
+            <Label htmlFor="project-domain">Domain</Label>
             <Input
+              id="project-domain"
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
               placeholder="myapp.com"
@@ -421,18 +479,24 @@ function SettingsTab({ project }: { project: Project }) {
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-destructive">
-                This cannot be undone. Type the project name to confirm.
+                This cannot be undone. Type <strong>{project.name}</strong> to confirm.
               </p>
+              <Input
+                value={deleteInput}
+                onChange={(e) => setDeleteInput(e.target.value)}
+                placeholder={project.name}
+                aria-label="Type project name to confirm deletion"
+              />
               <div className="flex gap-2">
                 <Button
                   variant="destructive"
                   onClick={handleDelete}
-                  disabled={deleting}
+                  disabled={deleting || deleteInput !== project.name}
                 >
                   {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Confirm Delete
                 </Button>
-                <Button variant="outline" onClick={() => setConfirmDelete(false)}>
+                <Button variant="outline" onClick={() => { setConfirmDelete(false); setDeleteInput('') }}>
                   Cancel
                 </Button>
               </div>

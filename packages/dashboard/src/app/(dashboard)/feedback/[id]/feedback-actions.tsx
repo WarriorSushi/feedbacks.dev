@@ -4,9 +4,11 @@ import * as React from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import type { FeedbackStatus } from '@/lib/types'
 import { useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Archive } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
 
 const statuses: FeedbackStatus[] = ['new', 'reviewed', 'planned', 'in_progress', 'closed']
 
@@ -19,12 +21,13 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
   const [status, setStatus] = React.useState(currentStatus)
   const [note, setNote] = React.useState('')
   const [saving, setSaving] = React.useState(false)
+  const [archiving, setArchiving] = React.useState(false)
   const router = useRouter()
   const supabase = React.useMemo(() => createClient(), [])
 
   const handleStatusChange = async (newStatus: FeedbackStatus) => {
     setStatus(newStatus)
-    await supabase
+    const { error } = await supabase
       .from('feedback')
       .update({
         status: newStatus,
@@ -32,6 +35,12 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
         ...(newStatus === 'closed' ? { resolved_at: new Date().toISOString() } : {}),
       })
       .eq('id', feedbackId)
+    if (error) {
+      toast({ title: 'Failed to update status', description: error.message, variant: 'destructive' })
+      setStatus(currentStatus)
+      return
+    }
+    toast({ title: 'Status updated' })
     router.refresh()
   }
 
@@ -42,13 +51,18 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
     const {
       data: { user },
     } = await supabase.auth.getUser()
-    await supabase.from('feedback_notes').insert({
+    const { error } = await supabase.from('feedback_notes').insert({
       feedback_id: feedbackId,
       user_id: user!.id,
       content: note.trim(),
     })
-    setNote('')
     setSaving(false)
+    if (error) {
+      toast({ title: 'Failed to add note', description: error.message, variant: 'destructive' })
+      return
+    }
+    toast({ title: 'Note added' })
+    setNote('')
     router.refresh()
   }
 
@@ -56,10 +70,12 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
     <div className="space-y-4">
       {/* Status changer */}
       <div>
-        <label className="mb-2 block text-xs font-medium text-muted-foreground">
+        <Label htmlFor="status-select" className="mb-2 block text-xs font-medium text-muted-foreground">
           Change Status
-        </label>
+        </Label>
         <select
+          id="status-select"
+          aria-label="Change feedback status"
           className="h-9 w-full rounded-md border bg-background px-3 text-sm"
           value={status}
           onChange={(e) => handleStatusChange(e.target.value as FeedbackStatus)}
@@ -85,6 +101,33 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
           Add Note
         </Button>
       </form>
+
+      {/* Archive */}
+      <div className="border-t pt-4">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 text-muted-foreground hover:text-destructive"
+          disabled={archiving}
+          onClick={async () => {
+            setArchiving(true)
+            const { error } = await supabase
+              .from('feedback')
+              .update({ is_archived: true, updated_at: new Date().toISOString() })
+              .eq('id', feedbackId)
+            setArchiving(false)
+            if (error) {
+              toast({ title: 'Failed to archive', description: error.message, variant: 'destructive' })
+              return
+            }
+            toast({ title: 'Feedback archived' })
+            router.push('/feedback')
+          }}
+        >
+          {archiving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
+          Archive
+        </Button>
+      </div>
     </div>
   )
 }

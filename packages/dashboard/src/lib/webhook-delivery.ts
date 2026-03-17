@@ -249,11 +249,25 @@ export async function deliverWebhooks(
 
   for (const type of ['slack', 'discord', 'generic'] as const) {
     const group = webhooks[type]
-    if (!group?.endpoints) continue
-    for (const ep of group.endpoints) {
-      if (!ep.enabled) continue
-      if (!matchesRules(ep, feedback)) continue
-      promises.push(deliverSingle(type, ep, payload, project.id, admin))
+    if (!group) continue
+
+    // Handle flat format from IntegrationsTab: { url: "...", enabled: true }
+    if (group.url && group.enabled !== false) {
+      const flatEndpoint: WebhookEndpoint = {
+        id: `${type}-flat`,
+        url: group.url,
+        enabled: true,
+      }
+      promises.push(deliverSingle(type, flatEndpoint, payload, project.id, admin))
+    }
+
+    // Handle array format: { endpoints: [...] }
+    if (group.endpoints) {
+      for (const ep of group.endpoints) {
+        if (!ep.enabled) continue
+        if (!matchesRules(ep, feedback)) continue
+        promises.push(deliverSingle(type, ep, payload, project.id, admin))
+      }
     }
   }
 

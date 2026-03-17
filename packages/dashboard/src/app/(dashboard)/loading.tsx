@@ -17,13 +17,15 @@ export default function DashboardLoading() {
             <Skeleton className="h-8 w-12 mb-2" />
             <Skeleton className="h-2 w-20" />
             <div className="mt-3 flex items-end gap-[2px]" style={{ height: 18 }}>
-              {Array.from({ length: 7 }).map((_, j) => (
+              {Array.from({ length: 7 }).map((_, j) => {
+                const heights = [30, 60, 45, 80, 25, 55, 70]
+                return (
                 <Skeleton
                   key={j}
                   className="flex-1 rounded-[1px]"
-                  style={{ height: `${20 + Math.random() * 60}%` }}
+                  style={{ height: `${heights[j]}%` }}
                 />
-              ))}
+              )})}
             </div>
           </div>
         ))}

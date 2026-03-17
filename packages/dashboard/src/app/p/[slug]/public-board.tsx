@@ -83,8 +83,8 @@ function UpvoteButton({
       className={cn(
         'group flex flex-col items-center justify-center rounded-xl border-2 px-3 py-2.5 min-w-[56px] transition-all duration-200 select-none',
         voted
-          ? 'border-indigo-500 bg-indigo-50 text-indigo-600 shadow-sm dark:bg-indigo-950 dark:text-indigo-300 dark:border-indigo-400'
-          : 'border-gray-200 bg-white text-gray-500 hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-indigo-600',
+          ? 'border-primary bg-primary/10 text-primary shadow-sm'
+          : 'border bg-card text-muted-foreground hover:border-primary/50 hover:bg-primary/5 hover:text-primary',
         loading && 'opacity-60 cursor-not-allowed',
         !loading && 'active:scale-95'
       )}
@@ -124,7 +124,7 @@ function FeedbackCard({
   const status = statusConfig[item.status] || statusConfig.new
 
   return (
-    <div className="group flex gap-4 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:border-gray-300 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-700">
+    <div className="group flex gap-4 rounded-2xl border bg-card p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:border-border/80">
       <UpvoteButton
         count={item.vote_count}
         voted={voted}
@@ -133,11 +133,11 @@ function FeedbackCard({
       />
 
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-gray-900 dark:text-gray-100 leading-snug">
+        <h3 className="font-semibold text-foreground leading-snug">
           {getTitle(item.message)}
         </h3>
         {getDescription(item.message) && (
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
             {getDescription(item.message)}
           </p>
         )}
@@ -150,7 +150,7 @@ function FeedbackCard({
           <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', status.color)}>
             {status.label}
           </span>
-          <span className="text-xs text-gray-400 dark:text-gray-500">
+          <span className="text-xs text-muted-foreground">
             {relativeTime(item.created_at)}
           </span>
         </div>
@@ -175,6 +175,48 @@ function SubmitModal({
   const [email, setEmail] = React.useState('')
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const modalRef = React.useRef<HTMLDivElement>(null)
+  const previousFocus = React.useRef<HTMLElement | null>(null)
+
+  // Focus trap and restore
+  React.useEffect(() => {
+    previousFocus.current = document.activeElement as HTMLElement
+    const modal = modalRef.current
+    if (!modal) return
+
+    // Focus first focusable element
+    const focusable = modal.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    )
+    if (focusable.length > 0) focusable[0].focus()
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+      if (e.key !== 'Tab') return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault()
+          last.focus()
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previousFocus.current?.focus()
+    }
+  }, [onClose])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -204,15 +246,21 @@ function SubmitModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-gray-900 animate-in fade-in zoom-in-95 duration-200">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Submit Feedback</h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="submit-modal-title"
+        className="relative w-full max-w-lg rounded-2xl border bg-background p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+      >
+        <h2 id="submit-modal-title" className="text-xl font-bold text-foreground">Submit Feedback</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
           Share your ideas or report bugs. The community will vote!
         </p>
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Type
             </label>
             <div className="flex gap-2">
@@ -227,8 +275,8 @@ function SubmitModal({
                     className={cn(
                       'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-all',
                       type === t
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300'
-                        : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400'
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border text-muted-foreground hover:bg-accent'
                     )}
                   >
                     <span>{cfg.icon}</span> {cfg.label}
@@ -239,7 +287,7 @@ function SubmitModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+            <label className="block text-sm font-medium text-foreground mb-1.5">
               Your feedback
             </label>
             <textarea
@@ -247,7 +295,7 @@ function SubmitModal({
               onChange={(e) => setMessage(e.target.value)}
               placeholder="First line becomes the title. Add details below..."
               rows={4}
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 resize-none"
+              className="w-full rounded-xl border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none resize-none"
               required
               minLength={5}
               maxLength={2000}
@@ -255,20 +303,20 @@ function SubmitModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-              Email <span className="text-gray-400 font-normal">(optional)</span>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Email <span className="text-muted-foreground font-normal">(optional)</span>
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
+              className="w-full rounded-xl border bg-background px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-sm text-destructive">{error}</p>
           )}
 
           <div className="flex gap-3 pt-1">
@@ -276,7 +324,7 @@ function SubmitModal({
               type="submit"
               disabled={submitting || message.trim().length < 5}
               className={cn(
-                'flex-1 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-indigo-700 active:scale-[0.98]',
+                'flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 active:scale-[0.98]',
                 (submitting || message.trim().length < 5) && 'opacity-50 cursor-not-allowed'
               )}
             >
@@ -285,7 +333,7 @@ function SubmitModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+              className="rounded-xl border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
             >
               Cancel
             </button>
@@ -403,11 +451,11 @@ export function PublicBoard({
     <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
       {/* Header */}
       <div className="text-center mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
           {board.title || 'Feature Board'}
         </h1>
         {board.description && (
-          <p className="mt-3 text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto leading-relaxed">
+          <p className="mt-3 text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
             {board.description}
           </p>
         )}
@@ -423,7 +471,7 @@ export function PublicBoard({
       {/* Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         {/* Filter tabs */}
-        <div className="flex gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
+        <div className="flex gap-1 rounded-xl bg-muted p-1">
           {filterTabs.map((tab) => (
             <button
               key={tab.value}
@@ -431,8 +479,8 @@ export function PublicBoard({
               className={cn(
                 'rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all',
                 filter === tab.value
-                  ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-gray-100'
-                  : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {tab.label}
@@ -445,7 +493,8 @@ export function PublicBoard({
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as SortMode)}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+            aria-label="Sort feedback"
+            className="rounded-lg border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="votes">Most Voted</option>
             <option value="newest">Newest</option>
@@ -468,10 +517,10 @@ export function PublicBoard({
       {/* Feedback list */}
       <div className="space-y-3">
         {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center dark:border-gray-700 dark:bg-gray-900">
-            <p className="text-gray-400 dark:text-gray-500 text-lg">No feedback yet</p>
+          <div className="rounded-2xl border border-dashed bg-card p-12 text-center">
+            <p className="text-muted-foreground text-lg">No feedback yet</p>
             {board.allow_submissions && (
-              <p className="mt-1 text-sm text-gray-400 dark:text-gray-500">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Be the first to share your thoughts!
               </p>
             )}
@@ -491,7 +540,7 @@ export function PublicBoard({
 
       {/* Item count */}
       {filtered.length > 0 && (
-        <p className="mt-6 text-center text-sm text-gray-400 dark:text-gray-500">
+        <p className="mt-6 text-center text-sm text-muted-foreground">
           {filtered.length} {filtered.length === 1 ? 'item' : 'items'}
         </p>
       )}

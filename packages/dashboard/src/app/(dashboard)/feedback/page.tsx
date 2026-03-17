@@ -15,7 +15,9 @@ import {
   getTypeIcon,
   getStatusColor,
   getTypeColor,
+  statusConfig as globalStatusConfig,
 } from '@/lib/utils'
+import { toast } from '@/hooks/use-toast'
 import type { Feedback, FeedbackStatus, FeedbackType } from '@/lib/types'
 import {
   Search,
@@ -35,13 +37,7 @@ const PAGE_SIZE = 20
 const statuses: FeedbackStatus[] = ['new', 'reviewed', 'planned', 'in_progress', 'closed']
 const types: FeedbackType[] = ['bug', 'idea', 'praise', 'question']
 
-const statusMeta: Record<FeedbackStatus, { dot: string; label: string }> = {
-  new: { dot: 'bg-blue-500', label: 'New' },
-  reviewed: { dot: 'bg-yellow-500', label: 'Reviewed' },
-  planned: { dot: 'bg-violet-500', label: 'Planned' },
-  in_progress: { dot: 'bg-orange-500', label: 'In Progress' },
-  closed: { dot: 'bg-zinc-400', label: 'Closed' },
-}
+const statusMeta = globalStatusConfig
 
 export default function FeedbackInboxPage() {
   return (
@@ -66,6 +62,7 @@ function FeedbackInboxInner() {
   const status = searchParams.get('status') || ''
   const type = searchParams.get('type') || ''
   const search = searchParams.get('q') || ''
+  const agent = searchParams.get('agent') || ''
   const [searchInput, setSearchInput] = React.useState(search)
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
@@ -82,13 +79,14 @@ function FeedbackInboxInner() {
     if (status) query = query.eq('status', status)
     if (type) query = query.eq('type', type)
     if (search) query = query.ilike('message', `%${search}%`)
+    if (agent) query = query.not('agent_name', 'is', null)
 
     const { data, count } = await query
     setFeedbacks((data as Feedback[]) || [])
     setTotal(count || 0)
     setSelected(new Set())
     setLoading(false)
-  }, [supabase, page, status, type, search])
+  }, [supabase, page, status, type, search, agent])
 
   React.useEffect(() => {
     fetchFeedback()
@@ -129,24 +127,29 @@ function FeedbackInboxInner() {
   const bulkUpdateStatus = async (newStatus: FeedbackStatus) => {
     if (selected.size === 0) return
     setBulkLoading(true)
-    await supabase
+    const { error } = await supabase
       .from('feedback')
       .update({ status: newStatus, updated_at: new Date().toISOString() })
       .in('id', Array.from(selected))
     setBulkLoading(false)
+    if (error) {
+      toast({ title: 'Failed to update', description: error.message, variant: 'destructive' })
+      return
+    }
+    toast({ title: `${selected.size} item${selected.size > 1 ? 's' : ''} updated` })
     fetchFeedback()
   }
 
   const clearBulkSelection = () => setSelected(new Set())
 
-  const hasFilters = status || type || search
+  const hasFilters = status || type || search || agent
 
   return (
     <div className="animate-fade-in space-y-4 pb-24">
       {/* ─── Header ─────────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Inbox</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Inbox</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {loading ? (
               'Loading…'
@@ -261,7 +264,7 @@ function FeedbackInboxInner() {
                 className="h-3.5 w-3.5 rounded border accent-primary"
                 aria-label="Select all"
               />
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 {selected.size > 0
                   ? `${selected.size} selected`
                   : `Select all on this page`}
@@ -400,6 +403,7 @@ function FilterPill({
   return (
     <button
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
         'flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium transition-all',
         active
@@ -485,7 +489,7 @@ function FeedbackRow({
                 <span className="text-[10px] text-muted-foreground/30">·</span>
                 <Badge
                   variant="secondary"
-                  className={cn('h-4 px-1.5 text-[9px]', getTypeColor(fb.type))}
+                  className={cn('h-4 px-1.5 text-[11px]', getTypeColor(fb.type))}
                 >
                   {fb.type}
                 </Badge>

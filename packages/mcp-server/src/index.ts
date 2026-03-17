@@ -43,6 +43,18 @@ const server = new McpServer({
   version: '1.0.0',
 })
 
+// Cache project ID to avoid redundant API calls
+let cachedProjectId: string | null = null
+
+async function getProjectId(): Promise<string> {
+  if (cachedProjectId) return cachedProjectId
+  const projectRes = await apiRequest('/projects') as { data: { id: string }[] }
+  const projectId = projectRes.data?.[0]?.id
+  if (!projectId) throw new Error('No project found for this API key')
+  cachedProjectId = projectId
+  return projectId
+}
+
 server.tool(
   'submit_feedback',
   'Submit a bug report, feature request, or other feedback',
@@ -82,10 +94,7 @@ server.tool(
   'Update the status, priority, or tags of a feedback item',
   updateFeedbackStatusParams.shape,
   async (params) => {
-    // We need the project ID — get it from listing first
-    const projectRes = await apiRequest('/projects') as { data: { id: string }[] }
-    const projectId = projectRes.data?.[0]?.id
-    if (!projectId) throw new Error('No project found for this API key')
+    const projectId = await getProjectId()
 
     const qs = new URLSearchParams({ feedback_id: params.feedback_id })
     const body: Record<string, unknown> = { status: params.status }
@@ -107,9 +116,7 @@ server.tool(
   'Get project overview with feedback statistics',
   {},
   async () => {
-    const projectRes = await apiRequest('/projects') as { data: { id: string }[] }
-    const projectId = projectRes.data?.[0]?.id
-    if (!projectId) throw new Error('No project found for this API key')
+    const projectId = await getProjectId()
 
     const result = await apiRequest(`/projects/${projectId}`)
     return {

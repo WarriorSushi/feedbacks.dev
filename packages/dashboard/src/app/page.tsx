@@ -1,27 +1,21 @@
-'use client'
-
 import Link from 'next/link'
-import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CodeSnippet } from '@/components/code-snippet'
 import {
   ArrowRight,
-  MessageSquare,
-  Star,
-  Bug,
-  Lightbulb,
   Check,
   Github,
   Zap,
   Bot,
   ThumbsUp,
 } from 'lucide-react'
+import { WidgetDemo, ScrollHeader } from './widget-demo-client'
 
 // ─── Code snippets ────────────────────────────────────────────────────────────
 
 const installSnippet = `<script
-  src="https://YOUR_DOMAIN/widget/latest.js"
+  src="https://feedbacks.dev/widget/latest.js"
   data-project="your-project-key"
   defer
 ></script>`
@@ -48,133 +42,13 @@ curl https://feedbacks.dev/api/v1/feedback \\
 # { "type": "bug",  "message": "CSV export crashes on large sets" }
 # { "type": "idea", "message": "Add keyboard shortcuts please"   }`
 
-// ─── Widget demo ──────────────────────────────────────────────────────────────
-
-const DEMOS = [
-  {
-    type: 'bug' as const,
-    label: 'Bug',
-    Icon: Bug,
-    text: 'CSV export crashes on datasets over 1 000 rows.',
-    activeClass: 'border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-400',
-  },
-  {
-    type: 'idea' as const,
-    label: 'Idea',
-    Icon: Lightbulb,
-    text: 'Keyboard shortcuts for the dashboard would be huge.',
-    activeClass: 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400',
-  },
-  {
-    type: 'praise' as const,
-    label: 'Praise',
-    Icon: Star,
-    text: 'The new search is blazing fast. Really great work!',
-    activeClass: 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400',
-  },
-]
-
-function WidgetDemo() {
-  const [active, setActive] = React.useState(0)
-  const [fading, setFading] = React.useState(false)
-
-  React.useEffect(() => {
-    const id = setInterval(() => {
-      setFading(true)
-      const swapId = setTimeout(() => {
-        setActive((prev) => (prev + 1) % DEMOS.length)
-        setFading(false)
-      }, 220)
-      return () => clearTimeout(swapId)
-    }, 3400)
-    return () => clearInterval(id)
-  }, [])
-
-  const demo = DEMOS[active]
-
-  return (
-    <div className="w-72 overflow-hidden rounded-2xl border bg-background shadow-2xl shadow-black/10 sm:w-80">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b px-4 py-3">
-        <div className="flex items-center gap-2">
-          <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-semibold">Send Feedback</span>
-        </div>
-        <button className="text-xs text-muted-foreground transition-colors hover:text-foreground">
-          ✕
-        </button>
-      </div>
-
-      {/* Type picker */}
-      <div className="flex gap-1.5 px-4 pt-3">
-        {DEMOS.map((d, i) => {
-          const DIcon = d.Icon
-          const isActive = i === active
-          return (
-            <button
-              key={d.type}
-              onClick={() => {
-                setFading(true)
-                setTimeout(() => {
-                  setActive(i)
-                  setFading(false)
-                }, 180)
-              }}
-              className={`flex flex-1 items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-all duration-200 ${
-                isActive ? d.activeClass : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              <DIcon className="h-3.5 w-3.5" />
-              {d.label}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Body */}
-      <div className="px-4 pb-4 pt-3">
-        <div
-          className="min-h-[56px] rounded-lg border bg-muted/40 px-3 py-2.5 text-sm leading-relaxed text-foreground/70 transition-opacity duration-200"
-          style={{ opacity: fading ? 0 : 1 }}
-        >
-          {demo.text}
-        </div>
-        <div
-          className="mt-3 flex items-center justify-between transition-opacity duration-200"
-          style={{ opacity: fading ? 0 : 1 }}
-        >
-          <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-            <demo.Icon className="h-3.5 w-3.5" />
-            {demo.label} report
-          </span>
-          <button className="rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background transition-opacity hover:opacity-80">
-            Submit
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Page (Server Component) ──────────────────────────────────────────────────
 
 export default function LandingPage() {
-  const [scrolled, setScrolled] = React.useState(false)
-
-  React.useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
   return (
     <div className="min-h-screen bg-background">
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
-      <header
-        className={`sticky top-0 z-50 transition-all duration-300 ${
-          scrolled ? 'border-b bg-background/95 backdrop-blur-sm' : ''
-        }`}
-      >
+      <ScrollHeader>
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="text-lg font-bold tracking-tight">
             feedbacks
@@ -182,7 +56,7 @@ export default function LandingPage() {
           </Link>
           <div className="flex items-center gap-2">
             <a
-              href="https://github.com/feedbacksdev/feedbacks.dev"
+              href="https://github.com/syedirfan/feedbacks.dev"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:flex"
@@ -204,14 +78,13 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-      </header>
+      </ScrollHeader>
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b bg-grid-pattern">
         <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/85 to-background" />
         <div className="relative mx-auto max-w-6xl px-6 py-20 md:py-28">
           <div className="flex flex-col gap-14 md:flex-row md:items-center md:gap-12 lg:gap-20">
-            {/* Left: headline */}
             <div className="min-w-0 flex-1">
               <div className="mb-6 flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium">
@@ -243,7 +116,7 @@ export default function LandingPage() {
                   </Button>
                 </Link>
                 <a
-                  href="https://github.com/feedbacksdev/feedbacks.dev"
+                  href="https://github.com/syedirfan/feedbacks.dev"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -254,7 +127,6 @@ export default function LandingPage() {
                 </a>
               </div>
 
-              {/* Quick facts */}
               <div className="mt-8 flex flex-wrap gap-2">
                 {[
                   { Icon: Zap, label: 'Under 10KB' },
@@ -272,7 +144,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right: widget demo */}
             <div className="flex flex-shrink-0 justify-center md:justify-end">
               <div className="relative">
                 <div className="absolute -inset-8 rounded-3xl bg-amber-400/10 blur-3xl dark:bg-amber-400/5" />
@@ -444,7 +315,6 @@ export default function LandingPage() {
           </p>
 
           <div className="grid max-w-3xl gap-4 md:grid-cols-2">
-            {/* Free */}
             <div className="rounded-2xl border bg-background p-8">
               <p className="mb-1 text-sm font-medium text-muted-foreground">Free</p>
               <p className="mb-6 text-4xl font-black tracking-tighter">
@@ -472,7 +342,6 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Pro */}
             <div className="relative rounded-2xl border-2 border-foreground bg-background p-8">
               <Badge className="absolute -top-3.5 left-6 px-3 text-xs">Pro</Badge>
               <p className="mb-1 text-sm font-medium text-muted-foreground">Pro</p>
@@ -510,7 +379,6 @@ export default function LandingPage() {
       <section className="px-6 py-20 md:py-28">
         <div className="mx-auto max-w-6xl">
           <div className="relative overflow-hidden rounded-3xl bg-foreground px-8 py-16 text-center md:px-16 md:py-20">
-            {/* Subtle texture */}
             <div
               className="pointer-events-none absolute inset-0 opacity-[0.04]"
               style={{
@@ -553,7 +421,7 @@ export default function LandingPage() {
             Open source, MIT licensed — no fake stats, no fake testimonials.
           </p>
           <a
-            href="https://github.com/feedbacksdev/feedbacks.dev"
+            href="https://github.com/syedirfan/feedbacks.dev"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground transition-colors hover:text-foreground"

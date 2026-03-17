@@ -4,10 +4,10 @@ export interface FeedbackData {
   email?: string;
   url: string;
   userAgent: string;
-  type?: 'bug' | 'idea' | 'praise';
+  type?: 'bug' | 'idea' | 'praise' | 'question';
   rating?: number;
   screenshot?: string;
-  priority?: 'low' | 'medium' | 'high';
+  priority?: 'low' | 'medium' | 'high' | 'critical';
   tags?: string[];
   turnstileToken?: string;
   hcaptchaToken?: string;
@@ -22,7 +22,7 @@ export interface FeedbackResponse {
 export type EmbedMode = 'modal' | 'inline' | 'trigger';
 export type Position = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
 export type CaptchaProvider = 'turnstile' | 'hcaptcha';
-export type CategoryType = 'bug' | 'idea' | 'praise';
+export type CategoryType = 'bug' | 'idea' | 'praise' | 'question';
 
 export interface WidgetConfig {
   projectKey: string;

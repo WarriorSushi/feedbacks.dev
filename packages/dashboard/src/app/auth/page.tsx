@@ -183,6 +183,9 @@ function AuthPageInner() {
           >
             feedbacks<span className="text-primary">.dev</span>
           </Link>
+          <h1 className="mt-3 text-2xl font-bold tracking-tight">
+            Feedback that fits your workflow.
+          </h1>
         </div>
 
         <div className="w-full max-w-[360px] animate-fade-in">
@@ -288,7 +291,7 @@ function AuthPageInner() {
           )}
 
           {/* Footer */}
-          <p className="mt-8 text-center text-[11px] text-muted-foreground/70">
+          <p className="mt-8 text-center text-xs text-muted-foreground">
             By continuing, you agree to our{' '}
             <Link href="/terms" className="underline underline-offset-2 transition-colors hover:text-foreground">
               Terms

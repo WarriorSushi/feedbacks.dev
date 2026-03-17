@@ -9,7 +9,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Copy, Check, Loader2, ExternalLink } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
 
 interface BoardSettingsProps {
   project: Project
@@ -76,7 +78,7 @@ export function BoardSettingsTab({ project }: BoardSettingsProps) {
     setSaving(true)
 
     if (settings.id) {
-      await supabase
+      const { error } = await supabase
         .from('public_board_settings')
         .update({
           enabled: settings.enabled,
@@ -87,8 +89,13 @@ export function BoardSettingsTab({ project }: BoardSettingsProps) {
           allow_submissions: settings.allow_submissions,
         })
         .eq('id', settings.id)
+      if (error) {
+        toast({ title: 'Failed to save', description: error.message, variant: 'destructive' })
+        setSaving(false)
+        return
+      }
     } else {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('public_board_settings')
         .insert({
           project_id: project.id,
@@ -102,11 +109,18 @@ export function BoardSettingsTab({ project }: BoardSettingsProps) {
         .select('id')
         .single()
 
+      if (error) {
+        toast({ title: 'Failed to save', description: error.message, variant: 'destructive' })
+        setSaving(false)
+        return
+      }
+
       if (data) {
         setSettings((prev) => ({ ...prev, id: data.id }))
       }
     }
 
+    toast({ title: 'Board settings saved' })
     setSaving(false)
     router.refresh()
   }
@@ -133,8 +147,16 @@ export function BoardSettingsTab({ project }: BoardSettingsProps) {
   if (loading) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <CardHeader>
+          <Skeleton className="h-5 w-48" />
+          <Skeleton className="mt-2 h-4 w-72" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-32" />
         </CardContent>
       </Card>
     )
@@ -159,8 +181,8 @@ export function BoardSettingsTab({ project }: BoardSettingsProps) {
                 onChange={(e) => setSettings((p) => ({ ...p, enabled: e.target.checked }))}
                 className="sr-only peer"
               />
-              <div className="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-indigo-600 transition-colors dark:bg-gray-700" />
-              <div className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+              <div className="h-6 w-11 rounded-full bg-muted peer-checked:bg-primary transition-colors" />
+              <div className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-background shadow transition-transform peer-checked:translate-x-5" />
             </div>
             <span className="text-sm font-medium">
               {settings.enabled ? 'Board is live' : 'Board is disabled'}
@@ -182,6 +204,9 @@ export function BoardSettingsTab({ project }: BoardSettingsProps) {
                 placeholder="my-app"
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Slug is auto-formatted: spaces become hyphens, special characters are removed.
+            </p>
           </div>
 
           {/* Title */}
@@ -241,11 +266,11 @@ export function BoardSettingsTab({ project }: BoardSettingsProps) {
           {settings.enabled && settings.slug && (
             <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
               <span className="flex-1 truncate text-sm font-mono">{boardUrl}</span>
-              <Button size="sm" variant="outline" onClick={copyUrl}>
+              <Button size="sm" variant="outline" onClick={copyUrl} aria-label="Copy board URL">
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </Button>
               <Button size="sm" variant="outline" asChild>
-                <a href={boardUrl} target="_blank" rel="noopener noreferrer">
+                <a href={boardUrl} target="_blank" rel="noopener noreferrer" aria-label="Open board in new tab">
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </Button>

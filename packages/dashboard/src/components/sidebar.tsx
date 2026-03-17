@@ -231,6 +231,7 @@ export function Sidebar({ user, projects, currentProjectId }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 title={collapsed ? item.label : undefined}
+                aria-label={collapsed ? item.label : undefined}
                 className={cn(
                   'group relative flex items-center gap-3 rounded-lg py-2 text-[13px] font-medium',
                   'transition-all duration-150',
@@ -330,6 +331,7 @@ export function Sidebar({ user, projects, currentProjectId }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? 'page' : undefined}
               className={cn(
                 'relative flex flex-1 flex-col items-center gap-[3px] pb-[env(safe-area-inset-bottom,8px)] pt-2.5',
                 'transition-colors duration-150',
@@ -352,7 +354,7 @@ export function Sidebar({ user, projects, currentProjectId }: SidebarProps) {
               />
               <span
                 className={cn(
-                  'text-[10px] font-medium transition-all duration-150',
+                  'text-[11px] font-medium transition-all duration-150',
                   isActive ? 'opacity-100' : 'opacity-60'
                 )}
               >

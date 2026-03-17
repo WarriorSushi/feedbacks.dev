@@ -2,27 +2,25 @@
 
 import * as React from 'react'
 import { createClient } from '@/lib/supabase-browser'
-import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, Trash2 } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Mail } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
 
 export default function SettingsPage() {
   const supabase = React.useMemo(() => createClient(), [])
-  const router = useRouter()
   const { theme, setTheme } = useTheme()
 
   const [email, setEmail] = React.useState('')
   const [displayName, setDisplayName] = React.useState('')
   const [loading, setLoading] = React.useState(true)
   const [saving, setSaving] = React.useState(false)
-  const [emailNotifs, setEmailNotifs] = React.useState(true)
-  const [confirmDelete, setConfirmDelete] = React.useState(false)
-  const [deleting, setDeleting] = React.useState(false)
 
   React.useEffect(() => {
     const load = async () => {
@@ -40,22 +38,51 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     setSaving(true)
-    await supabase.auth.updateUser({
+    const { error } = await supabase.auth.updateUser({
       data: { full_name: displayName },
     })
     setSaving(false)
-  }
-
-  const handleDeleteAccount = async () => {
-    setDeleting(true)
-    await supabase.auth.signOut()
-    router.push('/auth')
+    if (error) {
+      toast({ title: 'Failed to save profile', description: error.message, variant: 'destructive' })
+      return
+    }
+    toast({ title: 'Profile saved' })
   }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="mx-auto max-w-2xl space-y-6">
+        <Skeleton className="h-8 w-32" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-20" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-9 w-28" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-28" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-4 w-64" />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-24" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-2">
+              <Skeleton className="h-9 w-16" />
+              <Skeleton className="h-9 w-16" />
+              <Skeleton className="h-9 w-16" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -71,12 +98,13 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Email</Label>
-            <Input value={email} disabled />
+            <Label htmlFor="settings-email">Email</Label>
+            <Input id="settings-email" value={email} disabled />
           </div>
           <div className="space-y-2">
-            <Label>Display Name</Label>
+            <Label htmlFor="settings-name">Display Name</Label>
             <Input
+              id="settings-name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Your name"
@@ -95,15 +123,10 @@ export default function SettingsPage() {
           <CardTitle className="text-lg">Notifications</CardTitle>
         </CardHeader>
         <CardContent>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={emailNotifs}
-              onChange={(e) => setEmailNotifs(e.target.checked)}
-              className="h-4 w-4 rounded border"
-            />
-            Email notifications for new feedback
-          </label>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Mail className="h-4 w-4" />
+            Email notifications coming soon.
+          </div>
         </CardContent>
       </Card>
 
@@ -128,42 +151,18 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Danger Zone */}
-      <Card className="border-destructive/50">
+      {/* Account */}
+      <Card className="border-muted">
         <CardHeader>
-          <CardTitle className="text-lg text-destructive">Danger Zone</CardTitle>
+          <CardTitle className="text-lg">Account</CardTitle>
           <CardDescription>
-            Permanently delete your account and all associated data.
+            Need to delete your account?
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!confirmDelete ? (
-            <Button
-              variant="destructive"
-              onClick={() => setConfirmDelete(true)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" /> Delete Account
-            </Button>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-destructive">
-                This action is irreversible. All your projects and feedback will be deleted.
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteAccount}
-                  disabled={deleting}
-                >
-                  {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Confirm Delete
-                </Button>
-                <Button variant="outline" onClick={() => setConfirmDelete(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
+          <p className="text-sm text-muted-foreground">
+            To delete your account and all data, please contact support.
+          </p>
         </CardContent>
       </Card>
     </div>
