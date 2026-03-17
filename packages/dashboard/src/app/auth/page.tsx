@@ -154,9 +154,9 @@ function AuthPageInner() {
                       {line.startsWith('  data') ? (
                         <>
                           <span className="text-[hsl(220_80%_75%)]">  data-api-key</span>
-                          <span className="text-white/40">="</span>
+                          <span className="text-white/40">{`="`}</span>
                           <span className="text-[hsl(150_60%_68%)]">YOUR_KEY</span>
-                          <span className="text-white/40">"</span>
+                          <span className="text-white/40">{`"`}</span>
                         </>
                       ) : line.includes('script') ? (
                         <span className="text-white/55">{line}</span>

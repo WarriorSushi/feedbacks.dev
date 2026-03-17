@@ -15,7 +15,7 @@ import {
   Tag,
   Clock,
   FolderOpen,
-  Image,
+  ImageIcon,
   Paperclip,
   StickyNote,
   Circle,
@@ -106,7 +106,7 @@ export default async function FeedbackDetailPage({
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm">
-                  <Image className="h-4 w-4 text-muted-foreground" />
+                  <ImageIcon className="h-4 w-4 text-muted-foreground" />
                   Screenshot
                 </CardTitle>
               </CardHeader>
