@@ -145,7 +145,7 @@ function FeedbackInboxInner() {
   const hasFilters = status || type || search || agent
 
   return (
-    <div className="animate-fade-in space-y-4 pb-24">
+    <div className="animate-fade-in space-y-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))]">
       {/* ─── Header ─────────────────────────────────────── */}
       <div className="flex items-start justify-between">
         <div>
@@ -172,7 +172,7 @@ function FeedbackInboxInner() {
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search feedback…"
-              className="h-9 w-full pl-8.5 text-sm sm:w-72"
+              className="h-9 w-full pl-8.5 text-sm md:w-72"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -191,8 +191,9 @@ function FeedbackInboxInner() {
           </div>
         </form>
 
-        {/* Filter pills row */}
-        <div className="flex flex-wrap items-center gap-1.5">
+        {/* Filter pills row — horizontal scroll on mobile */}
+        <div className="-mx-4 px-4 md:mx-0 md:px-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
           {/* Status group */}
           <FilterPill
             active={!status}
@@ -233,12 +234,13 @@ function FeedbackInboxInner() {
                 setSearchInput('')
                 updateParams({ status: '', type: '', q: '' })
               }}
-              className="ml-1 flex items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+              className="ml-1 flex flex-shrink-0 items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
             >
               <X className="h-3 w-3" />
               Clear
             </button>
           )}
+          </div>
         </div>
       </div>
 
@@ -331,7 +333,7 @@ function FeedbackInboxInner() {
       {/* ─── Floating Bulk Action Bar ────────────────────── */}
       <div
         className={cn(
-          'fixed bottom-6 left-1/2 z-50 -translate-x-1/2 transition-all duration-300',
+          'fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 -translate-x-1/2 transition-all duration-300 md:bottom-6',
           selected.size > 0
             ? 'translate-y-0 opacity-100'
             : 'translate-y-4 opacity-0 pointer-events-none'

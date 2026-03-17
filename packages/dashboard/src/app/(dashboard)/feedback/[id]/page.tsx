@@ -101,6 +101,32 @@ export default async function FeedbackDetailPage({
             </CardContent>
           </Card>
 
+          {/* Mobile-only: key metadata inline */}
+          <div className="flex flex-wrap gap-3 lg:hidden">
+            {fb.projects && (
+              <Link href={`/projects/${fb.projects.id}`} className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-xs font-medium transition-colors hover:bg-accent">
+                <FolderOpen className="h-3 w-3 text-muted-foreground" />
+                {fb.projects.name}
+              </Link>
+            )}
+            {fb.email && (
+              <span className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-xs">
+                <Mail className="h-3 w-3 text-muted-foreground" />
+                {fb.email}
+              </span>
+            )}
+            {fb.rating && (
+              <span className="flex items-center gap-1 rounded-lg border bg-card px-3 py-2 text-xs">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-3 w-3 ${i < fb.rating! ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/20'}`}
+                  />
+                ))}
+              </span>
+            )}
+          </div>
+
           {/* Screenshot */}
           {fb.screenshot_url && (
             <Card>

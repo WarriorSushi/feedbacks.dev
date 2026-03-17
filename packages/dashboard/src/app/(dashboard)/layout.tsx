@@ -40,8 +40,8 @@ export default async function DashboardLayout({
         projects={(projects as Project[]) || []}
         currentProjectId={currentProjectId}
       />
-      <main className="flex-1 overflow-auto pb-16 md:pb-0">
-        <div className="container mx-auto p-4 md:p-6">{children}</div>
+      <main className="flex-1 overflow-auto pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">
+        <div className="mx-auto max-w-7xl px-4 py-4 md:px-6 md:py-6">{children}</div>
       </main>
     </div>
   )

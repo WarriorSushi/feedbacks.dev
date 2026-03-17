@@ -161,26 +161,24 @@ export default async function DashboardPage() {
   return (
     <div className="animate-fade-in space-y-7">
       {/* ─── Header ───────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Good {getGreeting()},{' '}
-            <span className="font-normal text-muted-foreground">{displayName}</span>
-          </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {unread > 0 ? (
-              <>
-                <span className="font-semibold text-foreground">{unread}</span> unread{' '}
-                {unread === 1 ? 'item' : 'items'} waiting in your inbox.
-              </>
-            ) : total > 0 ? (
-              'All caught up — here\'s your overview.'
-            ) : (
-              'Install the widget to start collecting feedback.'
-            )}
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-bold tracking-tight">
+          Good {getGreeting()},{' '}
+          <span className="font-normal text-muted-foreground">{displayName}</span>
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {unread > 0 ? (
+            <>
+              <span className="font-semibold text-foreground">{unread}</span> unread{' '}
+              {unread === 1 ? 'item' : 'items'} waiting in your inbox.
+            </>
+          ) : total > 0 ? (
+            'All caught up — here\'s your overview.'
+          ) : (
+            'Install the widget to start collecting feedback.'
+          )}
+        </p>
+        <div className="flex items-center gap-2 pt-1">
           <Link href="/projects/new">
             <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs font-medium">
               <Plus className="h-3.5 w-3.5" />
@@ -202,15 +200,16 @@ export default async function DashboardPage() {
       </div>
 
       {/* ─── Stat Cards ───────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        {statCards.map((stat) => (
-          <Card
-            key={stat.id}
-            className={cn(
-              'overflow-hidden transition-all hover:shadow-sm',
-              stat.urgent && 'border-l-[3px] border-l-amber-400 dark:border-l-amber-500'
-            )}
-          >
+      <div className="-mx-4 px-4 md:mx-0 md:px-0">
+        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-thin md:grid md:grid-cols-5 md:overflow-visible">
+          {statCards.map((stat) => (
+            <Card
+              key={stat.id}
+              className={cn(
+                'min-w-[140px] flex-shrink-0 overflow-hidden transition-all hover:shadow-sm md:min-w-0',
+                stat.urgent && 'border-l-[3px] border-l-amber-400 dark:border-l-amber-500'
+              )}
+            >
             <CardContent className="p-4 pb-3">
               <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 {stat.label}
@@ -244,10 +243,52 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         ))}
+        </div>
       </div>
 
       {/* ─── Activity + Sidebar ───────────────────────────── */}
       <div className="grid gap-5 lg:grid-cols-[1fr_272px]">
+        {/* On mobile, show quick actions first as a horizontal scroll */}
+        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-thin lg:hidden">
+          <Link
+            href="/feedback?status=new"
+            className="flex min-w-[120px] flex-shrink-0 items-center gap-2 rounded-lg border bg-card px-3 py-2.5 text-xs font-medium transition-colors hover:bg-accent"
+          >
+            <Bell className="h-3.5 w-3.5 text-muted-foreground" />
+            Unread
+            {unread > 0 && (
+              <Badge variant="secondary" className="ml-auto h-5 text-[10px]">{unread}</Badge>
+            )}
+          </Link>
+          <Link
+            href="/feedback?type=bug"
+            className="flex min-w-[100px] flex-shrink-0 items-center gap-2 rounded-lg border bg-card px-3 py-2.5 text-xs font-medium transition-colors hover:bg-accent"
+          >
+            <span className="text-sm leading-none">🐛</span>
+            Bugs
+            {typeCounts.bug > 0 && (
+              <Badge variant="secondary" className="ml-auto h-5 text-[10px]">{typeCounts.bug}</Badge>
+            )}
+          </Link>
+          <Link
+            href="/feedback?type=idea"
+            className="flex min-w-[100px] flex-shrink-0 items-center gap-2 rounded-lg border bg-card px-3 py-2.5 text-xs font-medium transition-colors hover:bg-accent"
+          >
+            <span className="text-sm leading-none">💡</span>
+            Ideas
+            {typeCounts.idea > 0 && (
+              <Badge variant="secondary" className="ml-auto h-5 text-[10px]">{typeCounts.idea}</Badge>
+            )}
+          </Link>
+          <Link
+            href="/projects/new"
+            className="flex min-w-[100px] flex-shrink-0 items-center gap-2 rounded-lg border bg-card px-3 py-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            New project
+          </Link>
+        </div>
+
         {/* Recent Activity Feed */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-3 pt-4">
@@ -357,8 +398,8 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Sidebar */}
-        <div className="flex flex-col gap-4">
+        {/* Sidebar — hidden on mobile, quick actions shown above instead */}
+        <div className="hidden flex-col gap-4 lg:flex">
           {/* Type Breakdown */}
           <Card>
             <CardHeader className="pb-3 pt-4">
@@ -506,7 +547,7 @@ export default async function DashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="flex items-end gap-2" style={{ height: 96 }}>
+            <div className="flex items-end gap-1.5 sm:gap-2" style={{ height: 96 }}>
               {days7.map((day, i) => {
                 const count = sparkCounts[i] || 0
                 const heightPct = Math.max((count / sparkMax) * 100, 4)

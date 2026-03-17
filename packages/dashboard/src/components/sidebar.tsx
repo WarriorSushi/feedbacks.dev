@@ -324,7 +324,7 @@ export function Sidebar({ user, projects, currentProjectId }: SidebarProps) {
       </aside>
 
       {/* ── Mobile bottom nav ───────────────────────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 flex border-t bg-card/90 backdrop-blur-xl md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-30 flex border-t bg-card/95 backdrop-blur-xl md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
           return (
@@ -333,7 +333,7 @@ export function Sidebar({ user, projects, currentProjectId }: SidebarProps) {
               href={item.href}
               aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'relative flex flex-1 flex-col items-center gap-[3px] pb-[env(safe-area-inset-bottom,8px)] pt-2.5',
+                'relative flex flex-1 flex-col items-center gap-[3px] pb-1.5 pt-2.5',
                 'transition-colors duration-150',
                 isActive ? 'text-primary' : 'text-muted-foreground'
               )}
