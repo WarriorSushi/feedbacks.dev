@@ -67,7 +67,7 @@ export interface Feedback {
   project_id: string
   message: string
   email: string | null
-  url: string
+  url: string | null
   user_agent: string
   type: FeedbackType | null
   rating: number | null

@@ -43,7 +43,7 @@ export async function GET(
     const status = searchParams.get('status') as FeedbackStatus | null
     const type = searchParams.get('type') as FeedbackType | null
     const agentName = searchParams.get('agent_name')
-    const search = searchParams.get('search')
+    const search = searchParams.get('search')?.slice(0, 200) ?? null
 
     const admin = await createAdminSupabase()
     let query = admin

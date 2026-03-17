@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 
+/** Sanitize CSS: strip dangerous constructs */
+function sanitizeCss(css: string): string {
+  return css
+    .replace(/url\s*\(/gi, '/* blocked */( ')
+    .replace(/@import/gi, '/* blocked */')
+    .replace(/expression\s*\(/gi, '/* blocked */(')
+    .replace(/javascript\s*:/gi, '/* blocked */:')
+    .replace(/-moz-binding/gi, '/* blocked */')
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -20,7 +30,7 @@ export async function GET(
     return NextResponse.json({ error: 'Board not found' }, { status: 404 })
   }
 
-  // Get public feedback for this project
+  // Get public feedback for this project (capped at 100)
   const { data: feedback, error: feedbackError } = await admin
     .from('feedback')
     .select('id, message, type, status, vote_count, created_at, email')
@@ -29,6 +39,7 @@ export async function GET(
     .eq('is_archived', false)
     .in('type', board.show_types || ['idea', 'bug'])
     .order('vote_count', { ascending: false })
+    .limit(100)
 
   if (feedbackError) {
     return NextResponse.json({ error: 'Failed to load feedback' }, { status: 500 })
@@ -45,7 +56,7 @@ export async function GET(
       allow_submissions: board.allow_submissions,
       show_types: board.show_types,
       branding: board.branding,
-      custom_css: board.custom_css,
+      custom_css: board.custom_css ? sanitizeCss(board.custom_css) : null,
     },
     feedback: safeFeedback,
   })

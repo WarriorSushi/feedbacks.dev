@@ -43,7 +43,11 @@ export async function GET(
           const val = row[h as keyof typeof row]
           if (val == null) return ''
           if (Array.isArray(val)) return `"${val.join('; ')}"`
-          const str = String(val)
+          let str = String(val)
+          // Prevent CSV formula injection
+          if (/^[=+\-@]/.test(str)) {
+            str = '\t' + str
+          }
           if (str.includes(',') || str.includes('"') || str.includes('\n')) {
             return `"${str.replace(/"/g, '""')}"`
           }

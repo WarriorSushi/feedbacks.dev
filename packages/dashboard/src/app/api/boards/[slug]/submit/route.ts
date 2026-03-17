@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { checkRateLimit } from '@/lib/rate-limit'
-import { headers } from 'next/headers'
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export async function POST(
   req: NextRequest,
@@ -11,9 +12,7 @@ export async function POST(
   const admin = await createAdminSupabase()
 
   // Rate limit
-  const headersList = await headers()
-  const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  const { allowed } = await checkRateLimit(ip, 5, 5) // 5 submissions per 5 minutes
+  const { allowed } = await checkRateLimit(req, 'board-submit', 5, 5)
 
   if (!allowed) {
     return NextResponse.json({ error: 'Too many submissions. Please wait.' }, { status: 429 })
@@ -46,6 +45,12 @@ export async function POST(
     return NextResponse.json({ error: 'Message too long (max 2000 chars)' }, { status: 400 })
   }
 
+  // Validate email if provided
+  const trimmedEmail = email?.trim() || null
+  if (trimmedEmail && !EMAIL_RE.test(trimmedEmail)) {
+    return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
+  }
+
   const allowedTypes = board.show_types || ['idea', 'bug']
   const feedbackType = allowedTypes.includes(type) ? type : allowedTypes[0]
 
@@ -55,8 +60,8 @@ export async function POST(
       project_id: board.project_id,
       message: message.trim(),
       type: feedbackType,
-      email: email?.trim() || null,
-      url: `board:${slug}`,
+      email: trimmedEmail,
+      url: null,
       user_agent: 'public-board',
       status: 'new',
       is_public: true,

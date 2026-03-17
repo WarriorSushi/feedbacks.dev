@@ -24,17 +24,38 @@ function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status, headers: CORS_HEADERS })
 }
 
+/** Hash an API key with SHA-256 for storage/lookup */
+async function hashApiKey(key: string): Promise<string> {
+  const encoded = new TextEncoder().encode(key)
+  const hashBuffer = await crypto.subtle.digest('SHA-256', encoded)
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
 async function verifyCaptcha(provider: 'turnstile' | 'hcaptcha', token: string): Promise<boolean> {
+  // Check that the required secret key env var is set
+  const secret = provider === 'turnstile'
+    ? process.env.TURNSTILE_SECRET_KEY
+    : process.env.HCAPTCHA_SECRET_KEY
+
+  if (!secret) {
+    // No secret configured — fail closed
+    return false
+  }
+
   try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 3000)
+
     if (provider === 'turnstile') {
       const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          secret: process.env.TURNSTILE_SECRET_KEY ?? '',
-          response: token,
-        }),
+        body: new URLSearchParams({ secret, response: token }),
+        signal: controller.signal,
       })
+      clearTimeout(timeout)
       const data = await res.json()
       return data.success === true
     }
@@ -43,28 +64,28 @@ async function verifyCaptcha(provider: 'turnstile' | 'hcaptcha', token: string):
       const res = await fetch('https://api.hcaptcha.com/siteverify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          secret: process.env.HCAPTCHA_SECRET_KEY ?? '',
-          response: token,
-        }),
+        body: new URLSearchParams({ secret, response: token }),
+        signal: controller.signal,
       })
+      clearTimeout(timeout)
       const data = await res.json()
       return data.success === true
     }
   } catch {
-    // Verification service failure — allow through
+    // Verification service failure — fail closed
   }
-  return true
+  return false
+}
+
+/** Sanitize filename: only allow alphanumerics, dots, hyphens, underscores */
+function sanitizeFilename(name: string): string {
+  return name.replace(/[^a-zA-Z0-9.\-_]/g, '')
 }
 
 export async function POST(request: NextRequest) {
   try {
     // Rate limiting
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      ?? request.headers.get('x-real-ip')
-      ?? 'unknown'
-
-    const { allowed, remaining } = await checkRateLimit(ip, 10, 1)
+    const { allowed, remaining } = await checkRateLimit(request, 'feedback', 10, 1)
     if (!allowed) {
       return jsonError('Too many requests. Please try again later.', 429)
     }
@@ -101,10 +122,13 @@ export async function POST(request: NextRequest) {
     if (!apiKey) return jsonError('API key is required', 400)
 
     const admin = await createAdminSupabase()
+
+    // Hash the incoming API key and compare against stored hash
+    const keyHash = await hashApiKey(apiKey)
     const { data: project, error: projectErr } = await admin
       .from('projects')
       .select('id, name, webhooks, settings, owner_user_id')
-      .eq('api_key', apiKey)
+      .eq('api_key_hash', keyHash)
       .single()
 
     if (projectErr || !project) return jsonError('Invalid API key', 401)
@@ -120,7 +144,13 @@ export async function POST(request: NextRequest) {
 
     const url = fields.url?.trim() || null
     if (url) {
-      try { new URL(url) } catch { return jsonError('Invalid URL', 400) }
+      try {
+        const parsed = new URL(url)
+        // Only allow http/https protocols
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+          return jsonError('URL must use http or https protocol', 400)
+        }
+      } catch { return jsonError('Invalid URL', 400) }
     }
 
     const type = fields.type?.trim() as FeedbackType | undefined || null
@@ -173,7 +203,10 @@ export async function POST(request: NextRequest) {
         screenshotUrl = urlData.publicUrl
       }
     } else if (fields.screenshot && fields.screenshot.startsWith('data:image/')) {
-      // Base64 screenshot from widget
+      // Check base64 size before decoding (~5MB decoded limit)
+      if (fields.screenshot.length > 7_000_000) {
+        return jsonError('Screenshot too large (max ~5MB)', 400)
+      }
       const match = fields.screenshot.match(/^data:image\/(png|jpeg);base64,(.+)$/)
       if (match) {
         const ext = match[1]
@@ -195,7 +228,8 @@ export async function POST(request: NextRequest) {
       if (attachmentFile.size > MAX_ATTACHMENT_SIZE) return jsonError('Attachment too large (max 5MB)', 400)
       if (!ALLOWED_ATTACHMENT_TYPES.includes(attachmentFile.type)) return jsonError('Attachment type not allowed (png, jpeg, pdf only)', 400)
 
-      const ext = attachmentFile.name.split('.').pop() ?? 'bin'
+      const safeName = sanitizeFilename(attachmentFile.name)
+      const ext = safeName.split('.').pop() ?? 'bin'
       const path = `${project.id}/${crypto.randomUUID()}.${ext}`
       const buffer = Buffer.from(await attachmentFile.arrayBuffer())
       const { error: uploadErr } = await admin.storage
@@ -205,7 +239,7 @@ export async function POST(request: NextRequest) {
         const { data: urlData } = admin.storage.from('feedback_attachments').getPublicUrl(path)
         attachments = [{
           url: urlData.publicUrl,
-          name: attachmentFile.name,
+          name: safeName,
           type: attachmentFile.type,
           size: attachmentFile.size,
         }]
@@ -220,7 +254,7 @@ export async function POST(request: NextRequest) {
       project_id: project.id,
       message,
       email,
-      url: url ?? '',
+      url,
       user_agent: userAgent,
       type,
       rating,
@@ -242,6 +276,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Webhook delivery (best-effort, non-blocking)
+    // NOTE: In Vercel production, use waitUntil() for reliable background execution
     if (project.webhooks) {
       deliverWebhooks(
         project.webhooks,

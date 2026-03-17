@@ -8,6 +8,33 @@ interface WebhookPayload {
   timestamp: string
 }
 
+/** Blocklist of private/reserved IP ranges for SSRF prevention */
+function isPrivateUrl(urlStr: string): boolean {
+  try {
+    const parsed = new URL(urlStr)
+    // Only allow https
+    if (parsed.protocol !== 'https:') return true
+
+    const hostname = parsed.hostname
+    // Block IPv6 loopback & private
+    if (hostname === '::1' || hostname.startsWith('fc00:') || hostname.startsWith('fe80:')) return true
+    // Block localhost
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return true
+    // Block private IPv4 ranges
+    const parts = hostname.split('.').map(Number)
+    if (parts.length === 4 && parts.every(p => !isNaN(p))) {
+      if (parts[0] === 10) return true
+      if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true
+      if (parts[0] === 192 && parts[1] === 168) return true
+      if (parts[0] === 169 && parts[1] === 254) return true
+      if (parts[0] === 127) return true
+    }
+    return false
+  } catch {
+    return true
+  }
+}
+
 function buildPayload(feedback: Partial<Feedback>, project: Pick<Project, 'id' | 'name'>, event: WebhookPayload['event'] = 'feedback.new'): WebhookPayload {
   return {
     event,
@@ -93,18 +120,37 @@ async function deliverSingle(
   type: 'slack' | 'discord' | 'generic' | 'github',
   endpoint: WebhookEndpoint | GitHubEndpoint,
   payload: WebhookPayload,
-  projectId: string
+  projectId: string,
+  admin: Awaited<ReturnType<typeof createAdminSupabase>>
 ) {
-  const admin = await createAdminSupabase()
   const deliveryId = crypto.randomUUID()
   let status: 'success' | 'failed' = 'failed'
-  let responseCode: number | null = null
+  let statusCode: number | null = null
   let responseBody: string | null = null
-  let attempts = 0
+  let attempt = 0
   const maxRetries = 3
 
+  // SSRF check for non-GitHub endpoints
+  if (type !== 'github' && isPrivateUrl(endpoint.url)) {
+    responseBody = 'URL blocked: private/reserved IP or non-HTTPS'
+    await admin.from('webhook_deliveries').insert({
+      id: deliveryId,
+      project_id: projectId,
+      event: payload.event,
+      kind: type,
+      url: endpoint.url,
+      status: 'failed',
+      status_code: null,
+      response_body: responseBody,
+      attempt: 1,
+      payload: JSON.stringify(payload),
+      created_at: new Date().toISOString(),
+    })
+    return { deliveryId, status: 'failed' as const }
+  }
+
   for (let i = 0; i < maxRetries; i++) {
-    attempts++
+    attempt++
     try {
       let res: Response
 
@@ -124,13 +170,12 @@ async function deliverSingle(
         })
       }
 
-      responseCode = res.status
+      statusCode = res.status
       responseBody = (await res.text()).slice(0, 1000)
 
       if (res.ok) {
         status = 'success'
-        // Reset consecutive failures
-        try { await admin.rpc('reset_webhook_failures', { p_project_id: projectId, p_type: type, p_endpoint_id: endpoint.id }) } catch {}
+        try { await admin.rpc('reset_webhook_failures', { p_project_id: projectId, p_type: type, p_endpoint_id: endpoint.id }) } catch { /* rpc may not exist */ }
         break
       }
     } catch (err) {
@@ -143,20 +188,20 @@ async function deliverSingle(
     }
   }
 
-  // Log delivery
+  // Log delivery — use correct DB column names
   await admin.from('webhook_deliveries').insert({
     id: deliveryId,
     project_id: projectId,
-    endpoint_type: type,
-    endpoint_url: endpoint.url,
+    event: payload.event,
+    kind: type,
+    url: endpoint.url,
     status,
-    response_code: responseCode,
+    status_code: statusCode,
     response_body: responseBody,
-    attempts,
+    attempt,
     payload: JSON.stringify(payload),
     created_at: new Date().toISOString(),
   })
-  // ignore insert errors
 
   // Auto-disable after 3 consecutive failures
   if (status === 'failed') {
@@ -164,13 +209,12 @@ async function deliverSingle(
       .from('webhook_deliveries')
       .select('status')
       .eq('project_id', projectId)
-      .eq('endpoint_type', type)
-      .eq('endpoint_url', endpoint.url)
+      .eq('kind', type)
+      .eq('url', endpoint.url)
       .order('created_at', { ascending: false })
       .limit(3)
 
     if (failures && failures.length >= 3 && failures.every(f => f.status === 'failed')) {
-      // Disable this endpoint in the project webhooks config
       const { data: project } = await admin.from('projects').select('webhooks').eq('id', projectId).single()
       if (project?.webhooks) {
         const webhooks = project.webhooks as WebhookConfig
@@ -189,6 +233,10 @@ async function deliverSingle(
   return { deliveryId, status }
 }
 
+// NOTE: In Vercel production, wrap calls to deliverWebhooks with waitUntil()
+// for reliable background execution that survives after the response is sent.
+// Example: waitUntil(deliverWebhooks(...))
+
 export async function deliverWebhooks(
   webhooks: WebhookConfig,
   feedback: Partial<Feedback>,
@@ -196,6 +244,7 @@ export async function deliverWebhooks(
   event: WebhookPayload['event'] = 'feedback.new'
 ) {
   const payload = buildPayload(feedback, project, event)
+  const admin = await createAdminSupabase() // Create once, pass to all
   const promises: Promise<unknown>[] = []
 
   for (const type of ['slack', 'discord', 'generic'] as const) {
@@ -204,7 +253,7 @@ export async function deliverWebhooks(
     for (const ep of group.endpoints) {
       if (!ep.enabled) continue
       if (!matchesRules(ep, feedback)) continue
-      promises.push(deliverSingle(type, ep, payload, project.id))
+      promises.push(deliverSingle(type, ep, payload, project.id, admin))
     }
   }
 
@@ -212,12 +261,11 @@ export async function deliverWebhooks(
     for (const ep of webhooks.github.endpoints) {
       if (!ep.enabled) continue
       if (!matchesRules(ep, feedback)) continue
-      promises.push(deliverSingle('github', ep, payload, project.id))
+      promises.push(deliverSingle('github', ep, payload, project.id, admin))
     }
   }
 
-  // Fire and forget — don't block
-  Promise.allSettled(promises).catch(() => {})
+  await Promise.allSettled(promises)
 }
 
 export async function sendTestWebhook(
@@ -236,5 +284,6 @@ export async function sendTestWebhook(
     created_at: new Date().toISOString(),
   }
   const payload = buildPayload(testFeedback, project, 'feedback.test')
-  return deliverSingle(type, endpoint, payload, project.id)
+  const admin = await createAdminSupabase()
+  return deliverSingle(type, endpoint, payload, project.id, admin)
 }

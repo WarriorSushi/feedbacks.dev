@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import { authenticateApiKey } from '@/lib/api-auth'
 
 const CORS_HEADERS = {
@@ -22,32 +21,12 @@ export async function OPTIONS() {
 
 export async function GET(request: NextRequest) {
   try {
-    // Try API key auth first
+    // API key auth only — no cookie fallback on wildcard CORS routes
     const apiAuth = await authenticateApiKey(request)
-    if (apiAuth) {
-      // API key only gives access to its own project
-      return json({ data: [apiAuth.project] })
-    }
+    if (!apiAuth) return jsonError('Invalid or missing API key', 401)
 
-    // Fall back to Supabase session auth
-    try {
-      const supabase = await createServerSupabase()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) return jsonError('Unauthorized', 401)
-
-      const admin = await createAdminSupabase()
-      const { data: projects, error } = await admin
-        .from('projects')
-        .select('*')
-        .eq('owner_user_id', user.id)
-        .order('created_at', { ascending: false })
-
-      if (error) return jsonError('Failed to fetch projects', 500)
-      return json({ data: projects ?? [] })
-    } catch {
-      return jsonError('Unauthorized', 401)
-    }
+    // API key only gives access to its own project
+    return json({ data: [apiAuth.project] })
   } catch (err) {
     console.error('v1 projects GET error:', err)
     return jsonError('Internal server error', 500)

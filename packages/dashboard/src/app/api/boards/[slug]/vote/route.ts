@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { checkRateLimit } from '@/lib/rate-limit'
-import { headers } from 'next/headers'
 
 export async function POST(
   req: NextRequest,
@@ -10,19 +9,22 @@ export async function POST(
   const { slug } = await params
   const admin = await createAdminSupabase()
 
-  // Rate limit by IP
-  const headersList = await headers()
-  const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-
   // Rate limit votes: 30 per minute
-  const { allowed } = await checkRateLimit(ip + ':vote', 30, 1)
+  const { allowed } = await checkRateLimit(req, 'vote', 30, 1)
   if (!allowed) {
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
-  // Hash the IP for privacy
+  // Hash the IP for privacy — use env var for salt with fallback
+  const ip =
+    req.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    'anonymous'
+
+  const salt = process.env.VOTE_HMAC_SECRET || '_feedbacks_vote_salt'
   const encoder = new TextEncoder()
-  const data = encoder.encode(ip + '_feedbacks_vote_salt')
+  const data = encoder.encode(ip + salt)
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
   const voterIdentifier = Array.from(new Uint8Array(hashBuffer))
     .map((b) => b.toString(16).padStart(2, '0'))

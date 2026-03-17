@@ -29,11 +29,7 @@ export async function OPTIONS() {
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-      ?? request.headers.get('x-real-ip')
-      ?? 'unknown'
-
-    const { allowed } = await checkRateLimit(ip, 30, 1)
+    const { allowed } = await checkRateLimit(request, 'v1-feedback', 30, 1)
     if (!allowed) return jsonError('Too many requests', 429)
 
     const auth = await authenticateApiKey(request)
@@ -55,13 +51,23 @@ export async function POST(request: NextRequest) {
     if (priority && !VALID_PRIORITIES.includes(priority)) return jsonError('Invalid priority', 400)
 
     const email = body.email?.trim() || null
-    const url = body.url?.trim() || ''
+    const url = body.url?.trim() || null
     const tags = Array.isArray(body.tags) ? body.tags.map(String).slice(0, 10) : null
     const agentName = body.agent_name?.trim() || null
     const agentSessionId = body.agent_session_id?.trim() || null
-    const structuredData: StructuredFeedbackData | null = body.structured_data ?? null
-    const metadata = body.metadata ?? null
     const userAgent = body.user_agent || request.headers.get('user-agent') || ''
+
+    // Validate structured_data size (max 10KB)
+    const structuredData: StructuredFeedbackData | null = body.structured_data ?? null
+    if (structuredData && JSON.stringify(structuredData).length > 10_240) {
+      return jsonError('structured_data too large (max 10KB)', 400)
+    }
+
+    // Validate metadata size (max 4KB)
+    const metadata = body.metadata ?? null
+    if (metadata && JSON.stringify(metadata).length > 4_096) {
+      return jsonError('metadata too large (max 4KB)', 400)
+    }
 
     const admin = await createAdminSupabase()
     const feedbackId = crypto.randomUUID()
@@ -97,6 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Webhook delivery (best-effort)
+    // NOTE: In Vercel production, use waitUntil() for reliable background execution
     if (project.webhooks) {
       deliverWebhooks(
         project.webhooks,
@@ -127,7 +134,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') as FeedbackStatus | null
     const type = searchParams.get('type') as FeedbackType | null
     const agentName = searchParams.get('agent_name')
-    const search = searchParams.get('search')
+    const search = searchParams.get('search')?.slice(0, 200) ?? null
 
     const admin = await createAdminSupabase()
     let query = admin

@@ -1,10 +1,24 @@
 import { createAdminSupabase } from '@/lib/supabase-server'
 
 export async function checkRateLimit(
-  ip: string,
+  request: Request,
+  route: string,
   limit: number = 10,
   windowMinutes: number = 1
 ): Promise<{ allowed: boolean; remaining: number }> {
+  // Prefer x-vercel-forwarded-for (harder to spoof on Vercel), then x-forwarded-for, then x-real-ip
+  const ip =
+    request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    null
+
+  // Reject requests with no identifiable IP
+  if (!ip) {
+    return { allowed: false, remaining: 0 }
+  }
+
+  const key = ip
   const admin = await createAdminSupabase()
   const now = new Date()
   const windowStart = new Date(now.getTime() - windowMinutes * 60 * 1000).toISOString()
@@ -13,13 +27,15 @@ export async function checkRateLimit(
   await admin
     .from('rate_limits')
     .delete()
-    .eq('ip', ip)
+    .eq('key', key)
+    .eq('route', route)
     .lt('created_at', windowStart)
 
   const { count } = await admin
     .from('rate_limits')
     .select('*', { count: 'exact', head: true })
-    .eq('ip', ip)
+    .eq('key', key)
+    .eq('route', route)
     .gte('created_at', windowStart)
 
   const current = count ?? 0
@@ -31,7 +47,8 @@ export async function checkRateLimit(
   // Record this request
   await admin.from('rate_limits').insert({
     id: crypto.randomUUID(),
-    ip,
+    key,
+    route,
     created_at: now.toISOString(),
   })
 

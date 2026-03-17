@@ -63,7 +63,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if ('error' in result && !('admin' in result)) return result.error
 
     const { admin } = result as Exclude<typeof result, { error: NextResponse }>
-    const body = await request.json()
+
+    // Limit request body size
+    const rawBody = await request.text()
+    if (rawBody.length > 50_000) {
+      return NextResponse.json({ error: 'Request body too large' }, { status: 400 })
+    }
+    const body = JSON.parse(rawBody)
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (body.name !== undefined) {
@@ -72,11 +78,25 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       updates.name = name
     }
     if (body.domain !== undefined) updates.domain = body.domain?.trim() || null
-    if (body.settings !== undefined) updates.settings = body.settings
-    if (body.webhooks !== undefined) updates.webhooks = body.webhooks
+
+    // Validate settings is a plain object
+    if (body.settings !== undefined) {
+      if (typeof body.settings !== 'object' || body.settings === null || Array.isArray(body.settings)) {
+        return NextResponse.json({ error: 'settings must be a plain object' }, { status: 400 })
+      }
+      updates.settings = body.settings
+    }
+
+    // Validate webhooks is a plain object
+    if (body.webhooks !== undefined) {
+      if (typeof body.webhooks !== 'object' || body.webhooks === null || Array.isArray(body.webhooks)) {
+        return NextResponse.json({ error: 'webhooks must be a plain object' }, { status: 400 })
+      }
+      updates.webhooks = body.webhooks
+    }
 
     const { data, error } = await admin.from('projects').update(updates).eq('id', id).select().single()
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'Failed to update project' }, { status: 500 })
 
     return NextResponse.json(data)
   } catch {
@@ -92,11 +112,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
 
     const { admin } = result as Exclude<typeof result, { error: NextResponse }>
 
-    // Delete feedback first, then project
-    await admin.from('feedback').delete().eq('project_id', id)
-    await admin.from('webhook_deliveries').delete().eq('project_id', id)
+    // Rely on CASCADE for related records (feedback, webhook_deliveries, etc.)
     const { error } = await admin.from('projects').delete().eq('id', id)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'Failed to delete project' }, { status: 500 })
 
     return NextResponse.json({ success: true })
   } catch {
