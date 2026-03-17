@@ -20,6 +20,8 @@ import {
   PanelLeftClose,
   PanelLeft,
   Check,
+  Globe,
+  ExternalLink,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import type { Project } from '@/lib/types'
@@ -47,9 +49,10 @@ interface SidebarProps {
   user: { email?: string; user_metadata?: { avatar_url?: string; full_name?: string } }
   projects: Project[]
   currentProjectId?: string
+  boardSlugs?: Record<string, string>
 }
 
-export function Sidebar({ user, projects, currentProjectId }: SidebarProps) {
+export function Sidebar({ user, projects, currentProjectId, boardSlugs = {} }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { theme, setTheme } = useTheme()
@@ -260,6 +263,54 @@ export function Sidebar({ user, projects, currentProjectId }: SidebarProps) {
             )
           })}
         </nav>
+
+        {/* Public Board link */}
+        {(() => {
+          const projectsWithBoards = projects.filter((p) => boardSlugs[p.id])
+          if (projectsWithBoards.length === 0 || collapsed) return null
+
+          if (projectsWithBoards.length === 1) {
+            const slug = boardSlugs[projectsWithBoards[0].id]
+            return (
+              <div className="px-2.5 pb-2">
+                <a
+                  href={`/p/${slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground"
+                >
+                  <Globe className="h-[17px] w-[17px] shrink-0 transition-transform duration-150 group-hover:scale-[1.08]" />
+                  <span className="truncate">Public Board</span>
+                  <ExternalLink className="ml-auto h-3 w-3 opacity-0 transition-opacity group-hover:opacity-60" />
+                </a>
+              </div>
+            )
+          }
+
+          return (
+            <div className="px-2.5 pb-2">
+              <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                Public Boards
+              </p>
+              {projectsWithBoards.map((p) => {
+                const slug = boardSlugs[p.id]
+                return (
+                  <a
+                    key={p.id}
+                    href={`/p/${slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center gap-3 rounded-lg px-3 py-1.5 text-[13px] text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground"
+                  >
+                    <Globe className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{p.name}</span>
+                    <ExternalLink className="ml-auto h-3 w-3 opacity-0 transition-opacity group-hover:opacity-60" />
+                  </a>
+                )
+              })}
+            </div>
+          )
+        })()}
 
         {/* Bottom section */}
         <div className="space-y-1 border-t p-2.5">

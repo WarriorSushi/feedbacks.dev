@@ -9,6 +9,9 @@ import {
   Zap,
   Bot,
   ThumbsUp,
+  MessageSquare,
+  Shield,
+  Sparkles,
 } from 'lucide-react'
 import { WidgetDemo, ScrollHeader } from './widget-demo-client'
 
@@ -46,13 +49,13 @@ curl https://feedbacks.dev/api/v1/feedback \\
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
       <ScrollHeader>
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <Link href="/" className="text-lg font-bold tracking-tight">
             feedbacks
-            <span className="text-amber-500 dark:text-amber-400">.dev</span>
+            <span className="text-primary">.dev</span>
           </Link>
           <div className="flex items-center gap-2">
             <a
@@ -81,26 +84,46 @@ export default function LandingPage() {
       </ScrollHeader>
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b bg-grid-pattern">
-        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/85 to-background" />
-        <div className="relative mx-auto max-w-6xl px-6 py-20 md:py-28">
+      <section className="relative overflow-hidden border-b">
+        {/* Atmospheric gradient backdrop */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.04] via-transparent to-background" />
+          <div
+            className="absolute -left-1/4 top-0 h-[600px] w-[600px] rounded-full opacity-20 blur-[120px]"
+            style={{ background: 'radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)' }}
+          />
+          <div
+            className="absolute -right-1/4 top-1/4 h-[400px] w-[400px] rounded-full opacity-15 blur-[100px]"
+            style={{ background: 'radial-gradient(circle, hsl(280 60% 60%) 0%, transparent 70%)' }}
+          />
+        </div>
+        {/* Subtle dot grid */}
+        <div
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
+          style={{
+            backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        />
+
+        <div className="relative mx-auto max-w-6xl px-6 py-24 md:py-32">
           <div className="flex flex-col gap-14 md:flex-row md:items-center md:gap-12 lg:gap-20">
             <div className="min-w-0 flex-1">
               <div className="mb-6 flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium">
-                  Open source
-                </Badge>
-                <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium">
-                  MIT license
+                <Badge variant="secondary" className="gap-1.5 border-primary/20 bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
+                  <Sparkles className="h-3 w-3" />
+                  Open source &middot; MIT
                 </Badge>
               </div>
 
-              <h1 className="mb-5 text-5xl font-black leading-none tracking-tighter md:text-6xl lg:text-[4.5rem]">
+              <h1 className="mb-6 text-5xl font-black leading-[0.95] tracking-tighter md:text-6xl lg:text-7xl">
                 Feedback
                 <br />
                 infrastructure
                 <br />
-                <span className="text-amber-500 dark:text-amber-400">for builders.</span>
+                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  for builders.
+                </span>
               </h1>
 
               <p className="mb-8 max-w-md text-base leading-relaxed text-muted-foreground md:text-lg">
@@ -110,7 +133,7 @@ export default function LandingPage() {
 
               <div className="flex flex-wrap gap-3">
                 <Link href="/auth">
-                  <Button size="lg" className="group font-semibold">
+                  <Button size="lg" className="group h-12 px-6 font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/25">
                     Start for free
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </Button>
@@ -120,14 +143,14 @@ export default function LandingPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button variant="outline" size="lg" className="gap-2 font-semibold">
+                  <Button variant="outline" size="lg" className="h-12 gap-2 font-semibold">
                     <Github className="h-4 w-4" />
                     GitHub
                   </Button>
                 </a>
               </div>
 
-              <div className="mt-8 flex flex-wrap gap-2">
+              <div className="mt-8 flex flex-wrap gap-2.5">
                 {[
                   { Icon: Zap, label: 'Under 10KB' },
                   { Icon: Bot, label: 'MCP / AI agents' },
@@ -135,9 +158,9 @@ export default function LandingPage() {
                 ].map(({ Icon, label }) => (
                   <span
                     key={label}
-                    className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs text-muted-foreground"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/50 px-3.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-sm"
                   >
-                    <Icon className="h-3.5 w-3.5 text-amber-500" />
+                    <Icon className="h-3.5 w-3.5 text-primary" />
                     {label}
                   </span>
                 ))}
@@ -146,9 +169,9 @@ export default function LandingPage() {
 
             <div className="flex flex-shrink-0 justify-center md:justify-end">
               <div className="relative">
-                <div className="absolute -inset-8 rounded-3xl bg-amber-400/10 blur-3xl dark:bg-amber-400/5" />
+                <div className="absolute -inset-10 rounded-3xl bg-primary/8 blur-3xl" />
                 <div className="relative">
-                  <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <p className="mb-3 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                     Live preview
                   </p>
                   <WidgetDemo />
@@ -160,9 +183,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── Install strip ────────────────────────────────────────────────────── */}
-      <section className="border-b bg-zinc-950 px-6 py-14 dark:bg-zinc-900">
+      <section className="border-b bg-zinc-950 px-6 py-16 dark:bg-zinc-900/80">
         <div className="mx-auto max-w-2xl">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-zinc-500">
+          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
             Install
           </p>
           <h2 className="mb-6 text-2xl font-bold tracking-tight text-zinc-50">
@@ -172,10 +195,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Three real differentiators ───────────────────────────────────────── */}
-      <section className="border-b py-16 md:py-20">
+      {/* ── Three differentiators ───────────────────────────────────────────── */}
+      <section className="relative border-b py-20 md:py-24">
         <div className="mx-auto max-w-6xl px-6">
-          <div className="grid divide-y md:grid-cols-3 md:divide-x md:divide-y-0">
+          <div className="grid gap-px overflow-hidden rounded-2xl border bg-border md:grid-cols-3">
             {[
               {
                 Icon: Zap,
@@ -195,15 +218,12 @@ export default function LandingPage() {
                 sub: 'Public feature requests',
                 body: 'Every project gets a shareable feature board at no extra cost. Users upvote. You build what they actually want.',
               },
-            ].map(({ Icon, headline, sub, body }, i) => (
-              <div
-                key={headline}
-                className={`p-8 md:px-10 ${i === 0 ? 'md:pl-0' : ''} ${
-                  i === 2 ? 'md:pr-0' : ''
-                }`}
-              >
-                <Icon className="mb-4 h-6 w-6 text-amber-500" />
-                <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            ].map(({ Icon, headline, sub, body }) => (
+              <div key={headline} className="bg-card p-8 md:p-10">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                  <Icon className="h-5 w-5 text-primary" />
+                </div>
+                <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                   {sub}
                 </p>
                 <h3 className="mb-3 text-2xl font-black tracking-tight">{headline}</h3>
@@ -219,7 +239,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-6">
           <div className="flex flex-col gap-12 md:flex-row md:items-start md:gap-16">
             <div className="flex-1">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-amber-500 dark:text-amber-400">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
                 Built for AI-first workflows
               </p>
               <h2 className="mb-5 text-4xl font-black leading-tight tracking-tighter md:text-5xl">
@@ -239,7 +259,7 @@ export default function LandingPage() {
                   'API key auth — no OAuth dance',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                    <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
+                    <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                     {item}
                   </li>
                 ))}
@@ -260,7 +280,7 @@ export default function LandingPage() {
       {/* ── How it works ─────────────────────────────────────────────────────── */}
       <section className="border-b bg-muted/20 py-20 md:py-28">
         <div className="mx-auto max-w-6xl px-6">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
             Getting started
           </p>
           <h2 className="mb-14 text-4xl font-black tracking-tighter md:text-5xl">
@@ -288,7 +308,7 @@ export default function LandingPage() {
                 key={num}
                 className="flex flex-col gap-4 py-8 md:flex-row md:items-baseline md:gap-12"
               >
-                <span className="text-5xl font-black tracking-tighter text-muted-foreground/20 md:w-20 md:flex-shrink-0 md:text-right">
+                <span className="text-5xl font-black tracking-tighter text-primary/15 md:w-20 md:flex-shrink-0 md:text-right">
                   {num}
                 </span>
                 <div>
@@ -301,10 +321,49 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Pricing ──────────────────────────────────────────────────────────── */}
-      <section id="pricing" className="border-b py-20 md:py-28">
+      {/* ── Why feedbacks.dev ─────────────────────────────────────────────────── */}
+      <section className="border-b py-20 md:py-28">
         <div className="mx-auto max-w-6xl px-6">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+            Why us
+          </p>
+          <h2 className="mb-14 text-4xl font-black tracking-tighter md:text-5xl">
+            Built different.
+          </h2>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                Icon: Shield,
+                title: 'Privacy-first',
+                desc: 'No third-party trackers. Your feedback data stays yours. Self-host if you want.',
+              },
+              {
+                Icon: MessageSquare,
+                title: 'Real-time inbox',
+                desc: 'See feedback the moment it arrives. Filter, tag, and respond without delay.',
+              },
+              {
+                Icon: Sparkles,
+                title: 'AI-native',
+                desc: 'Built for the AI era. MCP protocol, structured data, agent metadata — all first-class.',
+              },
+            ].map(({ Icon, title, desc }) => (
+              <div key={title} className="group rounded-2xl border bg-card/50 p-6 transition-all duration-200 hover:bg-card hover:shadow-lg hover:shadow-primary/5">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
+                  <Icon className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="mb-2 text-lg font-bold tracking-tight">{title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Pricing ──────────────────────────────────────────────────────────── */}
+      <section id="pricing" className="border-b bg-muted/10 py-20 md:py-28">
+        <div className="mx-auto max-w-6xl px-6">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
             Pricing
           </p>
           <h2 className="mb-2 text-4xl font-black tracking-tighter md:text-5xl">
@@ -314,14 +373,14 @@ export default function LandingPage() {
             No usage-based traps. No surprise bills.
           </p>
 
-          <div className="grid max-w-3xl gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border bg-background p-8">
+          <div className="grid max-w-3xl gap-5 md:grid-cols-2">
+            <div className="rounded-2xl border bg-card p-8 transition-all hover:shadow-lg">
               <p className="mb-1 text-sm font-medium text-muted-foreground">Free</p>
-              <p className="mb-6 text-4xl font-black tracking-tighter">
+              <p className="mb-6 text-5xl font-black tracking-tighter">
                 $0
                 <span className="text-lg font-normal text-muted-foreground">/mo</span>
               </p>
-              <ul className="mb-8 space-y-2.5">
+              <ul className="mb-8 space-y-3">
                 {[
                   '1 project',
                   '500 feedback / month',
@@ -329,8 +388,8 @@ export default function LandingPage() {
                   'Dashboard + REST API',
                   '30-day history',
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Check className="h-4 w-4 flex-shrink-0 text-amber-500" />
+                  <li key={item} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 flex-shrink-0 text-primary" />
                     {item}
                   </li>
                 ))}
@@ -342,14 +401,16 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            <div className="relative rounded-2xl border-2 border-foreground bg-background p-8">
-              <Badge className="absolute -top-3.5 left-6 px-3 text-xs">Pro</Badge>
+            <div className="relative rounded-2xl border-2 border-primary bg-card p-8 shadow-xl shadow-primary/10 transition-all hover:shadow-2xl hover:shadow-primary/15">
+              <Badge className="absolute -top-3 left-6 bg-primary px-3.5 py-1 text-xs font-bold shadow-lg shadow-primary/30">
+                Pro
+              </Badge>
               <p className="mb-1 text-sm font-medium text-muted-foreground">Pro</p>
-              <p className="mb-6 text-4xl font-black tracking-tighter">
+              <p className="mb-6 text-5xl font-black tracking-tighter">
                 $19
                 <span className="text-lg font-normal text-muted-foreground">/mo</span>
               </p>
-              <ul className="mb-8 space-y-2.5">
+              <ul className="mb-8 space-y-3">
                 {[
                   'Unlimited projects',
                   'Unlimited feedback',
@@ -358,14 +419,14 @@ export default function LandingPage() {
                   'Custom widget branding',
                   'Unlimited history',
                 ].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Check className="h-4 w-4 flex-shrink-0 text-amber-500" />
+                  <li key={item} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 flex-shrink-0 text-primary" />
                     {item}
                   </li>
                 ))}
               </ul>
               <Link href="/auth">
-                <Button className="w-full font-semibold">
+                <Button className="w-full font-semibold shadow-lg shadow-primary/20">
                   Start free trial
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -378,14 +439,19 @@ export default function LandingPage() {
       {/* ── CTA ──────────────────────────────────────────────────────────────── */}
       <section className="px-6 py-20 md:py-28">
         <div className="mx-auto max-w-6xl">
-          <div className="relative overflow-hidden rounded-3xl bg-foreground px-8 py-16 text-center md:px-16 md:py-20">
+          <div className="relative overflow-hidden rounded-3xl bg-foreground px-8 py-20 text-center md:px-16">
+            {/* Dot grid texture */}
             <div
               className="pointer-events-none absolute inset-0 opacity-[0.04]"
               style={{
-                backgroundImage:
-                  'radial-gradient(circle, white 1px, transparent 1px)',
+                backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
                 backgroundSize: '24px 24px',
               }}
+            />
+            {/* Subtle glow */}
+            <div
+              className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-[100px]"
+              style={{ background: 'hsl(var(--primary))' }}
             />
             <div className="relative">
               <h2 className="mb-4 text-4xl font-black tracking-tighter text-background md:text-5xl">
@@ -399,7 +465,7 @@ export default function LandingPage() {
               <Link href="/auth">
                 <Button
                   size="lg"
-                  className="bg-background font-semibold text-foreground hover:bg-background/90"
+                  className="h-12 bg-background px-8 font-semibold text-foreground shadow-2xl hover:bg-background/90"
                 >
                   Start for free
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -415,7 +481,7 @@ export default function LandingPage() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 md:flex-row">
           <span className="text-sm font-bold tracking-tight">
             feedbacks
-            <span className="text-amber-500 dark:text-amber-400">.dev</span>
+            <span className="text-primary">.dev</span>
           </span>
           <p className="text-center text-xs text-muted-foreground">
             Open source, MIT licensed — no fake stats, no fake testimonials.

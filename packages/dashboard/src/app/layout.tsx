@@ -9,6 +9,13 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'feedbacks.dev — Developer-first feedback collection',
   description: 'Collect meaningful in-product feedback in minutes. Lightweight widget, powerful dashboard, smart integrations.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.png', type: 'image/png' },
+    ],
+  },
 }
 
 export default function RootLayout({

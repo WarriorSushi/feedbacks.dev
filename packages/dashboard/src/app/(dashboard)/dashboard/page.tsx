@@ -119,6 +119,7 @@ export default async function DashboardPage() {
       value: total,
       urgent: false,
       sub: `${sparkCounts[sparkCounts.length - 1]} today`,
+      href: '/feedback',
     },
     {
       id: 'unread',
@@ -126,6 +127,7 @@ export default async function DashboardPage() {
       value: unread,
       urgent: unread > 0,
       sub: unread > 0 ? 'needs review' : 'all caught up',
+      href: '/feedback?status=new',
     },
     {
       id: 'rating',
@@ -133,6 +135,7 @@ export default async function DashboardPage() {
       value: avgRating ? avgRating.toFixed(1) : '—',
       urgent: false,
       sub: ratingData?.length ? `${ratingData.length} rated` : 'no ratings yet',
+      href: '/feedback',
     },
     {
       id: 'projects',
@@ -140,6 +143,7 @@ export default async function DashboardPage() {
       value: projects,
       urgent: false,
       sub: 'active',
+      href: '/projects',
     },
     {
       id: 'agents',
@@ -147,6 +151,7 @@ export default async function DashboardPage() {
       value: agents,
       urgent: false,
       sub: agents > 0 ? 'AI submitted' : 'none yet',
+      href: '/feedback?agent=1',
     },
   ]
 
@@ -199,17 +204,93 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* ─── Onboarding (shown when no projects) ──────────── */}
+      {projects === 0 && (
+        <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/[0.04] via-background to-background">
+          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
+          <CardContent className="relative p-6 sm:p-8">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold tracking-tight">Get started in 2 minutes</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Set up your first project and start collecting feedback from your users.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {[
+                {
+                  step: 1,
+                  title: 'Create your first project',
+                  description: 'Give it a name and optional domain',
+                  href: '/projects/new',
+                  done: false,
+                  cta: 'Create project',
+                },
+                {
+                  step: 2,
+                  title: 'Install the widget',
+                  description: 'One script tag — works with any framework',
+                  href: null,
+                  done: false,
+                  cta: null,
+                },
+                {
+                  step: 3,
+                  title: 'Enable your public board',
+                  description: 'Let users vote on feature requests',
+                  href: null,
+                  done: false,
+                  cta: null,
+                },
+              ].map((item) => (
+                <div
+                  key={item.step}
+                  className={cn(
+                    'flex items-center gap-4 rounded-xl border p-4 transition-all',
+                    item.step === 1
+                      ? 'border-primary/30 bg-primary/[0.04] shadow-sm'
+                      : 'border-border/60 opacity-60'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold',
+                      item.step === 1
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground'
+                    )}
+                  >
+                    {item.step}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold">{item.title}</p>
+                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                  </div>
+                  {item.href && item.cta && (
+                    <Link href={item.href}>
+                      <Button size="sm" className="h-8 gap-1.5 text-xs font-medium">
+                        {item.cta}
+                        <ArrowRight className="h-3 w-3" />
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* ─── Stat Cards ───────────────────────────────────── */}
       <div className="-mx-4 px-4 md:mx-0 md:px-0">
         <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-thin md:grid md:grid-cols-5 md:overflow-visible">
           {statCards.map((stat) => (
-            <Card
-              key={stat.id}
-              className={cn(
-                'min-w-[140px] flex-shrink-0 overflow-hidden transition-all hover:shadow-sm md:min-w-0',
-                stat.urgent && 'border-l-[3px] border-l-amber-400 dark:border-l-amber-500'
-              )}
-            >
+            <Link key={stat.id} href={stat.href} className="block">
+              <Card
+                className={cn(
+                  'min-w-[140px] flex-shrink-0 overflow-hidden transition-all hover:shadow-md hover:border-primary/30 cursor-pointer md:min-w-0',
+                  stat.urgent && 'border-l-[3px] border-l-amber-400 dark:border-l-amber-500'
+                )}
+              >
             <CardContent className="p-4 pb-3">
               <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 {stat.label}
@@ -242,6 +323,7 @@ export default async function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+            </Link>
         ))}
         </div>
       </div>

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Github, Mail, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react'
+// Password login removed — magic link only
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -26,13 +27,10 @@ const codeSnippet = `<script
 
 function AuthPageInner() {
   const [email, setEmail] = React.useState('')
-  const [password, setPassword] = React.useState('')
   const [loading, setLoading] = React.useState(false)
-  const [passwordLoading, setPasswordLoading] = React.useState(false)
   const [githubLoading, setGithubLoading] = React.useState(false)
   const [sent, setSent] = React.useState(false)
   const [error, setError] = React.useState('')
-  const [authMode, setAuthMode] = React.useState<'magic' | 'password'>('magic')
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') || '/dashboard'
 
@@ -55,24 +53,6 @@ function AuthPageInner() {
       setError(error.message)
     } else {
       setSent(true)
-    }
-  }
-
-  const handlePasswordLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setPasswordLoading(true)
-    setError('')
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    setPasswordLoading(false)
-    if (error) {
-      setError(error.message)
-    } else {
-      window.location.href = redirect
     }
   }
 
@@ -274,105 +254,40 @@ function AuthPageInner() {
               </div>
 
               {/* Email form */}
-              {authMode === 'magic' ? (
-                <form onSubmit={handleMagicLink} className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-[13px]">
-                      Email address
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@company.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="h-10 border-border/80 text-[14px] transition-colors focus:border-primary/60"
-                      required
-                      autoFocus
-                    />
-                  </div>
+              <form onSubmit={handleMagicLink} className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-[13px]">
+                    Email address
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@company.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-10 border-border/80 text-[14px] transition-colors focus:border-primary/60"
+                    required
+                    autoFocus
+                  />
+                </div>
 
-                  {error && (
-                    <p className="text-[12px] text-destructive">{error}</p>
+                {error && (
+                  <p className="text-[12px] text-destructive">{error}</p>
+                )}
+
+                <Button
+                  className="w-full text-[13px]"
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Mail className="mr-2 h-4 w-4" />
                   )}
-
-                  <Button
-                    className="w-full text-[13px]"
-                    type="submit"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Mail className="mr-2 h-4 w-4" />
-                    )}
-                    Send magic link
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full text-[12px] text-muted-foreground"
-                    onClick={() => { setAuthMode('password'); setError('') }}
-                  >
-                    Sign in with password instead
-                  </Button>
-                </form>
-              ) : (
-                <form onSubmit={handlePasswordLogin} className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email" className="text-[13px]">
-                      Email address
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@company.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="h-10 border-border/80 text-[14px] transition-colors focus:border-primary/60"
-                      required
-                      autoFocus
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="password" className="text-[13px]">
-                      Password
-                    </Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="h-10 border-border/80 text-[14px] transition-colors focus:border-primary/60"
-                      required
-                    />
-                  </div>
-
-                  {error && (
-                    <p className="text-[12px] text-destructive">{error}</p>
-                  )}
-
-                  <Button
-                    className="w-full text-[13px]"
-                    type="submit"
-                    disabled={passwordLoading}
-                  >
-                    {passwordLoading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : null}
-                    Sign in
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full text-[12px] text-muted-foreground"
-                    onClick={() => { setAuthMode('magic'); setError('') }}
-                  >
-                    Use magic link instead
-                  </Button>
-                </form>
-              )}
+                  Send magic link
+                </Button>
+              </form>
             </div>
           )}
 

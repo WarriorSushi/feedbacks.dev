@@ -45,6 +45,19 @@ export default async function PublicBoardPage({ params }: PageProps) {
     .in('type', board.show_types || ['idea', 'bug'])
     .order('vote_count', { ascending: false })
 
+  // Fetch public admin comments
+  const feedbackIds = (feedback || []).map((f) => f.id)
+  let comments: { id: string; feedback_id: string; content: string; created_at: string }[] = []
+  if (feedbackIds.length > 0) {
+    const { data: notesData } = await admin
+      .from('feedback_notes')
+      .select('id, feedback_id, content, created_at')
+      .eq('is_public', true)
+      .in('feedback_id', feedbackIds)
+      .order('created_at', { ascending: true })
+    comments = notesData || []
+  }
+
   return (
     <PublicBoard
       board={{
@@ -56,6 +69,7 @@ export default async function PublicBoardPage({ params }: PageProps) {
         branding: board.branding as Record<string, string> | null,
       }}
       initialFeedback={feedback || []}
+      initialComments={comments}
     />
   )
 }

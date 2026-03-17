@@ -48,6 +48,19 @@ export async function GET(
   // Strip emails from response
   const safeFeedback = (feedback || []).map(({ email, ...rest }) => rest)
 
+  // Get public admin comments
+  const feedbackIds = safeFeedback.map((f) => f.id)
+  let comments: { id: string; feedback_id: string; content: string; created_at: string }[] = []
+  if (feedbackIds.length > 0) {
+    const { data: notesData } = await admin
+      .from('feedback_notes')
+      .select('id, feedback_id, content, created_at')
+      .eq('is_public', true)
+      .in('feedback_id', feedbackIds)
+      .order('created_at', { ascending: true })
+    comments = notesData || []
+  }
+
   return NextResponse.json({
     board: {
       title: board.title,
@@ -59,5 +72,6 @@ export async function GET(
       custom_css: board.custom_css ? sanitizeCss(board.custom_css) : null,
     },
     feedback: safeFeedback,
+    comments,
   })
 }

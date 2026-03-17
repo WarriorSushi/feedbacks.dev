@@ -22,6 +22,13 @@ interface FeedbackItem {
   created_at: string
 }
 
+interface AdminComment {
+  id: string
+  feedback_id: string
+  content: string
+  created_at: string
+}
+
 type SortMode = 'votes' | 'newest' | 'status'
 type FilterType = 'all' | 'idea' | 'bug' | 'praise' | 'question'
 
@@ -33,12 +40,12 @@ const typeConfig: Record<string, { label: string; icon: string; color: string }>
   question: { label: 'Question', icon: '❓', color: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950 dark:text-cyan-300 dark:border-cyan-800' },
 }
 
-const statusConfig: Record<string, { label: string; color: string }> = {
-  new: { label: 'New', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' },
-  reviewed: { label: 'Under Review', color: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300' },
-  planned: { label: 'Planned', color: 'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300' },
-  in_progress: { label: 'In Progress', color: 'bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300' },
-  closed: { label: 'Done', color: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300' },
+const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
+  new: { label: 'New', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300', dotColor: 'bg-gray-400' },
+  reviewed: { label: 'Under Review', color: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300', dotColor: 'bg-yellow-500' },
+  planned: { label: 'Planned', color: 'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300', dotColor: 'bg-purple-500' },
+  in_progress: { label: 'In Progress', color: 'bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300', dotColor: 'bg-orange-500' },
+  closed: { label: 'Done', color: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300', dotColor: 'bg-green-500' },
 }
 
 function getTitle(message: string): string {
@@ -51,6 +58,12 @@ function getDescription(message: string): string {
   if (lines.length <= 1) return ''
   const rest = lines.slice(1).join(' ').trim()
   return rest.length > 150 ? rest.slice(0, 150) + '…' : rest
+}
+
+function getFullDescription(message: string): string {
+  const lines = message.split('\n')
+  if (lines.length <= 1) return ''
+  return lines.slice(1).join('\n').trim()
 }
 
 function relativeTime(date: string): string {
@@ -109,52 +122,175 @@ function UpvoteButton({
   )
 }
 
+function AdminCommentBubble({ comment }: { comment: AdminComment }) {
+  return (
+    <div className="flex gap-3 mt-3">
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary ring-1 ring-primary/20">
+        D
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+            Dev
+          </span>
+          <span className="text-[11px] text-muted-foreground">{relativeTime(comment.created_at)}</span>
+        </div>
+        <p className="text-sm text-foreground/80 leading-relaxed">{comment.content}</p>
+      </div>
+    </div>
+  )
+}
+
 function FeedbackCard({
   item,
   voted,
   onVote,
   votingId,
+  comments,
+  isExpanded,
+  onToggle,
 }: {
   item: FeedbackItem
   voted: boolean
   onVote: (id: string) => void
   votingId: string | null
+  comments: AdminComment[]
+  isExpanded: boolean
+  onToggle: () => void
 }) {
   const type = item.type ? typeConfig[item.type] : null
   const status = statusConfig[item.status] || statusConfig.new
+  const hasDetails = getFullDescription(item.message) || comments.length > 0
 
   return (
-    <div className="group flex gap-4 rounded-2xl border bg-card p-4 sm:p-5 transition-all duration-200 hover:shadow-md hover:border-border/80">
-      <UpvoteButton
-        count={item.vote_count}
-        voted={voted}
-        onClick={() => onVote(item.id)}
-        loading={votingId === item.id}
-      />
+    <div
+      className={cn(
+        'group rounded-2xl border bg-card transition-all duration-200',
+        isExpanded ? 'shadow-lg border-primary/20' : 'hover:shadow-md hover:border-border/80'
+      )}
+    >
+      <div className="flex gap-4 p-4 sm:p-5">
+        <UpvoteButton
+          count={item.vote_count}
+          voted={voted}
+          onClick={() => onVote(item.id)}
+          loading={votingId === item.id}
+        />
 
-      <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-foreground leading-snug">
-          {getTitle(item.message)}
-        </h3>
-        {getDescription(item.message) && (
-          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-            {getDescription(item.message)}
-          </p>
-        )}
-        <div className="mt-2.5 flex flex-wrap items-center gap-2">
-          {type && (
-            <span className={cn('inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium', type.color)}>
-              <span>{type.icon}</span> {type.label}
+        <div className="flex-1 min-w-0">
+          <button
+            onClick={hasDetails ? onToggle : undefined}
+            className={cn(
+              'text-left w-full',
+              hasDetails && 'cursor-pointer'
+            )}
+          >
+            <h3 className="font-semibold text-foreground leading-snug">
+              {getTitle(item.message)}
+              {comments.length > 0 && !isExpanded && (
+                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary align-middle">
+                  Dev replied
+                </span>
+              )}
+            </h3>
+            {!isExpanded && getDescription(item.message) && (
+              <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                {getDescription(item.message)}
+              </p>
+            )}
+          </button>
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            {type && (
+              <span className={cn('inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium', type.color)}>
+                <span>{type.icon}</span> {type.label}
+              </span>
+            )}
+            <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium', status.color)}>
+              <span className={cn('h-1.5 w-1.5 rounded-full', status.dotColor)} />
+              {status.label}
             </span>
-          )}
-          <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', status.color)}>
-            {status.label}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {relativeTime(item.created_at)}
-          </span>
+            <span className="text-xs text-muted-foreground">
+              {relativeTime(item.created_at)}
+            </span>
+            {hasDetails && (
+              <button
+                onClick={onToggle}
+                className="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {isExpanded ? 'Collapse' : 'Details'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Expanded detail */}
+      {isExpanded && (
+        <div className="border-t px-4 sm:px-5 pb-4 sm:pb-5 pt-3 animate-in fade-in slide-in-from-top-1 duration-200">
+          {getFullDescription(item.message) && (
+            <p className="text-sm text-foreground/75 leading-relaxed whitespace-pre-wrap">
+              {getFullDescription(item.message)}
+            </p>
+          )}
+          {comments.length > 0 && (
+            <div className={cn(getFullDescription(item.message) && 'mt-4 pt-3 border-t border-dashed')}>
+              {comments.map((c) => (
+                <AdminCommentBubble key={c.id} comment={c} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function UpdatesSection({ feedback }: { feedback: FeedbackItem[] }) {
+  const inProgress = feedback.filter((f) => f.status === 'in_progress')
+  const recentlyShipped = feedback.filter((f) => f.status === 'closed').slice(0, 3)
+
+  if (inProgress.length === 0 && recentlyShipped.length === 0) return null
+
+  return (
+    <div className="mb-8 space-y-4">
+      {inProgress.length > 0 && (
+        <div className="rounded-2xl border border-orange-200/60 bg-gradient-to-r from-orange-50/80 to-amber-50/40 p-5 dark:border-orange-800/40 dark:from-orange-950/30 dark:to-amber-950/20">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-orange-700 dark:text-orange-300">
+              Building now
+            </h3>
+          </div>
+          <div className="space-y-2">
+            {inProgress.map((f) => (
+              <div key={f.id} className="flex items-center gap-3 text-sm">
+                <span className="text-orange-500">{f.type ? typeConfig[f.type]?.icon : '📌'}</span>
+                <span className="text-foreground/80">{getTitle(f.message)}</span>
+                <span className="ml-auto text-xs tabular-nums text-muted-foreground">{f.vote_count} votes</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {recentlyShipped.length > 0 && (
+        <div className="rounded-2xl border border-green-200/60 bg-gradient-to-r from-green-50/80 to-emerald-50/40 p-5 dark:border-green-800/40 dark:from-green-950/30 dark:to-emerald-950/20">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-green-600 dark:text-green-400">✅</span>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-green-700 dark:text-green-300">
+              Recently shipped
+            </h3>
+          </div>
+          <div className="space-y-2">
+            {recentlyShipped.map((f) => (
+              <div key={f.id} className="flex items-center gap-3 text-sm">
+                <span className="text-green-500">{f.type ? typeConfig[f.type]?.icon : '📌'}</span>
+                <span className="text-foreground/80 line-through decoration-green-400/40">{getTitle(f.message)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -178,13 +314,11 @@ function SubmitModal({
   const modalRef = React.useRef<HTMLDivElement>(null)
   const previousFocus = React.useRef<HTMLElement | null>(null)
 
-  // Focus trap and restore
   React.useEffect(() => {
     previousFocus.current = document.activeElement as HTMLElement
     const modal = modalRef.current
     if (!modal) return
 
-    // Focus first focusable element
     const focusable = modal.querySelectorAll<HTMLElement>(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     )
@@ -348,17 +482,32 @@ function SubmitModal({
 export function PublicBoard({
   board,
   initialFeedback,
+  initialComments = [],
 }: {
   board: BoardInfo
   initialFeedback: FeedbackItem[]
+  initialComments?: AdminComment[]
 }) {
   const [feedback, setFeedback] = React.useState(initialFeedback)
+  const [comments, setComments] = React.useState(initialComments)
   const [filter, setFilter] = React.useState<FilterType>('all')
   const [sort, setSort] = React.useState<SortMode>('votes')
+  const [search, setSearch] = React.useState('')
   const [votedIds, setVotedIds] = React.useState<Set<string>>(new Set())
   const [votingId, setVotingId] = React.useState<string | null>(null)
+  const [expandedId, setExpandedId] = React.useState<string | null>(null)
   const [showSubmit, setShowSubmit] = React.useState(false)
   const [justSubmitted, setJustSubmitted] = React.useState(false)
+
+  // Group comments by feedback_id
+  const commentsByFeedback = React.useMemo(() => {
+    const map: Record<string, AdminComment[]> = {}
+    comments.forEach((c) => {
+      if (!map[c.feedback_id]) map[c.feedback_id] = []
+      map[c.feedback_id].push(c)
+    })
+    return map
+  }, [comments])
 
   // Load voted state from localStorage
   React.useEffect(() => {
@@ -413,29 +562,32 @@ export function PublicBoard({
     setShowSubmit(false)
     setJustSubmitted(true)
     setTimeout(() => setJustSubmitted(false), 4000)
-    // Refresh feedback
     fetch(`/api/boards/${board.slug}`)
       .then((r) => r.json())
       .then((data) => {
         if (data.feedback) setFeedback(data.feedback)
+        if (data.comments) setComments(data.comments)
       })
       .catch(() => {})
   }
 
-  // Filter & sort
+  // Filter, search & sort
   const filtered = React.useMemo(() => {
     let items = feedback
     if (filter !== 'all') {
       items = items.filter((f) => f.type === filter)
     }
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      items = items.filter((f) => f.message.toLowerCase().includes(q))
+    }
     return [...items].sort((a, b) => {
       if (sort === 'votes') return b.vote_count - a.vote_count
       if (sort === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      // status sort: in_progress > planned > reviewed > new > closed
       const statusOrder: Record<string, number> = { in_progress: 0, planned: 1, reviewed: 2, new: 3, closed: 4 }
       return (statusOrder[a.status] ?? 5) - (statusOrder[b.status] ?? 5)
     })
-  }, [feedback, filter, sort])
+  }, [feedback, filter, sort, search])
 
   const accentColor = board.branding?.accent_color || '#6366f1'
 
@@ -461,56 +613,75 @@ export function PublicBoard({
         )}
       </div>
 
+      {/* Updates from the team */}
+      <UpdatesSection feedback={feedback} />
+
       {/* Success toast */}
       {justSubmitted && (
         <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300 animate-in slide-in-from-top-2 duration-300">
-          ✅ Your feedback was submitted successfully! It will appear once reviewed.
+          Your feedback was submitted successfully! It will appear once reviewed.
         </div>
       )}
 
       {/* Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        {/* Filter tabs */}
-        <div className="flex gap-1 rounded-xl bg-muted p-1">
-          {filterTabs.map((tab) => (
-            <button
-              key={tab.value}
-              onClick={() => setFilter(tab.value)}
-              className={cn(
-                'rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all',
-                filter === tab.value
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
+      <div className="flex flex-col gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          {/* Filter tabs */}
+          <div className="flex gap-1 rounded-xl bg-muted p-1">
+            {filterTabs.map((tab) => (
+              <button
+                key={tab.value}
+                onClick={() => setFilter(tab.value)}
+                className={cn(
+                  'rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all',
+                  filter === tab.value
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Sort */}
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortMode)}
+              aria-label="Sort feedback"
+              className="rounded-lg border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
-              {tab.label}
-            </button>
-          ))}
+              <option value="votes">Most Voted</option>
+              <option value="newest">Newest</option>
+              <option value="status">Status</option>
+            </select>
+
+            {/* Submit button */}
+            {board.allow_submissions && (
+              <button
+                onClick={() => setShowSubmit(true)}
+                style={{ backgroundColor: accentColor }}
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 active:scale-[0.97]"
+              >
+                + Submit Feedback
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Sort */}
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortMode)}
-            aria-label="Sort feedback"
-            className="rounded-lg border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-          >
-            <option value="votes">Most Voted</option>
-            <option value="newest">Newest</option>
-            <option value="status">Status</option>
-          </select>
-
-          {/* Submit button */}
-          {board.allow_submissions && (
-            <button
-              onClick={() => setShowSubmit(true)}
-              style={{ backgroundColor: accentColor }}
-              className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 active:scale-[0.97]"
-            >
-              + Submit Feedback
-            </button>
-          )}
+        {/* Search */}
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search feedback..."
+            className="w-full rounded-xl border bg-background pl-10 pr-4 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+          />
         </div>
       </div>
 
@@ -518,11 +689,25 @@ export function PublicBoard({
       <div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="rounded-2xl border border-dashed bg-card p-12 text-center">
-            <p className="text-muted-foreground text-lg">No feedback yet</p>
-            {board.allow_submissions && (
-              <p className="mt-1 text-sm text-muted-foreground">
-                Be the first to share your thoughts!
-              </p>
+            {search.trim() ? (
+              <>
+                <p className="text-muted-foreground text-lg">No results for &ldquo;{search}&rdquo;</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Try a different search or{' '}
+                  <button onClick={() => setSearch('')} className="text-primary hover:underline">
+                    clear the search
+                  </button>
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="text-muted-foreground text-lg">No feedback yet</p>
+                {board.allow_submissions && (
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Be the first to share your thoughts!
+                  </p>
+                )}
+              </>
             )}
           </div>
         ) : (
@@ -533,6 +718,9 @@ export function PublicBoard({
               voted={votedIds.has(item.id)}
               onVote={handleVote}
               votingId={votingId}
+              comments={commentsByFeedback[item.id] || []}
+              isExpanded={expandedId === item.id}
+              onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
             />
           ))
         )}
@@ -544,6 +732,16 @@ export function PublicBoard({
           {filtered.length} {filtered.length === 1 ? 'item' : 'items'}
         </p>
       )}
+
+      {/* Powered by */}
+      <div className="mt-8 text-center">
+        <a
+          href="/"
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+        >
+          Powered by feedbacks<span className="text-primary/50">.dev</span>
+        </a>
+      </div>
 
       {/* Submit modal */}
       {showSubmit && (

@@ -47,7 +47,7 @@ export default function NewProjectPage() {
     if (err) {
       setError(err.message)
     } else {
-      router.push(`/projects/${data.id}`)
+      router.push(`/projects/${data.id}?created=1`)
     }
   }
 
