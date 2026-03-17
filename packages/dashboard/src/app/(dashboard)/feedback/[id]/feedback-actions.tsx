@@ -4,9 +4,11 @@ import * as React from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import type { FeedbackStatus } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
 
 const statuses: FeedbackStatus[] = ['new', 'reviewed', 'planned', 'in_progress', 'closed']
 
@@ -24,7 +26,7 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
 
   const handleStatusChange = async (newStatus: FeedbackStatus) => {
     setStatus(newStatus)
-    await supabase
+    const { error } = await supabase
       .from('feedback')
       .update({
         status: newStatus,
@@ -32,6 +34,12 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
         ...(newStatus === 'closed' ? { resolved_at: new Date().toISOString() } : {}),
       })
       .eq('id', feedbackId)
+    if (error) {
+      toast({ title: 'Failed to update status', description: error.message, variant: 'destructive' })
+      setStatus(currentStatus)
+      return
+    }
+    toast({ title: 'Status updated' })
     router.refresh()
   }
 
@@ -42,13 +50,18 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
     const {
       data: { user },
     } = await supabase.auth.getUser()
-    await supabase.from('feedback_notes').insert({
+    const { error } = await supabase.from('feedback_notes').insert({
       feedback_id: feedbackId,
       user_id: user!.id,
       content: note.trim(),
     })
-    setNote('')
     setSaving(false)
+    if (error) {
+      toast({ title: 'Failed to add note', description: error.message, variant: 'destructive' })
+      return
+    }
+    toast({ title: 'Note added' })
+    setNote('')
     router.refresh()
   }
 
@@ -56,10 +69,12 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
     <div className="space-y-4">
       {/* Status changer */}
       <div>
-        <label className="mb-2 block text-xs font-medium text-muted-foreground">
+        <Label htmlFor="status-select" className="mb-2 block text-xs font-medium text-muted-foreground">
           Change Status
-        </label>
+        </Label>
         <select
+          id="status-select"
+          aria-label="Change feedback status"
           className="h-9 w-full rounded-md border bg-background px-3 text-sm"
           value={status}
           onChange={(e) => handleStatusChange(e.target.value as FeedbackStatus)}

@@ -66,3 +66,12 @@ export function getTypeColor(type: string | null): string {
     default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'
   }
 }
+
+/** Consolidated status configuration — single source of truth */
+export const statusConfig: Record<string, { label: string; dot: string; color: string }> = {
+  new: { label: 'New', dot: 'bg-blue-500', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' },
+  reviewed: { label: 'Reviewed', dot: 'bg-yellow-500', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
+  planned: { label: 'Planned', dot: 'bg-violet-500', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' },
+  in_progress: { label: 'In Progress', dot: 'bg-orange-500', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' },
+  closed: { label: 'Closed', dot: 'bg-zinc-400', color: 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400' },
+}

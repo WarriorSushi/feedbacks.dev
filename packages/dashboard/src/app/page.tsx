@@ -100,7 +100,7 @@ function WidgetDemo() {
           <MessageSquare className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm font-semibold">Send Feedback</span>
         </div>
-        <button className="text-xs text-muted-foreground transition-colors hover:text-foreground">
+        <button className="text-xs text-muted-foreground transition-colors hover:text-foreground" aria-label="Close widget demo">
           ✕
         </button>
       </div>
@@ -289,7 +289,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Install strip ────────────────────────────────────────────────────── */}
-      <section className="border-b bg-zinc-950 px-6 py-14 dark:bg-zinc-900">
+      <section className="border-b bg-zinc-950 px-6 py-14 dark:bg-zinc-900/50">
         <div className="mx-auto max-w-2xl">
           <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-zinc-500">
             Install
@@ -557,6 +557,7 @@ export default function LandingPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="GitHub"
           >
             <Github className="h-4 w-4" />
           </a>

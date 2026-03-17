@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
 import type { Project } from '@/lib/types'
 import Link from 'next/link'
-import { Plus, Key } from 'lucide-react'
+import { Plus, Key, FolderOpen } from 'lucide-react'
 
 export default async function ProjectsPage() {
   const supabase = await createServerSupabase()
@@ -43,10 +43,16 @@ export default async function ProjectsPage() {
 
       {!projects || projects.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center">
-            <p className="mb-4 text-muted-foreground">No projects yet.</p>
-            <Link href="/projects/new">
-              <Button>Create your first project</Button>
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <FolderOpen className="h-10 w-10 text-muted-foreground/40 mb-4" />
+            <p className="text-sm font-medium">No projects yet</p>
+            <p className="mt-1 text-xs text-muted-foreground max-w-[240px]">
+              Create your first project to start collecting feedback from your users.
+            </p>
+            <Link href="/projects/new" className="mt-4">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" /> Create your first project
+              </Button>
             </Link>
           </CardContent>
         </Card>

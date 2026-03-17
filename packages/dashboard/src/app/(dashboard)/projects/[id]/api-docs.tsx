@@ -12,6 +12,7 @@ function CopyButton({ text }: { text: string }) {
     <Button
       variant="outline"
       size="sm"
+      aria-label="Copy to clipboard"
       onClick={() => {
         navigator.clipboard.writeText(text)
         setCopied(true)
@@ -26,10 +27,10 @@ function CopyButton({ text }: { text: string }) {
 function CodeBlock({ code, language = 'bash' }: { code: string; language?: string }) {
   return (
     <div className="relative">
-      <div className="absolute right-2 top-2">
+      <div className="absolute right-2 top-2 z-10">
         <CopyButton text={code} />
       </div>
-      <pre className="bg-muted rounded-lg p-4 overflow-x-auto text-sm">
+      <pre className="bg-muted rounded-lg p-4 pr-20 overflow-x-auto text-sm">
         <code>{code}</code>
       </pre>
     </div>

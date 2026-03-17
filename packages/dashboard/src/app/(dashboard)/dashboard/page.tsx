@@ -163,7 +163,7 @@ export default async function DashboardPage() {
       {/* ─── Header ───────────────────────────────────────── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight">
             Good {getGreeting()},{' '}
             <span className="font-normal text-muted-foreground">{displayName}</span>
           </h1>
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
               <Inbox className="h-3.5 w-3.5" />
               Inbox
               {unread > 0 && (
-                <span className="ml-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-white/20 px-1 text-[9px] font-bold">
+                <span className="ml-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-white/20 px-1 text-[11px] font-bold">
                   {unread}
                 </span>
               )}
@@ -212,7 +212,7 @@ export default async function DashboardPage() {
             )}
           >
             <CardContent className="p-4 pb-3">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 {stat.label}
               </p>
               <p
@@ -223,7 +223,7 @@ export default async function DashboardPage() {
               >
                 {stat.value}
               </p>
-              <p className="mt-1 text-[10px] text-muted-foreground/60">{stat.sub}</p>
+              <p className="mt-1 text-[11px] text-muted-foreground/60">{stat.sub}</p>
               {/* CSS-only 7-bar sparkline */}
               <div className="mt-3 flex items-end gap-[2px]" style={{ height: 18 }}>
                 {sparkCounts.map((count, i) => (
@@ -515,7 +515,7 @@ export default async function DashboardPage() {
                   <div key={day} className="group flex flex-1 flex-col items-center gap-1">
                     <span
                       className={cn(
-                        'text-[10px] tabular-nums',
+                        'text-[11px] tabular-nums',
                         count > 0 ? 'text-muted-foreground' : 'text-transparent select-none'
                       )}
                     >
@@ -532,7 +532,7 @@ export default async function DashboardPage() {
                     />
                     <span
                       className={cn(
-                        'text-[9px] font-medium uppercase',
+                        'text-[11px] font-medium uppercase',
                         isToday ? 'text-primary' : 'text-muted-foreground/55'
                       )}
                     >

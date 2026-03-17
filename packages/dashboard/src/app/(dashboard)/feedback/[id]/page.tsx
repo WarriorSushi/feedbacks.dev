@@ -1,7 +1,7 @@
 import { createServerSupabase } from '@/lib/supabase-server'
 import { notFound } from 'next/navigation'
 import type { Feedback, FeedbackNote } from '@/lib/types'
-import { formatDate, getTypeIcon, getStatusColor, getTypeColor } from '@/lib/utils'
+import { formatDate, getTypeIcon, getStatusColor, getTypeColor, statusConfig } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -22,13 +22,9 @@ import {
 } from 'lucide-react'
 import { FeedbackActions } from './feedback-actions'
 
-const statusDotColor: Record<string, string> = {
-  new: 'bg-blue-500',
-  reviewed: 'bg-yellow-500',
-  planned: 'bg-purple-500',
-  in_progress: 'bg-orange-500',
-  closed: 'bg-gray-400',
-}
+const statusDotColor = Object.fromEntries(
+  Object.entries(statusConfig).map(([k, v]) => [k, v.dot])
+)
 
 export default async function FeedbackDetailPage({
   params,
@@ -56,13 +52,16 @@ export default async function FeedbackDetailPage({
 
   return (
     <div className="animate-fade-in space-y-6">
-      <Link
-        href="/feedback"
-        className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-        Back to inbox
-      </Link>
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <Link href="/feedback" className="transition-colors hover:text-foreground">
+          Inbox
+        </Link>
+        <span>/</span>
+        <span className="text-foreground font-medium">
+          {fb.type ? `${getTypeIcon(fb.type)} ${fb.type}` : 'Detail'}
+        </span>
+      </nav>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main content */}
@@ -91,7 +90,7 @@ export default async function FeedbackDetailPage({
               </div>
             </CardHeader>
             <CardContent>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">
+              <p className="max-w-prose whitespace-pre-wrap text-sm leading-relaxed">
                 {fb.message}
               </p>
               <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -125,7 +124,7 @@ export default async function FeedbackDetailPage({
                   />
                   <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/5" />
                 </a>
-                <p className="mt-2 text-[10px] text-muted-foreground">
+                <p className="mt-2 text-xs text-muted-foreground">
                   Click to open full size
                 </p>
               </CardContent>
@@ -180,7 +179,7 @@ export default async function FeedbackDetailPage({
                       className="rounded-lg border-l-2 border-primary/30 bg-muted/50 p-3"
                     >
                       <p className="text-sm leading-relaxed">{note.content}</p>
-                      <p className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="h-2.5 w-2.5" />
                         {formatDate(note.created_at)}
                       </p>
@@ -272,7 +271,7 @@ export default async function FeedbackDetailPage({
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {fb.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-[10px]">
+                        <Badge key={tag} variant="outline" className="text-xs">
                           {tag}
                         </Badge>
                       ))}
@@ -293,7 +292,7 @@ export default async function FeedbackDetailPage({
                 <div className="relative">
                   <Circle className="absolute -left-4 top-0.5 h-3.5 w-3.5 fill-blue-500 text-blue-500" />
                   <p className="text-xs font-medium">Created</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {formatDate(fb.created_at)}
                   </p>
                 </div>
@@ -301,7 +300,7 @@ export default async function FeedbackDetailPage({
                   <div className="relative">
                     <Circle className="absolute -left-4 top-0.5 h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
                     <p className="text-xs font-medium">Updated</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {formatDate(fb.updated_at)}
                     </p>
                   </div>
@@ -310,7 +309,7 @@ export default async function FeedbackDetailPage({
                   <div className="relative">
                     <Circle className="absolute -left-4 top-0.5 h-3.5 w-3.5 fill-emerald-500 text-emerald-500" />
                     <p className="text-xs font-medium">Resolved</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       {formatDate(fb.resolved_at)}
                     </p>
                   </div>
