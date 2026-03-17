@@ -1,0 +1,51 @@
+<div id="feedback-widget"></div>
+<div id="debug-log" style="border: 1px solid red; padding: 10px; margin-top: 20px; white-space: pre-wrap;"></div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        try {
+            console.log('Initializing widget...');
+            document.getElementById('debug-log').textContent += 'Initializing widget...\n';
+
+            if (typeof FeedbacksWidget === 'undefined') {
+                // Debugging global scope
+                const keys = Object.keys(window).filter(k => k.toLowerCase().includes('feedback'));
+                document.getElementById('debug-log').textContent += 'Window keys matching "feedback": ' + keys.join(', ') + '\n';
+
+                if (window.default && window.default.FeedbacksWidget) {
+                    window.FeedbacksWidget = window.default.FeedbacksWidget;
+                    document.getElementById('debug-log').textContent += 'Found FeedbacksWidget in window.default\n';
+                } else {
+                    throw new Error('FeedbacksWidget is not defined. Typeof: ' + typeof window.FeedbacksWidget);
+                }
+            }
+
+            new FeedbacksWidget({
+                "projectKey": "feedbacks_dev_api_key_88812f1a08370b9dddb5889dae538a7e11fc9790",
+                "apiUrl": "http://localhost:3000/api/feedback", // Local API override
+                "embedMode": "inline",
+                "target": "#feedback-widget",
+                "primaryColor": "#6366F1",
+                "backgroundColor": "#ffffff",
+                "requireEmail": true,
+                "enableRating": false,
+                "enableScreenshot": true,
+                "successTitle": "Thank you!",
+                "successDescription": "We appreciate you taking the time to share your thoughts.",
+                "spacing": 24,
+                "modalWidth": 480,
+                "inlineBorder": "1px solid rgba(15,23,42,0.08)",
+                "inlineShadow": "0 16px 40px rgba(15,23,42,0.12)",
+                "rateLimitCount": 5,
+                "rateLimitWindowSec": 60,
+                "debug": true
+            });
+            document.getElementById('debug-log').textContent += 'Widget initialized successfully.\n';
+        } catch (e) {
+            console.error(e);
+            document.getElementById('debug-log').textContent += 'Error: ' + e.message + '\n' + e.stack;
+        }
+    });
+</script>
+</body>
+
+</html>

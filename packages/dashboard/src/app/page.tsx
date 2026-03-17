@@ -1,191 +1,565 @@
+'use client'
+
 import Link from 'next/link'
+import * as React from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CodeSnippet } from '@/components/code-snippet'
+import {
+  ArrowRight,
+  MessageSquare,
+  Star,
+  Bug,
+  Lightbulb,
+  Check,
+  Github,
+  Zap,
+  Bot,
+  ThumbsUp,
+} from 'lucide-react'
+
+// ─── Code snippets ────────────────────────────────────────────────────────────
 
 const installSnippet = `<script
-  src="https://cdn.feedbacks.dev/widget.js"
+  src="https://YOUR_DOMAIN/widget/latest.js"
   data-project="your-project-key"
   defer
 ></script>`
 
-const features = [
+const mcpSnippet = `// ~/.claude/claude_desktop_config.json
+{
+  "mcpServers": {
+    "feedbacks": {
+      "command": "npx",
+      "args": ["-y", "@feedbacks/mcp-server"],
+      "env": {
+        "FEEDBACKS_API_KEY": "fb_live_..."
+      }
+    }
+  }
+}`
+
+const apiSnippet = `# List recent feedback
+curl https://feedbacks.dev/api/v1/feedback \\
+  -H "X-API-Key: fb_live_..." \\
+  | jq '.feedback[] | {type, message}'
+
+# Result
+# { "type": "bug",  "message": "CSV export crashes on large sets" }
+# { "type": "idea", "message": "Add keyboard shortcuts please"   }`
+
+// ─── Widget demo ──────────────────────────────────────────────────────────────
+
+const DEMOS = [
   {
-    title: 'Quick Install',
-    description: 'Add a single script tag. Works with any site — React, Vue, plain HTML. Under 5KB gzipped.',
-    icon: '⚡',
+    type: 'bug' as const,
+    label: 'Bug',
+    Icon: Bug,
+    text: 'CSV export crashes on datasets over 1 000 rows.',
+    activeClass: 'border-rose-200 bg-rose-50 text-rose-600 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-400',
   },
   {
-    title: 'Smart Triage',
-    description: 'Auto-categorize bugs, ideas, and praise. Priority detection and tagging built in.',
-    icon: '🧠',
+    type: 'idea' as const,
+    label: 'Idea',
+    Icon: Lightbulb,
+    text: 'Keyboard shortcuts for the dashboard would be huge.',
+    activeClass: 'border-amber-200 bg-amber-50 text-amber-600 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-400',
   },
   {
-    title: 'Integrations',
-    description: 'Push feedback to Slack, Discord, GitHub Issues, or your own webhook. Zero config.',
-    icon: '🔗',
-  },
-  {
-    title: 'Lightweight Widget',
-    description: 'Beautiful, accessible feedback form that matches your brand. Screenshot capture included.',
-    icon: '🎨',
+    type: 'praise' as const,
+    label: 'Praise',
+    Icon: Star,
+    text: 'The new search is blazing fast. Really great work!',
+    activeClass: 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400',
   },
 ]
 
+function WidgetDemo() {
+  const [active, setActive] = React.useState(0)
+  const [fading, setFading] = React.useState(false)
+
+  React.useEffect(() => {
+    const id = setInterval(() => {
+      setFading(true)
+      const swapId = setTimeout(() => {
+        setActive((prev) => (prev + 1) % DEMOS.length)
+        setFading(false)
+      }, 220)
+      return () => clearTimeout(swapId)
+    }, 3400)
+    return () => clearInterval(id)
+  }, [])
+
+  const demo = DEMOS[active]
+
+  return (
+    <div className="w-72 overflow-hidden rounded-2xl border bg-background shadow-2xl shadow-black/10 sm:w-80">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-semibold">Send Feedback</span>
+        </div>
+        <button className="text-xs text-muted-foreground transition-colors hover:text-foreground">
+          ✕
+        </button>
+      </div>
+
+      {/* Type picker */}
+      <div className="flex gap-1.5 px-4 pt-3">
+        {DEMOS.map((d, i) => {
+          const DIcon = d.Icon
+          const isActive = i === active
+          return (
+            <button
+              key={d.type}
+              onClick={() => {
+                setFading(true)
+                setTimeout(() => {
+                  setActive(i)
+                  setFading(false)
+                }, 180)
+              }}
+              className={`flex flex-1 items-center justify-center gap-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-all duration-200 ${
+                isActive ? d.activeClass : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <DIcon className="h-3.5 w-3.5" />
+              {d.label}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Body */}
+      <div className="px-4 pb-4 pt-3">
+        <div
+          className="min-h-[56px] rounded-lg border bg-muted/40 px-3 py-2.5 text-sm leading-relaxed text-foreground/70 transition-opacity duration-200"
+          style={{ opacity: fading ? 0 : 1 }}
+        >
+          {demo.text}
+        </div>
+        <div
+          className="mt-3 flex items-center justify-between transition-opacity duration-200"
+          style={{ opacity: fading ? 0 : 1 }}
+        >
+          <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+            <demo.Icon className="h-3.5 w-3.5" />
+            {demo.label} report
+          </span>
+          <button className="rounded-md bg-foreground px-3 py-1.5 text-xs font-medium text-background transition-opacity hover:opacity-80">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function LandingPage() {
+  const [scrolled, setScrolled] = React.useState(false)
+
+  React.useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
-      <header className="border-b">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="text-xl font-bold">
-            feedbacks<span className="text-primary">.dev</span>
+      {/* ── Nav ─────────────────────────────────────────────────────────────── */}
+      <header
+        className={`sticky top-0 z-50 transition-all duration-300 ${
+          scrolled ? 'border-b bg-background/95 backdrop-blur-sm' : ''
+        }`}
+      >
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
+          <Link href="/" className="text-lg font-bold tracking-tight">
+            feedbacks
+            <span className="text-amber-500 dark:text-amber-400">.dev</span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <a
+              href="https://github.com/feedbacksdev/feedbacks.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:flex"
+            >
+              <Github className="h-4 w-4" />
+              Open source
+            </a>
+            <div className="mx-2 hidden h-4 w-px bg-border sm:block" />
             <Link href="/auth">
-              <Button variant="ghost">Sign in</Button>
+              <Button variant="ghost" size="sm">
+                Sign in
+              </Button>
             </Link>
             <Link href="/auth">
-              <Button>Get Started</Button>
+              <Button size="sm" className="font-semibold">
+                Start free
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              </Button>
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="container mx-auto px-4 py-20 md:py-32">
-        <div className="mx-auto max-w-4xl text-center">
-          <Badge variant="secondary" className="mb-4">
-            Open Source
-          </Badge>
-          <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-6xl">
-            Feedback collection that developers{' '}
-            <span className="text-primary">actually want</span> to install
-          </h1>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
-            Collect meaningful in-product feedback in minutes. One script tag,
-            a powerful dashboard, and integrations that just work.
-          </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link href="/auth">
-              <Button size="lg" className="w-full sm:w-auto">
-                Start Free →
-              </Button>
-            </Link>
-            <Link href="#features">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                See Features
-              </Button>
-            </Link>
-          </div>
-        </div>
+      {/* ── Hero ─────────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b bg-grid-pattern">
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/85 to-background" />
+        <div className="relative mx-auto max-w-6xl px-6 py-20 md:py-28">
+          <div className="flex flex-col gap-14 md:flex-row md:items-center md:gap-12 lg:gap-20">
+            {/* Left: headline */}
+            <div className="min-w-0 flex-1">
+              <div className="mb-6 flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium">
+                  Open source
+                </Badge>
+                <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-medium">
+                  MIT license
+                </Badge>
+              </div>
 
-        {/* Code Preview */}
-        <div className="mx-auto mt-16 max-w-2xl">
-          <CodeSnippet
-            tabs={[{ label: 'HTML', code: installSnippet, language: 'html' }]}
-          />
+              <h1 className="mb-5 text-5xl font-black leading-none tracking-tighter md:text-6xl lg:text-[4.5rem]">
+                Feedback
+                <br />
+                infrastructure
+                <br />
+                <span className="text-amber-500 dark:text-amber-400">for builders.</span>
+              </h1>
+
+              <p className="mb-8 max-w-md text-base leading-relaxed text-muted-foreground md:text-lg">
+                One script tag to start. Public voting boards, a native AI agent API, and a
+                real-time inbox — ready when your product grows.
+              </p>
+
+              <div className="flex flex-wrap gap-3">
+                <Link href="/auth">
+                  <Button size="lg" className="group font-semibold">
+                    Start for free
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </Button>
+                </Link>
+                <a
+                  href="https://github.com/feedbacksdev/feedbacks.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" size="lg" className="gap-2 font-semibold">
+                    <Github className="h-4 w-4" />
+                    GitHub
+                  </Button>
+                </a>
+              </div>
+
+              {/* Quick facts */}
+              <div className="mt-8 flex flex-wrap gap-2">
+                {[
+                  { Icon: Zap, label: 'Under 10KB' },
+                  { Icon: Bot, label: 'MCP / AI agents' },
+                  { Icon: ThumbsUp, label: 'Public voting boards' },
+                ].map(({ Icon, label }) => (
+                  <span
+                    key={label}
+                    className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs text-muted-foreground"
+                  >
+                    <Icon className="h-3.5 w-3.5 text-amber-500" />
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: widget demo */}
+            <div className="flex flex-shrink-0 justify-center md:justify-end">
+              <div className="relative">
+                <div className="absolute -inset-8 rounded-3xl bg-amber-400/10 blur-3xl dark:bg-amber-400/5" />
+                <div className="relative">
+                  <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    Live preview
+                  </p>
+                  <WidgetDemo />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="border-t bg-muted/50 py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="mb-12 text-center text-3xl font-bold">
-            Everything you need, nothing you don&apos;t
+      {/* ── Install strip ────────────────────────────────────────────────────── */}
+      <section className="border-b bg-zinc-950 px-6 py-14 dark:bg-zinc-900">
+        <div className="mx-auto max-w-2xl">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-zinc-500">
+            Install
+          </p>
+          <h2 className="mb-6 text-2xl font-bold tracking-tight text-zinc-50">
+            One script tag. 30 seconds.
           </h2>
-          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
-            {features.map((f) => (
-              <Card key={f.title}>
-                <CardHeader>
-                  <div className="mb-2 text-3xl">{f.icon}</div>
-                  <CardTitle className="text-xl">{f.title}</CardTitle>
-                  <CardDescription>{f.description}</CardDescription>
-                </CardHeader>
-              </Card>
+          <CodeSnippet tabs={[{ label: 'HTML', code: installSnippet, language: 'html' }]} />
+        </div>
+      </section>
+
+      {/* ── Three real differentiators ───────────────────────────────────────── */}
+      <section className="border-b py-16 md:py-20">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid divide-y md:grid-cols-3 md:divide-x md:divide-y-0">
+            {[
+              {
+                Icon: Zap,
+                headline: 'Under 10KB',
+                sub: 'Widget',
+                body: 'Vanilla TypeScript, zero dependencies. Loads in one render cycle. Your users will never notice the overhead.',
+              },
+              {
+                Icon: Bot,
+                headline: 'AI Agent API',
+                sub: 'MCP Protocol',
+                body: 'Native MCP server for Claude Code, Cursor, and any AI agent. Query, triage, and act on feedback without leaving the conversation.',
+              },
+              {
+                Icon: ThumbsUp,
+                headline: 'Voting Boards',
+                sub: 'Public feature requests',
+                body: 'Every project gets a shareable feature board at no extra cost. Users upvote. You build what they actually want.',
+              },
+            ].map(({ Icon, headline, sub, body }, i) => (
+              <div
+                key={headline}
+                className={`p-8 md:px-10 ${i === 0 ? 'md:pl-0' : ''} ${
+                  i === 2 ? 'md:pr-0' : ''
+                }`}
+              >
+                <Icon className="mb-4 h-6 w-6 text-amber-500" />
+                <p className="mb-0.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  {sub}
+                </p>
+                <h3 className="mb-3 text-2xl font-black tracking-tight">{headline}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{body}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <h2 className="mb-12 text-center text-3xl font-bold">
-            Simple pricing
-          </h2>
-          <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Free</CardTitle>
-                <CardDescription>For side projects and indie devs</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-6 text-3xl font-bold">
-                  $0<span className="text-sm font-normal text-muted-foreground">/mo</span>
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>✓ 1 project</li>
-                  <li>✓ 100 feedback / month</li>
-                  <li>✓ Email notifications</li>
-                  <li>✓ 7-day data retention</li>
-                </ul>
-                <Link href="/auth" className="mt-6 block">
-                  <Button variant="outline" className="w-full">
-                    Get Started
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-            <Card className="border-primary">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Pro</CardTitle>
-                  <Badge>Popular</Badge>
-                </div>
-                <CardDescription>For teams and growing products</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="mb-6 text-3xl font-bold">
-                  $19<span className="text-sm font-normal text-muted-foreground">/mo</span>
-                </p>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>✓ Unlimited projects</li>
-                  <li>✓ Unlimited feedback</li>
-                  <li>✓ Slack, Discord, GitHub</li>
-                  <li>✓ Unlimited data retention</li>
-                  <li>✓ Custom branding</li>
-                  <li>✓ Priority support</li>
-                </ul>
-                <Link href="/auth" className="mt-6 block">
-                  <Button className="w-full">Start Free Trial</Button>
-                </Link>
-              </CardContent>
-            </Card>
+      {/* ── AI Agent API ─────────────────────────────────────────────────────── */}
+      <section className="border-b py-20 md:py-28">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="flex flex-col gap-12 md:flex-row md:items-start md:gap-16">
+            <div className="flex-1">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-amber-500 dark:text-amber-400">
+                Built for AI-first workflows
+              </p>
+              <h2 className="mb-5 text-4xl font-black leading-tight tracking-tighter md:text-5xl">
+                Your AI agents
+                <br />
+                can talk to it.
+              </h2>
+              <p className="mb-8 max-w-sm leading-relaxed text-muted-foreground">
+                feedbacks.dev ships with a native MCP server. Drop it into any AI coding tool and
+                your agents can read, triage, and act on user feedback without leaving the
+                conversation.
+              </p>
+              <ul className="space-y-3">
+                {[
+                  'Works with Claude Code, Claude Desktop, Cursor, Windsurf',
+                  'Full REST API for custom integrations',
+                  'API key auth — no OAuth dance',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                    <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex-1">
+              <CodeSnippet
+                tabs={[
+                  { label: 'MCP Config', code: mcpSnippet, language: 'json' },
+                  { label: 'REST API', code: apiSnippet, language: 'bash' },
+                ]}
+              />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="border-t bg-muted/50 py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="mb-4 text-3xl font-bold">
-            Ready to collect better feedback?
-          </h2>
-          <p className="mb-8 text-muted-foreground">
-            Set up in under 2 minutes. No credit card required.
+      {/* ── How it works ─────────────────────────────────────────────────────── */}
+      <section className="border-b bg-muted/20 py-20 md:py-28">
+        <div className="mx-auto max-w-6xl px-6">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Getting started
           </p>
-          <Link href="/auth">
-            <Button size="lg">Get Started Free →</Button>
-          </Link>
+          <h2 className="mb-14 text-4xl font-black tracking-tighter md:text-5xl">
+            Up in 2 minutes.
+          </h2>
+          <div className="divide-y">
+            {[
+              {
+                num: '01',
+                title: 'Paste the script tag',
+                body: 'Add one line to your HTML. Works with any framework — React, Vue, Svelte, plain HTML. No build step, no config files.',
+              },
+              {
+                num: '02',
+                title: 'Your users start talking',
+                body: 'The widget appears as a floating button. Users submit bugs, ideas, and praise. You start receiving signal, not noise.',
+              },
+              {
+                num: '03',
+                title: 'Triage from your dashboard — or delegate to your agent',
+                body: 'Review and act on feedback in real-time. Or let an AI agent handle triage while you focus on building.',
+              },
+            ].map(({ num, title, body }) => (
+              <div
+                key={num}
+                className="flex flex-col gap-4 py-8 md:flex-row md:items-baseline md:gap-12"
+              >
+                <span className="text-5xl font-black tracking-tighter text-muted-foreground/20 md:w-20 md:flex-shrink-0 md:text-right">
+                  {num}
+                </span>
+                <div>
+                  <h3 className="mb-1.5 text-xl font-bold tracking-tight">{title}</h3>
+                  <p className="max-w-lg text-sm leading-relaxed text-muted-foreground">{body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          © 2026 feedbacks.dev. Open source on GitHub.
+      {/* ── Pricing ──────────────────────────────────────────────────────────── */}
+      <section id="pricing" className="border-b py-20 md:py-28">
+        <div className="mx-auto max-w-6xl px-6">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Pricing
+          </p>
+          <h2 className="mb-2 text-4xl font-black tracking-tighter md:text-5xl">
+            Simple, honest.
+          </h2>
+          <p className="mb-14 text-muted-foreground">
+            No usage-based traps. No surprise bills.
+          </p>
+
+          <div className="grid max-w-3xl gap-4 md:grid-cols-2">
+            {/* Free */}
+            <div className="rounded-2xl border bg-background p-8">
+              <p className="mb-1 text-sm font-medium text-muted-foreground">Free</p>
+              <p className="mb-6 text-4xl font-black tracking-tighter">
+                $0
+                <span className="text-lg font-normal text-muted-foreground">/mo</span>
+              </p>
+              <ul className="mb-8 space-y-2.5">
+                {[
+                  '1 project',
+                  '500 feedback / month',
+                  'Public voting board',
+                  'Dashboard + REST API',
+                  '30-day history',
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 flex-shrink-0 text-amber-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/auth">
+                <Button variant="outline" className="w-full font-semibold">
+                  Get started
+                </Button>
+              </Link>
+            </div>
+
+            {/* Pro */}
+            <div className="relative rounded-2xl border-2 border-foreground bg-background p-8">
+              <Badge className="absolute -top-3.5 left-6 px-3 text-xs">Pro</Badge>
+              <p className="mb-1 text-sm font-medium text-muted-foreground">Pro</p>
+              <p className="mb-6 text-4xl font-black tracking-tighter">
+                $19
+                <span className="text-lg font-normal text-muted-foreground">/mo</span>
+              </p>
+              <ul className="mb-8 space-y-2.5">
+                {[
+                  'Unlimited projects',
+                  'Unlimited feedback',
+                  'Webhook integrations',
+                  'MCP server + AI API',
+                  'Custom widget branding',
+                  'Unlimited history',
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Check className="h-4 w-4 flex-shrink-0 text-amber-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/auth">
+                <Button className="w-full font-semibold">
+                  Start free trial
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ──────────────────────────────────────────────────────────────── */}
+      <section className="px-6 py-20 md:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="relative overflow-hidden rounded-3xl bg-foreground px-8 py-16 text-center md:px-16 md:py-20">
+            {/* Subtle texture */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.04]"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle, white 1px, transparent 1px)',
+                backgroundSize: '24px 24px',
+              }}
+            />
+            <div className="relative">
+              <h2 className="mb-4 text-4xl font-black tracking-tighter text-background md:text-5xl">
+                Start hearing from
+                <br />
+                your users today.
+              </h2>
+              <p className="mx-auto mb-8 max-w-sm text-background/60">
+                Free tier, no credit card required. Up and running in under 2 minutes.
+              </p>
+              <Link href="/auth">
+                <Button
+                  size="lg"
+                  className="bg-background font-semibold text-foreground hover:bg-background/90"
+                >
+                  Start for free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ───────────────────────────────────────────────────────────── */}
+      <footer className="border-t px-6 py-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 md:flex-row">
+          <span className="text-sm font-bold tracking-tight">
+            feedbacks
+            <span className="text-amber-500 dark:text-amber-400">.dev</span>
+          </span>
+          <p className="text-center text-xs text-muted-foreground">
+            Open source, MIT licensed — no fake stats, no fake testimonials.
+          </p>
+          <a
+            href="https://github.com/feedbacksdev/feedbacks.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Github className="h-4 w-4" />
+          </a>
         </div>
       </footer>
     </div>

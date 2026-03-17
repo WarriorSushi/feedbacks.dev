@@ -78,6 +78,11 @@ export interface Feedback {
   attachments: FeedbackAttachment[] | null
   metadata: Record<string, unknown> | null
   is_archived: boolean
+  is_public: boolean
+  vote_count: number
+  agent_name: string | null
+  agent_session_id: string | null
+  structured_data: StructuredFeedbackData | null
   resolved_at: string | null
   created_at: string
   updated_at: string
@@ -136,6 +141,40 @@ export interface DashboardStats {
   feedbackByType: { type: string; count: number }[]
   feedbackByStatus: { status: string; count: number }[]
   recentTrend: { date: string; count: number }[]
+}
+
+export interface StructuredFeedbackData {
+  stack_trace?: string
+  error_code?: string
+  reproduction_steps?: string[]
+  environment?: Record<string, string>
+  severity?: string
+  component?: string
+  [key: string]: unknown
+}
+
+export interface PublicBoardSettings {
+  id: string
+  project_id: string
+  enabled: boolean
+  slug: string
+  title: string | null
+  description: string | null
+  show_types: string[]
+  allow_submissions: boolean
+  require_email_to_vote: boolean
+  custom_css: string | null
+  branding: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export interface Vote {
+  id: string
+  feedback_id: string
+  voter_identifier: string
+  vote_type: 'up' | 'down'
+  created_at: string
 }
 
 export interface UserSettings {

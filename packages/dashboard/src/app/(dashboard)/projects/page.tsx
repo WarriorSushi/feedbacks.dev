@@ -21,7 +21,7 @@ export default async function ProjectsPage() {
 
   // Get feedback counts per project
   const { data: counts } = await supabase
-    .from('feedbacks')
+    .from('feedback')
     .select('project_id')
     .eq('is_archived', false)
 

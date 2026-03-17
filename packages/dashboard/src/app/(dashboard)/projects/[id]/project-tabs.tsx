@@ -13,17 +13,21 @@ import { Separator } from '@/components/ui/separator'
 import { CodeSnippet } from '@/components/code-snippet'
 import { ArrowLeft, Copy, Check, Loader2, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import { BoardSettingsTab } from './board-settings'
+import { ApiDocs } from './api-docs'
 
 interface ProjectTabsProps {
   project: Project
 }
 
-type TabId = 'install' | 'customize' | 'integrations' | 'settings'
+type TabId = 'install' | 'customize' | 'integrations' | 'board' | 'api' | 'settings'
 
 const tabs: { id: TabId; label: string }[] = [
   { id: 'install', label: 'Install' },
   { id: 'customize', label: 'Customize' },
   { id: 'integrations', label: 'Integrations' },
+  { id: 'board', label: 'Public Board' },
+  { id: 'api', label: 'API' },
   { id: 'settings', label: 'Settings' },
 ]
 
@@ -64,6 +68,8 @@ export function ProjectTabs({ project }: ProjectTabsProps) {
       {activeTab === 'install' && <InstallTab project={project} />}
       {activeTab === 'customize' && <CustomizeTab project={project} />}
       {activeTab === 'integrations' && <IntegrationsTab project={project} />}
+      {activeTab === 'board' && <BoardSettingsTab project={project} />}
+      {activeTab === 'api' && <ApiDocs project={project} />}
       {activeTab === 'settings' && <SettingsTab project={project} />}
     </div>
   )
@@ -87,8 +93,9 @@ function ApiKeyBadge({ apiKey }: { apiKey: string }) {
 }
 
 function InstallTab({ project }: { project: Project }) {
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://app.feedbacks.dev'
   const htmlSnippet = `<script
-  src="https://cdn.feedbacks.dev/widget.js"
+  src="${origin}/widget/latest.js"
   data-project="${project.api_key}"
   defer
 ></script>`

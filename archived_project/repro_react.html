@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Widget Test - React</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Use local production build CSS -->
+    <link rel="stylesheet" href="file:///c:/coding/feedbacks.dev/packages/widget/dist/widget-1.1.0.css">
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useEffect, useRef } = React;
+
+        function FeedbackWidget() {
+            const widgetRef = useRef(null);
+            const configRef = useRef({
+                "projectKey": "feedbacks_dev_api_key_88812f1a08370b9dddb5889dae538a7e11fc9790",
+                "apiUrl": "http://localhost:3000/api/feedback", // Local API override
+                "embedMode": "inline",
+                "target": "#feedback-widget",
+                "primaryColor": "#6366F1",
+                "backgroundColor": "#ffffff",
+                "requireEmail": true,
+                "enableRating": false,
+                "enableScreenshot": true,
+                "successTitle": "Thank you!",
+                "successDescription": "We appreciate you taking the time to share your thoughts.",
+                "spacing": 24,
+                "modalWidth": 480,
+                "inlineBorder": "1px solid rgba(15,23,42,0.08)",
+                "inlineShadow": "0 16px 40px rgba(15,23,42,0.12)",
+                "rateLimitCount": 5,
+                "rateLimitWindowSec": 60
+            });
+
+            useEffect(() => {
+                // Load and initialize widget
+                const initWidget = () => {
+                    if (window.FeedbacksWidget) {
+                        widgetRef.current = new window.FeedbacksWidget(configRef.current);
+                    }
+                };
+
+                if (!window.FeedbacksWidget) {
+                    const script = document.createElement('script');
+                    script.src = 'file:///c:/coding/feedbacks.dev/packages/widget/dist/widget-1.1.0.js'; // Local production build
+                    script.onload = initWidget;
+                    script.onerror = () => console.error('Failed to load FeedbacksWidget');
+                    document.head.appendChild(script);
+                } else {
+                    initWidget();
+                }
+
+                // Cleanup function
+                return () => {
+                    if (widgetRef.current && typeof widgetRef.current.destroy === 'function') {
+                        widgetRef.current.destroy();
+                        widgetRef.current = null;
+                    }
+                };
+            }, []);
+
+            return (
+                <div id="feedback-widget" />
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<FeedbackWidget />);
+    </script>
+</body>
+
+</html>

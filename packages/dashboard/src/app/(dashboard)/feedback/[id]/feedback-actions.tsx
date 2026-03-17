@@ -25,7 +25,7 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
   const handleStatusChange = async (newStatus: FeedbackStatus) => {
     setStatus(newStatus)
     await supabase
-      .from('feedbacks')
+      .from('feedback')
       .update({
         status: newStatus,
         updated_at: new Date().toISOString(),

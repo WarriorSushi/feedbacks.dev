@@ -130,7 +130,7 @@ async function deliverSingle(
       if (res.ok) {
         status = 'success'
         // Reset consecutive failures
-        await admin.rpc('reset_webhook_failures', { p_project_id: projectId, p_type: type, p_endpoint_id: endpoint.id }).catch(() => {})
+        try { await admin.rpc('reset_webhook_failures', { p_project_id: projectId, p_type: type, p_endpoint_id: endpoint.id }) } catch {}
         break
       }
     } catch (err) {
@@ -155,7 +155,8 @@ async function deliverSingle(
     attempts,
     payload: JSON.stringify(payload),
     created_at: new Date().toISOString(),
-  }).catch(() => {})
+  })
+  // ignore insert errors
 
   // Auto-disable after 3 consecutive failures
   if (status === 'failed') {
