@@ -1,63 +1,23 @@
-import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
+import { createServerSupabase } from '@/lib/supabase-server'
 
-const allowedOrigins = new Set([
-  'https://www.feedbacks.dev',
-  'https://feedbacks.dev',
-  'https://app.feedbacks.dev',
-  'http://localhost:3000',
-]);
-
-function corsHeadersFor(origin: string | null) {
-  const headers: Record<string, string> = {
-    'Access-Control-Allow-Credentials': 'true',
-  };
-  if (origin && allowedOrigins.has(origin)) {
-    headers['Access-Control-Allow-Origin'] = origin;
-    headers['Vary'] = 'Origin';
-  }
-  return headers;
-}
-
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const supabase = createServerSupabaseClient();
-    const { data: { user }, error } = await supabase.auth.getUser();
-    const origin = request.headers.get('origin');
-    const baseHeaders = corsHeadersFor(origin);
+    const supabase = await createServerSupabase()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    if (error) {
-      return NextResponse.json(
-        { authenticated: false }, 
-        { headers: baseHeaders }
-      );
+    if (!user) {
+      return NextResponse.json({ user: null })
     }
-    
-    return NextResponse.json(
-      { 
-        authenticated: !!user,
-        email: user?.email 
-      },
-      { headers: baseHeaders }
-    );
-  } catch (error) {
-    const origin = (error as any)?.request?.headers?.get?.('origin') ?? null;
-    return NextResponse.json(
-      { authenticated: false },
-      { headers: corsHeadersFor(origin) }
-    );
-  }
-}
 
-export async function OPTIONS(request: NextRequest) {
-  const origin = request.headers.get('origin');
-  const baseHeaders = corsHeadersFor(origin);
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      ...baseHeaders,
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  });
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        created_at: user.created_at,
+      },
+    })
+  } catch {
+    return NextResponse.json({ user: null })
+  }
 }

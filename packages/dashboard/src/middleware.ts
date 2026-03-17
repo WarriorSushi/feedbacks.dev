@@ -1,70 +1,59 @@
-import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
-// Edge rate limiting using Upstash Redis (recommended for serverless).
-// Configure env vars: UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
-// Fallback: pass-through if not configured.
-export async function middleware(req: NextRequest) {
-  if (!req.nextUrl.pathname.startsWith('/api/feedback')) {
-    return NextResponse.next();
-  }
+export async function middleware(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({ request })
 
-  const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
-  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!redisUrl || !redisToken) {
-    return NextResponse.next();
-  }
-
-  const ip =
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    // @ts-ignore - non-standard on edge runtime
-    (req as any).ip ||
-    'unknown';
-
-  const windowSeconds = 60;
-  const maxRequests = 10;
-  const key = `rate:v1:${ip}`;
-
-  try {
-    const res = await fetch(`${redisUrl}/pipeline`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${redisToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify([
-        ['INCR', key],
-        ['EXPIRE', key, String(windowSeconds)],
-      ]),
-      cache: 'no-store',
-    });
-
-    const results = (await res.json()) as Array<{ result: number }>;
-    const current = results?.[0]?.result ?? 0;
-
-    const headers: Record<string, string> = {
-      'RateLimit-Limit': String(maxRequests),
-      'RateLimit-Remaining': String(Math.max(0, maxRequests - current)),
-      'RateLimit-Reset': String(windowSeconds),
-    };
-
-    if (current > maxRequests) {
-      return new NextResponse('Too Many Requests', {
-        status: 429,
-        headers: {
-          'Retry-After': String(windowSeconds),
-          ...headers,
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
         },
-      });
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
+          supabaseResponse = NextResponse.next({ request })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
     }
+  )
 
-    return NextResponse.next({ headers });
-  } catch (_err) {
-    // Fail-open on limiter errors
-    return NextResponse.next();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Protected routes
+  const isProtected = request.nextUrl.pathname.startsWith('/dashboard') ||
+    request.nextUrl.pathname.startsWith('/projects') ||
+    request.nextUrl.pathname.startsWith('/feedback') ||
+    request.nextUrl.pathname.startsWith('/settings')
+
+  if (isProtected && !user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth'
+    url.searchParams.set('redirect', request.nextUrl.pathname)
+    return NextResponse.redirect(url)
   }
+
+  // Redirect logged-in users away from auth page
+  if (request.nextUrl.pathname === '/auth' && user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  return supabaseResponse
 }
 
 export const config = {
-  matcher: ['/api/feedback'],
-};
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|api/feedback|cdn/).*)',
+  ],
+}

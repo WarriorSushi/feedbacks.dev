@@ -1,77 +1,82 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { NextRequest, NextResponse } from 'next/server'
+import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
+import { sendTestWebhook } from '@/lib/webhook-delivery'
+import type { WebhookConfig, WebhookEndpoint, GitHubEndpoint } from '@/lib/types'
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return new NextResponse('Unauthorized', { status: 401 });
+type RouteParams = { params: Promise<{ id: string }> }
 
-  const { data, error } = await supabase
+async function getAuthedProject(projectId: string) {
+  const supabase = await createServerSupabase()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+
+  const admin = await createAdminSupabase()
+  const { data: project, error } = await admin
     .from('projects')
-    .select('webhooks')
-    .eq('id', params.id)
+    .select('id, name, webhooks, owner_user_id')
+    .eq('id', projectId)
     .eq('owner_user_id', user.id)
-    .single();
-  if (error) return NextResponse.json({}, { status: 200 });
-  return NextResponse.json(data?.webhooks || {});
+    .single()
+
+  if (error || !project) return { error: NextResponse.json({ error: 'Project not found' }, { status: 404 }) }
+  return { project, admin }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return new NextResponse('Unauthorized', { status: 401 });
-
-  let body: any = {};
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
-    body = await request.json();
-    if (typeof body !== 'object' || body === null) throw new Error('Invalid body');
+    const { id } = await params
+    const result = await getAuthedProject(id)
+    if ('error' in result && !('admin' in result)) return result.error
+    const { project } = result as Exclude<typeof result, { error: NextResponse }>
+    return NextResponse.json(project.webhooks ?? {})
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
+}
 
-  // Basic validation: only allow HTTPS webhook URLs when provided
-  const checkUrl = (u?: string) => {
-    if (!u) return true;
-    try {
-      const parsed = new URL(u);
-      return parsed.protocol === 'https:';
-    } catch {
-      return false;
+export async function PUT(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params
+    const result = await getAuthedProject(id)
+    if ('error' in result && !('admin' in result)) return result.error
+    const { admin } = result as Exclude<typeof result, { error: NextResponse }>
+
+    const webhooks: WebhookConfig = await request.json()
+
+    const { data, error } = await admin
+      .from('projects')
+      .update({ webhooks, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select('webhooks')
+      .single()
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(data?.webhooks ?? {})
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function POST(request: NextRequest, { params }: RouteParams) {
+  try {
+    const { id } = await params
+    const result = await getAuthedProject(id)
+    if ('error' in result && !('admin' in result)) return result.error
+    const { project } = result as Exclude<typeof result, { error: NextResponse }>
+
+    const body = await request.json()
+    const { type, endpoint } = body as {
+      type: 'slack' | 'discord' | 'generic' | 'github'
+      endpoint: WebhookEndpoint | GitHubEndpoint
     }
-  };
-  const invalid: string[] = [];
-  // Accept both legacy single-object and new array-based configs
-  const checkEndpoints = (arr?: Array<{ url?: string }>, prefix = '') => {
-    if (!Array.isArray(arr)) return;
-    arr.forEach((e, i) => {
-      if (!checkUrl(e?.url)) invalid.push(`${prefix}.endpoints[${i}].url`);
-    });
-  };
-  if (body?.slack?.url && !checkUrl(body.slack.url)) invalid.push('slack.url');
-  if (body?.discord?.url && !checkUrl(body.discord.url)) invalid.push('discord.url');
-  if (body?.generic?.url && !checkUrl(body.generic.url)) invalid.push('generic.url');
-  checkEndpoints(body?.slack?.endpoints, 'slack');
-  checkEndpoints(body?.discord?.endpoints, 'discord');
-  checkEndpoints(body?.generic?.endpoints, 'generic');
-  // Basic GitHub check: ensure repo and token strings if provided
-  if (Array.isArray(body?.github?.endpoints)) {
-    for (let i=0;i<body.github.endpoints.length;i++) {
-      const ep = body.github.endpoints[i];
-      if (ep && ((ep.repo && typeof ep.repo !== 'string') || (ep.token && typeof ep.token !== 'string'))) {
-        invalid.push(`github.endpoints[${i}]`);
-      }
+
+    if (!type || !endpoint?.url) {
+      return NextResponse.json({ error: 'type and endpoint.url are required' }, { status: 400 })
     }
-  }
-  if (invalid.length) {
-    return NextResponse.json({ error: 'Only HTTPS URLs are allowed', fields: invalid }, { status: 400 });
-  }
 
-  const { error } = await supabase
-    .from('projects')
-    .update({ webhooks: body })
-    .eq('id', params.id)
-    .eq('owner_user_id', user.id);
-
-  if (error) return NextResponse.json({ error: 'Persist failed. Ensure projects.webhooks JSONB exists.' }, { status: 400 });
-  return NextResponse.json({ success: true });
+    const delivery = await sendTestWebhook(type, endpoint, { id: project.id, name: project.name })
+    return NextResponse.json(delivery)
+  } catch {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }

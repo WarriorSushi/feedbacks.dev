@@ -1,103 +1,89 @@
-'use client';
+import { createServerSupabase } from '@/lib/supabase-server'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { formatDate } from '@/lib/utils'
+import type { Project } from '@/lib/types'
+import Link from 'next/link'
+import { Plus, Key } from 'lucide-react'
 
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { HoverBorderGradient } from '@/components/ui/hover-border-gradient';
-import { BackgroundLines } from '@/components/ui/background-lines';
-import { Plus, BarChart3, Calendar, ExternalLink, Users, Clock } from 'lucide-react';
-import { useDashboard } from '@/components/dashboard-client-layout';
-import { ClientDate } from '@/components/client-date';
+export default async function ProjectsPage() {
+  const supabase = await createServerSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-export default function ProjectsPage() {
-  const { user, projects } = useDashboard();
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('owner_user_id', user!.id)
+    .order('created_at', { ascending: false })
+
+  // Get feedback counts per project
+  const { data: counts } = await supabase
+    .from('feedbacks')
+    .select('project_id')
+    .eq('is_archived', false)
+
+  const countMap = new Map<string, number>()
+  counts?.forEach((c) => {
+    countMap.set(c.project_id, (countMap.get(c.project_id) || 0) + 1)
+  })
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Your Projects</h1>
-            <p className="text-muted-foreground mt-2 text-sm md:text-base">
-              Manage all your feedback collection projects in one place.
-            </p>
-          </div>
-          <HoverBorderGradient
-            containerClassName="rounded-full w-full sm:w-auto"
-            className="dark:bg-black bg-white text-black dark:text-white flex items-center justify-center space-x-2 px-4 py-2"
-          >
-            <Link href="/projects/new" className="flex items-center space-x-2">
-              <Plus className="h-4 w-4" />
-              <span>New Project</span>
-            </Link>
-          </HoverBorderGradient>
-        </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Projects</h1>
+        <Link href="/projects/new">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" /> New Project
+          </Button>
+        </Link>
+      </div>
 
-        {projects.length > 0 ? (
-          <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {projects.map((project: any, index: number) => (
-              <Card key={project.id} className="">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base lg:text-lg truncate">{project.name}</CardTitle>
-                    <Badge variant="secondary" className="bg-accent/10 text-accent border-accent/20 text-xs flex-shrink-0">
-                      {project.feedback?.[0]?.count || 0}
-                    </Badge>
-                  </div>
-                  <CardDescription className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-3 w-3" />
-                    <ClientDate date={project.created_at} prefix="Created " className="truncate" />
+      {!projects || projects.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="mb-4 text-muted-foreground">No projects yet.</p>
+            <Link href="/projects/new">
+              <Button>Create your first project</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {(projects as Project[]).map((project) => (
+            <Link key={project.id} href={`/projects/${project.id}`}>
+              <Card className="transition-shadow hover:shadow-md">
+                <CardHeader>
+                  <CardTitle className="text-lg">{project.name}</CardTitle>
+                  <CardDescription>
+                    {project.domain || 'No domain set'}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-0">
+                <CardContent>
                   <div className="space-y-3">
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <BarChart3 className="h-3 w-3" />
-                          <span>{project.feedback?.[0]?.count || 0} feedback</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          <span>Active</span>
-                        </div>
-                      </div>
-                      
-                      <Button asChild size="sm" variant="outline" className="h-8 transition-colors duration-150">
-                        <Link href={`/projects/${project.id}`}>
-                          <ExternalLink className="h-3 w-3 mr-1" />
-                          View
-                        </Link>
-                      </Button>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Key className="h-3.5 w-3.5 text-muted-foreground" />
+                      <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+                        {project.api_key.slice(0, 8)}••••••••
+                      </code>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <Badge variant="secondary">
+                        {countMap.get(project.id) || 0} feedback
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDate(project.created_at)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        ) : (
-          <BackgroundLines className="flex h-[500px] w-full flex-col items-center justify-center px-4">
-            <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
-              <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center mb-6">
-                <Plus className="w-10 h-10 opacity-70" />
-              </div>
-              <h3 className="text-2xl font-bold mb-3">No projects yet</h3>
-              <p className="mb-8 text-lg opacity-70">
-                Create your first project to start collecting valuable feedback from your users.
-              </p>
-              <HoverBorderGradient
-                containerClassName="rounded-full"
-                className="dark:bg-black bg-white text-black dark:text-white flex items-center justify-center space-x-2 px-6 py-3"
-              >
-                <Link href="/projects/new" className="flex items-center space-x-2">
-                  <Plus className="h-4 w-4" />
-                  <span>Create Your First Project</span>
-                </Link>
-              </HoverBorderGradient>
-            </div>
-          </BackgroundLines>
-        )}
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
-  );
+  )
 }

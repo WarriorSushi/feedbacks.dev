@@ -1,40 +1,40 @@
-import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { redirect } from 'next/navigation';
-import { DashboardClientLayout } from '@/components/dashboard-client-layout';
+import { redirect } from 'next/navigation'
+import { createServerSupabase } from '@/lib/supabase-server'
+import { Sidebar } from '@/components/sidebar'
+import type { Project } from '@/lib/types'
 
 export default async function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  const supabase = createServerSupabaseClient();
-  
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser();
-    
-    if (error || !user) {
-      redirect('/auth');
-    }
+  const supabase = await createServerSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-    // Server-side data fetching prevents loading states
-    const { data: projects } = await supabase
-      .from('projects')
-      .select(`
-        *,
-        feedback:feedback(count)
-      `)
-      .eq('owner_user_id', user.id);
-
-    return (
-      <DashboardClientLayout 
-        user={user} 
-        initialProjects={projects || []}
-      >
-        {children}
-      </DashboardClientLayout>
-    );
-  } catch (error) {
-    console.error('Dashboard layout error:', error);
-    redirect('/auth');
+  if (!user) {
+    redirect('/auth')
   }
+
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('owner_user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  return (
+    <div className="flex min-h-screen">
+      <Sidebar
+        user={{
+          email: user.email,
+          user_metadata: user.user_metadata as { avatar_url?: string; full_name?: string },
+        }}
+        projects={(projects as Project[]) || []}
+      />
+      <main className="flex-1 overflow-auto pb-16 md:pb-0">
+        <div className="container mx-auto p-4 md:p-6">{children}</div>
+      </main>
+    </div>
+  )
 }

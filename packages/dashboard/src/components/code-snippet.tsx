@@ -1,63 +1,66 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import * as React from 'react'
+import { Check, Copy } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
-interface CodeSnippetProps {
-  code: string;
-  language?: string;
-  className?: string;
+interface CodeTab {
+  label: string
+  code: string
+  language: string
 }
 
-export function CodeSnippet({ code, language = 'html', className = '' }: CodeSnippetProps) {
-  const [copied, setCopied] = useState(false);
+interface CodeSnippetProps {
+  tabs: CodeTab[]
+  className?: string
+}
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
+export function CodeSnippet({ tabs, className }: CodeSnippetProps) {
+  const [activeTab, setActiveTab] = React.useState(0)
+  const [copied, setCopied] = React.useState(false)
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(tabs[activeTab].code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
-    <div className={`relative rounded-xl border shadow-lg bg-background text-foreground dark:bg-slate-950 dark:border-slate-800 max-w-full ${className}`}>
-      {/* macOS Window Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-muted/50 dark:bg-slate-900/50 rounded-t-xl border-b border-border dark:border-slate-800 backdrop-blur-sm">
-        <div className="flex items-center space-x-2">
-          {/* Traffic Light Buttons */}
-          <div className="flex space-x-2">
-            <div className="w-3 h-3 rounded-full bg-[#ff5f57] shadow-sm"></div>
-            <div className="w-3 h-3 rounded-full bg-[#ffbd2e] shadow-sm"></div>
-            <div className="w-3 h-3 rounded-full bg-[#28ca42] shadow-sm"></div>
-          </div>
+    <div className={cn('overflow-hidden rounded-lg border bg-muted', className)}>
+      {tabs.length > 1 && (
+        <div className="flex border-b bg-muted/50">
+          {tabs.map((tab, i) => (
+            <button
+              key={tab.label}
+              onClick={() => setActiveTab(i)}
+              className={cn(
+                'px-4 py-2 text-sm font-medium transition-colors',
+                i === activeTab
+                  ? 'border-b-2 border-primary text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-        <span className="text-xs font-medium text-muted-foreground ml-4">{language}</span>
+      )}
+      <div className="relative">
         <Button
-          size="sm"
           variant="ghost"
-          onClick={copyToClipboard}
-          className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted-foreground/10 transition-colors"
+          size="icon"
+          className="absolute right-2 top-2 h-8 w-8"
+          onClick={handleCopy}
         >
-          {copied ? (
-            <>
-              <Check className="h-3 w-3 mr-1" />
-              <span className="text-xs">Copied</span>
-            </>
-          ) : (
-            <>
-              <Copy className="h-3 w-3 mr-1" />
-              <span className="text-xs">Copy</span>
-            </>
-          )}
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>
+        <pre className="overflow-x-auto p-4 text-sm">
+          <code className="font-mono text-foreground">
+            {tabs[activeTab].code}
+          </code>
+        </pre>
       </div>
-      <pre className="p-2 md:p-3 overflow-x-auto overflow-y-hidden text-[10px] sm:text-xs leading-relaxed bg-card dark:bg-slate-950 rounded-b-xl text-left">
-        <code className="block text-left text-card-foreground dark:text-slate-300 whitespace-pre-wrap font-mono break-all sm:break-normal">{code}</code>
-      </pre>
     </div>
-  );
+  )
 }

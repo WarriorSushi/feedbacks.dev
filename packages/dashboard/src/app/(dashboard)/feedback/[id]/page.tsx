@@ -1,102 +1,214 @@
-import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ImageLightbox } from '@/components/image-lightbox';
-import { ArrowLeft, Globe, Mail, MonitorSmartphone, Tag, Paperclip } from 'lucide-react';
-import { formatDateTime } from '@/lib/utils';
+import { createServerSupabase } from '@/lib/supabase-server'
+import { notFound } from 'next/navigation'
+import type { Feedback, FeedbackNote } from '@/lib/types'
+import { formatDate, getTypeIcon, getStatusColor, getTypeColor } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import Link from 'next/link'
+import { ArrowLeft, Globe, Monitor, Mail, Star, Tag } from 'lucide-react'
+import { FeedbackActions } from './feedback-actions'
 
-interface PageProps { params: { id: string } }
+export default async function FeedbackDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  const supabase = await createServerSupabase()
 
-export default async function FeedbackDetailPage({ params }: PageProps) {
-  const supabase = createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/auth');
+  const { data: feedback } = await supabase
+    .from('feedbacks')
+    .select('*, projects(id, name)')
+    .eq('id', id)
+    .single()
 
-  // Fetch the feedback row; RLS ensures user owns the project
-  const { data: row, error } = await supabase
-    .from('feedback')
+  if (!feedback) notFound()
+
+  const fb = feedback as Feedback
+
+  const { data: notes } = await supabase
+    .from('feedback_notes')
     .select('*')
-    .eq('id', params.id)
-    .single();
-
-  if (error || !row) redirect('/dashboard');
-
-  // Fetch project name for header
-  const { data: project } = await supabase
-    .from('projects')
-    .select('id,name')
-    .eq('id', row.project_id)
-    .single();
-
-  const projectName = project?.name || 'Project';
+    .eq('feedback_id', id)
+    .order('created_at', { ascending: true })
 
   return (
-    <div className="container mx-auto px-4 py-4 md:py-6">
-      <div className="flex items-center justify-between mb-4 md:mb-6">
-        <Button variant="ghost" asChild className="gap-2 h-11 md:h-10">
-          <Link href={`/projects/${row.project_id}`}>
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Back to Project</span>
-            <span className="sm:hidden">Back</span>
-          </Link>
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <Link
+        href="/feedback"
+        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to inbox
+      </Link>
 
-      <Card>
-        <CardHeader className="pb-3 md:pb-6">
-          <CardTitle className="flex flex-wrap items-center gap-2 text-base md:text-lg">
-            <span>Feedback</span>
-            <Badge variant={row.type === 'bug' ? 'destructive' : 'default'} className="text-xs">{row.type || 'general'}</Badge>
-            {typeof row.rating === 'number' && (
-              <Badge variant="outline" className="text-xs">Rating: {row.rating}/5</Badge>
-            )}
-          </CardTitle>
-          <div className="text-xs md:text-sm text-muted-foreground">{projectName} • {formatDateTime(row.created_at)}</div>
-        </CardHeader>
-        <CardContent className="space-y-3 md:space-y-4">
-          <div>
-            <div className="text-sm font-medium mb-1">Message</div>
-            <p className="text-sm whitespace-pre-wrap leading-relaxed">{row.message}</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3 text-xs md:text-sm text-muted-foreground">
-            <div className="flex items-center gap-2 min-w-0"><Mail className="h-4 w-4 flex-shrink-0" /> <span className="truncate">{row.email || 'anonymous'}</span></div>
-            <div className="flex items-center gap-2 min-w-0"><MonitorSmartphone className="h-4 w-4 flex-shrink-0" /> <span className="truncate" title={row.user_agent}>{row.user_agent || 'Unknown UA'}</span></div>
-            <div className="flex items-center gap-2 min-w-0 sm:col-span-2"><Globe className="h-4 w-4 flex-shrink-0" /> <a href={row.url} target="_blank" rel="noreferrer" className="underline truncate">{row.url}</a></div>
-            {row.priority && (<div className="flex items-center gap-2"><Tag className="h-4 w-4 flex-shrink-0" /> Priority: {row.priority}</div>)}
-          </div>
-          {Array.isArray(row.tags) && row.tags.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2">
-              {row.tags.map((t: string) => <Badge key={t} variant="outline" className="text-xs">{t}</Badge>)}
-            </div>
-          )}
-          {row.screenshot_url && (
-            <div>
-              <div className="text-sm font-medium mb-1">Screenshot</div>
-              <ImageLightbox src={row.screenshot_url} className="max-h-[85vh] max-w-[95vw]" thumbClassName="w-full h-auto rounded border" />
-            </div>
-          )}
-          {Array.isArray(row.attachments) && row.attachments.length > 0 && (
-            <div>
-              <div className="text-sm font-medium mb-1">Attachments</div>
-              <div className="flex flex-wrap gap-2">
-                {row.attachments.map((att: any, idx: number) => (
-                  att.type?.startsWith('image/') ? (
-                    <ImageLightbox key={idx} src={att.url} thumbClassName="h-20 w-auto rounded border" />
-                  ) : (
-                    <a key={idx} href={att.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm underline">
-                      <Paperclip className="h-3 w-3" /> {att.name || 'attachment'}
-                    </a>
-                  )
-                ))}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Main content */}
+        <div className="space-y-6 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-2xl">{getTypeIcon(fb.type)}</span>
+                {fb.type && (
+                  <Badge variant="secondary" className={getTypeColor(fb.type)}>
+                    {fb.type}
+                  </Badge>
+                )}
+                <Badge variant="secondary" className={getStatusColor(fb.status)}>
+                  {fb.status.replace('_', ' ')}
+                </Badge>
+                {fb.priority && (
+                  <Badge variant={fb.priority === 'critical' ? 'destructive' : 'outline'}>
+                    {fb.priority}
+                  </Badge>
+                )}
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                {fb.message}
+              </p>
+              <p className="mt-4 text-xs text-muted-foreground">
+                {formatDate(fb.created_at)}
+              </p>
+            </CardContent>
+          </Card>
 
+          {/* Screenshot */}
+          {fb.screenshot_url && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Screenshot</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={fb.screenshot_url}
+                  alt="Feedback screenshot"
+                  className="max-w-full rounded-md border"
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Attachments */}
+          {fb.attachments && fb.attachments.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Attachments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {fb.attachments.map((att, i) => (
+                    <a
+                      key={i}
+                      href={att.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-md border p-2 text-sm hover:bg-accent"
+                    >
+                      📎 {att.name}
+                      <span className="text-xs text-muted-foreground">
+                        ({Math.round(att.size / 1024)}KB)
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Notes */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Internal Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {notes && notes.length > 0 ? (
+                <div className="space-y-3">
+                  {(notes as FeedbackNote[]).map((note) => (
+                    <div key={note.id} className="rounded-md border p-3">
+                      <p className="text-sm">{note.content}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {formatDate(note.created_at)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No notes yet.</p>
+              )}
+              <Separator className="my-4" />
+              <FeedbackActions feedbackId={fb.id} currentStatus={fb.status} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Metadata sidebar */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Details</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              {fb.projects && (
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Project:</span>
+                  <Link
+                    href={`/projects/${fb.projects.id}`}
+                    className="font-medium hover:underline"
+                  >
+                    {fb.projects.name}
+                  </Link>
+                </div>
+              )}
+              {fb.email && (
+                <div className="flex items-start gap-2">
+                  <Mail className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                  <span>{fb.email}</span>
+                </div>
+              )}
+              {fb.url && (
+                <div className="flex items-start gap-2">
+                  <Globe className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                  <span className="break-all">{fb.url}</span>
+                </div>
+              )}
+              {fb.user_agent && (
+                <div className="flex items-start gap-2">
+                  <Monitor className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                  <span className="break-all text-xs">{fb.user_agent}</span>
+                </div>
+              )}
+              {fb.rating && (
+                <div className="flex items-center gap-2">
+                  <Star className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex gap-0.5 text-yellow-500">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${i < fb.rating! ? 'fill-current' : 'opacity-30'}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {fb.tags && fb.tags.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <Tag className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                  <div className="flex flex-wrap gap-1">
+                    {fb.tags.map((tag) => (
+                      <Badge key={tag} variant="outline" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}

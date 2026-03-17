@@ -1,35 +1,18 @@
 {
   "name": "@feedbacks/widget",
-  "version": "1.1.0",
-  "private": true,
-  "main": "dist/widget-1.0.0.js",
+  "version": "2.0.0",
+  "description": "Embeddable feedback widget for feedbacks.dev",
+  "main": "dist/widget.js",
+  "types": "dist/types.d.ts",
+  "files": ["dist"],
   "scripts": {
-    "dev": "webpack serve --mode development",
-    "build": "webpack --mode production",
-    "type-check": "tsc --noEmit",
-    "auto-build": "node auto-build.js",
-    "version": "node version-manager.js",
-    "version:patch": "node version-manager.js bump patch",
-    "version:minor": "node version-manager.js bump minor",
-    "version:major": "node version-manager.js bump major",
-    "version:preview": "node version-manager.js preview",
-    "version:list": "node version-manager.js list",
-    "release": "node auto-build.js",
-    "release:patch": "node version-manager.js bump patch && node auto-build.js",
-    "release:minor": "node version-manager.js bump minor && node auto-build.js",
-    "release:major": "node version-manager.js bump major && node auto-build.js",
-    "deploy": "npm run build && node deploy.js"
+    "dev": "node esbuild.config.mjs --watch",
+    "build": "node esbuild.config.mjs",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "css-loader": "^6.8.1",
-    "html-webpack-plugin": "^5.5.3",
-    "mini-css-extract-plugin": "^2.7.6",
-    "style-loader": "^3.3.3",
-    "ts-loader": "^9.4.4",
-    "typescript": "^5.0.0",
-    "webpack": "^5.101.3",
-    "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.2.2"
-  }
+    "esbuild": "^0.20.0",
+    "typescript": "^5.4.0"
+  },
+  "license": "MIT"
 }

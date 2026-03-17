@@ -1,31 +1,20 @@
 {
   "name": "feedbacks-dev",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "packageManager": "pnpm@10.30.3",
   "scripts": {
-    "dev": "npm run dev --workspace=packages/dashboard",
-    "build": "npm run build --workspaces",
-    "widget:dev": "npm run dev --workspace=packages/widget",
-    "widget:build": "npm run build --workspace=packages/widget",
-    "dashboard:dev": "npm run dev --workspace=packages/dashboard",
-    "dashboard:build": "npm run build --workspace=packages/dashboard",
-    "type-check": "npm run type-check --workspaces",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:install": "npx playwright install --with-deps"
+    "dev": "pnpm --filter @feedbacks/dashboard dev",
+    "build": "pnpm -r --parallel build",
+    "widget:dev": "pnpm --filter @feedbacks/widget dev",
+    "widget:build": "pnpm --filter @feedbacks/widget build",
+    "dashboard:dev": "pnpm --filter @feedbacks/dashboard dev",
+    "dashboard:build": "pnpm --filter @feedbacks/dashboard build",
+    "type-check": "pnpm -r --parallel type-check",
+    "lint": "pnpm -r --if-present lint"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "shadcn": "^3.2.1",
-    "typescript": "^5.0.0",
-    "@playwright/test": "^1.45.0"
-  },
-  "dependencies": {
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17"
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
   }
 }
