@@ -19,14 +19,30 @@ export async function authenticateApiKey(
   if (!apiKey) return null
 
   const admin = await createAdminSupabase()
+
+  // Try hash-based lookup first, fall back to plaintext for backward compatibility
   const keyHash = await hashApiKey(apiKey)
-  const { data: project, error } = await admin
+  let { data: project } = await admin
     .from('projects')
     .select('*')
     .eq('api_key_hash', keyHash)
     .single()
 
-  if (error || !project) return null
+  if (!project) {
+    const { data: fallback } = await admin
+      .from('projects')
+      .select('*')
+      .eq('api_key', apiKey)
+      .single()
+    project = fallback
+
+    // Backfill hash if found via plaintext
+    if (project) {
+      await admin.from('projects').update({ api_key_hash: keyHash }).eq('id', project.id)
+    }
+  }
+
+  if (!project) return null
   return { project: project as Project }
 }
 

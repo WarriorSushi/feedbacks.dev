@@ -125,13 +125,27 @@ export async function POST(request: NextRequest) {
 
     // Hash the incoming API key and compare against stored hash
     const keyHash = await hashApiKey(apiKey)
-    const { data: project, error: projectErr } = await admin
+    let { data: project, error: projectErr } = await admin
       .from('projects')
       .select('id, name, webhooks, settings, owner_user_id')
       .eq('api_key_hash', keyHash)
       .single()
 
-    if (projectErr || !project) return jsonError('Invalid API key', 401)
+    // Fall back to plaintext lookup for backward compatibility
+    if (projectErr || !project) {
+      const { data: fallback } = await admin
+        .from('projects')
+        .select('id, name, webhooks, settings, owner_user_id')
+        .eq('api_key', apiKey)
+        .single()
+      project = fallback
+      // Backfill hash
+      if (project) {
+        await admin.from('projects').update({ api_key_hash: keyHash }).eq('id', project.id)
+      }
+    }
+
+    if (!project) return jsonError('Invalid API key', 401)
 
     // Validate message
     const message = fields.message?.trim()
