@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 // ---------- Types ----------
@@ -735,12 +736,12 @@ export function PublicBoard({
 
       {/* Powered by */}
       <div className="mt-8 text-center">
-        <a
+        <Link
           href="/"
           className="inline-flex items-center gap-1 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
         >
           Powered by feedbacks<span className="text-primary/50">.dev</span>
-        </a>
+        </Link>
       </div>
 
       {/* Submit modal */}
