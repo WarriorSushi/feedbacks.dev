@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     const email = body.email?.trim() || null
     const url = body.url?.trim() || null
-    const tags = Array.isArray(body.tags) ? body.tags.map(String).slice(0, 10) : null
+    const tags = Array.isArray(body.tags) ? body.tags.map(String).slice(0, 10) : []
     const agentName = body.agent_name?.trim() || null
     const agentSessionId = body.agent_session_id?.trim() || null
     const userAgent = body.user_agent || request.headers.get('user-agent') || ''
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate metadata size (max 4KB)
-    const metadata = body.metadata ?? null
+    const metadata = body.metadata ?? {}
     if (metadata && JSON.stringify(metadata).length > 4_096) {
       return jsonError('metadata too large (max 4KB)', 400)
     }

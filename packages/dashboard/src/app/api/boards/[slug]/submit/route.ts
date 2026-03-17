@@ -64,6 +64,9 @@ export async function POST(
       url: null,
       user_agent: 'public-board',
       status: 'new',
+      priority: 'low',
+      tags: [],
+      metadata: {},
       is_public: true,
       vote_count: 0,
     })
