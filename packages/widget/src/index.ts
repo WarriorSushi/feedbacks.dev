@@ -9,6 +9,9 @@ function autoInit(): void {
   const scripts = document.querySelectorAll<HTMLScriptElement>('script[data-project]');
 
   scripts.forEach((script) => {
+    if (script.hasAttribute('data-fb-initialized')) return;
+    script.setAttribute('data-fb-initialized', 'true');
+
     const projectKey = script.getAttribute('data-project');
     if (!projectKey) return;
 

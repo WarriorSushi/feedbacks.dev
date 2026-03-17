@@ -42,9 +42,10 @@ const CHAT_SVG = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" st
 const CHECK_SVG = `<svg viewBox="0 0 24 24"><polyline points="6 12 10 16 18 8"/></svg>`;
 
 const CATEGORY_META: Record<CategoryType, { icon: string; label: string }> = {
-  bug:   { icon: '\u{1F41B}', label: 'Bug' },
-  idea:  { icon: '\u{1F4A1}', label: 'Idea' },
-  praise:{ icon: '\u{1F389}', label: 'Praise' },
+  bug:      { icon: '\u{1F41B}', label: 'Bug' },
+  idea:     { icon: '\u{1F4A1}', label: 'Idea' },
+  praise:   { icon: '\u{1F389}', label: 'Praise' },
+  question: { icon: '\u{2753}', label: 'Question' },
 };
 
 const STAR_LABELS = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
@@ -63,6 +64,8 @@ class FeedbacksWidget {
   private selectedRating = 0;
   private hoverRating = 0;
   private maxRetries = 3;
+  private boundKeydownHandler: ((e: KeyboardEvent) => void) | null = null;
+  private themeVars: Record<string, string> = {};
 
   constructor(config: WidgetConfig) {
     this.cfg = { position: 'bottom-right', embedMode: 'modal', ...config };
@@ -97,7 +100,7 @@ class FeedbacksWidget {
     if (this.cfg.openOnKey) {
       const parts = this.cfg.openOnKey.toLowerCase().split('+');
       const key = parts.pop()!;
-      document.addEventListener('keydown', (e) => {
+      this.boundKeydownHandler = (e) => {
         const modOk = (!parts.includes('shift') || e.shiftKey) &&
                       (!parts.includes('ctrl') || e.ctrlKey) &&
                       (!parts.includes('alt') || e.altKey);
@@ -105,7 +108,8 @@ class FeedbacksWidget {
           e.preventDefault();
           this.isOpen ? this.close() : this.open();
         }
-      });
+      };
+      document.addEventListener('keydown', this.boundKeydownHandler);
     }
 
     // Auto-open
@@ -127,32 +131,40 @@ class FeedbacksWidget {
   }
 
   private applyTheme(): void {
-    const root = document.documentElement;
+    // We'll apply CSS vars to the widget containers, not :root
+    // Store values and apply them when containers are created
+    this.themeVars = {};
+
     // Inherit host font
     try {
       const hostFont = getComputedStyle(document.body).fontFamily;
-      if (hostFont) root.style.setProperty('--fb-font', hostFont);
+      if (hostFont) this.themeVars['--fb-font'] = hostFont;
     } catch { /* ignore */ }
 
     const color = this.cfg.primaryColor || '#6366f1';
-    root.style.setProperty('--fb-primary', color);
-    root.style.setProperty('--fb-primary-hover', darkenHex(color));
+    this.themeVars['--fb-primary'] = color;
+    this.themeVars['--fb-primary-hover'] = darkenHex(color);
     const rgb = parseHexRGB(color);
-    if (rgb) root.style.setProperty('--fb-primary-rgb', rgb.join(', '));
+    if (rgb) this.themeVars['--fb-primary-rgb'] = rgb.join(', ');
 
     if (this.cfg.backgroundColor) {
-      root.style.setProperty('--fb-bg', this.cfg.backgroundColor);
-      // Auto text color based on bg luminance
+      this.themeVars['--fb-bg'] = this.cfg.backgroundColor;
       if (!isLightColor(this.cfg.backgroundColor)) {
-        root.style.setProperty('--fb-text', '#f8fafc');
-        root.style.setProperty('--fb-text-muted', 'rgba(248,250,252,0.7)');
-        root.style.setProperty('--fb-border', 'rgba(255,255,255,0.15)');
-        root.style.setProperty('--fb-bg-secondary', 'rgba(255,255,255,0.06)');
+        this.themeVars['--fb-text'] = '#f8fafc';
+        this.themeVars['--fb-text-muted'] = 'rgba(248,250,252,0.7)';
+        this.themeVars['--fb-border'] = 'rgba(255,255,255,0.15)';
+        this.themeVars['--fb-bg-secondary'] = 'rgba(255,255,255,0.06)';
       }
     }
 
     if (this.cfg.modalWidth) {
-      root.style.setProperty('--fb-modal-width', this.cfg.modalWidth + 'px');
+      this.themeVars['--fb-modal-width'] = this.cfg.modalWidth + 'px';
+    }
+  }
+
+  private applyThemeToElement(el: HTMLElement): void {
+    for (const [key, value] of Object.entries(this.themeVars)) {
+      el.style.setProperty(key, value);
     }
   }
 
@@ -169,6 +181,7 @@ class FeedbacksWidget {
       this.launcher.style.color = isLightColor(this.cfg.primaryColor) ? '#111827' : '#ffffff';
     }
     this.launcher.addEventListener('click', () => this.open());
+    this.applyThemeToElement(this.launcher);
     document.body.appendChild(this.launcher);
   }
 
@@ -189,6 +202,7 @@ class FeedbacksWidget {
     const container = document.createElement('div');
     container.className = 'fb-inline';
     container.innerHTML = this.buildFormHTML(false);
+    this.applyThemeToElement(container);
     (target as HTMLElement).innerHTML = '';
     (target as HTMLElement).appendChild(container);
     this.bindForm(container, false);
@@ -217,6 +231,7 @@ class FeedbacksWidget {
     }
 
     this.overlayEl.appendChild(modal);
+    this.applyThemeToElement(this.overlayEl);
     document.body.appendChild(this.overlayEl);
     document.body.style.overflow = 'hidden';
 
@@ -287,7 +302,7 @@ class FeedbacksWidget {
           <div class="fb-field">
             <label class="fb-label">Category</label>
             <div class="fb-categories" role="radiogroup" aria-label="Feedback category">
-              ${(['bug','idea','praise'] as const).map(c => `
+              ${(['bug','idea','praise','question'] as const).map(c => `
                 <button type="button" class="fb-cat-btn" data-cat="${c}" role="radio" aria-checked="false" aria-label="${CATEGORY_META[c].label}">
                   <span class="fb-cat-icon">${CATEGORY_META[c].icon}</span>${CATEGORY_META[c].label}
                 </button>`).join('')}
@@ -545,6 +560,8 @@ class FeedbacksWidget {
       await new Promise<void>((resolve, reject) => {
         const s = document.createElement('script');
         s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+        s.integrity = 'sha384-Lhp4gBQSCMq2fNDEx53VsXFnGBi3FuQVnh6k6c3GFsuqJMuqlHwaJM3BRzb/0nT';
+        s.crossOrigin = 'anonymous';
         s.async = true;
         s.onload = () => resolve();
         s.onerror = () => reject(new Error('Failed to load html2canvas'));
@@ -670,6 +687,10 @@ class FeedbacksWidget {
     this.launcher?.remove();
     this.overlayEl?.remove();
     this.styleEl?.remove();
+    if (this.boundKeydownHandler) {
+      document.removeEventListener('keydown', this.boundKeydownHandler);
+      this.boundKeydownHandler = null;
+    }
     document.body.style.overflow = '';
   }
 }

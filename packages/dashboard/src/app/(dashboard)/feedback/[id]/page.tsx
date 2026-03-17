@@ -34,21 +34,22 @@ export default async function FeedbackDetailPage({
   const { id } = await params
   const supabase = await createServerSupabase()
 
-  const { data: feedback } = await supabase
-    .from('feedback')
-    .select('*, projects(id, name)')
-    .eq('id', id)
-    .single()
+  const [{ data: feedback }, { data: notes }] = await Promise.all([
+    supabase
+      .from('feedback')
+      .select('*, projects(id, name)')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('feedback_notes')
+      .select('*')
+      .eq('feedback_id', id)
+      .order('created_at', { ascending: true }),
+  ])
 
   if (!feedback) notFound()
 
   const fb = feedback as Feedback
-
-  const { data: notes } = await supabase
-    .from('feedback_notes')
-    .select('*')
-    .eq('feedback_id', id)
-    .order('created_at', { ascending: true })
 
   return (
     <div className="animate-fade-in space-y-6">

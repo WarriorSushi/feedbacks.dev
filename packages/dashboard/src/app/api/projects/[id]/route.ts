@@ -1,32 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
+import { getAuthedUserAndProject } from '@/lib/api-auth'
 
 type RouteParams = { params: Promise<{ id: string }> }
-
-async function getAuthedUserAndProject(projectId: string) {
-  const supabase = await createServerSupabase()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
-
-  const admin = await createAdminSupabase()
-  const { data: project, error } = await admin
-    .from('projects')
-    .select('*')
-    .eq('id', projectId)
-    .eq('owner_user_id', user.id)
-    .single()
-
-  if (error || !project) return { error: NextResponse.json({ error: 'Project not found' }, { status: 404 }) }
-  return { user, project, admin }
-}
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
     const result = await getAuthedUserAndProject(id)
-    if ('error' in result && !('admin' in result)) return result.error
+    if ('error' in result) return result.error
 
-    const { project, admin } = result as Exclude<typeof result, { error: NextResponse }>
+    const { project, admin } = result
 
     // Get feedback stats
     const { count: totalFeedback } = await admin
@@ -60,9 +43,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
     const result = await getAuthedUserAndProject(id)
-    if ('error' in result && !('admin' in result)) return result.error
+    if ('error' in result) return result.error
 
-    const { admin } = result as Exclude<typeof result, { error: NextResponse }>
+    const { admin } = result
     const body = await request.json()
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
@@ -88,9 +71,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
     const result = await getAuthedUserAndProject(id)
-    if ('error' in result && !('admin' in result)) return result.error
+    if ('error' in result) return result.error
 
-    const { admin } = result as Exclude<typeof result, { error: NextResponse }>
+    const { admin } = result
 
     // Delete feedback first, then project
     await admin.from('feedback').delete().eq('project_id', id)

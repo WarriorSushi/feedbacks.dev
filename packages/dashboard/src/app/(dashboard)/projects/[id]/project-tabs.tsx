@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { CodeSnippet } from '@/components/code-snippet'
-import { ArrowLeft, Copy, Check, Loader2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Copy, Check, Loader2, Trash2, Download } from 'lucide-react'
 import Link from 'next/link'
 import { BoardSettingsTab } from './board-settings'
 import { ApiDocs } from './api-docs'
@@ -65,7 +65,15 @@ function ProjectTabsInner({ project }: ProjectTabsProps) {
           </Link>
           <h1 className="mt-2 text-2xl font-bold">{project.name}</h1>
         </div>
-        <ApiKeyBadge apiKey={project.api_key} />
+        <div className="flex items-center gap-2">
+          <a href={`/api/projects/${project.id}/feedback.csv`} download>
+            <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs font-medium">
+              <Download className="h-3.5 w-3.5" />
+              Export CSV
+            </Button>
+          </a>
+          <ApiKeyBadge apiKey={project.api_key} />
+        </div>
       </div>
 
       <div className="overflow-x-auto">

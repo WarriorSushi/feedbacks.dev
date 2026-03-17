@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import type { FeedbackStatus } from '@/lib/types'
 import { useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Archive } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
 const statuses: FeedbackStatus[] = ['new', 'reviewed', 'planned', 'in_progress', 'closed']
@@ -21,6 +21,7 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
   const [status, setStatus] = React.useState(currentStatus)
   const [note, setNote] = React.useState('')
   const [saving, setSaving] = React.useState(false)
+  const [archiving, setArchiving] = React.useState(false)
   const router = useRouter()
   const supabase = React.useMemo(() => createClient(), [])
 
@@ -100,6 +101,33 @@ export function FeedbackActions({ feedbackId, currentStatus }: FeedbackActionsPr
           Add Note
         </Button>
       </form>
+
+      {/* Archive */}
+      <div className="border-t pt-4">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 text-muted-foreground hover:text-destructive"
+          disabled={archiving}
+          onClick={async () => {
+            setArchiving(true)
+            const { error } = await supabase
+              .from('feedback')
+              .update({ is_archived: true, updated_at: new Date().toISOString() })
+              .eq('id', feedbackId)
+            setArchiving(false)
+            if (error) {
+              toast({ title: 'Failed to archive', description: error.message, variant: 'destructive' })
+              return
+            }
+            toast({ title: 'Feedback archived' })
+            router.push('/feedback')
+          }}
+        >
+          {archiving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
+          Archive
+        </Button>
+      </div>
     </div>
   )
 }
