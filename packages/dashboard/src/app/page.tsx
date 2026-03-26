@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { generateInstallSnippets } from '@feedbacks/shared'
 import { CodeSnippet } from '@/components/code-snippet'
 import { publicEnv } from '@/lib/public-env'
+import { createServerSupabase } from '@/lib/supabase-server'
 import {
   ArrowRight,
   Check,
@@ -48,7 +49,10 @@ curl https://feedbacks.dev/api/v1/feedback \\
 
 // ─── Page (Server Component) ──────────────────────────────────────────────────
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const supabase = await createServerSupabase()
+  const { data: { user } } = await supabase.auth.getUser()
+  const isLoggedIn = !!user
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ── Nav ─────────────────────────────────────────────────────────────── */}
@@ -74,17 +78,28 @@ export default function LandingPage() {
               Open source
             </a>
             <div className="mx-2 hidden h-4 w-px bg-border sm:block" />
-            <Link href="/auth">
-              <Button variant="ghost" size="sm">
-                Sign in
-              </Button>
-            </Link>
-            <Link href="/auth">
-              <Button size="sm" className="font-semibold">
-                Start free
-                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-              </Button>
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard">
+                <Button size="sm" className="font-semibold">
+                  Go to Dashboard
+                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/auth">
+                  <Button variant="ghost" size="sm">
+                    Sign in
+                  </Button>
+                </Link>
+                <Link href="/auth">
+                  <Button size="sm" className="font-semibold">
+                    Start free
+                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </ScrollHeader>
@@ -139,9 +154,9 @@ export default function LandingPage() {
               </p>
 
               <div className="flex flex-wrap gap-3">
-                <Link href="/auth">
+                <Link href={isLoggedIn ? '/dashboard' : '/auth'}>
                   <Button size="lg" className="group h-12 px-6 font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/25">
-                    Start for free
+                    {isLoggedIn ? 'Go to Dashboard' : 'Start for free'}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </Button>
                 </Link>
@@ -411,9 +426,9 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/auth">
+              <Link href={isLoggedIn ? '/dashboard' : '/auth'}>
                 <Button variant="outline" className="w-full font-semibold">
-                  Get started
+                  {isLoggedIn ? 'Go to Dashboard' : 'Get started'}
                 </Button>
               </Link>
             </div>
@@ -442,9 +457,9 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/auth">
+              <Link href={isLoggedIn ? '/dashboard' : '/auth'}>
                 <Button className="w-full font-semibold shadow-lg shadow-primary/20">
-                  Start free trial
+                  {isLoggedIn ? 'Go to Dashboard' : 'Start free trial'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -480,12 +495,12 @@ export default function LandingPage() {
                 Free tier, no credit card required. Up and running in under 2 minutes, with
                 public boards as an optional next step.
               </p>
-              <Link href="/auth">
+              <Link href={isLoggedIn ? '/dashboard' : '/auth'}>
                 <Button
                   size="lg"
                   className="h-12 bg-background px-8 font-semibold text-foreground shadow-2xl hover:bg-background/90"
                 >
-                  Start for free
+                  {isLoggedIn ? 'Go to Dashboard' : 'Start for free'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
