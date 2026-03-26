@@ -121,15 +121,15 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {} }: S
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex flex-col border-r bg-card',
+          'fixed inset-y-0 left-0 z-50 flex h-screen flex-col border-r bg-card',
           'transition-[width,transform] duration-300 [transition-timing-function:cubic-bezier(0.25,1,0.5,1)]',
-          'md:static md:translate-x-0',
+          'md:static md:h-full md:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
           collapsed ? 'w-[60px]' : 'w-60'
         )}
       >
         {/* Logo row */}
-        <div className="flex h-14 items-center justify-between border-b px-3">
+        <div className="flex h-14 shrink-0 items-center justify-between border-b px-3">
           <div
             className={cn(
               'overflow-hidden transition-[width,opacity] duration-200',
@@ -157,7 +157,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {} }: S
 
         {/* Project switcher */}
         {projects.length > 0 && !collapsed && (
-          <div className="border-b p-2.5" ref={dropdownRef}>
+          <div className="shrink-0 border-b p-2.5" ref={dropdownRef}>
             <button
               onClick={() => setProjectOpen(!projectOpen)}
               className={cn(
