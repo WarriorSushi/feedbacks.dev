@@ -121,15 +121,15 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {} }: S
       {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex h-screen flex-col border-r bg-card',
+          'fixed inset-y-0 left-0 z-50 flex flex-col border-r bg-card',
           'transition-[width,transform] duration-300 [transition-timing-function:cubic-bezier(0.25,1,0.5,1)]',
-          'md:static md:h-full md:translate-x-0',
+          'md:static md:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
           collapsed ? 'w-[60px]' : 'w-60'
         )}
       >
         {/* Logo row */}
-        <div className="flex h-14 shrink-0 items-center justify-between border-b px-3">
+        <div className="flex h-14 items-center justify-between border-b px-3">
           <div
             className={cn(
               'overflow-hidden transition-[width,opacity] duration-200',
@@ -157,7 +157,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {} }: S
 
         {/* Project switcher */}
         {projects.length > 0 && !collapsed && (
-          <div className="shrink-0 border-b p-2.5" ref={dropdownRef}>
+          <div className="border-b p-2.5" ref={dropdownRef}>
             <button
               onClick={() => setProjectOpen(!projectOpen)}
               className={cn(
@@ -225,98 +225,95 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {} }: S
           </div>
         )}
 
-        {/* Scrollable middle section: nav + public boards */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          {/* Nav items */}
-          <nav className="space-y-0.5 p-2.5">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={collapsed ? item.label : undefined}
-                  aria-label={collapsed ? item.label : undefined}
+        {/* Nav items */}
+        <nav className="flex-1 space-y-0.5 p-2.5">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                title={collapsed ? item.label : undefined}
+                aria-label={collapsed ? item.label : undefined}
+                className={cn(
+                  'group relative flex items-center gap-3 rounded-lg py-2 text-[13px] font-medium',
+                  'transition-all duration-150',
+                  collapsed ? 'justify-center px-2' : 'px-3',
+                  isActive
+                    ? [
+                        'bg-primary/8 text-primary',
+                        // Left border glow indicator
+                        'before:absolute before:inset-y-1 before:left-0 before:w-[3px] before:rounded-r-full',
+                        'before:bg-primary before:shadow-[0_0_8px_hsl(var(--primary)/0.5)]',
+                      ]
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                )}
+              >
+                <item.icon
                   className={cn(
-                    'group relative flex items-center gap-3 rounded-lg py-2 text-[13px] font-medium',
-                    'transition-all duration-150',
-                    collapsed ? 'justify-center px-2' : 'px-3',
-                    isActive
-                      ? [
-                          'bg-primary/8 text-primary',
-                          // Left border glow indicator
-                          'before:absolute before:inset-y-1 before:left-0 before:w-[3px] before:rounded-r-full',
-                          'before:bg-primary before:shadow-[0_0_8px_hsl(var(--primary)/0.5)]',
-                        ]
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                    'h-[17px] w-[17px] shrink-0 transition-transform duration-150',
+                    !isActive && 'group-hover:scale-[1.08]',
+                    isActive && 'text-primary'
                   )}
+                />
+                {!collapsed && (
+                  <span className="truncate">{item.label}</span>
+                )}
+              </Link>
+            )
+          })}
+        </nav>
+
+        {/* Public Board link */}
+        {(() => {
+          const projectsWithBoards = projects.filter((p) => boardSlugs[p.id])
+          if (projectsWithBoards.length === 0 || collapsed) return null
+
+          if (projectsWithBoards.length === 1) {
+            const slug = boardSlugs[projectsWithBoards[0].id]
+            return (
+              <div className="px-2.5 pb-2">
+                <a
+                  href={`/p/${slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground"
                 >
-                  <item.icon
-                    className={cn(
-                      'h-[17px] w-[17px] shrink-0 transition-transform duration-150',
-                      !isActive && 'group-hover:scale-[1.08]',
-                      isActive && 'text-primary'
-                    )}
-                  />
-                  {!collapsed && (
-                    <span className="truncate">{item.label}</span>
-                  )}
-                </Link>
-              )
-            })}
-          </nav>
+                  <Globe className="h-[17px] w-[17px] shrink-0 transition-transform duration-150 group-hover:scale-[1.08]" />
+                  <span className="truncate">Public Board</span>
+                  <ExternalLink className="ml-auto h-3 w-3 opacity-0 transition-opacity group-hover:opacity-60" />
+                </a>
+              </div>
+            )
+          }
 
-          {/* Public Board link */}
-          {(() => {
-            const projectsWithBoards = projects.filter((p) => boardSlugs[p.id])
-            if (projectsWithBoards.length === 0 || collapsed) return null
-
-            if (projectsWithBoards.length === 1) {
-              const slug = boardSlugs[projectsWithBoards[0].id]
-              return (
-                <div className="px-2.5 pb-2">
+          return (
+            <div className="px-2.5 pb-2">
+              <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                Public Boards
+              </p>
+              {projectsWithBoards.map((p) => {
+                const slug = boardSlugs[p.id]
+                return (
                   <a
+                    key={p.id}
                     href={`/p/${slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] font-medium text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground"
+                    className="group flex items-center gap-3 rounded-lg px-3 py-1.5 text-[13px] text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground"
                   >
-                    <Globe className="h-[17px] w-[17px] shrink-0 transition-transform duration-150 group-hover:scale-[1.08]" />
-                    <span className="truncate">Public Board</span>
+                    <Globe className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{p.name}</span>
                     <ExternalLink className="ml-auto h-3 w-3 opacity-0 transition-opacity group-hover:opacity-60" />
                   </a>
-                </div>
-              )
-            }
+                )
+              })}
+            </div>
+          )
+        })()}
 
-            return (
-              <div className="px-2.5 pb-2">
-                <p className="mb-1 px-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                  Public Boards
-                </p>
-                {projectsWithBoards.map((p) => {
-                  const slug = boardSlugs[p.id]
-                  return (
-                    <a
-                      key={p.id}
-                      href={`/p/${slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center gap-3 rounded-lg px-3 py-1.5 text-[13px] text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground"
-                    >
-                      <Globe className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{p.name}</span>
-                      <ExternalLink className="ml-auto h-3 w-3 opacity-0 transition-opacity group-hover:opacity-60" />
-                    </a>
-                  )
-                })}
-              </div>
-            )
-          })()}
-        </div>
-
-        {/* Bottom section — pinned, never scrolls off */}
-        <div className="shrink-0 space-y-1 border-t p-2.5">
+        {/* Bottom section */}
+        <div className="space-y-1 border-t p-2.5">
           {/* Theme toggle */}
           <Button
             variant="ghost"
