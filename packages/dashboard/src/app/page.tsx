@@ -102,7 +102,7 @@ export default async function LandingPage() {
               </Button>
             </Link>
             <a
-              href="https://github.com/WarriorSushi/feedbacks.dev"
+              href="https://github.com/WarriorSushi/feedbacks.dev-2026"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:flex"
@@ -195,7 +195,7 @@ export default async function LandingPage() {
                   </Button>
                 </Link>
                 <a
-                  href="https://github.com/WarriorSushi/feedbacks.dev"
+                  href="https://github.com/WarriorSushi/feedbacks.dev-2026"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -661,7 +661,7 @@ export default async function LandingPage() {
                   </Button>
                 </Link>
                 <a
-                  href="https://github.com/WarriorSushi/feedbacks.dev"
+                  href="https://github.com/WarriorSushi/feedbacks.dev-2026"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -695,7 +695,7 @@ export default async function LandingPage() {
               Pricing
             </Link>
             <a
-              href="https://github.com/WarriorSushi/feedbacks.dev"
+              href="https://github.com/WarriorSushi/feedbacks.dev-2026"
               target="_blank"
               rel="noopener noreferrer"
               className="transition-colors hover:text-foreground"
@@ -708,7 +708,7 @@ export default async function LandingPage() {
               Open source &middot; MIT licensed
             </p>
             <a
-              href="https://github.com/WarriorSushi/feedbacks.dev"
+              href="https://github.com/WarriorSushi/feedbacks.dev-2026"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground transition-colors hover:text-foreground"
