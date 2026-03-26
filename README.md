@@ -6,7 +6,7 @@
 
 Embeddable widget + smart dashboard + public voting boards + AI agent API — everything you need to collect, organize, and act on user feedback.
 
-[![MIT License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+[![FSL-1.1-MIT](https://img.shields.io/badge/license-FSL--1.1--MIT-blue?style=flat-square)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/WarriorSushi/feedbacks.dev-2026/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/WarriorSushi/feedbacks.dev-2026/actions)
 [![GitHub Stars](https://img.shields.io/github/stars/WarriorSushi/feedbacks.dev-2026?style=flat-square&color=yellow)](https://github.com/WarriorSushi/feedbacks.dev-2026/stargazers)
 [![GitHub Issues](https://img.shields.io/github/issues/WarriorSushi/feedbacks.dev-2026?style=flat-square)](https://github.com/WarriorSushi/feedbacks.dev-2026/issues)
@@ -201,7 +201,16 @@ pnpm build
 
 ## License
 
-[MIT](LICENSE) — use it however you want.
+feedbacks.dev is licensed under the [Functional Source License, Version 1.1, MIT Future License (FSL-1.1-MIT)](LICENSE).
+
+**What this means:**
+
+- ✅ **Free to self-host** — personal, company, education, any size
+- ✅ **Free to modify** — change anything, build plugins, customize
+- ✅ **Free to redistribute** — share copies with the license included
+- ✅ **Source available** — read, audit, and learn from all code
+- ✅ **Converts to MIT** — each version becomes fully MIT after 2 years
+- ❌ **No competing service** — you can't offer feedbacks.dev as a hosted product that competes with us
 
 ---
 
