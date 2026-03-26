@@ -43,7 +43,7 @@ export default async function DashboardLayout({
   })
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar
         user={{
           email: user.email,
