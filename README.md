@@ -2,7 +2,7 @@
 
 # feedbacks.dev
 
-### The source-available feedback stack for developers who ship.
+### The feedback stack for developers who ship.
 
 Embeddable widget + smart dashboard + public voting boards + AI agent API — everything you need to collect, organize, and act on user feedback.
 
