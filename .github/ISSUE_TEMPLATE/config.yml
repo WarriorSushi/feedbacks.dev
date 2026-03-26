@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions & Help
+    url: https://github.com/WarriorSushi/feedbacks.dev-2026/discussions
+    about: Ask questions, get help, or start a discussion.
+  - name: Submit Feedback on feedbacks.dev
+    url: https://feedbacks.dev/boards
+    about: Use our own product to submit feedback about feedbacks.dev.

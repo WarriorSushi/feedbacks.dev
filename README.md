@@ -7,11 +7,13 @@
 Embeddable widget + smart dashboard + public voting boards + AI agent API — everything you need to collect, organize, and act on user feedback.
 
 [![MIT License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/WarriorSushi/feedbacks.dev-2026/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/WarriorSushi/feedbacks.dev-2026/actions)
 [![GitHub Stars](https://img.shields.io/github/stars/WarriorSushi/feedbacks.dev-2026?style=flat-square&color=yellow)](https://github.com/WarriorSushi/feedbacks.dev-2026/stargazers)
 [![GitHub Issues](https://img.shields.io/github/issues/WarriorSushi/feedbacks.dev-2026?style=flat-square)](https://github.com/WarriorSushi/feedbacks.dev-2026/issues)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
-[![Built with Next.js](https://img.shields.io/badge/built%20with-Next.js%2015-black?style=flat-square)](https://nextjs.org)
-[![Powered by Supabase](https://img.shields.io/badge/powered%20by-Supabase-3ecf8e?style=flat-square)](https://supabase.com)
+[![Built with Next.js](https://img.shields.io/badge/Next.js%2015-black?style=flat-square&logo=next.js)](https://nextjs.org)
+[![Powered by Supabase](https://img.shields.io/badge/Supabase-3ecf8e?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
 [Website](https://feedbacks.dev) &nbsp;&middot;&nbsp; [Public Boards](https://feedbacks.dev/boards) &nbsp;&middot;&nbsp; [Documentation](https://feedbacks.dev) &nbsp;&middot;&nbsp; [Contributing](CONTRIBUTING.md)
 
