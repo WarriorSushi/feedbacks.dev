@@ -69,7 +69,7 @@ export default async function LandingPage() {
               </Button>
             </Link>
             <a
-              href="https://github.com/syedirfan/feedbacks.dev"
+              href="https://github.com/WarriorSushi/feedbacks.dev"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:flex"
@@ -171,7 +171,7 @@ export default async function LandingPage() {
                   </Button>
                 </Link>
                 <a
-                  href="https://github.com/syedirfan/feedbacks.dev"
+                  href="https://github.com/WarriorSushi/feedbacks.dev"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -520,7 +520,7 @@ export default async function LandingPage() {
             Open source, MIT licensed — no fake stats, no fake testimonials.
           </p>
           <a
-            href="https://github.com/syedirfan/feedbacks.dev"
+            href="https://github.com/WarriorSushi/feedbacks.dev"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground transition-colors hover:text-foreground"

@@ -4,58 +4,58 @@
 
 @layer base {
   :root {
-    /* Indigo-tinted palette — neutrals pulled toward brand hue for cohesion */
-    --background: 240 28% 99%;
-    --foreground: 238 28% 9%;
+    /* Acid green palette — neutrals tinted toward brand hue for cohesion */
+    --background: 90 16% 99%;
+    --foreground: 85 28% 9%;
     --card: 0 0% 100%;
-    --card-foreground: 238 28% 9%;
+    --card-foreground: 85 28% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 238 28% 9%;
-    --primary: 238 83% 57%;
+    --popover-foreground: 85 28% 9%;
+    --primary: 85 80% 35%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 238 20% 95%;
-    --secondary-foreground: 238 30% 22%;
-    --muted: 238 18% 95%;
-    --muted-foreground: 238 14% 46%;
-    --accent: 238 28% 93%;
-    --accent-foreground: 238 30% 22%;
+    --secondary: 85 20% 95%;
+    --secondary-foreground: 85 30% 18%;
+    --muted: 85 14% 95%;
+    --muted-foreground: 85 10% 44%;
+    --accent: 85 20% 93%;
+    --accent-foreground: 85 30% 18%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 238 18% 91%;
-    --input: 238 18% 91%;
-    --ring: 238 83% 57%;
+    --border: 85 14% 90%;
+    --input: 85 14% 90%;
+    --ring: 85 80% 35%;
     --radius: 0.625rem;
 
     /* Brand tokens */
-    --brand: 238 83% 57%;
-    --brand-subtle: 238 60% 95%;
+    --brand: 85 80% 35%;
+    --brand-subtle: 85 50% 95%;
   }
 
   .dark {
-    /* Deep indigo-tinted dark surfaces — proper elevation system */
-    --background: 238 22% 8%;
-    --foreground: 238 12% 94%;
-    --card: 238 18% 10%;
-    --card-foreground: 238 12% 94%;
-    --popover: 238 16% 13%;
-    --popover-foreground: 238 12% 94%;
-    --primary: 238 72% 68%;
-    --primary-foreground: 238 40% 8%;
-    --secondary: 238 16% 16%;
-    --secondary-foreground: 238 10% 88%;
-    --muted: 238 16% 16%;
-    --muted-foreground: 238 10% 58%;
-    --accent: 238 16% 18%;
-    --accent-foreground: 238 10% 90%;
+    /* Deep green-tinted dark surfaces — proper elevation system */
+    --background: 85 18% 7%;
+    --foreground: 85 10% 94%;
+    --card: 85 14% 9%;
+    --card-foreground: 85 10% 94%;
+    --popover: 85 12% 11%;
+    --popover-foreground: 85 10% 94%;
+    --primary: 85 72% 50%;
+    --primary-foreground: 85 40% 6%;
+    --secondary: 85 12% 14%;
+    --secondary-foreground: 85 8% 88%;
+    --muted: 85 12% 14%;
+    --muted-foreground: 85 8% 56%;
+    --accent: 85 12% 16%;
+    --accent-foreground: 85 8% 90%;
     --destructive: 0 62% 38%;
     --destructive-foreground: 0 0% 98%;
-    --border: 238 14% 18%;
-    --input: 238 14% 18%;
-    --ring: 238 72% 68%;
+    --border: 85 10% 16%;
+    --input: 85 10% 16%;
+    --ring: 85 72% 50%;
 
     /* Brand tokens dark */
-    --brand: 238 72% 68%;
-    --brand-subtle: 238 22% 14%;
+    --brand: 85 72% 50%;
+    --brand-subtle: 85 18% 12%;
   }
 }
 
@@ -237,8 +237,8 @@
   .dark .text-gradient {
     background-image: linear-gradient(
       135deg,
-      hsl(238 12% 97%) 0%,
-      hsl(238 10% 62%) 100%
+      hsl(85 10% 97%) 0%,
+      hsl(85 8% 62%) 100%
     );
   }
 

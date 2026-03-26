@@ -64,7 +64,7 @@ export default function PrivacyPage() {
           <h2>Contact</h2>
           <p>
             Questions about this policy? Open an issue on our{' '}
-            <a href="https://github.com/syedirfan/feedbacks.dev" className="underline">GitHub repository</a>.
+            <a href="https://github.com/WarriorSushi/feedbacks.dev" className="underline">GitHub repository</a>.
           </p>
         </div>
       </div>

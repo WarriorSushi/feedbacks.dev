@@ -9,6 +9,7 @@ export interface BoardAnnouncement {
 }
 
 export interface BoardBranding {
+  displayName?: string
   accentColor?: string
   logoEmoji?: string
   heroEyebrow?: string
@@ -25,6 +26,7 @@ export interface BoardBranding {
 }
 
 export interface BoardBrandingColumns {
+  display_name: string | null
   visibility: BoardVisibility
   directory_opt_in: boolean
   accent_color: string | null
@@ -43,6 +45,8 @@ type BoardBrandingInput = Partial<Record<keyof BoardBranding, unknown>>
 
 type BoardBrandingSource = {
   branding?: Record<string, unknown> | null
+  display_name?: unknown
+  displayName?: unknown
   visibility?: unknown
   directory_opt_in?: unknown
   accent_color?: unknown
@@ -155,6 +159,7 @@ function parseLegacyBranding(input: Record<string, unknown> | undefined): BoardB
   if (!input) return {}
 
   return {
+    displayName: sanitizeString(input.displayName ?? input.display_name, 60),
     accentColor: sanitizeColor(input.accentColor ?? input.accent_color),
     logoEmoji: sanitizeString(input.logoEmoji ?? input.logo_emoji, 32),
     heroEyebrow: sanitizeString(input.heroEyebrow ?? input.hero_eyebrow, 80),
@@ -184,6 +189,7 @@ export function sanitizeBoardBranding(input: BoardBrandingInput | null | undefin
   }
 
   return {
+    displayName: sanitizeString(input.displayName, 60),
     accentColor: sanitizeColor(input.accentColor),
     logoEmoji: sanitizeString(input.logoEmoji, 32),
     heroEyebrow: sanitizeString(input.heroEyebrow, 80),
@@ -222,6 +228,7 @@ export function parseBoardBranding(
   )
 
   return sanitizeBoardBranding({
+    displayName: record.display_name ?? record.displayName ?? legacy.displayName,
     accentColor: record.accent_color ?? record.accentColor ?? legacy.accentColor,
     logoEmoji: record.logo_emoji ?? record.logoEmoji ?? legacy.logoEmoji,
     heroEyebrow: record.hero_eyebrow ?? record.heroEyebrow ?? legacy.heroEyebrow,
@@ -244,6 +251,7 @@ export function boardBrandingToColumns(
   const sanitized = sanitizeBoardBranding(branding)
 
   return {
+    display_name: sanitized.displayName || null,
     visibility: sanitized.visibility || 'public',
     directory_opt_in: sanitized.directoryOptIn !== false,
     accent_color: sanitized.accentColor || null,
@@ -265,6 +273,7 @@ export function serializeBoardBranding(
   const sanitized = sanitizeBoardBranding(branding)
   const next: Record<string, unknown> = {}
 
+  if (sanitized.displayName) next.displayName = sanitized.displayName
   if (sanitized.accentColor) next.accentColor = sanitized.accentColor
   if (sanitized.logoEmoji) next.logoEmoji = sanitized.logoEmoji
   if (sanitized.heroEyebrow) next.heroEyebrow = sanitized.heroEyebrow

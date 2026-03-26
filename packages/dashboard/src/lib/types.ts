@@ -169,6 +169,7 @@ export interface PublicBoardSettings {
   categories: string[]
   empty_state_title: string | null
   empty_state_description: string | null
+  display_name: string | null
   created_at: string
   updated_at: string
 }
