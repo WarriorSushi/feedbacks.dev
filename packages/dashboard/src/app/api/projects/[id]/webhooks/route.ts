@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
-import { sendTestWebhook } from '@/lib/webhook-delivery'
+import { resendWebhookDelivery, sendTestWebhook } from '@/lib/webhook-delivery'
 import type { WebhookConfig, WebhookEndpoint, GitHubEndpoint } from '@/lib/types'
+import { normalizeWebhookConfig } from '@/lib/webhook-config'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -28,7 +29,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const result = await getAuthedProject(id)
     if ('error' in result && !('admin' in result)) return result.error
     const { project } = result as Exclude<typeof result, { error: NextResponse }>
-    return NextResponse.json(project.webhooks ?? {})
+    return NextResponse.json(normalizeWebhookConfig(project.webhooks))
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
@@ -41,7 +42,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if ('error' in result && !('admin' in result)) return result.error
     const { admin } = result as Exclude<typeof result, { error: NextResponse }>
 
-    const webhooks: WebhookConfig = await request.json()
+    const webhooks = normalizeWebhookConfig(await request.json())
 
     const { data, error } = await admin
       .from('projects')
@@ -65,6 +66,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const { project } = result as Exclude<typeof result, { error: NextResponse }>
 
     const body = await request.json()
+
+    if (body?.action === 'resend') {
+      if (!body.deliveryId) {
+        return NextResponse.json({ error: 'deliveryId is required' }, { status: 400 })
+      }
+
+      const replay = await resendWebhookDelivery(project.id, body.deliveryId)
+      return NextResponse.json(replay)
+    }
+
     const { type, endpoint } = body as {
       type: 'slack' | 'discord' | 'generic' | 'github'
       endpoint: WebhookEndpoint | GitHubEndpoint
@@ -74,7 +85,20 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'type and endpoint.url are required' }, { status: 400 })
     }
 
-    const delivery = await sendTestWebhook(type, endpoint, { id: project.id, name: project.name })
+    const normalized = normalizeWebhookConfig({
+      [type]: type === 'github'
+        ? { endpoints: [endpoint] }
+        : { endpoints: [endpoint] },
+    })
+    const normalizedEndpoint = type === 'github'
+      ? normalized.github?.endpoints?.[0]
+      : normalized[type]?.endpoints?.[0]
+
+    if (!normalizedEndpoint) {
+      return NextResponse.json({ error: 'Endpoint is invalid' }, { status: 400 })
+    }
+
+    const delivery = await sendTestWebhook(type, normalizedEndpoint, { id: project.id, name: project.name })
     return NextResponse.json(delivery)
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

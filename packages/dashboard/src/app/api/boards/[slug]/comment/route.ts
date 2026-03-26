@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
+import { isBoardPubliclyAccessible } from '@/lib/public-board'
 
 export async function POST(
   request: NextRequest,
@@ -19,12 +20,12 @@ export async function POST(
   // Get board + verify ownership
   const { data: board } = await admin
     .from('public_board_settings')
-    .select('project_id')
+    .select('*')
     .eq('slug', slug)
     .eq('enabled', true)
     .single()
 
-  if (!board) {
+  if (!board || !isBoardPubliclyAccessible(board)) {
     return NextResponse.json({ error: 'Board not found' }, { status: 404 })
   }
 
@@ -93,12 +94,12 @@ export async function GET(
   // Get board
   const { data: board } = await admin
     .from('public_board_settings')
-    .select('project_id')
+    .select('*')
     .eq('slug', slug)
     .eq('enabled', true)
     .single()
 
-  if (!board) {
+  if (!board || !isBoardPubliclyAccessible(board)) {
     return NextResponse.json({ error: 'Board not found' }, { status: 404 })
   }
 

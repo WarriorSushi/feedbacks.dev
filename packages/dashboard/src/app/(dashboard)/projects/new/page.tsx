@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import { createClient } from '@/lib/supabase-browser'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,7 +15,6 @@ export default function NewProjectPage() {
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState('')
   const router = useRouter()
-  const supabase = React.useMemo(() => createClient(), [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,30 +22,29 @@ export default function NewProjectPage() {
     setLoading(true)
     setError('')
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    const apiKey = `fb_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`
-
-    const { data, error: err } = await supabase
-      .from('projects')
-      .insert({
-        name: name.trim(),
-        domain: domain.trim() || null,
-        owner_user_id: user!.id,
-        api_key: apiKey,
-        webhooks: {},
-        settings: {},
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          domain: domain.trim() || null,
+        }),
       })
-      .select()
-      .single()
 
-    setLoading(false)
-    if (err) {
-      setError(err.message)
-    } else {
-      router.push(`/projects/${data.id}?created=1`)
+      const payload = await response.json()
+      if (!response.ok) {
+        setError(payload.error || 'Failed to create project')
+        return
+      }
+
+      router.push(`/projects/${payload.id}?created=1`)
+    } catch {
+      setError('Failed to create project')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -64,7 +61,7 @@ export default function NewProjectPage() {
         <CardHeader>
           <CardTitle>New Project</CardTitle>
           <CardDescription>
-            Create a project to start collecting feedback.
+            Create a project, then copy the install snippet and verify the widget before you customize anything else.
           </CardDescription>
         </CardHeader>
         <CardContent>

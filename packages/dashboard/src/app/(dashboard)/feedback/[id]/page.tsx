@@ -11,6 +11,7 @@ import {
   Globe,
   Monitor,
   Mail,
+  Bot,
   Star,
   Tag,
   Clock,
@@ -104,7 +105,7 @@ export default async function FeedbackDetailPage({
           {/* Mobile-only: key metadata inline */}
           <div className="flex flex-wrap gap-3 lg:hidden">
             {fb.projects && (
-              <Link href={`/projects/${fb.projects.id}`} className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-xs font-medium transition-colors hover:bg-accent">
+              <Link href={`/feedback?projectId=${fb.projects.id}`} className="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-2 text-xs font-medium transition-colors hover:bg-accent">
                 <FolderOpen className="h-3 w-3 text-muted-foreground" />
                 {fb.projects.name}
               </Link>
@@ -217,7 +218,11 @@ export default async function FeedbackDetailPage({
                 <p className="text-sm text-muted-foreground">No notes yet.</p>
               )}
               <Separator className="my-4" />
-              <FeedbackActions feedbackId={fb.id} currentStatus={fb.status} />
+              <FeedbackActions
+                feedbackId={fb.id}
+                currentStatus={fb.status}
+                currentTags={fb.tags}
+              />
             </CardContent>
           </Card>
         </div>
@@ -238,10 +243,10 @@ export default async function FeedbackDetailPage({
                       Project
                     </span>
                     <Link
-                      href={`/projects/${fb.projects.id}`}
+                      href={`/feedback?projectId=${fb.projects.id}`}
                       className="text-sm font-medium hover:underline"
                     >
-                      {fb.projects.name}
+                      {fb.projects.name} inbox
                     </Link>
                   </div>
                 )}
@@ -298,9 +303,11 @@ export default async function FeedbackDetailPage({
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {fb.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
+                        <Link key={tag} href={`/feedback?tag=${encodeURIComponent(tag)}`}>
+                          <Badge variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        </Link>
                       ))}
                     </div>
                   </div>
@@ -308,6 +315,8 @@ export default async function FeedbackDetailPage({
               </div>
             </CardContent>
           </Card>
+
+          <StructuredDataCard feedback={fb} />
 
           {/* Timeline */}
           <Card>
@@ -347,5 +356,61 @@ export default async function FeedbackDetailPage({
         </div>
       </div>
     </div>
+  )
+}
+
+function StructuredDataCard({ feedback }: { feedback: Feedback }) {
+  const structuredEntries = Object.entries(feedback.structured_data || {})
+
+  if (!feedback.agent_name && !feedback.agent_session_id && structuredEntries.length === 0) {
+    return null
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <Bot className="h-4 w-4 text-muted-foreground" />
+          Agent context
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-2">
+          {feedback.agent_name && (
+            <Badge variant="secondary">Agent: {feedback.agent_name}</Badge>
+          )}
+          {feedback.agent_session_id && (
+            <Badge variant="outline">Session: {feedback.agent_session_id}</Badge>
+          )}
+        </div>
+
+        {structuredEntries.length > 0 ? (
+          <div className="space-y-3">
+            {structuredEntries.map(([key, value]) => (
+              <div key={key} className="rounded-lg border bg-muted/20 p-3">
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {key.replace(/_/g, ' ')}
+                </p>
+                <div className="mt-2 text-sm">
+                  {Array.isArray(value) || (value && typeof value === 'object') ? (
+                    <pre className="overflow-x-auto rounded bg-background p-3 text-xs leading-relaxed">
+                      {JSON.stringify(value, null, 2)}
+                    </pre>
+                  ) : (
+                    <span className="whitespace-pre-wrap break-words text-foreground">
+                      {String(value)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            This submission has agent metadata but no structured payload.
+          </p>
+        )}
+      </CardContent>
+    </Card>
   )
 }

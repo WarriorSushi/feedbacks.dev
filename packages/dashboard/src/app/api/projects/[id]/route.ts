@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthedUserAndProject } from '@/lib/api-auth'
+import { sanitizeSavedWidgetConfig } from '@feedbacks/shared'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -67,7 +68,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       if (typeof body.settings !== 'object' || body.settings === null || Array.isArray(body.settings)) {
         return NextResponse.json({ error: 'settings must be a plain object' }, { status: 400 })
       }
-      updates.settings = body.settings
+      const settings = { ...(body.settings as Record<string, unknown>) }
+      if ('widget_config' in settings) {
+        settings.widget_config = sanitizeSavedWidgetConfig(
+          settings.widget_config as Parameters<typeof sanitizeSavedWidgetConfig>[0],
+        )
+      }
+      updates.settings = settings
     }
 
     // Validate webhooks is a plain object

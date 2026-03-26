@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { generateInstallSnippets } from '@feedbacks/shared'
 import { CodeSnippet } from '@/components/code-snippet'
+import { publicEnv } from '@/lib/public-env'
 import {
   ArrowRight,
   Check,
@@ -17,11 +19,10 @@ import { WidgetDemo, ScrollHeader } from './widget-demo-client'
 
 // ─── Code snippets ────────────────────────────────────────────────────────────
 
-const installSnippet = `<script
-  src="https://feedbacks.dev/widget/latest.js"
-  data-project="your-project-key"
-  defer
-></script>`
+const installSnippet = generateInstallSnippets({
+  projectKey: 'your-project-key',
+  appOrigin: publicEnv.NEXT_PUBLIC_APP_ORIGIN,
+}).find((snippet) => snippet.label === 'Website')?.code || ''
 
 const mcpSnippet = `// ~/.claude/claude_desktop_config.json
 {
@@ -58,6 +59,11 @@ export default function LandingPage() {
             <span className="text-primary">.dev</span>
           </Link>
           <div className="flex items-center gap-2">
+            <Link href="/boards">
+              <Button variant="ghost" size="sm">
+                Boards
+              </Button>
+            </Link>
             <a
               href="https://github.com/syedirfan/feedbacks.dev"
               target="_blank"
@@ -117,18 +123,19 @@ export default function LandingPage() {
               </div>
 
               <h1 className="mb-6 text-5xl font-black leading-[0.95] tracking-tighter md:text-6xl lg:text-7xl">
-                Feedback
-                <br />
-                infrastructure
+                Install feedback
                 <br />
                 <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  for builders.
+                  in minutes.
                 </span>
+                <br />
+                Triage it in one inbox.
               </h1>
 
               <p className="mb-8 max-w-md text-base leading-relaxed text-muted-foreground md:text-lg">
-                One script tag to start. Public voting boards, a native AI agent API, and a
-                real-time inbox — ready when your product grows.
+                Start with one clean snippet, verify the widget, and collect useful context
+                automatically. Public boards stay available as a deliberate wedge when sharing
+                the workflow openly helps.
               </p>
 
               <div className="flex flex-wrap gap-3">
@@ -138,12 +145,22 @@ export default function LandingPage() {
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </Button>
                 </Link>
+                <Link href="#install">
+                  <Button variant="outline" size="lg" className="h-12 gap-2 font-semibold">
+                    See install
+                  </Button>
+                </Link>
+                <Link href="/boards">
+                  <Button variant="outline" size="lg" className="h-12 font-semibold">
+                    Browse boards
+                  </Button>
+                </Link>
                 <a
                   href="https://github.com/syedirfan/feedbacks.dev"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <Button variant="outline" size="lg" className="h-12 gap-2 font-semibold">
+                  <Button variant="ghost" size="lg" className="h-12 gap-2 font-semibold">
                     <Github className="h-4 w-4" />
                     GitHub
                   </Button>
@@ -152,9 +169,9 @@ export default function LandingPage() {
 
               <div className="mt-8 flex flex-wrap gap-2.5">
                 {[
-                  { Icon: Zap, label: 'Under 10KB' },
-                  { Icon: Bot, label: 'MCP / AI agents' },
-                  { Icon: ThumbsUp, label: 'Public voting boards' },
+                  { Icon: Zap, label: 'Verified install first' },
+                  { Icon: Bot, label: 'Triage in one inbox' },
+                  { Icon: ThumbsUp, label: 'Public boards when useful' },
                 ].map(({ Icon, label }) => (
                   <span
                     key={label}
@@ -183,13 +200,13 @@ export default function LandingPage() {
       </section>
 
       {/* ── Install strip ────────────────────────────────────────────────────── */}
-      <section className="border-b bg-zinc-950 px-6 py-16 dark:bg-zinc-900/80">
+      <section id="install" className="border-b bg-zinc-950 px-6 py-16 dark:bg-zinc-900/80">
         <div className="mx-auto max-w-2xl">
           <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500">
             Install
           </p>
           <h2 className="mb-6 text-2xl font-bold tracking-tight text-zinc-50">
-            One script tag. 30 seconds.
+            One script tag. Clear defaults. Verified fast.
           </h2>
           <CodeSnippet tabs={[{ label: 'HTML', code: installSnippet, language: 'html' }]} />
         </div>
@@ -202,21 +219,21 @@ export default function LandingPage() {
             {[
               {
                 Icon: Zap,
-                headline: 'Under 10KB',
-                sub: 'Widget',
-                body: 'Vanilla TypeScript, zero dependencies. Loads in one render cycle. Your users will never notice the overhead.',
+                headline: 'Install trust',
+                sub: 'Copy-paste confidence',
+                body: 'One snippet, clear defaults, and a hosted verification loop so teams can trust the install before they touch advanced settings.',
               },
               {
                 Icon: Bot,
-                headline: 'AI Agent API',
-                sub: 'MCP Protocol',
-                body: 'Native MCP server for Claude Code, Cursor, and any AI agent. Query, triage, and act on feedback without leaving the conversation.',
+                headline: 'Fast triage',
+                sub: 'Inbox and routing',
+                body: 'Feedback lands with context already attached, then moves into one inbox where small teams can review and route issues quickly.',
               },
               {
                 Icon: ThumbsUp,
-                headline: 'Voting Boards',
-                sub: 'Public feature requests',
-                body: 'Every project gets a shareable feature board at no extra cost. Users upvote. You build what they actually want.',
+                headline: 'Public boards',
+                sub: 'Deliberate wedge',
+                body: 'Publish a board only when public visibility helps. It stays secondary to install and triage, not a bloated setup surface.',
               },
             ].map(({ Icon, headline, sub, body }) => (
               <div key={headline} className="bg-card p-8 md:p-10">
@@ -240,23 +257,22 @@ export default function LandingPage() {
           <div className="flex flex-col gap-12 md:flex-row md:items-start md:gap-16">
             <div className="flex-1">
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-                Built for AI-first workflows
+                Optional automation
               </p>
               <h2 className="mb-5 text-4xl font-black leading-tight tracking-tighter md:text-5xl">
-                Your AI agents
+                Route feedback into
                 <br />
-                can talk to it.
+                your actual workflow.
               </h2>
               <p className="mb-8 max-w-sm leading-relaxed text-muted-foreground">
-                feedbacks.dev ships with a native MCP server. Drop it into any AI coding tool and
-                your agents can read, triage, and act on user feedback without leaving the
-                conversation.
+                Start with the widget, verification, and inbox. Connect the API or MCP server
+                when you want automation, not before the install feels solid.
               </p>
               <ul className="space-y-3">
                 {[
-                  'Works with Claude Code, Claude Desktop, Cursor, Windsurf',
-                  'Full REST API for custom integrations',
-                  'API key auth — no OAuth dance',
+                  'Full REST API for custom routing and automation',
+                  'Native MCP server for Claude Code, Cursor, and other agents',
+                  'API key auth with no OAuth setup',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
                     <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
@@ -284,24 +300,24 @@ export default function LandingPage() {
             Getting started
           </p>
           <h2 className="mb-14 text-4xl font-black tracking-tighter md:text-5xl">
-            Up in 2 minutes.
+            Install, verify, then triage.
           </h2>
           <div className="divide-y">
             {[
               {
                 num: '01',
                 title: 'Paste the script tag',
-                body: 'Add one line to your HTML. Works with any framework — React, Vue, Svelte, plain HTML. No build step, no config files.',
+                body: 'Add one line to your HTML. Works with any framework and keeps the first step simple enough to trust quickly.',
               },
               {
                 num: '02',
-                title: 'Your users start talking',
-                body: 'The widget appears as a floating button. Users submit bugs, ideas, and praise. You start receiving signal, not noise.',
+                title: 'Verify the widget and collect context',
+                body: 'Confirm the install, then capture URL, browser context, optional rating, screenshot, and email so the inbox starts with signal instead of guesswork.',
               },
               {
                 num: '03',
-                title: 'Triage from your dashboard — or delegate to your agent',
-                body: 'Review and act on feedback in real-time. Or let an AI agent handle triage while you focus on building.',
+                title: 'Triage quickly and route what matters',
+                body: 'Review feedback in the inbox, then push important issues into Slack, Discord, your own webhooks, or agent workflows when needed.',
               },
             ].map(({ num, title, body }) => (
               <div
@@ -328,14 +344,14 @@ export default function LandingPage() {
             Why us
           </p>
           <h2 className="mb-14 text-4xl font-black tracking-tighter md:text-5xl">
-            Built different.
+            Clarity beats novelty.
           </h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 Icon: Shield,
-                title: 'Privacy-first',
-                desc: 'No third-party trackers. Your feedback data stays yours. Self-host if you want.',
+                title: 'Verified install',
+                desc: 'No fake setup states. The first-run path is built to prove the widget works before you move on.',
               },
               {
                 Icon: MessageSquare,
@@ -344,8 +360,8 @@ export default function LandingPage() {
               },
               {
                 Icon: Sparkles,
-                title: 'AI-native',
-                desc: 'Built for the AI era. MCP protocol, structured data, agent metadata — all first-class.',
+                title: 'Public boards only when useful',
+                desc: 'Boards are available, but they stay secondary to the install and triage workflow.',
               },
             ].map(({ Icon, title, desc }) => (
               <div key={title} className="group rounded-2xl border bg-card/50 p-6 transition-all duration-200 hover:bg-card hover:shadow-lg hover:shadow-primary/5">
@@ -370,7 +386,8 @@ export default function LandingPage() {
             Simple, honest.
           </h2>
           <p className="mb-14 text-muted-foreground">
-            No usage-based traps. No surprise bills.
+            No usage-based traps. No surprise bills. Start with install and triage, then expand
+            into public boards or automation when you need them.
           </p>
 
           <div className="grid max-w-3xl gap-5 md:grid-cols-2">
@@ -384,7 +401,7 @@ export default function LandingPage() {
                 {[
                   '1 project',
                   '500 feedback / month',
-                  'Public voting board',
+                  'Optional public board',
                   'Dashboard + REST API',
                   '30-day history',
                 ].map((item) => (
@@ -455,12 +472,13 @@ export default function LandingPage() {
             />
             <div className="relative">
               <h2 className="mb-4 text-4xl font-black tracking-tighter text-background md:text-5xl">
-                Start hearing from
+                Start with install.
                 <br />
-                your users today.
+                Add public boards later.
               </h2>
               <p className="mx-auto mb-8 max-w-sm text-background/60">
-                Free tier, no credit card required. Up and running in under 2 minutes.
+                Free tier, no credit card required. Up and running in under 2 minutes, with
+                public boards as an optional next step.
               </p>
               <Link href="/auth">
                 <Button

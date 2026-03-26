@@ -1,3 +1,18 @@
+import type {
+  FeedbackPriority,
+  FeedbackStatus,
+  FeedbackType,
+  SavedWidgetConfig,
+} from '@feedbacks/shared'
+import type { BoardAnnouncement, BoardBranding, BoardVisibility } from '@/lib/public-board'
+
+export type {
+  FeedbackPriority,
+  FeedbackStatus,
+  FeedbackType,
+  SavedWidgetConfig,
+} from '@feedbacks/shared'
+
 export interface Project {
   id: string
   owner_user_id: string
@@ -58,10 +73,6 @@ export interface NotificationSettings {
   emailAddress?: string
 }
 
-export type FeedbackType = 'bug' | 'idea' | 'praise' | 'question'
-export type FeedbackStatus = 'new' | 'reviewed' | 'planned' | 'in_progress' | 'closed'
-export type FeedbackPriority = 'low' | 'medium' | 'high' | 'critical'
-
 export interface Feedback {
   id: string
   project_id: string
@@ -105,26 +116,7 @@ export interface FeedbackNote {
   created_at: string
 }
 
-export interface WidgetConfig {
-  embedMode?: 'modal' | 'inline' | 'trigger'
-  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
-  buttonText?: string
-  primaryColor?: string
-  enableType?: boolean
-  enableRating?: boolean
-  enableScreenshot?: boolean
-  enableAttachment?: boolean
-  enablePriority?: boolean
-  enableTags?: boolean
-  requireEmail?: boolean
-  requireCaptcha?: boolean
-  captchaProvider?: 'turnstile' | 'hcaptcha'
-  formTitle?: string
-  formSubtitle?: string
-  messageLabel?: string
-  messagePlaceholder?: string
-  submitButtonText?: string
-}
+export type WidgetConfig = SavedWidgetConfig
 
 export interface PaginatedResponse<T> {
   data: T[]
@@ -165,6 +157,55 @@ export interface PublicBoardSettings {
   require_email_to_vote: boolean
   custom_css: string | null
   branding: Record<string, unknown>
+  visibility: BoardVisibility
+  directory_opt_in: boolean
+  accent_color: string | null
+  logo_emoji: string | null
+  hero_eyebrow: string | null
+  hero_title: string | null
+  hero_description: string | null
+  tagline: string | null
+  website_url: string | null
+  categories: string[]
+  empty_state_title: string | null
+  empty_state_description: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PublicBoardRecord extends PublicBoardSettings {
+  profile: BoardBranding
+  announcements: BoardAnnouncement[]
+}
+
+export interface BoardReport {
+  id: string
+  board_id: string
+  project_id: string
+  feedback_id: string | null
+  user_id: string | null
+  reporter_email: string | null
+  target_type: 'board' | 'feedback'
+  reason: string
+  details: string | null
+  status: 'open' | 'reviewed' | 'resolved' | 'dismissed'
+  created_at: string
+  updated_at: string
+}
+
+export interface WebhookJob {
+  id: string
+  project_id: string
+  kind: 'slack' | 'discord' | 'generic' | 'github' | 'email'
+  endpoint_id: string | null
+  endpoint_url: string
+  event: string
+  status: 'pending' | 'processing' | 'retrying' | 'succeeded' | 'failed'
+  attempt: number
+  max_attempts: number
+  next_attempt_at: string
+  last_error: string | null
+  last_delivery_id: string | null
   created_at: string
   updated_at: string
 }

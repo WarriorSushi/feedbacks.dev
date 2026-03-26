@@ -5,16 +5,21 @@
   "packageManager": "pnpm@10.30.3",
   "scripts": {
     "dev": "pnpm --filter @feedbacks/dashboard dev",
-    "build": "pnpm --filter @feedbacks/widget build && pnpm run widget:copy && pnpm --filter @feedbacks/mcp-server build && pnpm --filter @feedbacks/dashboard build",
+    "build": "pnpm --filter @feedbacks/shared build && pnpm --filter @feedbacks/widget build && pnpm --filter @feedbacks/widget-react build && pnpm --filter @feedbacks/widget-vue build && pnpm run widget:copy && pnpm --filter @feedbacks/mcp-server build && pnpm --filter @feedbacks/dashboard build",
     "widget:dev": "pnpm --filter @feedbacks/widget dev",
     "widget:build": "pnpm --filter @feedbacks/widget build",
     "widget:copy": "node -e \"const fs=require('fs');const p='packages/dashboard/public/widget';fs.mkdirSync(p,{recursive:true});fs.copyFileSync('packages/widget/dist/widget.js',p+'/latest.js');fs.copyFileSync('packages/widget/dist/widget.js',p+'/v2.js');console.log('Widget copied to public/widget/')\"",
     "dashboard:dev": "pnpm --filter @feedbacks/dashboard dev",
     "dashboard:build": "pnpm --filter @feedbacks/dashboard build",
-    "type-check": "pnpm -r --parallel type-check",
-    "lint": "pnpm -r --if-present lint"
+    "type-check": "pnpm --filter @feedbacks/shared build && pnpm -r --parallel type-check",
+    "lint": "pnpm -r --if-present lint",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install --with-deps"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@types/node": "^22.0.0",
     "typescript": "^5.7.0"
   }

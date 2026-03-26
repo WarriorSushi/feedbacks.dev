@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { buildSuggestionEntries, isLikelySpam, normalizeBoardMessageTitle } from '@/lib/board-submissions'
+import { isBoardPubliclyAccessible } from '@/lib/public-board'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -21,12 +23,12 @@ export async function POST(
   // Validate board
   const { data: board } = await admin
     .from('public_board_settings')
-    .select('project_id, allow_submissions, show_types')
+    .select('*')
     .eq('slug', slug)
     .eq('enabled', true)
     .single()
 
-  if (!board) {
+  if (!board || !isBoardPubliclyAccessible(board)) {
     return NextResponse.json({ error: 'Board not found' }, { status: 404 })
   }
 
@@ -35,7 +37,11 @@ export async function POST(
   }
 
   const body = await req.json()
-  const { message, type, email } = body
+  const { message, type, email, hp } = body
+
+  if (typeof hp === 'string' && hp.trim().length > 0) {
+    return NextResponse.json({ error: 'Submission rejected' }, { status: 400 })
+  }
 
   if (!message || typeof message !== 'string' || message.trim().length < 5) {
     return NextResponse.json({ error: 'Message must be at least 5 characters' }, { status: 400 })
@@ -51,8 +57,34 @@ export async function POST(
     return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
   }
 
+  if (isLikelySpam(message)) {
+    return NextResponse.json({ error: 'This message looks automated or overly repetitive. Please rewrite it more clearly.' }, { status: 400 })
+  }
+
   const allowedTypes = board.show_types || ['idea', 'bug']
   const feedbackType = allowedTypes.includes(type) ? type : allowedTypes[0]
+  const normalizedTitle = normalizeBoardMessageTitle(message)
+
+  const { data: existingFeedback } = await admin
+    .from('feedback')
+    .select('id, message, status, vote_count')
+    .eq('project_id', board.project_id)
+    .eq('is_public', true)
+    .eq('is_archived', false)
+    .order('vote_count', { ascending: false })
+    .limit(25)
+
+  const suggestions = buildSuggestionEntries(message, existingFeedback || [])
+  const exactDuplicate = (existingFeedback || []).find(
+    (entry) => normalizeBoardMessageTitle(entry.message) === normalizedTitle,
+  )
+
+  if (exactDuplicate) {
+    return NextResponse.json({
+      error: 'A very similar request already exists. Vote on it instead or rewrite your submission if this is meaningfully different.',
+      suggestions,
+    }, { status: 409 })
+  }
 
   const { data: feedback, error } = await admin
     .from('feedback')
@@ -77,5 +109,5 @@ export async function POST(
     return NextResponse.json({ error: 'Failed to submit' }, { status: 500 })
   }
 
-  return NextResponse.json({ id: feedback.id, success: true })
+  return NextResponse.json({ id: feedback.id, success: true, suggestions })
 }

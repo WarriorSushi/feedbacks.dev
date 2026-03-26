@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
+import { isBoardPubliclyAccessible, parseBoardBranding } from '@/lib/public-board'
 
 /** Sanitize CSS: strip dangerous constructs */
 function sanitizeCss(css: string): string {
@@ -26,9 +27,10 @@ export async function GET(
     .eq('enabled', true)
     .single()
 
-  if (boardError || !board) {
+  if (boardError || !board || !isBoardPubliclyAccessible(board)) {
     return NextResponse.json({ error: 'Board not found' }, { status: 404 })
   }
+  const branding = parseBoardBranding(board)
 
   // Get public feedback for this project (capped at 100)
   const { data: feedback, error: feedbackError } = await admin
@@ -68,7 +70,7 @@ export async function GET(
       slug: board.slug,
       allow_submissions: board.allow_submissions,
       show_types: board.show_types,
-      branding: board.branding,
+      branding,
       custom_css: board.custom_css ? sanitizeCss(board.custom_css) : null,
     },
     feedback: safeFeedback,

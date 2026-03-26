@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { isBoardPubliclyAccessible } from '@/lib/public-board'
 
 export async function POST(
   req: NextRequest,
@@ -33,12 +34,12 @@ export async function POST(
   // Validate board exists
   const { data: board } = await admin
     .from('public_board_settings')
-    .select('project_id')
+    .select('*')
     .eq('slug', slug)
     .eq('enabled', true)
     .single()
 
-  if (!board) {
+  if (!board || !isBoardPubliclyAccessible(board)) {
     return NextResponse.json({ error: 'Board not found' }, { status: 404 })
   }
 

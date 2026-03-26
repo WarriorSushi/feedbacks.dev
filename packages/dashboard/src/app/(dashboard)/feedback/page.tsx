@@ -29,6 +29,7 @@ import {
   Loader2,
   Inbox,
   X,
+  Tag,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -38,6 +39,15 @@ const statuses: FeedbackStatus[] = ['new', 'reviewed', 'planned', 'in_progress',
 const types: FeedbackType[] = ['bug', 'idea', 'praise', 'question']
 
 const statusMeta = globalStatusConfig
+
+interface ProjectFilterOption {
+  id: string
+  name: string
+}
+
+function normalizeTag(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, '-')
+}
 
 export default function FeedbackInboxPage() {
   return (
@@ -53,6 +63,7 @@ function FeedbackInboxInner() {
   const supabase = React.useMemo(() => createClient(), [])
 
   const [feedbacks, setFeedbacks] = React.useState<Feedback[]>([])
+  const [projects, setProjects] = React.useState<ProjectFilterOption[]>([])
   const [loading, setLoading] = React.useState(true)
   const [total, setTotal] = React.useState(0)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
@@ -63,9 +74,30 @@ function FeedbackInboxInner() {
   const type = searchParams.get('type') || ''
   const search = searchParams.get('q') || ''
   const agent = searchParams.get('agent') || ''
+  const projectId = searchParams.get('projectId') || ''
+  const tag = searchParams.get('tag') || ''
   const [searchInput, setSearchInput] = React.useState(search)
+  const [tagInput, setTagInput] = React.useState(tag)
+  const [bulkTagInput, setBulkTagInput] = React.useState('')
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
+
+  React.useEffect(() => {
+    setSearchInput(search)
+    setTagInput(tag)
+  }, [search, tag])
+
+  React.useEffect(() => {
+    const fetchProjects = async () => {
+      const { data } = await supabase
+        .from('projects')
+        .select('id, name')
+        .order('name', { ascending: true })
+      setProjects((data as ProjectFilterOption[]) || [])
+    }
+
+    fetchProjects()
+  }, [supabase])
 
   const fetchFeedback = React.useCallback(async () => {
     setLoading(true)
@@ -80,13 +112,15 @@ function FeedbackInboxInner() {
     if (type) query = query.eq('type', type)
     if (search) query = query.ilike('message', `%${search}%`)
     if (agent) query = query.not('agent_name', 'is', null)
+    if (projectId) query = query.eq('project_id', projectId)
+    if (tag) query = query.contains('tags', [tag])
 
     const { data, count } = await query
     setFeedbacks((data as Feedback[]) || [])
     setTotal(count || 0)
     setSelected(new Set())
     setLoading(false)
-  }, [supabase, page, status, type, search, agent])
+  }, [supabase, page, projectId, status, tag, type, search, agent])
 
   React.useEffect(() => {
     fetchFeedback()
@@ -105,6 +139,11 @@ function FeedbackInboxInner() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     updateParams({ q: searchInput })
+  }
+
+  const handleTagSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    updateParams({ tag: normalizeTag(tagInput) })
   }
 
   const toggleSelect = (id: string) => {
@@ -140,9 +179,47 @@ function FeedbackInboxInner() {
     fetchFeedback()
   }
 
+  const bulkUpdateTags = async (action: 'add' | 'remove') => {
+    const nextTag = normalizeTag(bulkTagInput)
+    if (!nextTag || selected.size === 0) return
+
+    setBulkLoading(true)
+    const selectedFeedback = feedbacks.filter((feedback) => selected.has(feedback.id))
+    const results = await Promise.all(
+      selectedFeedback.map((feedback) => {
+        const currentTags = Array.from(new Set((feedback.tags || []).map(normalizeTag)))
+        const nextTags =
+          action === 'add'
+            ? Array.from(new Set([...currentTags, nextTag])).slice(0, 10)
+            : currentTags.filter((tagValue) => tagValue !== nextTag)
+
+        return supabase
+          .from('feedback')
+          .update({
+            tags: nextTags,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', feedback.id)
+      }),
+    )
+    setBulkLoading(false)
+
+    const firstError = results.find((result) => result.error)?.error
+    if (firstError) {
+      toast({ title: 'Failed to update tags', description: firstError.message, variant: 'destructive' })
+      return
+    }
+
+    toast({
+      title: action === 'add' ? 'Tag added to selected items' : 'Tag removed from selected items',
+    })
+    setBulkTagInput('')
+    fetchFeedback()
+  }
+
   const clearBulkSelection = () => setSelected(new Set())
 
-  const hasFilters = status || type || search || agent
+  const hasFilters = status || type || search || agent || projectId || tag
 
   return (
     <div className="animate-fade-in space-y-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))]">
@@ -166,30 +243,55 @@ function FeedbackInboxInner() {
 
       {/* ─── Filters ─────────────────────────────────────── */}
       <div className="flex flex-col gap-2.5">
-        {/* Search */}
-        <form onSubmit={handleSearch}>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search feedback…"
-              className="h-9 w-full pl-8.5 text-sm md:w-72"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-            />
-            {searchInput && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchInput('')
-                  updateParams({ q: '' })
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </div>
-        </form>
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <form onSubmit={handleSearch}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search feedback…"
+                className="h-9 w-full pl-8.5 text-sm md:w-72"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchInput('')
+                    updateParams({ q: '' })
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          </form>
+
+          <form onSubmit={handleTagSearch}>
+            <div className="relative">
+              <Tag className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Filter by tag…"
+                className="h-9 w-full pl-8.5 text-sm md:w-56"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+              />
+              {tagInput && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTagInput('')
+                    updateParams({ tag: '' })
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
 
         {/* Filter pills row — horizontal scroll on mobile */}
         <div className="-mx-4 px-4 md:mx-0 md:px-0">
@@ -228,11 +330,21 @@ function FeedbackInboxInner() {
             </FilterPill>
           ))}
 
+          <span className="mx-0.5 h-4 w-px bg-border" />
+
+          <FilterPill
+            active={agent === '1'}
+            onClick={() => updateParams({ agent: agent === '1' ? '' : '1' })}
+          >
+            🤖 Agent
+          </FilterPill>
+
           {hasFilters && (
             <button
               onClick={() => {
                 setSearchInput('')
-                updateParams({ status: '', type: '', q: '' })
+                setTagInput('')
+                updateParams({ status: '', type: '', q: '', agent: '', projectId: '', tag: '' })
               }}
               className="ml-1 flex flex-shrink-0 items-center gap-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
             >
@@ -242,6 +354,25 @@ function FeedbackInboxInner() {
           )}
           </div>
         </div>
+
+        {projects.length > 0 && (
+          <div className="-mx-4 px-4 md:mx-0 md:px-0">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+              <span className="pr-1 text-[11px] font-medium text-muted-foreground">
+                Projects
+              </span>
+              {projects.map((project) => (
+                <FilterPill
+                  key={project.id}
+                  active={projectId === project.id}
+                  onClick={() => updateParams({ projectId: projectId === project.id ? '' : project.id })}
+                >
+                  {project.name}
+                </FilterPill>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ─── Main List ────────────────────────────────────── */}
@@ -253,7 +384,8 @@ function FeedbackInboxInner() {
         ) : feedbacks.length === 0 ? (
           <EmptyState hasFilters={!!hasFilters} onClear={() => {
             setSearchInput('')
-            updateParams({ status: '', type: '', q: '' })
+            setTagInput('')
+            updateParams({ status: '', type: '', q: '', agent: '', projectId: '', tag: '' })
           }} />
         ) : (
           <div>
@@ -373,6 +505,31 @@ function FeedbackInboxInner() {
           >
             <XCircle className="h-3.5 w-3.5" />
             Close
+          </Button>
+          <div className="h-4 w-px bg-border" />
+          <Input
+            value={bulkTagInput}
+            onChange={(e) => setBulkTagInput(e.target.value)}
+            placeholder="tag"
+            className="h-7 w-24 rounded-full px-2.5 text-[11px]"
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1.5 rounded-full px-3 text-[11px] font-medium"
+            disabled={bulkLoading || !bulkTagInput.trim()}
+            onClick={() => bulkUpdateTags('add')}
+          >
+            Add tag
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 gap-1.5 rounded-full px-3 text-[11px] font-medium"
+            disabled={bulkLoading || !bulkTagInput.trim()}
+            onClick={() => bulkUpdateTags('remove')}
+          >
+            Remove tag
           </Button>
           <div className="h-4 w-px bg-border" />
           <button
@@ -514,6 +671,19 @@ function FeedbackRow({
                 <span className="text-[10px] text-muted-foreground/30">·</span>
                 <span className="text-[11px] text-muted-foreground">
                   {fb.projects.name}
+                </span>
+              </>
+            )}
+
+            {fb.tags && fb.tags.length > 0 && (
+              <>
+                <span className="text-[10px] text-muted-foreground/30">·</span>
+                <span className="flex flex-wrap items-center gap-1">
+                  {fb.tags.slice(0, 2).map((tagValue) => (
+                    <Badge key={tagValue} variant="outline" className="h-4 px-1.5 text-[10px]">
+                      {tagValue}
+                    </Badge>
+                  ))}
                 </span>
               </>
             )}

@@ -2,16 +2,18 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import type { BoardAnnouncement, BoardBranding } from '@/lib/public-board'
 import { cn } from '@/lib/utils'
 
-// ---------- Types ----------
 interface BoardInfo {
+  projectId: string
   title: string | null
   description: string | null
   slug: string
   allow_submissions: boolean
   show_types: string[]
-  branding: Record<string, string> | null
+  branding: BoardBranding
+  customCss?: string | null
 }
 
 interface FeedbackItem {
@@ -30,35 +32,56 @@ interface AdminComment {
   created_at: string
 }
 
-type SortMode = 'votes' | 'newest' | 'status'
-type FilterType = 'all' | 'idea' | 'bug' | 'praise' | 'question'
-
-// ---------- Helpers ----------
-const typeConfig: Record<string, { label: string; icon: string; color: string }> = {
-  idea: { label: 'Feature', icon: '💡', color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800' },
-  bug: { label: 'Bug', icon: '🐛', color: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800' },
-  praise: { label: 'Praise', icon: '⭐', color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800' },
-  question: { label: 'Question', icon: '❓', color: 'bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950 dark:text-cyan-300 dark:border-cyan-800' },
+interface BoardRecommendation {
+  slug: string
+  title: string
+  description: string
+  branding: BoardBranding
+  feedbackCount: number
+  trustScore: number
 }
 
-const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
-  new: { label: 'New', color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300', dotColor: 'bg-gray-400' },
-  reviewed: { label: 'Under Review', color: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300', dotColor: 'bg-yellow-500' },
-  planned: { label: 'Planned', color: 'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300', dotColor: 'bg-purple-500' },
-  in_progress: { label: 'In Progress', color: 'bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300', dotColor: 'bg-orange-500' },
-  closed: { label: 'Done', color: 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300', dotColor: 'bg-green-500' },
+interface BoardSuggestion {
+  id: string
+  title: string
+  description: string
+  status: string
+  vote_count: number
+}
+
+interface ReportTarget {
+  type: 'board' | 'feedback'
+  feedbackId?: string
+}
+
+type SortMode = 'votes' | 'newest' | 'status' | 'watched'
+type FilterType = 'all' | 'idea' | 'bug' | 'praise' | 'question'
+
+const typeConfig: Record<string, { label: string; tone: string }> = {
+  idea: { label: 'Feature request', tone: 'border-sky-200 bg-sky-50 text-sky-700' },
+  bug: { label: 'Bug', tone: 'border-rose-200 bg-rose-50 text-rose-700' },
+  praise: { label: 'Praise', tone: 'border-emerald-200 bg-emerald-50 text-emerald-700' },
+  question: { label: 'Question', tone: 'border-amber-200 bg-amber-50 text-amber-800' },
+}
+
+const statusConfig: Record<string, { label: string; tone: string }> = {
+  new: { label: 'New', tone: 'bg-slate-100 text-slate-700' },
+  reviewed: { label: 'Under review', tone: 'bg-amber-100 text-amber-800' },
+  planned: { label: 'Planned', tone: 'bg-violet-100 text-violet-700' },
+  in_progress: { label: 'In progress', tone: 'bg-orange-100 text-orange-800' },
+  closed: { label: 'Shipped', tone: 'bg-emerald-100 text-emerald-700' },
 }
 
 function getTitle(message: string): string {
   const firstLine = message.split('\n')[0]
-  return firstLine.length > 80 ? firstLine.slice(0, 80) + '…' : firstLine
+  return firstLine.length > 88 ? `${firstLine.slice(0, 88)}…` : firstLine
 }
 
 function getDescription(message: string): string {
   const lines = message.split('\n')
   if (lines.length <= 1) return ''
   const rest = lines.slice(1).join(' ').trim()
-  return rest.length > 150 ? rest.slice(0, 150) + '…' : rest
+  return rest.length > 180 ? `${rest.slice(0, 180)}…` : rest
 }
 
 function getFullDescription(message: string): string {
@@ -78,7 +101,28 @@ function relativeTime(date: string): string {
   return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-// ---------- Components ----------
+function formatDate(date: string): string {
+  return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function readSetStorage(key: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return new Set()
+    return new Set(JSON.parse(raw))
+  } catch {
+    return new Set()
+  }
+}
+
+function writeSetStorage(key: string, value: Set<string>) {
+  try {
+    localStorage.setItem(key, JSON.stringify([...value]))
+  } catch {
+    // ignore
+  }
+}
+
 function UpvoteButton({
   count,
   voted,
@@ -95,203 +139,131 @@ function UpvoteButton({
       onClick={onClick}
       disabled={loading}
       className={cn(
-        'group flex flex-col items-center justify-center rounded-xl border-2 px-3 py-2.5 min-w-[56px] transition-all duration-200 select-none',
-        voted
-          ? 'border-primary bg-primary/10 text-primary shadow-sm'
-          : 'border bg-card text-muted-foreground hover:border-primary/50 hover:bg-primary/5 hover:text-primary',
-        loading && 'opacity-60 cursor-not-allowed',
-        !loading && 'active:scale-95'
+        'flex min-w-[64px] flex-col items-center justify-center rounded-xl border px-3 py-2 text-sm transition',
+        voted ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 bg-white text-slate-600 hover:border-primary/40 hover:text-primary',
+        loading && 'cursor-not-allowed opacity-60',
       )}
     >
-      <svg
-        className={cn(
-          'h-4 w-4 mb-0.5 transition-transform duration-200',
-          !loading && 'group-hover:-translate-y-0.5',
-          voted && 'fill-current'
-        )}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 19V5M5 12l7-7 7 7" />
-      </svg>
-      <span className="text-sm font-bold tabular-nums">{count}</span>
+      <span className="text-lg leading-none">↑</span>
+      <span className="font-semibold tabular-nums">{count}</span>
     </button>
   )
 }
 
-function AdminCommentBubble({ comment }: { comment: AdminComment }) {
-  return (
-    <div className="flex gap-3 mt-3">
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary ring-1 ring-primary/20">
-        D
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
-            Dev
-          </span>
-          <span className="text-[11px] text-muted-foreground">{relativeTime(comment.created_at)}</span>
-        </div>
-        <p className="text-sm text-foreground/80 leading-relaxed">{comment.content}</p>
-      </div>
-    </div>
-  )
-}
-
-function FeedbackCard({
-  item,
-  voted,
-  onVote,
-  votingId,
-  comments,
-  isExpanded,
-  onToggle,
+function ReportModal({
+  slug,
+  target,
+  onClose,
 }: {
-  item: FeedbackItem
-  voted: boolean
-  onVote: (id: string) => void
-  votingId: string | null
-  comments: AdminComment[]
-  isExpanded: boolean
-  onToggle: () => void
+  slug: string
+  target: ReportTarget
+  onClose: () => void
 }) {
-  const type = item.type ? typeConfig[item.type] : null
-  const status = statusConfig[item.status] || statusConfig.new
-  const hasDetails = getFullDescription(item.message) || comments.length > 0
+  const [reason, setReason] = React.useState('')
+  const [details, setDetails] = React.useState('')
+  const [email, setEmail] = React.useState('')
+  const [submitting, setSubmitting] = React.useState(false)
+  const [success, setSuccess] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setSubmitting(true)
+    setError(null)
+
+    try {
+      const response = await fetch(`/api/boards/${slug}/report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reason,
+          details,
+          email,
+          ...(target.feedbackId ? { feedback_id: target.feedbackId } : {}),
+        }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Failed to save report')
+      setSuccess(true)
+      window.setTimeout(onClose, 1000)
+    } catch (reportError) {
+      setError(reportError instanceof Error ? reportError.message : 'Something went wrong')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
-    <div
-      className={cn(
-        'group rounded-2xl border bg-card transition-all duration-200',
-        isExpanded ? 'shadow-lg border-primary/20' : 'hover:shadow-md hover:border-border/80'
-      )}
-    >
-      <div className="flex gap-4 p-4 sm:p-5">
-        <UpvoteButton
-          count={item.vote_count}
-          voted={voted}
-          onClick={() => onVote(item.id)}
-          loading={votingId === item.id}
-        />
-
-        <div className="flex-1 min-w-0">
-          <button
-            onClick={hasDetails ? onToggle : undefined}
-            className={cn(
-              'text-left w-full',
-              hasDetails && 'cursor-pointer'
-            )}
-          >
-            <h3 className="font-semibold text-foreground leading-snug">
-              {getTitle(item.message)}
-              {comments.length > 0 && !isExpanded && (
-                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold text-primary align-middle">
-                  Dev replied
-                </span>
-              )}
-            </h3>
-            {!isExpanded && getDescription(item.message) && (
-              <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-                {getDescription(item.message)}
-              </p>
-            )}
-          </button>
-          <div className="mt-2.5 flex flex-wrap items-center gap-2">
-            {type && (
-              <span className={cn('inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium', type.color)}>
-                <span>{type.icon}</span> {type.label}
-              </span>
-            )}
-            <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium', status.color)}>
-              <span className={cn('h-1.5 w-1.5 rounded-full', status.dotColor)} />
-              {status.label}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {relativeTime(item.created_at)}
-            </span>
-            {hasDetails && (
-              <button
-                onClick={onToggle}
-                className="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {isExpanded ? 'Collapse' : 'Details'}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Expanded detail */}
-      {isExpanded && (
-        <div className="border-t px-4 sm:px-5 pb-4 sm:pb-5 pt-3 animate-in fade-in slide-in-from-top-1 duration-200">
-          {getFullDescription(item.message) && (
-            <p className="text-sm text-foreground/75 leading-relaxed whitespace-pre-wrap">
-              {getFullDescription(item.message)}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 bg-slate-950/45 backdrop-blur-sm" onClick={onClose} />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="board-report-modal-title"
+        className="relative w-full max-w-xl rounded-3xl border bg-white p-6 shadow-2xl"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 id="board-report-modal-title" className="text-xl font-semibold text-slate-900">
+              {target.type === 'board' ? 'Report board' : 'Report post'}
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Reports stay inside the team workflow so they can be reviewed with full context.
             </p>
-          )}
-          {comments.length > 0 && (
-            <div className={cn(getFullDescription(item.message) && 'mt-4 pt-3 border-t border-dashed')}>
-              {comments.map((c) => (
-                <AdminCommentBubble key={c.id} comment={c} />
-              ))}
+          </div>
+          <button onClick={onClose} className="rounded-full border px-3 py-1 text-sm text-slate-600 hover:bg-slate-50">Close</button>
+        </div>
+        {success ? (
+          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            Thanks. The report has been recorded for review.
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <input
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              aria-label="Report reason"
+              placeholder="What needs review?"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700"
+              maxLength={160}
+              required
+            />
+            <textarea
+              value={details}
+              onChange={(event) => setDetails(event.target.value)}
+              aria-label="Report details"
+              rows={4}
+              className="min-h-[120px] w-full rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:bg-white"
+              placeholder="Optional details that help the team review this faster."
+              maxLength={2000}
+            />
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              aria-label="Email (optional)"
+              placeholder="Email (optional)"
+              className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700"
+            />
+            {error && <p className="text-sm text-rose-600">{error}</p>}
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="submit"
+                disabled={submitting || reason.trim().length === 0}
+                className={cn(
+                  'rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90',
+                  (submitting || reason.trim().length === 0) && 'cursor-not-allowed opacity-60',
+                )}
+              >
+                {submitting ? 'Saving…' : 'Submit report'}
+              </button>
+              <button type="button" onClick={onClose} className="rounded-xl border px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                Cancel
+              </button>
             </div>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function UpdatesSection({ feedback }: { feedback: FeedbackItem[] }) {
-  const inProgress = feedback.filter((f) => f.status === 'in_progress')
-  const recentlyShipped = feedback.filter((f) => f.status === 'closed').slice(0, 3)
-
-  if (inProgress.length === 0 && recentlyShipped.length === 0) return null
-
-  return (
-    <div className="mb-8 space-y-4">
-      {inProgress.length > 0 && (
-        <div className="rounded-2xl border border-orange-200/60 bg-gradient-to-r from-orange-50/80 to-amber-50/40 p-5 dark:border-orange-800/40 dark:from-orange-950/30 dark:to-amber-950/20">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="h-2 w-2 rounded-full bg-orange-500 animate-pulse" />
-            <h3 className="text-sm font-bold uppercase tracking-wider text-orange-700 dark:text-orange-300">
-              Building now
-            </h3>
-          </div>
-          <div className="space-y-2">
-            {inProgress.map((f) => (
-              <div key={f.id} className="flex items-center gap-3 text-sm">
-                <span className="text-orange-500">{f.type ? typeConfig[f.type]?.icon : '📌'}</span>
-                <span className="text-foreground/80">{getTitle(f.message)}</span>
-                <span className="ml-auto text-xs tabular-nums text-muted-foreground">{f.vote_count} votes</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {recentlyShipped.length > 0 && (
-        <div className="rounded-2xl border border-green-200/60 bg-gradient-to-r from-green-50/80 to-emerald-50/40 p-5 dark:border-green-800/40 dark:from-green-950/30 dark:to-emerald-950/20">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-green-600 dark:text-green-400">✅</span>
-            <h3 className="text-sm font-bold uppercase tracking-wider text-green-700 dark:text-green-300">
-              Recently shipped
-            </h3>
-          </div>
-          <div className="space-y-2">
-            {recentlyShipped.map((f) => (
-              <div key={f.id} className="flex items-center gap-3 text-sm">
-                <span className="text-green-500">{f.type ? typeConfig[f.type]?.icon : '📌'}</span>
-                <span className="text-foreground/80 line-through decoration-green-400/40">{getTitle(f.message)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+          </form>
+        )}
+      </div>
     </div>
   )
 }
@@ -310,69 +282,56 @@ function SubmitModal({
   const [message, setMessage] = React.useState('')
   const [type, setType] = React.useState(showTypes[0] || 'idea')
   const [email, setEmail] = React.useState('')
+  const [hp, setHp] = React.useState('')
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
-  const modalRef = React.useRef<HTMLDivElement>(null)
-  const previousFocus = React.useRef<HTMLElement | null>(null)
+  const [suggestions, setSuggestions] = React.useState<BoardSuggestion[]>([])
+  const deferredMessage = React.useDeferredValue(message)
 
   React.useEffect(() => {
-    previousFocus.current = document.activeElement as HTMLElement
-    const modal = modalRef.current
-    if (!modal) return
-
-    const focusable = modal.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    )
-    if (focusable.length > 0) focusable[0].focus()
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
-        return
-      }
-      if (e.key !== 'Tab') return
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault()
-          last.focus()
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault()
-          first.focus()
-        }
-      }
+    const query = deferredMessage.trim()
+    if (query.length < 5) {
+      setSuggestions([])
+      return
     }
 
-    document.addEventListener('keydown', handleKeyDown)
+    const controller = new AbortController()
+    const timeout = window.setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/boards/${slug}/suggestions?q=${encodeURIComponent(query)}`, { signal: controller.signal })
+        if (!response.ok) return
+        const data = await response.json()
+        setSuggestions(data.suggestions || [])
+      } catch {
+        // ignore
+      }
+    }, 250)
+
     return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-      previousFocus.current?.focus()
+      controller.abort()
+      window.clearTimeout(timeout)
     }
-  }, [onClose])
+  }, [deferredMessage, slug])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
     setError(null)
     setSubmitting(true)
 
     try {
-      const res = await fetch(`/api/boards/${slug}/submit`, {
+      const response = await fetch(`/api/boards/${slug}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message, type, email: email || undefined }),
+        body: JSON.stringify({ message, type, email: email || undefined, hp }),
       })
-
-      if (!res.ok) {
-        const data = await res.json()
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        if (Array.isArray(data.suggestions)) setSuggestions(data.suggestions)
         throw new Error(data.error || 'Failed to submit')
       }
-
       onSubmitted()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Something went wrong')
     } finally {
       setSubmitting(false)
     }
@@ -380,96 +339,100 @@ function SubmitModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-slate-950/45 backdrop-blur-sm" onClick={onClose} />
       <div
-        ref={modalRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="submit-modal-title"
-        className="relative w-full max-w-lg rounded-2xl border bg-background p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+        aria-labelledby="board-submit-modal-title"
+        className="relative w-full max-w-2xl rounded-3xl border bg-white p-6 shadow-2xl"
       >
-        <h2 id="submit-modal-title" className="text-xl font-bold text-foreground">Submit Feedback</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Share your ideas or report bugs. The community will vote!
-        </p>
-
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 id="board-submit-modal-title" className="text-xl font-semibold text-slate-900">Submit feedback</h2>
+            <p className="mt-1 text-sm text-slate-600">Use the first line as a clear request title, then add context below it.</p>
+          </div>
+          <button onClick={onClose} className="rounded-full border px-3 py-1 text-sm text-slate-600 hover:bg-slate-50">Close</button>
+        </div>
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              Type
-            </label>
-            <div className="flex gap-2">
-              {showTypes.map((t) => {
-                const cfg = typeConfig[t]
-                if (!cfg) return null
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setType(t)}
-                    className={cn(
-                      'flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-all',
-                      type === t
-                        ? 'border-primary bg-primary/10 text-primary'
-                        : 'border text-muted-foreground hover:bg-accent'
-                    )}
-                  >
-                    <span>{cfg.icon}</span> {cfg.label}
-                  </button>
-                )
-              })}
-            </div>
+          <div className="flex flex-wrap gap-2">
+            {showTypes.map((entry) => (
+              <button
+                key={entry}
+                type="button"
+                onClick={() => setType(entry)}
+                className={cn(
+                  'rounded-full border px-3 py-1.5 text-sm transition',
+                  type === entry ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 text-slate-600 hover:border-slate-300',
+                )}
+              >
+                {typeConfig[entry]?.label || entry}
+              </button>
+            ))}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              Your feedback
-            </label>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="First line becomes the title. Add details below..."
-              rows={4}
-              className="w-full rounded-xl border bg-background px-4 py-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none resize-none"
-              required
-              minLength={5}
-              maxLength={2000}
-            />
-          </div>
+          <textarea
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+            aria-label="Your feedback"
+            rows={5}
+            className="min-h-[140px] w-full rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:bg-white"
+            placeholder="Faster screenshot capture in onboarding&#10;The first screenshot step feels slower than the rest of the flow..."
+            required
+            minLength={5}
+            maxLength={2000}
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              Email <span className="text-muted-foreground font-normal">(optional)</span>
-            </label>
+          <div className="grid gap-4 md:grid-cols-2">
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full rounded-xl border bg-background px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+              onChange={(event) => setEmail(event.target.value)}
+              aria-label="Email (optional)"
+              placeholder="Email (optional)"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700"
+            />
+            <input
+              value={hp}
+              onChange={(event) => setHp(event.target.value)}
+              aria-label="Leave this empty"
+              tabIndex={-1}
+              autoComplete="off"
+              placeholder="Leave this empty"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-700"
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
+          {suggestions.length > 0 && (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+              <p className="text-sm font-medium text-slate-900">Possibly related requests</p>
+              <div className="mt-3 space-y-2">
+                {suggestions.map((suggestion) => (
+                  <Link key={suggestion.id} href={`#feedback-${suggestion.id}`} className="block rounded-xl border border-slate-200 bg-white p-3 hover:border-primary/30">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-medium text-slate-900">{suggestion.title}</p>
+                      <span className="text-xs text-slate-500">{suggestion.vote_count} votes</span>
+                    </div>
+                    {suggestion.description && <p className="mt-1 text-sm text-slate-600">{suggestion.description}</p>}
+                  </Link>
+                ))}
+              </div>
+            </div>
           )}
 
-          <div className="flex gap-3 pt-1">
+          {error && <p className="text-sm text-rose-600">{error}</p>}
+
+          <div className="flex flex-wrap gap-3">
             <button
               type="submit"
               disabled={submitting || message.trim().length < 5}
               className={cn(
-                'flex-1 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 active:scale-[0.98]',
-                (submitting || message.trim().length < 5) && 'opacity-50 cursor-not-allowed'
+                'rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90',
+                (submitting || message.trim().length < 5) && 'cursor-not-allowed opacity-60',
               )}
             >
-              {submitting ? 'Submitting…' : 'Submit'}
+              {submitting ? 'Submitting…' : 'Submit feedback'}
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl border px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
-            >
+            <button type="button" onClick={onClose} className="rounded-xl border px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
               Cancel
             </button>
           </div>
@@ -479,15 +442,160 @@ function SubmitModal({
   )
 }
 
-// ---------- Main Board ----------
+function FeedbackCard({
+  item,
+  comments,
+  isExpanded,
+  voted,
+  watched,
+  voting,
+  canModerate,
+  replyDraft,
+  busy,
+  onVote,
+  onToggle,
+  onWatch,
+  onOpenReport,
+  onReplyDraftChange,
+  onReplySubmit,
+  onStatusChange,
+  onHide,
+}: {
+  item: FeedbackItem
+  comments: AdminComment[]
+  isExpanded: boolean
+  voted: boolean
+  watched: boolean
+  voting: boolean
+  canModerate: boolean
+  replyDraft: string
+  busy: boolean
+  onVote: () => void
+  onToggle: () => void
+  onWatch: () => void
+  onOpenReport: () => void
+  onReplyDraftChange: (value: string) => void
+  onReplySubmit: () => void
+  onStatusChange: (status: string) => void
+  onHide: () => void
+}) {
+  const type = item.type ? typeConfig[item.type] : null
+  const status = statusConfig[item.status] || statusConfig.new
+  const details = getFullDescription(item.message)
+
+  return (
+    <article id={`feedback-${item.id}`} className={cn('rounded-3xl border bg-white/92 p-5 shadow-sm backdrop-blur transition', isExpanded && 'border-primary/20 shadow-md')}>
+      <div className="flex gap-4">
+        <UpvoteButton count={item.vote_count} voted={voted} onClick={onVote} loading={voting} />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <button onClick={onToggle} className="text-left">
+                <h3 className="text-lg font-semibold leading-snug text-slate-900">{getTitle(item.message)}</h3>
+              </button>
+              {!isExpanded && getDescription(item.message) && <p className="mt-1 text-sm leading-relaxed text-slate-600">{getDescription(item.message)}</p>}
+            </div>
+
+            <button
+              onClick={onWatch}
+              className={cn(
+                'rounded-full border px-3 py-1 text-xs font-medium transition',
+                watched ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 text-slate-600 hover:border-slate-300',
+              )}
+            >
+              {watched ? 'Watching' : 'Watch'}
+            </button>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {type && <span className={cn('inline-flex rounded-full border px-2.5 py-1 text-xs font-medium', type.tone)}>{type.label}</span>}
+            <span className={cn('inline-flex rounded-full px-2.5 py-1 text-xs font-medium', status.tone)}>{status.label}</span>
+            <span className="text-xs text-slate-500">{relativeTime(item.created_at)}</span>
+            <button onClick={onToggle} className="text-xs font-medium text-slate-500 hover:text-slate-900">{isExpanded ? 'Collapse' : 'Details'}</button>
+            <button onClick={onOpenReport} className="text-xs font-medium text-slate-500 hover:text-slate-900">Report post</button>
+          </div>
+
+          {isExpanded && (
+            <div className="mt-4 space-y-4 border-t pt-4">
+              {details && <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{details}</p>}
+
+              {comments.length > 0 && (
+                <div className="space-y-3">
+                  {comments.map((comment) => (
+                    <div key={comment.id} className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Team reply</p>
+                        <span className="text-xs text-slate-500">{relativeTime(comment.created_at)}</span>
+                      </div>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{comment.content}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {canModerate && (
+                <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <select
+                      aria-label="Update status"
+                      value={item.status}
+                      onChange={(event) => onStatusChange(event.target.value)}
+                      className="h-9 rounded-md border bg-white px-3 text-sm"
+                    >
+                      {Object.entries(statusConfig).map(([value, config]) => (
+                        <option key={value} value={value}>{config.label}</option>
+                      ))}
+                    </select>
+                    <button onClick={onHide} className="text-sm font-medium text-rose-600 hover:text-rose-700">Hide from board</button>
+                  </div>
+
+                  <textarea
+                    value={replyDraft}
+                    onChange={(event) => onReplyDraftChange(event.target.value)}
+                    aria-label="Public reply"
+                    rows={3}
+                    className="min-h-[96px] w-full rounded-xl border bg-white px-3 py-2 text-sm"
+                    placeholder="Share a public update or clarify the plan."
+                  />
+                  <button
+                    onClick={onReplySubmit}
+                    disabled={busy || replyDraft.trim().length === 0}
+                    className={cn(
+                      'rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90',
+                      (busy || replyDraft.trim().length === 0) && 'cursor-not-allowed opacity-60',
+                    )}
+                  >
+                    {busy ? 'Saving…' : 'Post public reply'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  )
+}
+
 export function PublicBoard({
   board,
   initialFeedback,
   initialComments = [],
+  initialAnnouncements = [],
+  canModerate = false,
+  viewerSignedIn = false,
+  initialFollowed = false,
+  initialWatchedIds = [],
+  recommendations = [],
 }: {
   board: BoardInfo
   initialFeedback: FeedbackItem[]
   initialComments?: AdminComment[]
+  initialAnnouncements?: BoardAnnouncement[]
+  canModerate?: boolean
+  viewerSignedIn?: boolean
+  initialFollowed?: boolean
+  initialWatchedIds?: string[]
+  recommendations?: BoardRecommendation[]
 }) {
   const [feedback, setFeedback] = React.useState(initialFeedback)
   const [comments, setComments] = React.useState(initialComments)
@@ -495,264 +603,368 @@ export function PublicBoard({
   const [sort, setSort] = React.useState<SortMode>('votes')
   const [search, setSearch] = React.useState('')
   const [votedIds, setVotedIds] = React.useState<Set<string>>(new Set())
+  const [watchedIds, setWatchedIds] = React.useState<Set<string>>(new Set(initialWatchedIds))
+  const [followed, setFollowed] = React.useState(initialFollowed)
   const [votingId, setVotingId] = React.useState<string | null>(null)
   const [expandedId, setExpandedId] = React.useState<string | null>(null)
   const [showSubmit, setShowSubmit] = React.useState(false)
+  const [reportTarget, setReportTarget] = React.useState<ReportTarget | null>(null)
   const [justSubmitted, setJustSubmitted] = React.useState(false)
+  const [replyDrafts, setReplyDrafts] = React.useState<Record<string, string>>({})
+  const [busyId, setBusyId] = React.useState<string | null>(null)
+  const votesKey = `votes:${board.slug}`
+  const accentColor = board.branding.accentColor || '#0f766e'
 
-  // Group comments by feedback_id
   const commentsByFeedback = React.useMemo(() => {
     const map: Record<string, AdminComment[]> = {}
-    comments.forEach((c) => {
-      if (!map[c.feedback_id]) map[c.feedback_id] = []
-      map[c.feedback_id].push(c)
+    comments.forEach((comment) => {
+      if (!map[comment.feedback_id]) map[comment.feedback_id] = []
+      map[comment.feedback_id].push(comment)
     })
     return map
   }, [comments])
 
-  // Load voted state from localStorage
   React.useEffect(() => {
-    try {
-      const stored = localStorage.getItem(`votes:${board.slug}`)
-      if (stored) setVotedIds(new Set(JSON.parse(stored)))
-    } catch { /* ignore */ }
-  }, [board.slug])
+    setVotedIds(readSetStorage(votesKey))
+  }, [votesKey])
 
-  const saveVotes = (ids: Set<string>) => {
-    try {
-      localStorage.setItem(`votes:${board.slug}`, JSON.stringify([...ids]))
-    } catch { /* ignore */ }
+  const activityItems = React.useMemo(() => {
+    const announcements = initialAnnouncements.map((entry) => ({
+      id: entry.id,
+      title: entry.title,
+      body: entry.body,
+      date: entry.publishedAt,
+      href: entry.href,
+    }))
+    const replies = comments.slice(-4).map((comment) => ({
+      id: comment.id,
+      title: 'Team replied publicly',
+      body: comment.content,
+      date: comment.created_at,
+      href: undefined,
+    }))
+    const shipped = feedback
+      .filter((entry) => entry.status === 'closed' || entry.status === 'in_progress')
+      .slice(0, 4)
+      .map((entry) => ({
+        id: `status-${entry.id}`,
+        title: `${statusConfig[entry.status]?.label || 'Update'}: ${getTitle(entry.message)}`,
+        body: entry.status === 'closed' ? 'This item has shipped.' : 'The team is building this now.',
+        date: entry.created_at,
+        href: undefined,
+      }))
+
+    return [...announcements, ...replies, ...shipped]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 6)
+  }, [comments, feedback, initialAnnouncements])
+
+  const redirectToAuth = () => {
+    const redirect = encodeURIComponent(`/p/${board.slug}`)
+    window.location.href = `/auth?redirect=${redirect}`
+  }
+
+  const toggleFollowed = async () => {
+    const next = !followed
+    const response = await fetch(`/api/boards/${board.slug}/follow`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ following: next }),
+    })
+
+    if (response.status === 401) {
+      redirectToAuth()
+      return
+    }
+
+    if (!response.ok) {
+      window.alert('Could not update your board follow right now.')
+      return
+    }
+
+    setFollowed(next)
+  }
+
+  const toggleWatched = async (feedbackId: string) => {
+    const next = new Set(watchedIds)
+    const watching = !next.has(feedbackId)
+    const response = await fetch(`/api/boards/${board.slug}/watch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ feedback_id: feedbackId, watching }),
+    })
+
+    if (response.status === 401) {
+      redirectToAuth()
+      return
+    }
+
+    if (!response.ok) {
+      window.alert('Could not update your watch right now.')
+      return
+    }
+
+    if (watching) next.add(feedbackId)
+    else next.delete(feedbackId)
+    setWatchedIds(next)
   }
 
   const handleVote = async (feedbackId: string) => {
     if (votingId) return
     setVotingId(feedbackId)
-
     try {
-      const res = await fetch(`/api/boards/${board.slug}/vote`, {
+      const response = await fetch(`/api/boards/${board.slug}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ feedback_id: feedbackId }),
       })
-
-      if (!res.ok) return
-      const data = await res.json()
-
-      setFeedback((prev) =>
-        prev.map((f) =>
-          f.id === feedbackId
-            ? { ...f, vote_count: f.vote_count + (data.voted ? 1 : -1) }
-            : f
-        )
-      )
-
-      const newVoted = new Set(votedIds)
-      if (data.voted) {
-        newVoted.add(feedbackId)
-      } else {
-        newVoted.delete(feedbackId)
-      }
-      setVotedIds(newVoted)
-      saveVotes(newVoted)
+      if (!response.ok) return
+      const data = await response.json()
+      setFeedback((prev) => prev.map((entry) => entry.id === feedbackId ? { ...entry, vote_count: entry.vote_count + (data.voted ? 1 : -1) } : entry))
+      const next = new Set(votedIds)
+      if (data.voted) next.add(feedbackId)
+      else next.delete(feedbackId)
+      setVotedIds(next)
+      writeSetStorage(votesKey, next)
     } finally {
       setVotingId(null)
     }
   }
 
-  const handleSubmitted = () => {
+  const refreshBoard = async () => {
+    const response = await fetch(`/api/boards/${board.slug}`)
+    if (!response.ok) return
+    const data = await response.json()
+    if (data.feedback) setFeedback(data.feedback)
+    if (data.comments) setComments(data.comments)
+  }
+
+  const handleSubmitted = async () => {
     setShowSubmit(false)
     setJustSubmitted(true)
     setTimeout(() => setJustSubmitted(false), 4000)
-    fetch(`/api/boards/${board.slug}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.feedback) setFeedback(data.feedback)
-        if (data.comments) setComments(data.comments)
-      })
-      .catch(() => {})
+    await refreshBoard()
   }
 
-  // Filter, search & sort
+  const handleReplySubmit = async (feedbackId: string) => {
+    const draft = replyDrafts[feedbackId]?.trim()
+    if (!draft) return
+    setBusyId(feedbackId)
+    try {
+      const response = await fetch(`/api/boards/${board.slug}/comment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback_id: feedbackId, content: draft }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Failed to post reply')
+      setComments((prev) => [...prev, { id: data.comment.id, feedback_id: feedbackId, content: data.comment.content, created_at: data.comment.created_at }])
+      setReplyDrafts((prev) => ({ ...prev, [feedbackId]: '' }))
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Failed to post public reply')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  const handleModeration = async (feedbackId: string, action: 'status' | 'hide', value?: string) => {
+    setBusyId(feedbackId)
+    try {
+      const response = await fetch(`/api/boards/${board.slug}/moderate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback_id: feedbackId, action, value }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Failed to update board item')
+      if (action === 'hide') setFeedback((prev) => prev.filter((entry) => entry.id !== feedbackId))
+      else if (action === 'status' && value) setFeedback((prev) => prev.map((entry) => entry.id === feedbackId ? { ...entry, status: value } : entry))
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : 'Failed to update board item')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   const filtered = React.useMemo(() => {
     let items = feedback
-    if (filter !== 'all') {
-      items = items.filter((f) => f.type === filter)
-    }
+    if (filter !== 'all') items = items.filter((entry) => entry.type === filter)
     if (search.trim()) {
-      const q = search.toLowerCase()
-      items = items.filter((f) => f.message.toLowerCase().includes(q))
+      const query = search.toLowerCase()
+      items = items.filter((entry) => entry.message.toLowerCase().includes(query))
     }
-    return [...items].sort((a, b) => {
-      if (sort === 'votes') return b.vote_count - a.vote_count
-      if (sort === 'newest') return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      const statusOrder: Record<string, number> = { in_progress: 0, planned: 1, reviewed: 2, new: 3, closed: 4 }
-      return (statusOrder[a.status] ?? 5) - (statusOrder[b.status] ?? 5)
-    })
-  }, [feedback, filter, sort, search])
-
-  const accentColor = board.branding?.accent_color || '#6366f1'
+    const next = [...items]
+    if (sort === 'votes') next.sort((a, b) => b.vote_count - a.vote_count)
+    else if (sort === 'newest') next.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    else if (sort === 'watched') next.sort((a, b) => Number(watchedIds.has(b.id)) - Number(watchedIds.has(a.id)) || b.vote_count - a.vote_count)
+    else {
+      const order: Record<string, number> = { in_progress: 0, planned: 1, reviewed: 2, new: 3, closed: 4 }
+      next.sort((a, b) => (order[a.status] ?? 5) - (order[b.status] ?? 5))
+    }
+    return next
+  }, [feedback, filter, search, sort, watchedIds])
 
   const filterTabs: { value: FilterType; label: string }[] = [
     { value: 'all', label: 'All' },
-    ...board.show_types.map((t) => ({
-      value: t as FilterType,
-      label: typeConfig[t]?.label || t,
-    })),
+    ...board.show_types.map((type) => ({ value: type as FilterType, label: typeConfig[type]?.label || type })),
   ]
 
+  const heroTitle = board.branding.heroTitle || board.title || 'Public feedback board'
+  const heroDescription = board.branding.heroDescription || board.description || 'Share feedback, see what the team is shipping, and follow the public side of their feedback workflow.'
+
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
-      {/* Header */}
-      <div className="text-center mb-10">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-          {board.title || 'Feature Board'}
-        </h1>
-        {board.description && (
-          <p className="mt-3 text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            {board.description}
-          </p>
-        )}
-      </div>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.16),_transparent_42%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_42%,_#f8fafc_100%)]">
+      {board.customCss ? <style>{board.customCss}</style> : null}
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="space-y-6">
+            <section className="rounded-[32px] border bg-white/92 p-6 shadow-sm backdrop-blur sm:p-8">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full text-lg font-semibold text-white" style={{ backgroundColor: accentColor }}>
+                  {board.branding.logoEmoji || (board.title || 'F').slice(0, 1).toUpperCase()}
+                </span>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">{board.branding.heroEyebrow || 'Public board'}</p>
+                  {board.branding.tagline && <p className="mt-1 text-sm text-slate-600">{board.branding.tagline}</p>}
+                </div>
+              </div>
+              <div className="mt-6 max-w-3xl">
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">{heroTitle}</h1>
+                <p className="mt-3 text-base leading-relaxed text-slate-600 sm:text-lg">{heroDescription}</p>
+              </div>
+              <div className="mt-6 flex flex-wrap gap-3">
+                {board.allow_submissions && <button onClick={() => setShowSubmit(true)} className="rounded-2xl px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90" style={{ backgroundColor: accentColor }}>Submit feedback</button>}
+                {board.branding.websiteUrl && <a href={board.branding.websiteUrl} target="_blank" rel="noreferrer" className="rounded-2xl border px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Visit product site</a>}
+                <button onClick={() => void toggleFollowed()} className={cn('rounded-2xl border px-4 py-2.5 text-sm font-medium transition', followed ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 text-slate-700 hover:bg-slate-50')}>
+                  {followed ? 'Following' : viewerSignedIn ? 'Follow board' : 'Sign in to follow'}
+                </button>
+                <Link href="/boards" className="rounded-2xl border px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Browse boards</Link>
+                <button onClick={() => setReportTarget({ type: 'board' })} className="rounded-2xl border px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Report board</button>
+              </div>
+            </section>
 
-      {/* Updates from the team */}
-      <UpdatesSection feedback={feedback} />
-
-      {/* Success toast */}
-      {justSubmitted && (
-        <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300 animate-in slide-in-from-top-2 duration-300">
-          Your feedback was submitted successfully! It will appear once reviewed.
-        </div>
-      )}
-
-      {/* Controls */}
-      <div className="flex flex-col gap-3 mb-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          {/* Filter tabs */}
-          <div className="flex gap-1 rounded-xl bg-muted p-1">
-            {filterTabs.map((tab) => (
-              <button
-                key={tab.value}
-                onClick={() => setFilter(tab.value)}
-                className={cn(
-                  'rounded-lg px-3.5 py-1.5 text-sm font-medium transition-all',
-                  filter === tab.value
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Sort */}
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortMode)}
-              aria-label="Sort feedback"
-              className="rounded-lg border bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-            >
-              <option value="votes">Most Voted</option>
-              <option value="newest">Newest</option>
-              <option value="status">Status</option>
-            </select>
-
-            {/* Submit button */}
-            {board.allow_submissions && (
-              <button
-                onClick={() => setShowSubmit(true)}
-                style={{ backgroundColor: accentColor }}
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 active:scale-[0.97]"
-              >
-                + Submit Feedback
-              </button>
+            {activityItems.length > 0 && (
+              <section className="rounded-3xl border bg-white/92 p-5 shadow-sm backdrop-blur">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Activity</p>
+                <h2 className="mt-1 text-lg font-semibold text-slate-900">Product updates</h2>
+                <div className="mt-4 space-y-3">
+                  {activityItems.map((item) => (
+                    <div key={item.id} className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                        <span className="text-xs text-slate-500">{formatDate(item.date)}</span>
+                      </div>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-600">{item.body}</p>
+                      {item.href && <a href={item.href} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-sm font-medium text-primary hover:underline">Read more</a>}
+                    </div>
+                  ))}
+                </div>
+              </section>
             )}
-          </div>
-        </div>
 
-        {/* Search */}
-        <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search feedback..."
-            className="w-full rounded-xl border bg-background pl-10 pr-4 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
-          />
-        </div>
-      </div>
+            {justSubmitted && <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">Your feedback was submitted. It now enters the same public flow as the rest of the board.</div>}
 
-      {/* Feedback list */}
-      <div className="space-y-3">
-        {filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed bg-card p-12 text-center">
-            {search.trim() ? (
-              <>
-                <p className="text-muted-foreground text-lg">No results for &ldquo;{search}&rdquo;</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Try a different search or{' '}
-                  <button onClick={() => setSearch('')} className="text-primary hover:underline">
-                    clear the search
-                  </button>
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-muted-foreground text-lg">No feedback yet</p>
-                {board.allow_submissions && (
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Be the first to share your thoughts!
-                  </p>
-                )}
-              </>
+            <section className="rounded-3xl border bg-white/92 p-5 shadow-sm backdrop-blur">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap gap-2">
+                  {filterTabs.map((tab) => (
+                    <button key={tab.value} onClick={() => setFilter(tab.value)} className={cn('rounded-full px-3.5 py-1.5 text-sm transition', filter === tab.value ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}>{tab.label}</button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <select value={sort} onChange={(event) => setSort(event.target.value as SortMode)} className="h-10 rounded-xl border bg-white px-3 text-sm text-slate-700">
+                    <option value="votes">Most voted</option>
+                    <option value="newest">Newest</option>
+                    <option value="status">By status</option>
+                    <option value="watched">Watched first</option>
+                  </select>
+                  <input type="text" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search requests..." className="h-10 min-w-[240px] rounded-xl border bg-white px-3 text-sm text-slate-700" />
+                </div>
+              </div>
+            </section>
+
+            <div className="space-y-4">
+              {filtered.length === 0 ? (
+                <div className="rounded-3xl border border-dashed bg-white/88 p-10 text-center shadow-sm">
+                  <h2 className="text-xl font-semibold text-slate-900">{board.branding.emptyStateTitle || 'No public requests yet'}</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{search.trim() ? `No results for “${search}”. Try another search or clear the filters.` : board.branding.emptyStateDescription || 'Be the first person to submit something the team can respond to publicly.'}</p>
+                </div>
+              ) : (
+                filtered.map((item) => (
+                  <FeedbackCard
+                    key={item.id}
+                    item={item}
+                    comments={commentsByFeedback[item.id] || []}
+                    isExpanded={expandedId === item.id}
+                    voted={votedIds.has(item.id)}
+                    watched={watchedIds.has(item.id)}
+                    voting={votingId === item.id}
+                    canModerate={canModerate}
+                    replyDraft={replyDrafts[item.id] || ''}
+                    busy={busyId === item.id}
+                    onVote={() => handleVote(item.id)}
+                    onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                    onWatch={() => void toggleWatched(item.id)}
+                    onOpenReport={() => setReportTarget({ type: 'feedback', feedbackId: item.id })}
+                    onReplyDraftChange={(value) => setReplyDrafts((prev) => ({ ...prev, [item.id]: value }))}
+                    onReplySubmit={() => void handleReplySubmit(item.id)}
+                    onStatusChange={(status) => void handleModeration(item.id, 'status', status)}
+                    onHide={() => void handleModeration(item.id, 'hide')}
+                  />
+                ))
+              )}
+            </div>
+
+            {recommendations.length > 0 && (
+              <section className="rounded-3xl border bg-white/92 p-5 shadow-sm backdrop-blur">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Explore more</p>
+                <h2 className="mt-1 text-lg font-semibold text-slate-900">Related product boards</h2>
+                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                  {recommendations.map((entry) => (
+                    <Link key={entry.slug} href={`/p/${entry.slug}`} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-primary/30 hover:bg-white">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white" style={{ backgroundColor: entry.branding.accentColor || '#0f766e' }}>
+                          {entry.branding.logoEmoji || entry.title.slice(0, 1).toUpperCase()}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-slate-900">{entry.title}</p>
+                          <p className="truncate text-xs text-slate-500">{entry.feedbackCount} requests · trust {entry.trustScore}</p>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm leading-relaxed text-slate-600">{entry.description}</p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
             )}
+
+            <div className="text-center"><Link href="/" className="text-xs text-slate-400 transition hover:text-slate-600">Powered by feedbacks.dev</Link></div>
           </div>
-        ) : (
-          filtered.map((item) => (
-            <FeedbackCard
-              key={item.id}
-              item={item}
-              voted={votedIds.has(item.id)}
-              onVote={handleVote}
-              votingId={votingId}
-              comments={commentsByFeedback[item.id] || []}
-              isExpanded={expandedId === item.id}
-              onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
-            />
-          ))
-        )}
+
+          <aside className="space-y-6">
+            <div className="rounded-3xl border bg-white/92 p-5 shadow-sm backdrop-blur">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Trust signals</p>
+              <div className="mt-4 grid gap-3">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"><p className="text-xs text-slate-500">Public requests</p><p className="mt-1 text-2xl font-semibold text-slate-900">{feedback.length}</p></div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"><p className="text-xs text-slate-500">Team replies</p><p className="mt-1 text-2xl font-semibold text-slate-900">{comments.length}</p></div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4"><p className="text-xs text-slate-500">In progress or shipped</p><p className="mt-1 text-2xl font-semibold text-slate-900">{feedback.filter((item) => item.status === 'in_progress' || item.status === 'closed').length}</p></div>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border bg-white/92 p-5 shadow-sm backdrop-blur">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Moderation and trust</p>
+              <ul className="mt-4 space-y-3 text-sm leading-relaxed text-slate-600">
+                <li>This board is the public side of the team’s feedback workflow.</li>
+                <li>Votes are rate-limited, and submissions use related-request suggestions plus spam heuristics.</li>
+                <li>Reports stay in-product so the team can review trust issues without losing context.</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
       </div>
 
-      {/* Item count */}
-      {filtered.length > 0 && (
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          {filtered.length} {filtered.length === 1 ? 'item' : 'items'}
-        </p>
-      )}
-
-      {/* Powered by */}
-      <div className="mt-8 text-center">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-        >
-          Powered by feedbacks<span className="text-primary/50">.dev</span>
-        </Link>
-      </div>
-
-      {/* Submit modal */}
-      {showSubmit && (
-        <SubmitModal
-          slug={board.slug}
-          showTypes={board.show_types}
-          onClose={() => setShowSubmit(false)}
-          onSubmitted={handleSubmitted}
-        />
-      )}
+      {showSubmit && <SubmitModal slug={board.slug} showTypes={board.show_types} onClose={() => setShowSubmit(false)} onSubmitted={() => void handleSubmitted()} />}
+      {reportTarget && <ReportModal slug={board.slug} target={reportTarget} onClose={() => setReportTarget(null)} />}
     </div>
   )
 }

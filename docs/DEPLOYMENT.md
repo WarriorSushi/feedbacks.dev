@@ -13,6 +13,7 @@ Go to your **Supabase Dashboard** → **SQL Editor** → run these files in orde
 
 1. `sql/001_initial_schema.sql` — base tables (projects, feedback, webhook_deliveries, etc.)
 2. `sql/004_fix_public_board.sql` — adds public board support (is_public, vote_count, votes table, triggers)
+3. `sql/007_phase6_hardening.sql` — typed board profile fields, announcements, follows, watches, reports, and durable webhook jobs
 
 **How:** Copy-paste the contents of each file into the SQL Editor and click "Run".
 
@@ -62,9 +63,19 @@ Your `.env.local` at `packages/dashboard/.env.local` needs:
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+NEXT_PUBLIC_APP_ORIGIN=http://localhost:3000
+CRON_SECRET=your-cron-secret
 ```
 
 Find these in **Supabase Dashboard → Settings → API**.
+
+Optional but recommended for the new reliability and moderation surfaces:
+
+```
+WEBHOOK_JOB_SECRET=your-webhook-job-secret
+BOARD_REPORT_SALT=your-board-report-salt
+E2E_AUTH_BYPASS_SECRET=your-e2e-auth-bypass-secret
+```
 
 ### For Vercel
 Add the same 3 variables in **Vercel → Project Settings → Environment Variables**.
@@ -127,7 +138,12 @@ Test this checklist:
 - [ ] Can change feedback status
 - [ ] Can add internal notes
 - [ ] Public board works at `/p/[slug]`
+- [ ] Board follow/watch/report flows work when signed in
+- [ ] Announcements appear on the public board
+- [ ] `/boards` directory reflects public vs unlisted/private visibility
 - [ ] Voting works on the public board
+- [ ] Webhook test send and resend work from the integrations screen
+- [ ] Webhook retries are processed by the cron-backed queue
 - [ ] API key auth works for `/api/v1/` endpoints
 - [ ] CSV export downloads at `/api/projects/[id]/feedback.csv`
 - [ ] Widget demo page works at `/widget-demo`
@@ -158,7 +174,8 @@ Once deployed, users install the widget with:
 ```html
 <script
   src="https://your-domain.com/widget/latest.js"
-  data-project="PROJECT_API_KEY"
+  data-project="PROJECT_KEY"
+  data-api-url="https://your-domain.com/api/feedback"
   defer
 ></script>
 ```

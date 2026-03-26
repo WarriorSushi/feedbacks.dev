@@ -1,11 +1,40 @@
 import { createAdminSupabase } from '@/lib/supabase-server'
 
+function parseCookieValue(cookieHeader: string | null, name: string): string | null {
+  if (!cookieHeader) return null
+
+  const cookies = cookieHeader.split(';')
+  for (const cookie of cookies) {
+    const [rawName, ...rawValue] = cookie.trim().split('=')
+    if (rawName === name) {
+      return rawValue.join('=')
+    }
+  }
+
+  return null
+}
+
+function hasE2EBypass(request: Request): boolean {
+  const secret = process.env.E2E_AUTH_BYPASS_SECRET
+  if (!secret) return false
+
+  const headerSecret = request.headers.get('x-feedbacks-e2e-bypass')
+  if (headerSecret === secret) return true
+
+  const cookieSecret = parseCookieValue(request.headers.get('cookie'), 'feedbacks_e2e_bypass')
+  return cookieSecret === secret
+}
+
 export async function checkRateLimit(
   request: Request,
   route: string,
   limit: number = 10,
   windowMinutes: number = 1
 ): Promise<{ allowed: boolean; remaining: number }> {
+  if (hasE2EBypass(request)) {
+    return { allowed: true, remaining: limit }
+  }
+
   // Prefer x-vercel-forwarded-for (harder to spoof on Vercel), then x-forwarded-for, then x-real-ip
   const ip =
     request.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim() ||

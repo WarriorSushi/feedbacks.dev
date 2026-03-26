@@ -2,7 +2,9 @@
 
 import * as React from 'react'
 import { Suspense } from 'react'
+import { generateInstallSnippets } from '@feedbacks/shared'
 import { createClient } from '@/lib/supabase-browser'
+import { publicEnv } from '@/lib/public-env'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,16 +16,16 @@ import { useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 const features = [
-  'Embeddable in any framework — one script tag',
-  'Auto-triage: bugs, ideas, praise, questions',
-  'Webhook delivery to Slack, Discord, GitHub',
-  'Public feature boards with voting',
+  'Create a project, copy the snippet, and verify the widget',
+  'Capture URL, browser context, and optional screenshots automatically',
+  'Triage bugs, ideas, praise, and questions in one inbox',
+  'Route important feedback into Slack, Discord, or your own workflows',
 ]
 
-const codeSnippet = `<script
-  src="https://cdn.feedbacks.dev/widget.js"
-  data-api-key="YOUR_KEY"
-></script>`
+const codeSnippet = generateInstallSnippets({
+  projectKey: 'your-project-key',
+  appOrigin: publicEnv.NEXT_PUBLIC_APP_ORIGIN,
+}).find((snippet) => snippet.label === 'Website')?.code || ''
 
 function AuthPageInner() {
   const [email, setEmail] = React.useState('')
@@ -121,10 +123,12 @@ function AuthPageInner() {
           {/* Middle: headline + features */}
           <div className="mt-auto">
             <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[hsl(238_72%_78%)]">
-              Developer-first feedback
+              Install first
             </p>
             <h1 className="max-w-sm text-4xl font-bold leading-[1.1] text-white xl:text-[2.75rem]">
-              Feedback that&nbsp;fits your&nbsp;workflow.
+              Create your project
+              <br />
+              and paste the snippet.
             </h1>
 
             <ul className="mt-8 space-y-3">
@@ -152,11 +156,18 @@ function AuthPageInner() {
                 <code>
                   {codeSnippet.split('\n').map((line, i) => (
                     <span key={i} className="block">
-                      {line.startsWith('  data') ? (
+                      {line.trim().startsWith('data-project') ? (
                         <>
-                          <span className="text-[hsl(220_80%_75%)]">  data-api-key</span>
+                          <span className="text-[hsl(220_80%_75%)]">  data-project</span>
                           <span className="text-white/40">{`="`}</span>
-                          <span className="text-[hsl(150_60%_68%)]">YOUR_KEY</span>
+                          <span className="text-[hsl(150_60%_68%)]">your-project-key</span>
+                          <span className="text-white/40">{`"`}</span>
+                        </>
+                      ) : line.trim().startsWith('data-api-url') ? (
+                        <>
+                          <span className="text-[hsl(220_80%_75%)]">  data-api-url</span>
+                          <span className="text-white/40">{`="`}</span>
+                          <span className="text-[hsl(150_60%_68%)]">{publicEnv.NEXT_PUBLIC_APP_ORIGIN}/api/feedback</span>
                           <span className="text-white/40">{`"`}</span>
                         </>
                       ) : line.includes('script') ? (
@@ -185,7 +196,7 @@ function AuthPageInner() {
             feedbacks<span className="text-primary">.dev</span>
           </Link>
           <h1 className="mt-3 text-2xl font-bold tracking-tight">
-            Feedback that fits your workflow.
+            Create your project and paste the snippet.
           </h1>
         </div>
 
@@ -193,12 +204,12 @@ function AuthPageInner() {
           {/* Heading */}
           <div className="mb-8">
             <h2 className="text-2xl font-semibold tracking-tight">
-              {sent ? 'Check your inbox' : 'Sign in'}
+              {sent ? 'Check your inbox' : 'Create your project'}
             </h2>
             <p className="mt-1.5 text-[14px] text-muted-foreground">
               {sent
                 ? `We sent a magic link to ${email}`
-                : 'Get started — no password needed.'}
+                : 'You will land in setup with the install snippet and first-run checklist.'}
             </p>
           </div>
 
@@ -234,17 +245,17 @@ function AuthPageInner() {
                 )}
                 onClick={handleGitHub}
                 disabled={githubLoading}
-              >
-                <span className="flex items-center gap-2.5">
-                  {githubLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Github className="h-4 w-4" />
-                  )}
+                >
+                  <span className="flex items-center gap-2.5">
+                    {githubLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Github className="h-4 w-4" />
+                    )}
                   Continue with GitHub
-                </span>
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
-              </Button>
+                  </span>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
+                </Button>
 
               {/* Divider */}
               <div className="relative my-1 flex items-center gap-3">
@@ -285,7 +296,7 @@ function AuthPageInner() {
                   ) : (
                     <Mail className="mr-2 h-4 w-4" />
                   )}
-                  Send magic link
+                  Send magic link and continue setup
                 </Button>
               </form>
             </div>

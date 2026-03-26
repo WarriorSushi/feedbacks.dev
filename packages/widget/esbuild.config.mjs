@@ -31,7 +31,7 @@ const config = {
   sourcemap: isWatch,
   target: 'es2020',
   format: 'iife',
-  globalName: 'FeedbacksWidget',
+  globalName: 'FeedbacksWidgetRuntime',
   outfile: 'dist/widget.js',
   plugins: [cssPlugin],
   define: {

@@ -10,6 +10,9 @@
     "build": "node esbuild.config.mjs",
     "type-check": "tsc --noEmit"
   },
+  "dependencies": {
+    "@feedbacks/shared": "workspace:*"
+  },
   "devDependencies": {
     "esbuild": "^0.20.0",
     "typescript": "^5.4.0"

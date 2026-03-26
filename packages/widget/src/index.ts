@@ -1,5 +1,5 @@
+import { parseWidgetDataAttributes } from '@feedbacks/shared';
 import FeedbacksWidget from './widget';
-import type { WidgetConfig } from './types';
 
 export type { WidgetConfig, FeedbackData, FeedbackResponse, CategoryType, EmbedMode, Position } from './types';
 export { FeedbacksWidget };
@@ -12,43 +12,55 @@ function autoInit(): void {
     if (script.hasAttribute('data-fb-initialized')) return;
     script.setAttribute('data-fb-initialized', 'true');
 
-    const projectKey = script.getAttribute('data-project');
-    if (!projectKey) return;
-
     const attr = (name: string) => script.getAttribute(name);
-    const boolAttr = (name: string) => attr(name) === 'true' || (script.hasAttribute(name) && attr(name) !== 'false');
-    const numAttr = (name: string) => { const v = attr(name); return v ? Number(v) : undefined; };
-
-    const config: WidgetConfig = {
-      projectKey,
-      embedMode: (attr('data-embed-mode') as WidgetConfig['embedMode']) || 'modal',
-      target: attr('data-target') || undefined,
-      position: (attr('data-position') as WidgetConfig['position']) || 'bottom-right',
-      buttonText: attr('data-button-text') || undefined,
-      primaryColor: attr('data-color') || undefined,
-      backgroundColor: attr('data-bg') || undefined,
-      scale: numAttr('data-scale'),
-      modalWidth: numAttr('data-modal-width'),
-      apiUrl: attr('data-api-url') || undefined,
-      debug: boolAttr('data-debug'),
-      requireEmail: boolAttr('data-require-email'),
-      requireCaptcha: boolAttr('data-require-captcha'),
-      captchaProvider: (attr('data-captcha-provider') as WidgetConfig['captchaProvider']) || undefined,
-      turnstileSiteKey: attr('data-turnstile-sitekey') || undefined,
-      hcaptchaSiteKey: attr('data-hcaptcha-sitekey') || undefined,
-      enableType: attr('data-enable-type') !== 'false',
-      enableRating: attr('data-enable-rating') !== 'false',
-      enableScreenshot: boolAttr('data-enable-screenshot'),
-      enableAttachment: boolAttr('data-enable-attachment'),
-      attachmentMaxMB: numAttr('data-attachment-maxmb'),
-      formTitle: attr('data-form-title') || undefined,
-      formSubtitle: attr('data-form-subtitle') || undefined,
-      submitButtonText: attr('data-submit-text') || undefined,
-      successTitle: attr('data-success-title') || undefined,
-      successDescription: attr('data-success-description') || undefined,
-      openOnKey: attr('data-open-key') || undefined,
-      openAfterMs: numAttr('data-open-after'),
-    };
+    const config = parseWidgetDataAttributes(
+      {
+        project: attr('data-project') || undefined,
+        configVersion: attr('data-config-version') || undefined,
+        embedMode: attr('data-embed-mode') || undefined,
+        target: attr('data-target') || undefined,
+        position: attr('data-position') || undefined,
+        buttonText: attr('data-button-text') || undefined,
+        color: attr('data-color') || undefined,
+        bg: attr('data-bg') || undefined,
+        scale: attr('data-scale') || undefined,
+        modalWidth: attr('data-modal-width') || undefined,
+        apiUrl: attr('data-api-url') || undefined,
+        debug: attr('data-debug') || undefined,
+        requireEmail: attr('data-require-email') || undefined,
+        requireCaptcha: attr('data-require-captcha') || undefined,
+        captchaProvider: attr('data-captcha-provider') || undefined,
+        turnstileSiteKey: attr('data-turnstile-sitekey') || undefined,
+        hcaptchaSiteKey: attr('data-hcaptcha-sitekey') || undefined,
+        enableType: attr('data-enable-type') || undefined,
+        enableRating: attr('data-enable-rating') || undefined,
+        enableScreenshot: attr('data-enable-screenshot') || undefined,
+        screenshotRequired: attr('data-screenshot-required') || undefined,
+        enableAttachment: attr('data-enable-attachment') || undefined,
+        attachmentMaxMB: attr('data-attachment-maxmb') || undefined,
+        attachmentMimes: attr('data-attachment-mimes') || undefined,
+        formTitle: attr('data-form-title') || undefined,
+        formSubtitle: attr('data-form-subtitle') || undefined,
+        messageLabel: attr('data-message-label') || undefined,
+        messagePlaceholder: attr('data-message-placeholder') || undefined,
+        emailLabel: attr('data-email-label') || undefined,
+        submitText: attr('data-submit-text') || undefined,
+        cancelText: attr('data-cancel-text') || undefined,
+        successTitle: attr('data-success-title') || undefined,
+        successDescription: attr('data-success-description') || undefined,
+        openKey: attr('data-open-key') || undefined,
+        openAfter: attr('data-open-after') || undefined,
+      },
+      {
+        debug: script.hasAttribute('data-debug'),
+        requireEmail: script.hasAttribute('data-require-email'),
+        requireCaptcha: script.hasAttribute('data-require-captcha'),
+        enableScreenshot: script.hasAttribute('data-enable-screenshot'),
+        screenshotRequired: script.hasAttribute('data-screenshot-required'),
+        enableAttachment: script.hasAttribute('data-enable-attachment'),
+      },
+    );
+    if (!config) return;
 
     new FeedbacksWidget(config);
   });

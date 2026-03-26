@@ -1,0 +1,27 @@
+{
+  "name": "@feedbacks/widget-react",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "React wrapper for the feedbacks.dev widget runtime",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "@feedbacks/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0"
+  },
+  "license": "MIT"
+}

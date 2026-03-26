@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import type { Project } from '@/lib/types'
 import { ProjectTabs } from './project-tabs'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ProjectDetailPage({
   params,
 }: {

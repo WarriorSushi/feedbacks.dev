@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Mail } from 'lucide-react'
 import { Loader2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import Link from 'next/link'
 
 export default function SettingsPage() {
   const supabase = React.useMemo(() => createClient(), [])
@@ -121,12 +122,18 @@ export default function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Notifications</CardTitle>
+          <CardDescription>
+            Project workflow routing and account email notifications are separate surfaces.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Mail className="h-4 w-4" />
-            Email notifications coming soon.
+            Email notifications are still coming soon. Use project integrations for live routing today.
           </div>
+          <Link href="/projects">
+            <Button variant="outline" size="sm">Open project integrations</Button>
+          </Link>
         </CardContent>
       </Card>
 

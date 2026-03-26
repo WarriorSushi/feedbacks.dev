@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { checkRateLimit } from '@/lib/rate-limit'
-import { deliverWebhooks } from '@/lib/webhook-delivery'
+import { enqueueWebhookJobs, processWebhookJobs } from '@/lib/webhook-delivery'
 import type { FeedbackType, FeedbackPriority, Project } from '@/lib/types'
 
 const CORS_HEADERS = {
@@ -289,14 +289,19 @@ export async function POST(request: NextRequest) {
       return jsonError('Failed to save feedback', 500)
     }
 
-    // Webhook delivery (best-effort, non-blocking)
-    // NOTE: In Vercel production, use waitUntil() for reliable background execution
+    // Queue webhook delivery so retries survive the request lifecycle.
     if (project.webhooks) {
-      deliverWebhooks(
+      enqueueWebhookJobs(
         project.webhooks,
         feedbackRow,
         { id: project.id, name: project.name }
-      ).catch(() => {})
+      )
+        .then((jobIds) => {
+          if (jobIds.length > 0) {
+            void processWebhookJobs({ jobIds, limit: jobIds.length })
+          }
+        })
+        .catch(() => {})
     }
 
     return NextResponse.json(
