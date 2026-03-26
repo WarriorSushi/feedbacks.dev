@@ -72,6 +72,7 @@ export async function GET(
       show_types: board.show_types,
       branding,
       custom_css: board.custom_css ? sanitizeCss(board.custom_css) : null,
+      display_name: board.display_name || null,
     },
     feedback: safeFeedback,
     comments,

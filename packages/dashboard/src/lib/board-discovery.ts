@@ -9,6 +9,7 @@ export interface BoardDirectoryEntry {
   slug: string
   title: string
   description: string
+  displayName: string | null
   projectName: string
   createdAt: string
   updatedAt: string
@@ -212,6 +213,7 @@ export async function loadBoardDirectoryEntries(): Promise<BoardDirectoryEntry[]
       slug: board.slug,
       title: board.title || `${projectNames.get(board.project_id) || 'Product'} board`,
       description: board.description || 'Vote on requests, track updates, and follow what ships next.',
+      displayName: board.display_name || null,
       projectName: projectNames.get(board.project_id) || 'Untitled project',
       createdAt: board.created_at,
       updatedAt: board.updated_at,

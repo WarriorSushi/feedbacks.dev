@@ -136,6 +136,7 @@ export default async function PublicBoardPage({ params }: PageProps) {
         show_types: board.show_types || ['idea', 'bug'],
         branding,
         customCss: board.custom_css ? sanitizeCss(board.custom_css) : null,
+        displayName: board.display_name || null,
       }}
       initialFeedback={feedback || []}
       initialComments={comments}

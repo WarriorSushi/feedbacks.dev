@@ -154,6 +154,7 @@ function buildBoardSettingsPayload(
     slug,
     title: sanitizeText(body.title, 120),
     description: sanitizeText(body.description, 280),
+    display_name: sanitizeText(body.display_name, 60),
     show_types: showTypes,
     allow_submissions: body.allow_submissions !== false,
     require_email_to_vote: body.require_email_to_vote === true,
