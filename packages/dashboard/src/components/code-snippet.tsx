@@ -52,6 +52,7 @@ export function CodeSnippet({ tabs, className }: CodeSnippetProps) {
           size="icon"
           className="absolute right-2 top-2 h-8 w-8"
           onClick={handleCopy}
+          aria-label={`Copy ${tabs[activeTab].label} code block`}
         >
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
         </Button>

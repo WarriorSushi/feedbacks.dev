@@ -32,8 +32,9 @@ export default function PrivacyPage() {
           <h2>How We Use Your Information</h2>
           <ul>
             <li>To provide and maintain the service</li>
-            <li>To send notifications about feedback activity</li>
+            <li>To send opt-in notifications about feedback activity</li>
             <li>To deliver webhooks to your configured endpoints</li>
+            <li>To manage subscriptions and billing when you upgrade to a paid plan</li>
           </ul>
 
           <h2>Data Storage</h2>
@@ -47,18 +48,22 @@ export default function PrivacyPage() {
             <li><strong>Supabase</strong> — database and authentication</li>
             <li><strong>Vercel</strong> — hosting and deployment</li>
             <li><strong>GitHub</strong> — OAuth authentication (optional)</li>
+            <li><strong>Dodo Payments</strong> — checkout, billing portal, and subscription events</li>
+            <li><strong>Resend</strong> — transactional email delivery for opt-in alerts</li>
           </ul>
 
           <h2>Data Retention</h2>
           <p>
             Your data is retained as long as your account is active. When you delete a project,
-            all associated feedback is permanently removed. Account deletion removes all data.
+            all associated feedback is permanently removed. Free plans only surface the most recent
+            30 days of history, but upgrading restores older history without recreating it. Account deletion removes all data.
           </p>
 
           <h2>Your Rights</h2>
           <p>
             You can export your feedback data as CSV, delete individual feedback items,
-            delete entire projects, or delete your account at any time from the Settings page.
+            delete entire projects, or delete your account from the Settings page. If you have an active
+            paid subscription, cancel or downgrade it from Billing before account deletion.
           </p>
 
           <h2>Contact</h2>

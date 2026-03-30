@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { authenticateApiKey } from '@/lib/api-auth'
+import { assertFeatureAccess, getBillingSummaryForUser, getHistoryCutoff } from '@/lib/billing'
 import type { FeedbackType, FeedbackStatus, FeedbackPriority } from '@/lib/types'
 
 const CORS_HEADERS = {
@@ -35,6 +36,9 @@ export async function GET(
     if (!auth) return jsonError('Invalid or missing API key', 401)
     if (auth.project.id !== id) return jsonError('Forbidden', 403)
 
+    const feature = await assertFeatureAccess(auth.project.owner_user_id, 'mcp')
+    if (!feature.allowed) return jsonError(feature.message, 403)
+
     const { searchParams } = new URL(request.url)
     const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') ?? '20')))
@@ -46,6 +50,8 @@ export async function GET(
     const search = searchParams.get('search')?.slice(0, 200) ?? null
 
     const admin = await createAdminSupabase()
+    const summary = await getBillingSummaryForUser(auth.project.owner_user_id)
+    const historyCutoff = getHistoryCutoff(summary)
     let query = admin
       .from('feedback')
       .select('*', { count: 'exact' })
@@ -56,6 +62,7 @@ export async function GET(
     if (type && VALID_TYPES.includes(type)) query = query.eq('type', type)
     if (agentName) query = query.eq('agent_name', agentName)
     if (search) query = query.ilike('message', `%${search}%`)
+    if (historyCutoff) query = query.gte('created_at', historyCutoff)
 
     const { data, count, error } = await query.range(offset, offset + limit - 1)
 
@@ -83,6 +90,9 @@ export async function PATCH(
     const auth = await authenticateApiKey(request)
     if (!auth) return jsonError('Invalid or missing API key', 401)
     if (auth.project.id !== id) return jsonError('Forbidden', 403)
+
+    const feature = await assertFeatureAccess(auth.project.owner_user_id, 'mcp')
+    if (!feature.allowed) return jsonError(feature.message, 403)
 
     const { searchParams } = new URL(request.url)
     const feedbackId = searchParams.get('feedback_id')

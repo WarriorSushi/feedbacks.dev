@@ -28,6 +28,14 @@ export async function createProjectViaApi(
     throw new Error(`Failed to create project: ${response.status()} ${JSON.stringify(payload)}`)
   }
 
+  const storageKey = `feedbacks:project-api-key:${payload.id}`
+  await page.evaluate(
+    ({ nextStorageKey, nextApiKey }: { nextStorageKey: string; nextApiKey: string }) => {
+      window.sessionStorage.setItem(nextStorageKey, nextApiKey)
+    },
+    { nextStorageKey: storageKey, nextApiKey: payload.api_key },
+  )
+
   return {
     id: payload.id,
     apiKey: payload.api_key,
@@ -38,6 +46,10 @@ export async function createProjectViaApi(
 
 export function projectInstallPath(projectId: string): string {
   return `/projects/${projectId}?tab=install`
+}
+
+export function projectCustomizePath(projectId: string): string {
+  return `/projects/${projectId}?tab=customize`
 }
 
 export function projectVerifyPath(projectId: string): string {

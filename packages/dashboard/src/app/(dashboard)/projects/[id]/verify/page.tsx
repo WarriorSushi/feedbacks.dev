@@ -24,6 +24,7 @@ export default async function ProjectVerifyPage({
       appOrigin={publicEnv.NEXT_PUBLIC_APP_ORIGIN}
       projectId={project.id}
       projectKey={project.api_key}
+      apiKeyLastFour={(project as Project).api_key_last_four || null}
       projectName={project.name}
       savedConfig={(project as Project).settings?.widget_config || {}}
     />

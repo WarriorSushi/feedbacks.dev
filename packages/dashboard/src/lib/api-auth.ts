@@ -1,16 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
+import { hashProjectApiKey } from '@/lib/project-api-keys'
 import type { Project } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
-
-/** Hash an API key with SHA-256 for storage/lookup */
-async function hashApiKey(key: string): Promise<string> {
-  const encoded = new TextEncoder().encode(key)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encoded)
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
 
 export async function authenticateApiKey(
   request: Request
@@ -20,27 +12,12 @@ export async function authenticateApiKey(
 
   const admin = await createAdminSupabase()
 
-  // Try hash-based lookup first, fall back to plaintext for backward compatibility
-  const keyHash = await hashApiKey(apiKey)
-  let { data: project } = await admin
+  const keyHash = await hashProjectApiKey(apiKey)
+  const { data: project } = await admin
     .from('projects')
     .select('*')
     .eq('api_key_hash', keyHash)
     .single()
-
-  if (!project) {
-    const { data: fallback } = await admin
-      .from('projects')
-      .select('*')
-      .eq('api_key', apiKey)
-      .single()
-    project = fallback
-
-    // Backfill hash if found via plaintext
-    if (project) {
-      await admin.from('projects').update({ api_key_hash: keyHash }).eq('id', project.id)
-    }
-  }
 
   if (!project) return null
   return { project: project as Project }

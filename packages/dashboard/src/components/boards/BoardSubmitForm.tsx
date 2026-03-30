@@ -2,6 +2,8 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import { X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { typeConfig, type BoardSuggestion } from './board-types'
 
@@ -76,57 +78,67 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-slate-950/45 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-slate-950/55 backdrop-blur-sm" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="board-submit-modal-title"
-        className="relative w-full max-w-2xl rounded-3xl border bg-card p-6 shadow-2xl"
+        className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl"
       >
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 border-b border-border/70 px-5 py-5">
           <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              New feedback
+            </p>
             <h2
               id="board-submit-modal-title"
-              className="text-xl font-semibold text-foreground"
+              className="mt-2 text-xl font-semibold text-foreground"
             >
-              Submit feedback
+              Post a request or bug report
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Use the first line as a clear request title, then add context below it.
+            <p className="mt-2 text-sm leading-7 text-foreground/68">
+              Use the first line as a clear title, then add the context the team needs below it.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full border border-border px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="Close"
           >
-            Close
+            <X className="h-4 w-4" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {showTypes.map((entry) => (
-              <button
-                key={entry}
-                type="button"
-                onClick={() => setType(entry)}
-                className={cn(
-                  'rounded-full border px-3 py-1.5 text-sm transition',
-                  type === entry
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border text-muted-foreground hover:border-border/80',
-                )}
-              >
-                {typeConfig[entry]?.label || entry}
-              </button>
-            ))}
+
+        <form onSubmit={handleSubmit} className="space-y-5 p-5">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Request type
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {showTypes.map((entry) => (
+                <button
+                  key={entry}
+                  type="button"
+                  onClick={() => setType(entry)}
+                  className={cn(
+                    'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+                    type === entry
+                      ? 'border-foreground bg-foreground text-background shadow-sm'
+                      : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground',
+                  )}
+                >
+                  {typeConfig[entry]?.label || entry}
+                </button>
+              ))}
+            </div>
           </div>
 
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
             aria-label="Your feedback"
-            rows={5}
-            className="min-h-[140px] w-full rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary focus:bg-card"
+            rows={6}
+            className="min-h-[160px] w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary"
             placeholder={'Faster screenshot capture in onboarding\nThe first screenshot step feels slower than the rest of the flow...'}
             required
             minLength={5}
@@ -140,7 +152,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
               onChange={(event) => setEmail(event.target.value)}
               aria-label="Email (optional)"
               placeholder="Email (optional)"
-              className="h-11 rounded-xl border border-border bg-card px-3 text-sm text-foreground"
+              className="h-11 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
             />
             <input
               value={hp}
@@ -149,19 +161,19 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
               tabIndex={-1}
               autoComplete="off"
               placeholder="Leave this empty"
-              className="h-11 rounded-xl border border-border bg-card px-3 text-sm text-foreground"
+              className="h-11 rounded-lg border border-border bg-background px-3 text-sm text-foreground"
             />
           </div>
 
           {suggestions.length > 0 && (
-            <div className="rounded-2xl border border-border bg-muted/50 p-4">
-              <p className="text-sm font-medium text-foreground">Possibly related requests</p>
+            <div className="rounded-xl border border-border/70 bg-background px-4 py-4">
+              <p className="text-sm font-semibold text-foreground">Possibly related requests</p>
               <div className="mt-3 space-y-2">
                 {suggestions.map((suggestion) => (
                   <Link
                     key={suggestion.id}
                     href={`#feedback-${suggestion.id}`}
-                    className="block rounded-xl border border-border bg-card p-3 hover:border-primary/30"
+                    className="block rounded-lg border border-border bg-card px-3 py-3 transition-colors hover:border-foreground/20"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm font-medium text-foreground">{suggestion.title}</p>
@@ -170,7 +182,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
                       </span>
                     </div>
                     {suggestion.description && (
-                      <p className="mt-1 text-sm text-muted-foreground">
+                      <p className="mt-2 text-sm leading-6 text-foreground/68">
                         {suggestion.description}
                       </p>
                     )}
@@ -182,24 +194,17 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <div className="flex flex-wrap gap-3">
-            <button
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
               type="submit"
               disabled={submitting || message.trim().length < 5}
-              className={cn(
-                'rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90',
-                (submitting || message.trim().length < 5) && 'cursor-not-allowed opacity-60',
-              )}
+              className="px-4 font-semibold"
             >
               {submitting ? 'Submitting...' : 'Submit feedback'}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted"
-            >
+            </Button>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       </div>

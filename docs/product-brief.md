@@ -109,4 +109,8 @@ The rebuild is successful if a new user can:
 
 ## Strategic note
 
-The first version should win on trust and usability, not on having the largest feature list.
+The product still has to win on trust and usability, but the current release target is no longer a narrow MVP.
+The launch target is a full-surface paid release with:
+- Free and Pro tiers
+- Dodo Payments for billing
+- public boards, integrations, and AI/MCP treated as real product surfaces rather than future ideas

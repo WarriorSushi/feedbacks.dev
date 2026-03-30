@@ -1,6 +1,10 @@
 # MVP Scope
 
-## MVP objective
+This file is retained for planning continuity, but it is no longer the active release target.
+The current target is a full-surface paid launch with Free and Pro tiers, Dodo Payments billing,
+public boards, and AI / MCP access treated as real release scope.
+
+## Original MVP objective
 
 Ship a version of `feedbacks.dev` that proves four things:
 
@@ -8,6 +12,14 @@ Ship a version of `feedbacks.dev` that proves four things:
 2. feedback quality is high enough to be useful
 3. the dashboard helps with triage
 4. teams are willing to keep it in their workflow
+
+## What the paid launch now adds on top
+
+- public boards and directory
+- billing and entitlement enforcement
+- webhook-backed paid-plan truth
+- AI / MCP access on Pro
+- account-level notification and billing settings
 
 ## Must-have scope
 
@@ -26,7 +38,7 @@ Ship a version of `feedbacks.dev` that proves four things:
 - detail view
 - basic notifications or webhook integration
 
-## Deliberately excluded from first release
+## Deliberately excluded from the original first release
 
 - public roadmap boards
 - full-blown feedback voting systems

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { authenticateApiKey } from '@/lib/api-auth'
+import { assertCanReceiveFeedback, assertFeatureAccess, getBillingSummaryForUser, getHistoryCutoff, incrementFeedbackUsage } from '@/lib/billing'
+import { notifyProjectOwnerOfNewFeedback } from '@/lib/notifications'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { deliverWebhooks } from '@/lib/webhook-delivery'
 import type { FeedbackType, FeedbackPriority, FeedbackStatus, StructuredFeedbackData } from '@/lib/types'
@@ -37,6 +39,13 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { project } = auth
+    const feature = await assertFeatureAccess(project.owner_user_id, 'mcp')
+    if (!feature.allowed) return jsonError(feature.message, 403)
+
+    const entitlement = await assertCanReceiveFeedback(project.owner_user_id)
+    if (!entitlement.allowed) {
+      return jsonError(entitlement.message, 403)
+    }
 
     // Validate message
     const message = body.message?.trim()
@@ -102,6 +111,8 @@ export async function POST(request: NextRequest) {
       return jsonError('Failed to save feedback', 500)
     }
 
+    await incrementFeedbackUsage(project.owner_user_id)
+
     // Webhook delivery (best-effort)
     // NOTE: In Vercel production, use waitUntil() for reliable background execution
     if (project.webhooks) {
@@ -111,6 +122,18 @@ export async function POST(request: NextRequest) {
         { id: project.id, name: project.name }
       ).catch(() => {})
     }
+
+    void notifyProjectOwnerOfNewFeedback(
+      { id: project.id, name: project.name, owner_user_id: project.owner_user_id },
+      {
+        message: feedbackRow.message,
+        type: feedbackRow.type,
+        email: feedbackRow.email,
+        url: feedbackRow.url,
+        rating: feedbackRow.rating,
+        created_at: feedbackRow.created_at,
+      },
+    )
 
     return json({ success: true, id: feedbackId }, 201)
   } catch (err) {
@@ -125,6 +148,8 @@ export async function GET(request: NextRequest) {
     if (!auth) return jsonError('Invalid or missing API key', 401)
 
     const { project } = auth
+    const feature = await assertFeatureAccess(project.owner_user_id, 'mcp')
+    if (!feature.allowed) return jsonError(feature.message, 403)
     const { searchParams } = new URL(request.url)
 
     const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
@@ -137,6 +162,8 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')?.slice(0, 200) ?? null
 
     const admin = await createAdminSupabase()
+    const summary = await getBillingSummaryForUser(project.owner_user_id)
+    const historyCutoff = getHistoryCutoff(summary)
     let query = admin
       .from('feedback')
       .select('*', { count: 'exact' })
@@ -147,6 +174,7 @@ export async function GET(request: NextRequest) {
     if (type && VALID_TYPES.includes(type)) query = query.eq('type', type)
     if (agentName) query = query.eq('agent_name', agentName)
     if (search) query = query.ilike('message', `%${search}%`)
+    if (historyCutoff) query = query.gte('created_at', historyCutoff)
 
     const { data, count, error } = await query.range(offset, offset + limit - 1)
 

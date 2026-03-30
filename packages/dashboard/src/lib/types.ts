@@ -1,23 +1,34 @@
 import type {
+  BillingStatus,
+  EntitlementSet,
   FeedbackPriority,
   FeedbackStatus,
   FeedbackType,
+  PlanTier,
+  QuotaErrorCode,
   SavedWidgetConfig,
+  UsageSnapshot,
 } from '@feedbacks/shared'
 import type { BoardAnnouncement, BoardBranding, BoardVisibility } from '@/lib/public-board'
 
 export type {
+  BillingStatus,
+  EntitlementSet,
   FeedbackPriority,
   FeedbackStatus,
   FeedbackType,
+  PlanTier,
+  QuotaErrorCode,
   SavedWidgetConfig,
+  UsageSnapshot,
 } from '@feedbacks/shared'
 
 export interface Project {
   id: string
   owner_user_id: string
   name: string
-  api_key: string
+  api_key: string | null
+  api_key_last_four: string | null
   domain: string | null
   webhooks: WebhookConfig
   settings: ProjectSettings
@@ -71,6 +82,9 @@ export interface WebhookRules {
 export interface NotificationSettings {
   email?: boolean
   emailAddress?: string
+  dailyDigest?: boolean
+  webhookFailures?: boolean
+  billingFailures?: boolean
 }
 
 export interface Feedback {
@@ -228,4 +242,28 @@ export interface UserSettings {
   notification_settings: NotificationSettings
   created_at: string
   updated_at: string
+}
+
+export interface BillingAccount {
+  user_id: string
+  plan_tier: PlanTier
+  billing_status: BillingStatus
+  dodo_customer_id: string | null
+  dodo_subscription_id: string | null
+  dodo_product_id: string | null
+  billing_email: string | null
+  current_period_start: string | null
+  current_period_end: string | null
+  cancel_at_period_end: boolean
+  last_event_id: string | null
+  last_event_type: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface BillingSummary {
+  account: BillingAccount
+  entitlements: EntitlementSet
+  usage: UsageSnapshot
+  billingEnabled: boolean
 }

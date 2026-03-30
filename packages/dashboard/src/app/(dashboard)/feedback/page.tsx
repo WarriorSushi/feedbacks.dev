@@ -4,6 +4,7 @@ import * as React from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase-browser'
+import { getHistoryWindowStart } from '@feedbacks/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -18,7 +19,7 @@ import {
   statusConfig as globalStatusConfig,
 } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
-import type { Feedback, FeedbackStatus, FeedbackType } from '@/lib/types'
+import type { BillingSummary, Feedback, FeedbackStatus, FeedbackType } from '@/lib/types'
 import {
   Search,
   ChevronLeft,
@@ -64,6 +65,7 @@ function FeedbackInboxInner() {
 
   const [feedbacks, setFeedbacks] = React.useState<Feedback[]>([])
   const [projects, setProjects] = React.useState<ProjectFilterOption[]>([])
+  const [billingSummary, setBillingSummary] = React.useState<BillingSummary | null>(null)
   const [loading, setLoading] = React.useState(true)
   const [total, setTotal] = React.useState(0)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
@@ -99,6 +101,21 @@ function FeedbackInboxInner() {
     fetchProjects()
   }, [supabase])
 
+  React.useEffect(() => {
+    const fetchBilling = async () => {
+      try {
+        const response = await fetch('/api/billing/sync', { cache: 'no-store' })
+        if (!response.ok) return
+        const data = await response.json()
+        setBillingSummary(data)
+      } catch {
+        // keep inbox usable even if billing lookup fails
+      }
+    }
+
+    void fetchBilling()
+  }, [])
+
   const fetchFeedback = React.useCallback(async () => {
     setLoading(true)
     let query = supabase
@@ -114,13 +131,15 @@ function FeedbackInboxInner() {
     if (agent) query = query.not('agent_name', 'is', null)
     if (projectId) query = query.eq('project_id', projectId)
     if (tag) query = query.contains('tags', [tag])
+    const historyCutoff = billingSummary ? getHistoryWindowStart(billingSummary.entitlements) : null
+    if (historyCutoff) query = query.gte('created_at', historyCutoff)
 
     const { data, count } = await query
     setFeedbacks((data as Feedback[]) || [])
     setTotal(count || 0)
     setSelected(new Set())
     setLoading(false)
-  }, [supabase, page, projectId, status, tag, type, search, agent])
+  }, [supabase, page, projectId, status, tag, type, search, agent, billingSummary])
 
   React.useEffect(() => {
     fetchFeedback()
@@ -238,6 +257,11 @@ function FeedbackInboxInner() {
               </>
             )}
           </p>
+          {billingSummary?.entitlements.historyDays && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Free plan view limited to the most recent {billingSummary.entitlements.historyDays} days.
+            </p>
+          )}
         </div>
       </div>
 

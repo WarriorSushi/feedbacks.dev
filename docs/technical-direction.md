@@ -35,6 +35,7 @@ Recommended high-level shape:
 - one canonical config model for widget generation
 - one canonical snippet generator shared across marketing and dashboard
 - one clear saved-config representation per project
+- one canonical plan / entitlement matrix shared across billing, marketing, dashboard UI, and server enforcement
 - avoid giant all-in-one setup components
 
 ## Suggested component boundaries
@@ -51,6 +52,8 @@ Recommended high-level shape:
 - performance matters on both widget and dashboard
 - security matters on all public submission paths
 - docs and implementation must stay synchronized
+- paid-plan truth must be server-driven and webhook-authoritative
+- billing provider integration must remain isolated from browser code except for hosted redirects
 
 ## Archived project note
 

@@ -1,0 +1,19 @@
+{
+  "type": "subscription.active",
+  "data": {
+    "subscription_id": "sub_test_active",
+    "product_id": "prod_pro_monthly",
+    "status": "active",
+    "metadata": {
+      "user_id": "00000000-0000-0000-0000-000000000001"
+    },
+    "customer": {
+      "customer_id": "cus_test_active",
+      "email": "owner@example.com",
+      "name": "Owner"
+    },
+    "previous_billing_date": "2026-03-01T00:00:00Z",
+    "next_billing_date": "2026-04-01T00:00:00Z",
+    "cancel_at_next_billing_date": false
+  }
+}

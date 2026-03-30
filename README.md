@@ -4,7 +4,7 @@
 
 ### The feedback stack for developers who ship.
 
-Embeddable widget + smart dashboard + public voting boards + AI agent API — everything you need to collect, organize, and act on user feedback.
+Embeddable widget + smart dashboard + public voting boards + AI agent API — a full-surface feedback product for teams that want fast setup without giving up operational depth.
 
 [![FSL-1.1-MIT](https://img.shields.io/badge/license-FSL--1.1--MIT-blue?style=flat-square)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/WarriorSushi/feedbacks.dev-2026/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/WarriorSushi/feedbacks.dev-2026/actions)
@@ -63,7 +63,7 @@ Each board gets its own URL at `feedbacks.dev/p/your-product` with:
 Discover what other products are building. Browse public boards, filter by category, find inspiration.
 
 ### AI Agent API
-Your AI agents can file bugs and query feedback programmatically. Built-in MCP server for Claude, plus a REST API that works with any agent framework.
+Your AI agents can file bugs and query feedback programmatically. Built-in MCP server for Claude plus a REST API for paid-plan automation flows.
 
 ```bash
 # MCP Server (for Claude Code, Cursor, etc.)
@@ -102,7 +102,7 @@ No tracking scripts. No cookies. No third-party analytics. Your users' data stay
 
 ### Cloud (Fastest)
 
-Go to [feedbacks.dev](https://feedbacks.dev), create an account, and install the widget in your app. Free tier available.
+Go to [feedbacks.dev](https://feedbacks.dev), create an account, and install the widget in your app. Free and Pro plans are available, with billing handled by Dodo Payments.
 
 ### Self-Hosted
 

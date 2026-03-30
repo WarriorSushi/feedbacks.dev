@@ -1,7 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import { cn } from '@/lib/utils'
+import { X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { ReportTarget } from './board-types'
 
 interface BoardReportModalProps {
@@ -47,44 +48,51 @@ export function BoardReportModal({ slug, target, onClose }: BoardReportModalProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-slate-950/45 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-slate-950/55 backdrop-blur-sm" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="board-report-modal-title"
-        className="relative w-full max-w-xl rounded-3xl border bg-card p-6 shadow-2xl"
+        className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl"
       >
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-4 border-b border-border/70 px-5 py-5">
           <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              Moderation
+            </p>
             <h2
               id="board-report-modal-title"
-              className="text-xl font-semibold text-foreground"
+              className="mt-2 text-xl font-semibold text-foreground"
             >
               {target.type === 'board' ? 'Report board' : 'Report post'}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Reports stay inside the team workflow so they can be reviewed with full context.
+            <p className="mt-2 text-sm leading-7 text-foreground/68">
+              Reports stay inside the team workflow so the board owner can review them with context.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full border border-border px-3 py-1 text-sm text-muted-foreground hover:bg-muted"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="Close"
           >
-            Close
+            <X className="h-4 w-4" />
           </button>
         </div>
+
         {success ? (
-          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            Thanks. The report has been recorded for review.
+          <div className="p-5">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              Thanks. The report has been recorded for review.
+            </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 p-5">
             <input
               value={reason}
               onChange={(event) => setReason(event.target.value)}
               aria-label="Report reason"
               placeholder="What needs review?"
-              className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground"
+              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
               maxLength={160}
               required
             />
@@ -93,7 +101,7 @@ export function BoardReportModal({ slug, target, onClose }: BoardReportModalProp
               onChange={(event) => setDetails(event.target.value)}
               aria-label="Report details"
               rows={4}
-              className="min-h-[120px] w-full rounded-2xl border border-border bg-muted/30 px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary focus:bg-card"
+              className="min-h-[128px] w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary"
               placeholder="Optional details that help the team review this faster."
               maxLength={2000}
             />
@@ -103,27 +111,20 @@ export function BoardReportModal({ slug, target, onClose }: BoardReportModalProp
               onChange={(event) => setEmail(event.target.value)}
               aria-label="Email (optional)"
               placeholder="Email (optional)"
-              className="h-11 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground"
+              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
             />
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <div className="flex flex-wrap gap-3">
-              <button
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
                 type="submit"
                 disabled={submitting || reason.trim().length === 0}
-                className={cn(
-                  'rounded-xl bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition hover:opacity-90',
-                  (submitting || reason.trim().length === 0) && 'cursor-not-allowed opacity-60',
-                )}
+                className="px-4 font-semibold"
               >
                 {submitting ? 'Saving...' : 'Submit report'}
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted"
-              >
+              </Button>
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         )}

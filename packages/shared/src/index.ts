@@ -1,4 +1,5 @@
 export * from './widget-install'
+export * from './plans'
 
 export type FeedbackType = 'bug' | 'idea' | 'praise' | 'question'
 export type FeedbackStatus = 'new' | 'reviewed' | 'planned' | 'in_progress' | 'closed'

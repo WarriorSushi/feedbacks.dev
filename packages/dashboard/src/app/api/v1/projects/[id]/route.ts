@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { authenticateApiKey } from '@/lib/api-auth'
+import { assertFeatureAccess } from '@/lib/billing'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -29,6 +30,9 @@ export async function GET(
     const auth = await authenticateApiKey(request)
     if (!auth) return jsonError('Invalid or missing API key', 401)
     if (auth.project.id !== id) return jsonError('Forbidden', 403)
+
+    const feature = await assertFeatureAccess(auth.project.owner_user_id, 'mcp')
+    if (!feature.allowed) return jsonError(feature.message, 403)
 
     const admin = await createAdminSupabase()
 

@@ -1,6 +1,6 @@
 'use client'
 
-import * as React from 'react'
+import { MessageSquareQuote, ShieldAlert } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   typeConfig,
@@ -29,15 +29,18 @@ function UpvoteButton({
       onClick={onClick}
       disabled={loading}
       className={cn(
-        'flex min-w-[64px] flex-col items-center justify-center rounded-xl border px-3 py-2 text-sm transition',
+        'flex min-w-[78px] shrink-0 flex-col items-center justify-center rounded-xl border border-border/80 bg-background px-3 py-3 text-sm shadow-sm transition-colors',
         voted
-          ? 'border-primary bg-primary/10 text-primary'
-          : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-primary',
+          ? 'border-primary/25 bg-primary/10 text-primary'
+          : 'text-foreground/72 hover:border-primary/25 hover:text-foreground',
         loading && 'cursor-not-allowed opacity-60',
       )}
     >
-      <span className="text-lg leading-none">&uarr;</span>
-      <span className="font-semibold tabular-nums">{count}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        Votes
+      </span>
+      <span className="mt-2 text-xl leading-none">&uarr;</span>
+      <span className="mt-1 text-base font-semibold tabular-nums text-foreground">{count}</span>
     </button>
   )
 }
@@ -80,34 +83,34 @@ export function BoardFeedbackCard({
   const type = item.type ? typeConfig[item.type] : null
   const status = statusConfig[item.status] || statusConfig.new
   const details = getFullDescription(item.message)
+  const replyCount = comments.length
 
   return (
     <article
       id={`feedback-${item.id}`}
       className={cn(
-        'rounded-3xl border bg-card p-5 shadow-sm transition',
-        isExpanded && 'border-primary/20 shadow-md',
+        'rounded-2xl border border-border/80 bg-card px-4 py-4 shadow-sm transition-colors',
+        isExpanded ? 'border-foreground/20' : 'hover:border-border',
       )}
     >
-      <div className="flex gap-4">
+      <div className="flex items-start gap-4">
         <UpvoteButton count={item.vote_count} voted={voted} onClick={onVote} loading={voting} />
+
         <div className="min-w-0 flex-1">
-          <button onClick={onToggle} className="text-left">
-            <h3 className="text-lg font-semibold leading-snug text-foreground">
-              {getTitle(item.message)}
-            </h3>
+          <button onClick={onToggle} className="w-full text-left">
+            <h3 className="text-lg font-semibold leading-snug text-foreground">{getTitle(item.message)}</h3>
+            {!isExpanded && getDescription(item.message) && (
+              <p className="mt-2 max-w-3xl text-sm leading-7 text-foreground/68">
+                {getDescription(item.message)}
+              </p>
+            )}
           </button>
-          {!isExpanded && getDescription(item.message) && (
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {getDescription(item.message)}
-            </p>
-          )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {type && (
               <span
                 className={cn(
-                  'inline-flex rounded-full border px-2.5 py-1 text-xs font-medium',
+                  'inline-flex rounded-md border px-2.5 py-1 text-xs font-medium',
                   type.tone,
                 )}
               >
@@ -116,31 +119,41 @@ export function BoardFeedbackCard({
             )}
             <span
               className={cn(
-                'inline-flex rounded-full px-2.5 py-1 text-xs font-medium',
+                'inline-flex rounded-md border px-2.5 py-1 text-xs font-medium',
                 status.tone,
               )}
             >
               {status.label}
             </span>
+            {replyCount > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                <MessageSquareQuote className="h-3.5 w-3.5" />
+                {replyCount} {replyCount === 1 ? 'team reply' : 'team replies'}
+              </span>
+            )}
             <span className="text-xs text-muted-foreground">{relativeTime(item.created_at)}</span>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
             <button
               onClick={onToggle}
-              className="text-xs font-medium text-muted-foreground hover:text-foreground"
+              className="font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              {isExpanded ? 'Collapse' : 'Details'}
+              {isExpanded ? 'Collapse thread' : 'Details'}
             </button>
             <button
               onClick={onOpenReport}
-              className="text-xs font-medium text-muted-foreground hover:text-foreground"
+              className="inline-flex items-center gap-1.5 font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
+              <ShieldAlert className="h-4 w-4" />
               Report post
             </button>
           </div>
 
           {isExpanded && (
-            <div className="mt-4 space-y-4 border-t pt-4">
+            <div className="mt-4 space-y-4 border-t border-border/70 pt-4">
               {details && (
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
+                <p className="whitespace-pre-wrap text-sm leading-7 text-foreground/80">
                   {details}
                 </p>
               )}
@@ -150,17 +163,17 @@ export function BoardFeedbackCard({
                   {comments.map((comment) => (
                     <div
                       key={comment.id}
-                      className="rounded-2xl border border-border bg-muted/50 p-4"
+                      className="rounded-xl border border-border/70 bg-background px-4 py-4"
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                           Team reply
                         </p>
                         <span className="text-xs text-muted-foreground">
                           {relativeTime(comment.created_at)}
                         </span>
                       </div>
-                      <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
+                      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-foreground/80">
                         {comment.content}
                       </p>
                     </div>
@@ -169,13 +182,13 @@ export function BoardFeedbackCard({
               )}
 
               {canModerate && (
-                <div className="space-y-3 rounded-2xl border border-border bg-muted/40 p-4">
+                <div className="space-y-3 rounded-xl border border-border/70 bg-background px-4 py-4">
                   <div className="flex flex-wrap items-center gap-3">
                     <select
                       aria-label="Update status"
                       value={item.status}
                       onChange={(event) => onStatusChange(event.target.value)}
-                      className="h-9 rounded-md border border-border bg-card px-3 text-sm"
+                      className="h-9 rounded-lg border border-border bg-card px-3 text-sm"
                     >
                       {Object.entries(statusConfig).map(([value, config]) => (
                         <option key={value} value={value}>
@@ -185,7 +198,7 @@ export function BoardFeedbackCard({
                     </select>
                     <button
                       onClick={onHide}
-                      className="text-sm font-medium text-destructive hover:text-destructive/80"
+                      className="text-sm font-medium text-destructive transition-colors hover:text-destructive/80"
                     >
                       Hide from board
                     </button>
@@ -196,14 +209,14 @@ export function BoardFeedbackCard({
                     onChange={(event) => onReplyDraftChange(event.target.value)}
                     aria-label="Public reply"
                     rows={3}
-                    className="min-h-[96px] w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
+                    className="min-h-[112px] w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm"
                     placeholder="Share a public update or clarify the plan."
                   />
                   <button
                     onClick={onReplySubmit}
                     disabled={busy || replyDraft.trim().length === 0}
                     className={cn(
-                      'rounded-xl bg-foreground px-4 py-2 text-sm font-medium text-background transition hover:opacity-90',
+                      'rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background transition hover:opacity-90',
                       (busy || replyDraft.trim().length === 0) && 'cursor-not-allowed opacity-60',
                     )}
                   >

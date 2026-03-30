@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
+import { assertCanReceiveFeedback, incrementFeedbackUsage } from '@/lib/billing'
+import { notifyProjectOwnerOfNewFeedback } from '@/lib/notifications'
+import { hashProjectApiKey } from '@/lib/project-api-keys'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { enqueueWebhookJobs, processWebhookJobs } from '@/lib/webhook-delivery'
 import type { FeedbackType, FeedbackPriority, Project } from '@/lib/types'
@@ -22,15 +25,6 @@ const ALLOWED_ATTACHMENT_TYPES = ['image/png', 'image/jpeg', 'application/pdf']
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status, headers: CORS_HEADERS })
-}
-
-/** Hash an API key with SHA-256 for storage/lookup */
-async function hashApiKey(key: string): Promise<string> {
-  const encoded = new TextEncoder().encode(key)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encoded)
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
 }
 
 async function verifyCaptcha(provider: 'turnstile' | 'hcaptcha', token: string): Promise<boolean> {
@@ -123,29 +117,25 @@ export async function POST(request: NextRequest) {
 
     const admin = await createAdminSupabase()
 
-    // Hash the incoming API key and compare against stored hash
-    const keyHash = await hashApiKey(apiKey)
-    let { data: project, error: projectErr } = await admin
+    const keyHash = await hashProjectApiKey(apiKey)
+    const { data: project } = await admin
       .from('projects')
       .select('id, name, webhooks, settings, owner_user_id')
       .eq('api_key_hash', keyHash)
       .single()
 
-    // Fall back to plaintext lookup for backward compatibility
-    if (projectErr || !project) {
-      const { data: fallback } = await admin
-        .from('projects')
-        .select('id, name, webhooks, settings, owner_user_id')
-        .eq('api_key', apiKey)
-        .single()
-      project = fallback
-      // Backfill hash
-      if (project) {
-        await admin.from('projects').update({ api_key_hash: keyHash }).eq('id', project.id)
-      }
-    }
-
     if (!project) return jsonError('Invalid API key', 401)
+
+    const entitlement = await assertCanReceiveFeedback(project.owner_user_id)
+    if (!entitlement.allowed) {
+      return NextResponse.json(
+        {
+          error: entitlement.message,
+          code: entitlement.code,
+        },
+        { status: 403, headers: CORS_HEADERS },
+      )
+    }
 
     // Validate message
     const message = fields.message?.trim()
@@ -289,6 +279,8 @@ export async function POST(request: NextRequest) {
       return jsonError('Failed to save feedback', 500)
     }
 
+    await incrementFeedbackUsage(project.owner_user_id)
+
     // Queue webhook delivery so retries survive the request lifecycle.
     if (project.webhooks) {
       enqueueWebhookJobs(
@@ -303,6 +295,18 @@ export async function POST(request: NextRequest) {
         })
         .catch(() => {})
     }
+
+    void notifyProjectOwnerOfNewFeedback(
+      { id: project.id, name: project.name, owner_user_id: project.owner_user_id },
+      {
+        message: feedbackRow.message,
+        type: feedbackRow.type,
+        email: feedbackRow.email,
+        url: feedbackRow.url,
+        rating: feedbackRow.rating,
+        created_at: feedbackRow.created_at,
+      },
+    )
 
     return NextResponse.json(
       { success: true, id: feedbackId },

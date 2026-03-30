@@ -19,9 +19,9 @@ export function BoardFeedbackList({
 }: BoardFeedbackListProps) {
   if (isEmpty) {
     return (
-      <div className="rounded-3xl border border-dashed bg-card/90 p-10 text-center shadow-sm">
+      <div className="rounded-2xl border border-dashed border-border/80 bg-card px-6 py-12 text-center shadow-sm">
         <h2 className="text-xl font-semibold text-foreground">{emptyTitle}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-3 text-sm leading-7 text-foreground/68">
           {searchQuery.trim()
             ? `No results for "${searchQuery}". Try another search or clear the filters.`
             : emptyDescription}
@@ -30,5 +30,5 @@ export function BoardFeedbackList({
     )
   }
 
-  return <div className="space-y-4">{children}</div>
+  return <div className="space-y-3">{children}</div>
 }

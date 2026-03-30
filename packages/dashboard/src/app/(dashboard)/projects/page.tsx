@@ -1,4 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase-server'
+import { getCurrentUserBillingSummary } from '@/lib/billing'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +13,7 @@ export default async function ProjectsPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  const billingSummary = await getCurrentUserBillingSummary()
 
   const { data: projects } = await supabase
     .from('projects')
@@ -33,13 +35,40 @@ export default async function ProjectsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Projects</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Projects</h1>
+          {billingSummary && (
+            <p className="mt-1 text-sm text-muted-foreground">
+              {billingSummary.entitlements.label} plan · {billingSummary.usage.projectCount}
+              {billingSummary.entitlements.projectLimit
+                ? ` of ${billingSummary.entitlements.projectLimit} projects used`
+                : ' projects'}
+            </p>
+          )}
+        </div>
         <Link href="/projects/new">
           <Button>
             <Plus className="mr-2 h-4 w-4" /> New Project
           </Button>
         </Link>
       </div>
+
+      {billingSummary?.entitlements.projectLimit &&
+        billingSummary.usage.projectCount >= billingSummary.entitlements.projectLimit && (
+          <Card className="border-primary/30 bg-primary/[0.04]">
+            <CardContent className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium">Free plan project limit reached</p>
+                <p className="text-sm text-muted-foreground">
+                  Upgrade to Pro to create more projects without deleting existing ones.
+                </p>
+              </div>
+              <Link href="/billing">
+                <Button variant="outline">Open Billing</Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
 
       {!projects || projects.length === 0 ? (
         <Card>
@@ -72,7 +101,7 @@ export default async function ProjectsPage() {
                     <div className="flex items-center gap-2 text-sm">
                       <Key className="h-3.5 w-3.5 text-muted-foreground" />
                       <code className="rounded bg-muted px-1.5 py-0.5 text-xs">
-                        {project.api_key.slice(0, 8)}••••••••
+                        {project.api_key_last_four ? `••••${project.api_key_last_four}` : 'Hidden'}
                       </code>
                     </div>
                     <div className="flex items-center justify-between text-sm">

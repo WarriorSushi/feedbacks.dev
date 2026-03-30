@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   FolderOpen,
+  CreditCard,
   Settings,
   LogOut,
   Moon,
@@ -31,6 +32,7 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/feedback',  label: 'Feedback',  icon: MessageSquare },
   { href: '/projects',  label: 'Projects',  icon: FolderOpen },
+  { href: '/billing',   label: 'Billing',   icon: CreditCard },
   { href: '/settings',  label: 'Settings',  icon: Settings },
 ]
 

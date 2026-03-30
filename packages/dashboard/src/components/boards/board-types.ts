@@ -54,18 +54,18 @@ export type SortMode = 'votes' | 'newest' | 'status'
 export type FilterType = 'all' | 'idea' | 'bug' | 'praise' | 'question'
 
 export const typeConfig: Record<string, { label: string; tone: string }> = {
-  idea: { label: 'Feature request', tone: 'border-sky-200 bg-sky-50 text-sky-700' },
-  bug: { label: 'Bug', tone: 'border-rose-200 bg-rose-50 text-rose-700' },
-  praise: { label: 'Praise', tone: 'border-emerald-200 bg-emerald-50 text-emerald-700' },
-  question: { label: 'Question', tone: 'border-amber-200 bg-amber-50 text-amber-800' },
+  idea: { label: 'Feature request', tone: 'border-sky-200/80 bg-sky-50/80 text-sky-800' },
+  bug: { label: 'Bug', tone: 'border-rose-200/80 bg-rose-50/80 text-rose-800' },
+  praise: { label: 'Praise', tone: 'border-emerald-200/80 bg-emerald-50/80 text-emerald-800' },
+  question: { label: 'Question', tone: 'border-amber-200/80 bg-amber-50/80 text-amber-900' },
 }
 
 export const statusConfig: Record<string, { label: string; tone: string }> = {
-  new: { label: 'New', tone: 'bg-slate-100 text-slate-700' },
-  reviewed: { label: 'Under review', tone: 'bg-amber-100 text-amber-800' },
-  planned: { label: 'Planned', tone: 'bg-violet-100 text-violet-700' },
-  in_progress: { label: 'In progress', tone: 'bg-orange-100 text-orange-800' },
-  closed: { label: 'Shipped', tone: 'bg-emerald-100 text-emerald-700' },
+  new: { label: 'New', tone: 'border-slate-200/80 bg-slate-100/80 text-slate-700' },
+  reviewed: { label: 'Under review', tone: 'border-amber-200/80 bg-amber-100/80 text-amber-900' },
+  planned: { label: 'Planned', tone: 'border-violet-200/80 bg-violet-100/80 text-violet-800' },
+  in_progress: { label: 'In progress', tone: 'border-orange-200/80 bg-orange-100/80 text-orange-900' },
+  closed: { label: 'Shipped', tone: 'border-emerald-200/80 bg-emerald-100/80 text-emerald-800' },
 }
 
 export function getTitle(message: string): string {

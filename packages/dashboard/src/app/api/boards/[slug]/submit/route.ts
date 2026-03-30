@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
+import { assertCanReceiveFeedback, incrementFeedbackUsage } from '@/lib/billing'
+import { notifyProjectOwnerOfNewFeedback } from '@/lib/notifications'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { buildSuggestionEntries, isLikelySpam, normalizeBoardMessageTitle } from '@/lib/board-submissions'
 import { isBoardPubliclyAccessible } from '@/lib/public-board'
@@ -38,6 +40,20 @@ export async function POST(
 
   const body = await req.json()
   const { message, type, email, hp } = body
+
+  const { data: projectOwner } = await admin
+    .from('projects')
+    .select('owner_user_id')
+    .eq('id', board.project_id)
+    .single()
+
+  const entitlement = projectOwner
+    ? await assertCanReceiveFeedback(projectOwner.owner_user_id)
+    : null
+
+  if (entitlement && !entitlement.allowed) {
+    return NextResponse.json({ error: entitlement.message, code: entitlement.code }, { status: 403 })
+  }
 
   if (typeof hp === 'string' && hp.trim().length > 0) {
     return NextResponse.json({ error: 'Submission rejected' }, { status: 400 })
@@ -107,6 +123,21 @@ export async function POST(
 
   if (error) {
     return NextResponse.json({ error: 'Failed to submit' }, { status: 500 })
+  }
+
+  if (projectOwner?.owner_user_id) {
+    await incrementFeedbackUsage(projectOwner.owner_user_id)
+    void notifyProjectOwnerOfNewFeedback(
+      { id: board.project_id, name: board.title || board.display_name || slug, owner_user_id: projectOwner.owner_user_id },
+      {
+        message: message.trim(),
+        type: feedbackType,
+        email: trimmedEmail,
+        url: null,
+        rating: null,
+        created_at: new Date().toISOString(),
+      },
+    )
   }
 
   return NextResponse.json({ id: feedback.id, success: true, suggestions })

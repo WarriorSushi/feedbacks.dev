@@ -9,14 +9,16 @@ export default defineConfig({
   testMatch: /.*\.spec\.ts/,
   outputDir: './output/playwright',
   globalSetup: './packages/dashboard/tests/e2e/global.setup.ts',
-  timeout: 60_000,
+  timeout: 90_000,
   expect: {
-    timeout: 10_000,
+    timeout: 20_000,
   },
   fullyParallel: false,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // The suite seeds shared backend state and pays first-compile costs in Next dev,
+  // so serial workers keep local runs aligned with CI and reduce false timeouts.
+  workers: 1,
   reporter: process.env.CI
     ? [['list'], ['html', { open: 'never' }]]
     : [['line']],

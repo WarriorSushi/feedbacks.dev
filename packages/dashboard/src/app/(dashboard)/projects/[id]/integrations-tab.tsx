@@ -1,7 +1,9 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import type {
+  BillingSummary,
   FeedbackType,
   GitHubEndpoint,
   Project,
@@ -304,19 +306,56 @@ export function IntegrationsTab({ project }: IntegrationsTabProps) {
   const [health, setHealth] = React.useState<WebhookEndpointState[]>(() =>
     listWebhookEndpointStates(normalizeWebhookConfig(project.webhooks)),
   )
+  const [billingSummary, setBillingSummary] = React.useState<BillingSummary | null>(null)
   const [loadingOps, setLoadingOps] = React.useState(true)
   const [saving, setSaving] = React.useState(false)
   const [testingKey, setTestingKey] = React.useState<string | null>(null)
   const [resendingId, setResendingId] = React.useState<string | null>(null)
+  const [featureLocked, setFeatureLocked] = React.useState(false)
+  const [lockReason, setLockReason] = React.useState('Upgrade to Pro to use webhook routing, logs, and replay.')
+
+  React.useEffect(() => {
+    const loadBilling = async () => {
+      try {
+        const response = await fetch('/api/billing/sync', { cache: 'no-store' })
+        if (!response.ok) return
+        const data = await response.json()
+        setBillingSummary(data)
+      } catch {
+        // Keep integrations usable even if billing summary is temporarily unavailable.
+      }
+    }
+
+    void loadBilling()
+  }, [])
+
+  const handleLockedResponse = React.useCallback(async (response: Response, fallback: string) => {
+    const payload = await response.json().catch(() => ({ error: fallback }))
+    const message = payload.error || fallback
+
+    if (response.status === 403 && payload.code === 'feature_not_in_plan') {
+      setFeatureLocked(true)
+      setLockReason(message)
+      return { locked: true as const, message }
+    }
+
+    throw new Error(message)
+  }, [])
 
   const loadOperations = React.useCallback(async () => {
     setLoadingOps(true)
     try {
       const response = await fetch(`/api/projects/${project.id}/webhooks/deliveries`, { cache: 'no-store' })
       if (!response.ok) {
-        throw new Error('Failed to load delivery history')
+        const locked = await handleLockedResponse(response, 'Failed to load delivery history')
+        if (locked.locked) {
+          setDeliveries([])
+          setHealth([])
+          return
+        }
       }
       const data = await response.json()
+      setFeatureLocked(false)
       setDeliveries(data.deliveries || [])
       setHealth(data.health || [])
     } catch (error) {
@@ -328,7 +367,7 @@ export function IntegrationsTab({ project }: IntegrationsTabProps) {
     } finally {
       setLoadingOps(false)
     }
-  }, [project.id])
+  }, [handleLockedResponse, project.id])
 
   React.useEffect(() => {
     void loadOperations()
@@ -376,11 +415,18 @@ export function IntegrationsTab({ project }: IntegrationsTabProps) {
       })
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: 'Failed to save integrations' }))
-        throw new Error(data.error || 'Failed to save integrations')
+        const locked = await handleLockedResponse(response, 'Failed to save integrations')
+        if (locked.locked) {
+          toast({
+            title: 'Webhooks are on Pro',
+            description: locked.message,
+          })
+          return
+        }
       }
 
       const next = normalizeWebhookConfig(await response.json())
+      setFeatureLocked(false)
       setConfig(next)
       toast({ title: 'Integrations saved' })
       await loadOperations()
@@ -407,10 +453,17 @@ export function IntegrationsTab({ project }: IntegrationsTabProps) {
       })
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: 'Failed to send test' }))
-        throw new Error(data.error || 'Failed to send test')
+        const locked = await handleLockedResponse(response, 'Failed to send test')
+        if (locked.locked) {
+          toast({
+            title: 'Webhooks are on Pro',
+            description: locked.message,
+          })
+          return
+        }
       }
 
+      setFeatureLocked(false)
       toast({ title: 'Test sent', description: 'Check the delivery log below for the result.' })
       await loadOperations()
     } catch (error) {
@@ -434,10 +487,17 @@ export function IntegrationsTab({ project }: IntegrationsTabProps) {
       })
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: 'Failed to resend delivery' }))
-        throw new Error(data.error || 'Failed to resend delivery')
+        const locked = await handleLockedResponse(response, 'Failed to resend delivery')
+        if (locked.locked) {
+          toast({
+            title: 'Webhooks are on Pro',
+            description: locked.message,
+          })
+          return
+        }
       }
 
+      setFeatureLocked(false)
       toast({ title: 'Delivery replayed' })
       await loadOperations()
     } catch (error) {
@@ -459,6 +519,9 @@ export function IntegrationsTab({ project }: IntegrationsTabProps) {
             <Badge variant="secondary">Workflow routing</Badge>
             <Badge variant="outline">Operational logs</Badge>
             <Badge variant="outline">Rules and health</Badge>
+            {billingSummary?.entitlements.label === 'Free' && (
+              <Badge variant="outline">Pro feature</Badge>
+            )}
           </div>
           <CardTitle className="mt-3 text-lg">Route important feedback where your team already works</CardTitle>
           <CardDescription>
@@ -467,7 +530,30 @@ export function IntegrationsTab({ project }: IntegrationsTabProps) {
         </CardHeader>
       </Card>
 
-      {SECTION_META.map((section) => {
+      {featureLocked && (
+        <Card className="border-primary/30 bg-primary/[0.04]">
+          <CardHeader>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="bg-primary/90 text-primary-foreground">Upgrade required</Badge>
+              <Badge variant="outline">Webhook routing</Badge>
+            </div>
+            <CardTitle className="mt-3 text-base">Unlock delivery logs, replay, and live routing with Pro</CardTitle>
+            <CardDescription>
+              {lockReason}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <Link href="/billing">
+              <Button>Open Billing</Button>
+            </Link>
+            <Link href={`/projects/${project.id}?tab=install`}>
+              <Button variant="outline">Back to install</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
+
+      {!featureLocked && SECTION_META.map((section) => {
         const endpoints = getEndpoints(config, section.kind)
         const Icon = section.icon
 
@@ -627,42 +713,51 @@ export function IntegrationsTab({ project }: IntegrationsTabProps) {
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-muted-foreground" />
             <CardTitle className="text-base">Email Notifications</CardTitle>
-            <Badge variant="outline">Still staged</Badge>
+            <Badge variant="secondary">Live in Settings</Badge>
           </div>
           <CardDescription>
-            Email delivery is not shipped yet. Use the webhook routes above today, then layer email in once that path is live instead of pretending it already exists.
+            Account-level email alerts are live in Settings for new feedback and webhook failures. This screen stays focused on routing destinations instead of pretending per-project email fan-out already exists.
           </CardDescription>
         </CardHeader>
         <CardContent className="rounded-b-xl bg-muted/10">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <BellRing className="h-4 w-4" />
-            Slack or a generic webhook is the clearest current routing path.
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <BellRing className="h-4 w-4" />
+              Email alerts are managed from your account settings, while Slack or a generic webhook is still the clearest project-routing path.
+            </div>
+            <Link href="/settings">
+              <Button variant="outline" size="sm">Manage email alerts</Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <CardTitle className="text-base">Recent delivery history</CardTitle>
-            <CardDescription>
-              Recent test and live deliveries, including failed attempts you can replay.
-            </CardDescription>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => void loadOperations()} disabled={loadingOps}>
-            {loadingOps ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-            Refresh logs
+      {!featureLocked && (
+        <>
+          <Card>
+            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <CardTitle className="text-base">Recent delivery history</CardTitle>
+                <CardDescription>
+                  Recent test and live deliveries, including failed attempts you can replay.
+                </CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => void loadOperations()} disabled={loadingOps}>
+                {loadingOps ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                Refresh logs
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <DeliveryLogList deliveries={deliveries} resendingId={resendingId} onResend={handleResend} />
+            </CardContent>
+          </Card>
+
+          <Button onClick={handleSave} disabled={saving}>
+            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Save Integrations
           </Button>
-        </CardHeader>
-        <CardContent>
-          <DeliveryLogList deliveries={deliveries} resendingId={resendingId} onResend={handleResend} />
-        </CardContent>
-      </Card>
-
-      <Button onClick={handleSave} disabled={saving}>
-        {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Save Integrations
-      </Button>
+        </>
+      )}
     </div>
   )
 }

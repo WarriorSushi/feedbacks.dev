@@ -14,58 +14,51 @@ export function BoardAnnouncements({ announcements }: BoardAnnouncementsProps) {
   if (announcements.length === 0) return null
 
   const visibleCount = expanded ? announcements.length : Math.min(2, announcements.length)
-  const hiddenCount = announcements.length - 2
+  const hiddenCount = announcements.length - visibleCount
 
   return (
-    <section className="rounded-3xl border bg-card p-5 shadow-sm">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-        Updates
-      </p>
-      <h2 className="mt-1 text-lg font-semibold text-foreground">Announcements</h2>
-      <div className="mt-4 space-y-3">
+    <section className="rounded-2xl border border-border/80 bg-card shadow-sm">
+      <div className="border-b border-border/70 px-4 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          Updates
+        </p>
+        <h2 className="mt-2 text-lg font-semibold text-foreground">Latest from the team</h2>
+      </div>
+      <div className="space-y-3 p-4">
         {announcements.slice(0, visibleCount).map((announcement) => (
-          <div
+          <article
             key={announcement.id}
-            className="rounded-2xl border border-border bg-muted/50 p-4"
+            className="rounded-xl border border-border/70 bg-background px-4 py-4"
           >
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-start justify-between gap-3">
               <p className="text-sm font-semibold text-foreground">{announcement.title}</p>
-              <span className="text-xs text-muted-foreground">
+              <span className="shrink-0 text-xs text-muted-foreground">
                 {formatDate(announcement.publishedAt)}
               </span>
             </div>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {announcement.body}
-            </p>
+            <p className="mt-3 text-sm leading-7 text-foreground/72">{announcement.body}</p>
             {announcement.href && (
               <a
                 href={announcement.href}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-2 inline-flex text-sm font-medium text-primary hover:underline"
+                className="mt-3 inline-flex text-sm font-medium text-foreground transition-colors hover:text-primary"
               >
-                Read more
+                Read update
               </a>
             )}
-          </div>
+          </article>
         ))}
+
+        {hiddenCount > 0 && (
+          <button
+            onClick={() => setExpanded((value) => !value)}
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {expanded ? 'Show fewer updates' : `Show ${hiddenCount} more update${hiddenCount === 1 ? '' : 's'}`}
+          </button>
+        )}
       </div>
-      {hiddenCount > 0 && !expanded && (
-        <button
-          onClick={() => setExpanded(true)}
-          className="mt-3 text-sm font-medium text-primary hover:underline"
-        >
-          Show {hiddenCount} more
-        </button>
-      )}
-      {expanded && hiddenCount > 0 && (
-        <button
-          onClick={() => setExpanded(false)}
-          className="mt-3 text-sm font-medium text-primary hover:underline"
-        >
-          Show less
-        </button>
-      )}
     </section>
   )
 }

@@ -1,4 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase-server'
+import { getCurrentUserBillingSummary, getHistoryCutoff } from '@/lib/billing'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -29,6 +30,8 @@ export default async function DashboardPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  const billingSummary = await getCurrentUserBillingSummary()
+  const historyCutoff = billingSummary ? getHistoryCutoff(billingSummary) : null
 
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
@@ -44,40 +47,32 @@ export default async function DashboardPage() {
     { data: typeDist },
     { data: sparkData },
   ] = await Promise.all([
-    supabase
-      .from('feedback')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_archived', false),
-    supabase
-      .from('feedback')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'new')
-      .eq('is_archived', false),
-    supabase
-      .from('feedback')
-      .select('rating')
-      .not('rating', 'is', null)
-      .eq('is_archived', false),
+    (historyCutoff
+      ? supabase.from('feedback').select('*', { count: 'exact', head: true }).eq('is_archived', false).gte('created_at', historyCutoff)
+      : supabase.from('feedback').select('*', { count: 'exact', head: true }).eq('is_archived', false)),
+    (historyCutoff
+      ? supabase.from('feedback').select('*', { count: 'exact', head: true }).eq('status', 'new').eq('is_archived', false).gte('created_at', historyCutoff)
+      : supabase.from('feedback').select('*', { count: 'exact', head: true }).eq('status', 'new').eq('is_archived', false)),
+    (historyCutoff
+      ? supabase.from('feedback').select('rating').not('rating', 'is', null).eq('is_archived', false).gte('created_at', historyCutoff)
+      : supabase.from('feedback').select('rating').not('rating', 'is', null).eq('is_archived', false)),
     supabase
       .from('projects')
       .select('*', { count: 'exact', head: true })
       .eq('owner_user_id', user!.id),
-    supabase
-      .from('feedback')
-      .select('*', { count: 'exact', head: true })
-      .not('agent_name', 'is', null)
-      .eq('is_archived', false),
-    supabase
-      .from('feedback')
-      .select('*, projects(id, name)')
-      .eq('is_archived', false)
-      .order('created_at', { ascending: false })
-      .limit(8),
-    supabase.from('feedback').select('type').eq('is_archived', false),
+    (historyCutoff
+      ? supabase.from('feedback').select('*', { count: 'exact', head: true }).not('agent_name', 'is', null).eq('is_archived', false).gte('created_at', historyCutoff)
+      : supabase.from('feedback').select('*', { count: 'exact', head: true }).not('agent_name', 'is', null).eq('is_archived', false)),
+    (historyCutoff
+      ? supabase.from('feedback').select('*, projects(id, name)').eq('is_archived', false).gte('created_at', historyCutoff).order('created_at', { ascending: false }).limit(8)
+      : supabase.from('feedback').select('*, projects(id, name)').eq('is_archived', false).order('created_at', { ascending: false }).limit(8)),
+    (historyCutoff
+      ? supabase.from('feedback').select('type').eq('is_archived', false).gte('created_at', historyCutoff)
+      : supabase.from('feedback').select('type').eq('is_archived', false)),
     supabase
       .from('feedback')
       .select('created_at')
-      .gte('created_at', sevenDaysAgoStr)
+      .gte('created_at', historyCutoff && historyCutoff > sevenDaysAgoStr ? historyCutoff : sevenDaysAgoStr)
       .eq('is_archived', false),
   ])
 
@@ -202,6 +197,15 @@ export default async function DashboardPage() {
             </Button>
           </Link>
         </div>
+        {billingSummary && (
+          <p className="text-xs text-muted-foreground">
+            Plan: {billingSummary.entitlements.label} · {billingSummary.entitlements.feedbackMonthlyLimit
+              ? `${billingSummary.usage.feedbackThisMonth}/${billingSummary.entitlements.feedbackMonthlyLimit} feedback this month`
+              : 'unlimited feedback'}{billingSummary.entitlements.historyDays
+              ? ` · last ${billingSummary.entitlements.historyDays} days visible`
+              : ' · full history visible'}
+          </p>
+        )}
       </div>
 
       {/* ─── Onboarding (shown when no projects) ──────────── */}

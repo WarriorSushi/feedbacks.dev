@@ -1,5 +1,6 @@
 import { Feedback, Project, WebhookEndpoint, GitHubEndpoint, WebhookConfig } from '@/lib/types'
 import { createAdminSupabase } from '@/lib/supabase-server'
+import { notifyUserOfWebhookFailure } from '@/lib/notifications'
 import { normalizeWebhookConfig, type WebhookKind } from '@/lib/webhook-config'
 import { buildE2ETestWebhookUrl, getE2EBypassSecret, isE2ETestWebhookUrl } from '@/lib/e2e'
 
@@ -243,7 +244,11 @@ async function deliverSingle(
       .limit(3)
 
     if (failures && failures.length >= 3 && failures.every(f => f.status === 'failed')) {
-      const { data: project } = await admin.from('projects').select('webhooks').eq('id', projectId).single()
+      const { data: project } = await admin
+        .from('projects')
+        .select('webhooks, owner_user_id, name')
+        .eq('id', projectId)
+        .single()
       if (project?.webhooks) {
         const webhooks = project.webhooks as WebhookConfig
         const group = webhooks[type as keyof WebhookConfig]
@@ -252,6 +257,9 @@ async function deliverSingle(
           if (ep) {
             ep.enabled = false
             await admin.from('projects').update({ webhooks }).eq('id', projectId)
+            if (project.owner_user_id) {
+              void notifyUserOfWebhookFailure(project.owner_user_id, project.name, endpoint.url)
+            }
           }
         }
       }

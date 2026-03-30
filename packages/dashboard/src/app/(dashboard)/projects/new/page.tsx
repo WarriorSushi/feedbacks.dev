@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
+import { rememberProjectApiKey } from '@/lib/project-api-keys'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,6 +15,7 @@ export default function NewProjectPage() {
   const [domain, setDomain] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState('')
+  const [limitMessage, setLimitMessage] = React.useState('')
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,6 +23,7 @@ export default function NewProjectPage() {
     if (!name.trim()) return
     setLoading(true)
     setError('')
+    setLimitMessage('')
 
     try {
       const response = await fetch('/api/projects', {
@@ -36,10 +39,16 @@ export default function NewProjectPage() {
 
       const payload = await response.json()
       if (!response.ok) {
+        if (payload.code === 'project_limit_reached') {
+          setLimitMessage(payload.error || 'Free plan includes 1 project. Upgrade to Pro to create more projects.')
+        }
         setError(payload.error || 'Failed to create project')
         return
       }
 
+      if (payload.api_key) {
+        rememberProjectApiKey(payload.id, payload.api_key)
+      }
       router.push(`/projects/${payload.id}?created=1`)
     } catch {
       setError('Failed to create project')
@@ -87,6 +96,20 @@ export default function NewProjectPage() {
             </div>
             {error && (
               <p className="text-sm text-destructive">{error}</p>
+            )}
+            {limitMessage && (
+              <div className="rounded-lg border border-primary/30 bg-primary/[0.04] p-4">
+                <p className="text-sm font-medium text-foreground">Free plan project limit reached</p>
+                <p className="mt-1 text-sm text-muted-foreground">{limitMessage}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link href="/billing">
+                    <Button type="button" variant="outline" size="sm">Open Billing</Button>
+                  </Link>
+                  <Link href="/projects">
+                    <Button type="button" variant="ghost" size="sm">Back to projects</Button>
+                  </Link>
+                </div>
+              </div>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

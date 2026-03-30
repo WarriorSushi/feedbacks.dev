@@ -17,7 +17,24 @@ import { WidgetPreviewSurface } from './widget-preview-surface'
 
 interface CustomizeTabProps {
   project: Project
+  projectKey: string | null
+  apiKeyLastFour: string | null
+  rotatingApiKey: boolean
+  onRotateApiKey: () => Promise<void>
 }
+
+const TRACKED_WIDGET_FIELDS: Array<[keyof WidgetConfig, string]> = [
+  ['embedMode', 'Embed mode'],
+  ['primaryColor', 'Primary color'],
+  ['buttonText', 'Button text'],
+  ['position', 'Launcher position'],
+  ['formTitle', 'Form title'],
+  ['messagePlaceholder', 'Message placeholder'],
+  ['enableRating', 'Rating stars'],
+  ['enableType', 'Feedback type picker'],
+  ['enableScreenshot', 'Screenshot capture'],
+  ['requireEmail', 'Require email'],
+]
 
 function buildEditableWidgetConfig(existing: WidgetConfig = {}): WidgetConfig {
   const sanitized = sanitizeSavedWidgetConfig(existing)
@@ -36,28 +53,75 @@ function buildEditableWidgetConfig(existing: WidgetConfig = {}): WidgetConfig {
   }
 }
 
-export function CustomizeTab({ project }: CustomizeTabProps) {
+function getRuntimeModeLabel(config: ReturnType<typeof buildRuntimeWidgetConfig>) {
+  return config.embedMode === 'inline'
+    ? 'Inline'
+    : config.embedMode === 'trigger'
+      ? 'Trigger'
+      : 'Modal'
+}
+
+function getModalPositionLabel(position?: string) {
+  switch (position) {
+    case 'bottom-left':
+      return 'lower-left corner'
+    case 'top-left':
+      return 'upper-left corner'
+    case 'top-right':
+      return 'upper-right corner'
+    default:
+      return 'lower-right corner'
+  }
+}
+
+function getRuntimeExpectation(config: ReturnType<typeof buildRuntimeWidgetConfig>) {
+  const buttonText = config.buttonText?.trim() || 'Feedback'
+
+  if (config.embedMode === 'inline') {
+    return 'The widget renders directly inside the inline mount element.'
+  }
+
+  if (config.embedMode === 'trigger') {
+    return `Click "${buttonText}" to open the feedback form from your trigger element.`
+  }
+
+  return `Look for the floating "${buttonText}" launcher near the ${getModalPositionLabel(config.position)}.`
+}
+
+export function CustomizeTab({
+  project,
+  projectKey,
+  apiKeyLastFour,
+  rotatingApiKey,
+  onRotateApiKey,
+}: CustomizeTabProps) {
   const router = useRouter()
   const appOrigin = publicEnv.NEXT_PUBLIC_APP_ORIGIN
+  const previewProjectKey = projectKey || 'fb_preview_only'
   const [saving, setSaving] = React.useState(false)
   const [draftRestored, setDraftRestored] = React.useState(false)
   const [previewStatus, setPreviewStatus] = React.useState<'loading' | 'ready' | 'error'>('loading')
   const [previewError, setPreviewError] = React.useState<string | null>(null)
   const storageKey = React.useMemo(() => `feedbacks-widget-draft:${project.id}`, [project.id])
-  const savedConfig = React.useMemo(
+  const serverSavedConfig = React.useMemo(
     () => buildEditableWidgetConfig(project.settings?.widget_config || {}),
     [project.settings?.widget_config],
   )
-  const [config, setConfig] = React.useState<WidgetConfig>(savedConfig)
+  const [savedConfig, setSavedConfig] = React.useState<WidgetConfig>(serverSavedConfig)
+  const [config, setConfig] = React.useState<WidgetConfig>(serverSavedConfig)
+
+  React.useEffect(() => {
+    setSavedConfig(serverSavedConfig)
+  }, [serverSavedConfig])
 
   const fingerprintConfig = React.useCallback(
     (nextConfig: WidgetConfig) =>
       JSON.stringify(
-        buildRuntimeWidgetConfig(project.api_key, nextConfig, {
+        buildRuntimeWidgetConfig(previewProjectKey, nextConfig, {
           appOrigin,
         }),
       ),
-    [appOrigin, project.api_key],
+    [appOrigin, previewProjectKey],
   )
 
   React.useEffect(() => {
@@ -92,9 +156,41 @@ export function CustomizeTab({ project }: CustomizeTabProps) {
   )
   const hasUnsavedChanges = savedFingerprint !== draftFingerprint
   const runtimePreviewConfig = React.useMemo(
-    () => buildRuntimeWidgetConfig(project.api_key, config, { appOrigin }),
-    [appOrigin, config, project.api_key],
+    () => buildRuntimeWidgetConfig(previewProjectKey, config, { appOrigin }),
+    [appOrigin, config, previewProjectKey],
   )
+  const savedRuntimeConfig = React.useMemo(
+    () => buildRuntimeWidgetConfig(previewProjectKey, savedConfig, { appOrigin }),
+    [appOrigin, previewProjectKey, savedConfig],
+  )
+  const savedModeLabel = React.useMemo(
+    () => getRuntimeModeLabel(savedRuntimeConfig),
+    [savedRuntimeConfig],
+  )
+  const draftModeLabel = React.useMemo(
+    () => getRuntimeModeLabel(runtimePreviewConfig),
+    [runtimePreviewConfig],
+  )
+  const savedExpectation = React.useMemo(
+    () => getRuntimeExpectation(savedRuntimeConfig),
+    [savedRuntimeConfig],
+  )
+  const draftExpectation = React.useMemo(
+    () => getRuntimeExpectation(runtimePreviewConfig),
+    [runtimePreviewConfig],
+  )
+  const changedFields = React.useMemo(
+    () =>
+      TRACKED_WIDGET_FIELDS
+        .filter(([key]) => savedConfig[key] !== config[key])
+        .map(([, label]) => label),
+    [config, savedConfig],
+  )
+  const changedFieldsSummary = changedFields.length === 0
+    ? 'No local draft changes.'
+    : changedFields.length <= 4
+      ? changedFields.join(', ')
+      : `${changedFields.slice(0, 4).join(', ')} +${changedFields.length - 4} more`
 
   React.useEffect(() => {
     if (typeof window === 'undefined') return
@@ -147,6 +243,11 @@ export function CustomizeTab({ project }: CustomizeTabProps) {
         throw new Error(data.error || 'Failed to save widget settings')
       }
 
+      const payload = await response.json()
+      const nextSavedConfig = buildEditableWidgetConfig(payload.settings?.widget_config || {})
+      setSavedConfig(nextSavedConfig)
+      setConfig(nextSavedConfig)
+
       if (typeof window !== 'undefined') {
         window.sessionStorage.removeItem(storageKey)
       }
@@ -164,15 +265,29 @@ export function CustomizeTab({ project }: CustomizeTabProps) {
     }
   }
 
-  const modeLabel =
-    runtimePreviewConfig.embedMode === 'inline'
-      ? 'Inline'
-      : runtimePreviewConfig.embedMode === 'trigger'
-        ? 'Trigger'
-        : 'Modal'
-
   return (
     <div className="space-y-6">
+      {!projectKey && (
+        <Card className="border-primary/30 bg-primary/[0.04]">
+          <CardHeader>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary">One-time reveal</Badge>
+              <Badge variant="outline">Key hidden{apiKeyLastFour ? ` · ••••${apiKeyLastFour}` : ''}</Badge>
+            </div>
+            <CardTitle className="text-lg">Generate a fresh key when you need live install or verify again</CardTitle>
+            <CardDescription>
+              This preview can still render with a placeholder key so you can work on layout and copy, but live install snippets, agent config, and hosted verification require a fresh key reveal.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" onClick={() => void onRotateApiKey()} disabled={rotatingApiKey}>
+              {rotatingApiKey && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Generate fresh key
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <Card className={hasUnsavedChanges ? 'border-amber-300/80 bg-amber-50/50 dark:bg-amber-950/10' : ''}>
         <CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="space-y-2">
@@ -181,17 +296,19 @@ export function CustomizeTab({ project }: CustomizeTabProps) {
                 {hasUnsavedChanges ? 'Unsaved draft' : 'Saved config'}
               </Badge>
               <Badge variant="outline">Live preview</Badge>
-              <Badge variant="outline">{modeLabel} mode</Badge>
+              <Badge variant="outline">{draftModeLabel} mode</Badge>
             </div>
             <div>
               <CardTitle className="text-lg">Customize widget</CardTitle>
               <CardDescription className="mt-1">
-                Preview updates as you edit. Install snippets and the hosted verify page continue to use the last saved config until you save changes here.
+                {hasUnsavedChanges
+                  ? 'You are previewing a local draft. Install snippets and the hosted verify page still use the last saved config until you save changes here.'
+                  : 'Install snippets, hosted verify, and this preview are currently aligned on the same saved config.'}
               </CardDescription>
             </div>
             {draftRestored && hasUnsavedChanges && (
               <p className="text-sm text-muted-foreground">
-                A local unsaved draft was restored for this project.
+                A local unsaved draft was restored for this project. It is only visible on this browser until you save it.
               </p>
             )}
           </div>
@@ -199,7 +316,7 @@ export function CustomizeTab({ project }: CustomizeTabProps) {
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={handleReset} disabled={saving || !hasUnsavedChanges}>
               <RotateCcw className="mr-2 h-4 w-4" />
-              Reset to saved
+              Discard draft
             </Button>
             <Button onClick={handleSave} disabled={saving || !hasUnsavedChanges}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -207,6 +324,31 @@ export function CustomizeTab({ project }: CustomizeTabProps) {
             </Button>
           </div>
         </CardHeader>
+
+        <CardContent className="grid gap-4 border-t bg-background/40 pt-6 lg:grid-cols-2">
+          <div className="rounded-xl border bg-background/80 p-4">
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Install snippets and hosted verify currently use
+            </p>
+            <p className="mt-2 text-sm font-medium text-foreground">{savedModeLabel} mode</p>
+            <p className="mt-1 text-sm text-muted-foreground">{savedExpectation}</p>
+          </div>
+
+          <div className="rounded-xl border bg-background/80 p-4">
+            <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Preview in this tab is showing
+            </p>
+            <p className="mt-2 text-sm font-medium text-foreground">
+              {hasUnsavedChanges ? `${draftModeLabel} draft` : `${draftModeLabel} saved config`}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{draftExpectation}</p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {hasUnsavedChanges
+                ? `Draft changes: ${changedFieldsSummary}.`
+                : 'No local draft changes. What you see here already matches install and verify.'}
+            </p>
+          </div>
+        </CardContent>
       </Card>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -327,7 +469,7 @@ export function CustomizeTab({ project }: CustomizeTabProps) {
           <CardHeader className="border-b bg-muted/20">
             <CardTitle className="text-lg">Preview current edits</CardTitle>
             <CardDescription>
-              This preview reflects your draft immediately. Saving publishes these settings to install snippets and the verification page.
+              This surface renders your draft immediately. Saving publishes the same settings to install snippets and the hosted verification page.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-6">
@@ -342,7 +484,7 @@ export function CustomizeTab({ project }: CustomizeTabProps) {
 
             <WidgetPreviewSurface
               appOrigin={appOrigin}
-              projectKey={project.api_key}
+              projectKey={previewProjectKey}
               config={config}
               onStatusChange={(status, error) => {
                 setPreviewStatus(status)
@@ -352,10 +494,16 @@ export function CustomizeTab({ project }: CustomizeTabProps) {
 
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>
-                Saved mode: <span className="font-medium text-foreground">{modeLabel}</span>
+                Install snippets currently use: <span className="font-medium text-foreground">{savedModeLabel}</span>
+              </p>
+              <p>
+                This preview is rendering: <span className="font-medium text-foreground">{draftModeLabel}</span>
               </p>
               {previewStatus === 'ready' && runtimePreviewConfig.embedMode === 'modal' && (
-                <p>Look near the lower-right corner for the modal launcher.</p>
+                <p>{draftExpectation}</p>
+              )}
+              {previewStatus === 'ready' && runtimePreviewConfig.embedMode !== 'modal' && (
+                <p>{draftExpectation}</p>
               )}
               {previewStatus === 'error' && previewError && (
                 <p className="text-destructive">{previewError}</p>

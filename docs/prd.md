@@ -35,9 +35,9 @@ When a message is important, I want to move it into my existing workflow so feed
 - I can quickly distinguish bugs, ideas, praise, and noise.
 - I can route important items to Slack, Linear, GitHub, or email workflows.
 
-## 5. MVP scope
+## 5. Launch scope
 
-### In scope
+### In scope for the paid launch
 
 - project creation
 - widget installation
@@ -46,9 +46,13 @@ When a message is important, I want to move it into my existing workflow so feed
 - dashboard inbox
 - tagging and status workflow
 - basic filtering
-- basic team notifications/integrations
+- public boards and directory
+- webhook integrations
+- billing, plan enforcement, and usage visibility
+- AI / MCP access on paid plans
+- basic team notifications
 
-### Out of scope for v1
+### Still out of scope
 
 - complex collaboration permissions
 - native mobile SDKs
@@ -132,7 +136,7 @@ Must support:
 ### Integrations
 
 - Basic outbound notifications for new feedback.
-- Initial targets can include Slack, email, and webhook.
+- Initial targets include webhook routing and opt-in owner email alerts.
 - Integration setup should be secondary to the core install flow.
 
 ## 8. UX requirements

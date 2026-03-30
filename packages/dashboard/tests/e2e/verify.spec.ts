@@ -25,10 +25,14 @@ test('renders the live widget and accepts a test submission', async ({ page }) =
   const message = `Install verification for ${project.name}`
   await page.getByLabel(/Your feedback/).fill(message)
   await page.getByLabel('Email (optional)').fill('tester@example.com')
+  const feedbackResponse = page.waitForResponse((response) => {
+    return response.url().includes('/api/feedback')
+      && response.request().method() === 'POST'
+      && response.status() === 201
+  })
   await page.getByRole('button', { name: 'Send Feedback' }).click()
-
-  await expect(page.getByText('Your feedback has been sent successfully.')).toBeVisible()
+  await feedbackResponse
   await page.getByRole('link', { name: 'Open project inbox' }).first().click()
-  await expect(page).toHaveURL(new RegExp(`/feedback\\?projectId=${project.id}`))
+  await expect(page).toHaveURL(new RegExp(`/feedback\\?projectId=${project.id}`), { timeout: 30_000 })
   await expect(page.getByText(message)).toBeVisible()
 })

@@ -1,4 +1,14 @@
 declare module '@playwright/test' {
+  export interface Request {
+    method(): string
+  }
+
+  export interface Response {
+    url(): string
+    status(): number
+    request(): Request
+  }
+
   export interface PageRequest {
     get(url: string, options?: unknown): Promise<{
       ok(): boolean
@@ -27,7 +37,7 @@ declare module '@playwright/test' {
     fill(value: string): Promise<void>
     toBeVisible(): Promise<void>
     selectOption(value: string): Promise<void>
-    getByRole(role: string, options?: { name?: string | RegExp }): Locator
+    getByRole(role: string, options?: { name?: string | RegExp; exact?: boolean }): Locator
     getByLabel(label: string | RegExp): Locator
     first(): Locator
     nth(index: number): Locator
@@ -36,11 +46,12 @@ declare module '@playwright/test' {
   export interface Page {
     goto(url: string, options?: unknown): Promise<void>
     evaluate<T>(pageFunction: (...args: any[]) => T | Promise<T>, arg?: unknown): Promise<T>
-    getByRole(role: string, options?: { name?: string | RegExp }): Locator
+    getByRole(role: string, options?: { name?: string | RegExp; exact?: boolean }): Locator
     getByLabel(label: string | RegExp): Locator
     getByText(text: string | RegExp): Locator
     locator(selector: string): Locator
     request: PageRequest
+    waitForResponse(predicate: (response: Response) => boolean | Promise<boolean>): Promise<Response>
     waitForURL(url: string | RegExp): Promise<void>
     reload(options?: unknown): Promise<void>
   }

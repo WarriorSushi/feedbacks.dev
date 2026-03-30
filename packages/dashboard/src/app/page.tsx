@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { generateInstallSnippets } from '@feedbacks/shared'
+import { PLAN_MATRIX, generateInstallSnippets } from '@feedbacks/shared'
 import { CodeSnippet } from '@/components/code-snippet'
 import { publicEnv } from '@/lib/public-env'
 import { createServerSupabase } from '@/lib/supabase-server'
@@ -69,6 +69,9 @@ const webhookSnippet = `// Incoming webhook payload
     "name": "My SaaS App"
   }
 }`
+
+const freePlan = PLAN_MATRIX.free
+const proPlan = PLAN_MATRIX.pro
 
 // ─── Page (Server Component) ──────────────────────────────────────────────────
 
@@ -166,7 +169,7 @@ export default async function LandingPage() {
               <div className="mb-6 flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="gap-1.5 border-primary/20 bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
                   <Sparkles className="h-3 w-3" />
-                  Open source &middot; MIT licensed
+                  Source available &middot; FSL-1.1-MIT
                 </Badge>
                 <Badge variant="outline" className="gap-1.5 px-3 py-1 text-xs font-medium text-muted-foreground">
                   <Code2 className="h-3 w-3" />
@@ -333,8 +336,8 @@ export default async function LandingPage() {
               },
               {
                 Icon: Globe,
-                title: 'Open Source',
-                desc: 'MIT licensed. Self-hostable. Full codebase on GitHub. No vendor lock-in, no data hostage situations.',
+                title: 'Source Available',
+                desc: 'FSL-1.1-MIT today, MIT later. Self-hostable. Full codebase on GitHub. No vendor lock-in, no data hostage situations.',
               },
             ].map(({ Icon, title, desc }) => (
               <div key={title} className="group rounded-2xl border bg-card/50 p-6 transition-all duration-200 hover:bg-card hover:shadow-lg hover:shadow-primary/5">
@@ -525,7 +528,7 @@ export default async function LandingPage() {
               {
                 Icon: Globe,
                 title: 'Self-hostable',
-                desc: 'Fork it, run it on your own infra, customize everything. MIT license, no strings attached.',
+                desc: 'Fork it, run it on your own infra, customize everything. FSL license now, MIT conversion after the change date.',
               },
             ].map(({ Icon, title, desc }) => (
               <div key={title} className="flex gap-4 rounded-xl border bg-card/30 p-5 transition-colors hover:bg-card/60">
@@ -553,7 +556,7 @@ export default async function LandingPage() {
               Simple. Honest. No traps.
             </h2>
             <p className="mx-auto max-w-md text-muted-foreground">
-              Start free, upgrade when you need more. No usage-based billing surprises.
+              Start free, upgrade when you need more. Two tiers, webhook-backed billing truth, and no usage-based surprises.
             </p>
           </div>
 
@@ -561,16 +564,16 @@ export default async function LandingPage() {
             <div className="rounded-2xl border bg-card p-8 transition-all hover:shadow-lg">
               <p className="mb-1 text-sm font-medium text-muted-foreground">Free</p>
               <p className="mb-1 text-5xl font-black tracking-tighter">
-                $0
+                ${freePlan.monthlyPrice}
               </p>
               <p className="mb-6 text-sm text-muted-foreground">Free forever. No credit card.</p>
               <ul className="mb-8 space-y-3">
                 {[
-                  '1 project',
-                  '500 feedback / month',
-                  'Dashboard + REST API',
+                  `${freePlan.projectLimit} project`,
+                  `${freePlan.feedbackMonthlyLimit} feedback / month`,
+                  'Dashboard + widget install',
                   'Optional public board',
-                  '30-day history',
+                  `${freePlan.historyDays}-day history`,
                   'Community support',
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-2.5 text-sm text-muted-foreground">
@@ -592,7 +595,7 @@ export default async function LandingPage() {
               </Badge>
               <p className="mb-1 text-sm font-medium text-muted-foreground">Pro</p>
               <p className="mb-1 text-5xl font-black tracking-tighter">
-                $19
+                ${proPlan.monthlyPrice}
                 <span className="text-lg font-normal text-muted-foreground">/mo</span>
               </p>
               <p className="mb-6 text-sm text-muted-foreground">Everything, unlimited.</p>
@@ -647,7 +650,7 @@ export default async function LandingPage() {
                 actually want.
               </h2>
               <p className="mx-auto mb-8 max-w-md text-background/60">
-                Free to start. Open source. Up and running in under two minutes.
+                Free to start. Source available. Up and running in under two minutes.
                 Stop building in the dark.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
@@ -705,7 +708,7 @@ export default async function LandingPage() {
           </div>
           <div className="flex items-center gap-3">
             <p className="text-xs text-muted-foreground">
-              Open source &middot; MIT licensed
+              Source available &middot; FSL-1.1-MIT
             </p>
             <a
               href="https://github.com/WarriorSushi/feedbacks.dev-2026"

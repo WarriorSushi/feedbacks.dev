@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticateApiKey } from '@/lib/api-auth'
+import { assertFeatureAccess } from '@/lib/billing'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +25,9 @@ export async function GET(request: NextRequest) {
     // API key auth only — no cookie fallback on wildcard CORS routes
     const apiAuth = await authenticateApiKey(request)
     if (!apiAuth) return jsonError('Invalid or missing API key', 401)
+
+    const feature = await assertFeatureAccess(apiAuth.project.owner_user_id, 'mcp')
+    if (!feature.allowed) return jsonError(feature.message, 403)
 
     // API key only gives access to its own project
     return json({ data: [apiAuth.project] })

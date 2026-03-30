@@ -6,16 +6,18 @@ import {
   buildRuntimeWidgetConfig,
   type SavedWidgetConfig,
 } from '@feedbacks/shared'
+import { readStoredProjectApiKey, rememberProjectApiKey } from '@/lib/project-api-keys'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft, ExternalLink, RefreshCw } from 'lucide-react'
 import { WidgetPreviewSurface } from './widget-preview-surface'
 
 interface ProjectVerifyClientProps {
   appOrigin: string
   projectId: string
-  projectKey: string
+  projectKey: string | null
+  apiKeyLastFour: string | null
   projectName: string
   savedConfig: SavedWidgetConfig
 }
@@ -28,21 +30,42 @@ export function ProjectVerifyClient({
   appOrigin,
   projectId,
   projectKey,
+  apiKeyLastFour,
   projectName,
   savedConfig,
 }: ProjectVerifyClientProps) {
   const [status, setStatus] = React.useState<'loading' | 'ready' | 'error'>('loading')
   const [error, setError] = React.useState<string | null>(null)
+  const [resolvedProjectKey, setResolvedProjectKey] = React.useState<string | null>(projectKey)
+
+  React.useEffect(() => {
+    if (projectKey) {
+      rememberProjectApiKey(projectId, projectKey)
+      setResolvedProjectKey(projectKey)
+      return
+    }
+
+    const storedKey = readStoredProjectApiKey(projectId)
+    if (storedKey) {
+      setResolvedProjectKey(storedKey)
+    }
+  }, [projectId, projectKey])
 
   const runtimeConfig = React.useMemo(
-    () => buildRuntimeWidgetConfig(projectKey, savedConfig, { appOrigin }),
-    [appOrigin, projectKey, savedConfig],
+    () => buildRuntimeWidgetConfig(resolvedProjectKey || 'fb_verify_placeholder', savedConfig, { appOrigin }),
+    [appOrigin, resolvedProjectKey, savedConfig],
   )
   const modeLabel = runtimeConfig.embedMode === 'inline'
     ? 'Inline'
     : runtimeConfig.embedMode === 'trigger'
       ? 'Trigger'
       : 'Modal'
+  const buttonText = runtimeConfig.buttonText?.trim() || 'Feedback'
+  const runtimeExpectation = runtimeConfig.embedMode === 'inline'
+    ? 'The widget should render directly inside the preview surface below.'
+    : runtimeConfig.embedMode === 'trigger'
+      ? `Click "${buttonText}" in the preview surface to open the feedback form.`
+      : `Look for the floating "${buttonText}" launcher near the lower-right corner.`
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -57,7 +80,7 @@ export function ProjectVerifyClient({
           </Link>
           <h1 className="mt-2 text-2xl font-bold tracking-tight">Verify {projectName}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            This page uses the live widget runtime and your saved config. Submit one test item, then open the inbox to confirm it arrived.
+            This hosted page uses the live widget runtime and your saved config. If a test item lands in the inbox here, your install inputs are correct before you troubleshoot your own app.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -79,12 +102,12 @@ export function ProjectVerifyClient({
             </div>
             <CardTitle className="text-lg">Verification checklist</CardTitle>
             <CardDescription>
-              Follow these three steps before you move on to integrations or board setup.
+              Treat this as the proof step before integrations, board setup, or deeper customization.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <div className="rounded-lg border bg-muted/20 p-4">
-              1. Confirm the widget is visible on this page.
+              1. Confirm the widget is visible on this page. {runtimeExpectation}
             </div>
             <div className="rounded-lg border bg-muted/20 p-4">
               2. Submit a short message like <span className="font-medium text-foreground">Install verification for {projectName}</span>.
@@ -93,9 +116,10 @@ export function ProjectVerifyClient({
               3. Open the project inbox and confirm the test item appears.
             </div>
             <div className="rounded-lg border border-dashed bg-muted/10 p-4">
-              {status === 'loading' && 'Loading the live widget runtime…'}
-              {status === 'ready' && 'The widget runtime is ready. If you saved modal mode, look for the floating launcher near the lower-right corner.'}
-              {status === 'error' && `The widget could not be loaded: ${error}`}
+              {!resolvedProjectKey && 'A fresh project key is required before this hosted page can submit live test feedback.'}
+              {resolvedProjectKey && status === 'loading' && 'Loading the live widget runtime…'}
+              {resolvedProjectKey && status === 'ready' && `The widget runtime is ready. ${runtimeExpectation}`}
+              {resolvedProjectKey && status === 'error' && `The widget could not be loaded: ${error}`}
             </div>
           </CardContent>
         </Card>
@@ -104,7 +128,7 @@ export function ProjectVerifyClient({
           <CardHeader className="border-b bg-muted/20">
             <CardTitle className="text-lg">Live verification surface</CardTitle>
             <CardDescription>
-              This is a safe hosted page for first-run testing. It is meant to prove the install path, not replace your real product surface.
+              This safe hosted page removes placement and app-shell variables. It is meant to prove the install path, not replace your real product surface.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 p-6">
@@ -113,20 +137,43 @@ export function ProjectVerifyClient({
                 <p className="text-sm font-medium text-foreground">Verification sandbox</p>
                 <h2 className="text-3xl font-semibold tracking-tight">Make sure your feedback path works end to end.</h2>
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  The widget on this page is initialized with the same saved configuration used by your install snippets. When you submit a test item here, it should land in the same project inbox.
+                  The widget on this page is initialized with the same saved configuration used by your install snippets. When you submit a test item here, it should land in the same project inbox without any extra setup.
                 </p>
               </div>
 
-              <div className="mt-8 rounded-2xl border border-dashed bg-muted/20 p-6">
-                <WidgetPreviewSurface
-                  appOrigin={appOrigin}
-                  projectKey={projectKey}
-                  config={savedConfig}
-                  onStatusChange={(nextStatus, nextError) => {
-                    setStatus(nextStatus)
-                    setError(nextError || null)
-                  }}
-                />
+              {resolvedProjectKey ? (
+                <div className="mt-8 rounded-2xl border border-dashed bg-muted/20 p-6">
+                  <WidgetPreviewSurface
+                    appOrigin={appOrigin}
+                    projectKey={resolvedProjectKey}
+                    config={savedConfig}
+                    onStatusChange={(nextStatus, nextError) => {
+                      setStatus(nextStatus)
+                      setError(nextError || null)
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="mt-8 rounded-2xl border border-dashed bg-muted/20 p-6">
+                  <div className="rounded-xl border border-primary/20 bg-background p-4 text-sm text-muted-foreground">
+                    <p className="font-medium text-foreground">This key is hidden now.</p>
+                    <p className="mt-1">
+                      feedbacks.dev only reveals project keys once. Generate a fresh key from the install tab to run hosted verification again{apiKeyLastFour ? ` for the key ending in ${apiKeyLastFour}` : ''}.
+                    </p>
+                    <div className="mt-3">
+                      <Link href={`/projects/${projectId}?tab=install`}>
+                        <Button variant="outline" size="sm">
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          Open install and rotate key
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4 rounded-xl border bg-muted/20 p-4 text-sm text-muted-foreground">
+                If this page works but your product page does not, leave the config alone and check where the snippet is pasted in your app. That is usually the missing piece on first install.
               </div>
             </div>
 

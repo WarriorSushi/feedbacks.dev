@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthedUserAndProject } from '@/lib/api-auth'
+import { getBillingSummaryForUser, getHistoryCutoff } from '@/lib/billing'
 
 export async function GET(
   _req: NextRequest,
@@ -9,14 +10,22 @@ export async function GET(
   const result = await getAuthedUserAndProject(id)
   if ('error' in result) return result.error
 
-  const { admin } = result
+  const { admin, user } = result
+  const summary = await getBillingSummaryForUser(user.id)
+  const historyCutoff = getHistoryCutoff(summary)
 
-  const { data, error } = await admin
+  let query = admin
     .from('feedback')
     .select('created_at, message, email, type, rating, priority, status, url, tags')
     .eq('project_id', id)
     .eq('is_archived', false)
     .order('created_at', { ascending: false })
+
+  if (historyCutoff) {
+    query = query.gte('created_at', historyCutoff)
+  }
+
+  const { data, error } = await query
 
   if (error) return new NextResponse('Error generating CSV', { status: 500 })
 

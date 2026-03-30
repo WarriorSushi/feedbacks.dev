@@ -59,6 +59,7 @@ export function PublicBoard({
   const [justSubmitted, setJustSubmitted] = React.useState(false)
   const [replyDrafts, setReplyDrafts] = React.useState<Record<string, string>>({})
   const [busyId, setBusyId] = React.useState<string | null>(null)
+  const [ready, setReady] = React.useState(false)
   const votesKey = `votes:${board.slug}`
 
   const commentsByFeedback = React.useMemo(() => {
@@ -73,6 +74,10 @@ export function PublicBoard({
   React.useEffect(() => {
     setVotedIds(readSetStorage(votesKey))
   }, [votesKey])
+
+  React.useEffect(() => {
+    setReady(true)
+  }, [])
 
   const totalVotes = React.useMemo(
     () => feedback.reduce((sum, item) => sum + item.vote_count, 0),
@@ -257,9 +262,12 @@ export function PublicBoard({
   }, [feedback, filter, search, sort])
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,118,110,0.16),_transparent_42%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_42%,_#f8fafc_100%)]">
+    <div
+      data-public-board-ready={ready ? 'true' : 'false'}
+      className="min-h-screen bg-[linear-gradient(180deg,_hsl(var(--background))_0%,_hsl(var(--muted))_100%)]"
+    >
       {board.customCss ? <style>{board.customCss}</style> : null}
-      <div className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
+      <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
         <BoardHero
           board={board}
           feedbackCount={feedback.length}
@@ -275,104 +283,112 @@ export function PublicBoard({
         <BoardAnnouncements announcements={initialAnnouncements} />
 
         {justSubmitted && (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
             Your feedback was submitted. It now enters the same public flow as the rest of the
             board.
           </div>
         )}
 
-        <BoardFilters
-          showTypes={board.show_types}
-          filter={filter}
-          sort={sort}
-          search={search}
-          onFilterChange={setFilter}
-          onSortChange={setSort}
-          onSearchChange={setSearch}
-        />
-
-        <BoardFeedbackList
-          emptyTitle={board.branding.emptyStateTitle || 'No public requests yet'}
-          emptyDescription={
-            board.branding.emptyStateDescription ||
-            'Be the first person to submit something the team can respond to publicly.'
-          }
-          searchQuery={search}
-          isEmpty={filtered.length === 0}
-        >
-          {filtered.map((item) => (
-            <BoardFeedbackCard
-              key={item.id}
-              item={item}
-              comments={commentsByFeedback[item.id] || []}
-              isExpanded={expandedId === item.id}
-              voted={votedIds.has(item.id)}
-              voting={votingId === item.id}
-              canModerate={canModerate}
-              replyDraft={replyDrafts[item.id] || ''}
-              busy={busyId === item.id}
-              onVote={() => handleVote(item.id)}
-              onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
-              onOpenReport={() =>
-                setReportTarget({ type: 'feedback', feedbackId: item.id })
-              }
-              onReplyDraftChange={(value) =>
-                setReplyDrafts((prev) => ({ ...prev, [item.id]: value }))
-              }
-              onReplySubmit={() => void handleReplySubmit(item.id)}
-              onStatusChange={(status) =>
-                void handleModeration(item.id, 'status', status)
-              }
-              onHide={() => void handleModeration(item.id, 'hide')}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <div className="space-y-4">
+            <BoardFilters
+              showTypes={board.show_types}
+              filter={filter}
+              sort={sort}
+              search={search}
+              onFilterChange={setFilter}
+              onSortChange={setSort}
+              onSearchChange={setSearch}
             />
-          ))}
-        </BoardFeedbackList>
 
-        {recommendations.length > 0 && (
-          <section className="rounded-3xl border bg-card p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Explore more
-            </p>
-            <h2 className="mt-1 text-lg font-semibold text-foreground">
-              Related product boards
-            </h2>
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
-              {recommendations.map((entry) => (
-                <Link
-                  key={entry.slug}
-                  href={`/p/${entry.slug}`}
-                  className="rounded-2xl border border-border bg-muted/50 p-4 transition hover:border-primary/30 hover:bg-card"
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white"
-                      style={{
-                        backgroundColor: entry.branding.accentColor || '#0f766e',
-                      }}
-                    >
-                      {entry.branding.logoEmoji ||
-                        entry.title.slice(0, 1).toUpperCase()}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-foreground">
-                        {entry.title}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {entry.feedbackCount} requests &middot; trust{' '}
-                        {entry.trustScore}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {entry.description}
-                  </p>
-                </Link>
+            <BoardFeedbackList
+              emptyTitle={board.branding.emptyStateTitle || 'No public requests yet'}
+              emptyDescription={
+                board.branding.emptyStateDescription ||
+                'Be the first person to submit something the team can respond to publicly.'
+              }
+              searchQuery={search}
+              isEmpty={filtered.length === 0}
+            >
+              {filtered.map((item) => (
+                <BoardFeedbackCard
+                  key={item.id}
+                  item={item}
+                  comments={commentsByFeedback[item.id] || []}
+                  isExpanded={expandedId === item.id}
+                  voted={votedIds.has(item.id)}
+                  voting={votingId === item.id}
+                  canModerate={canModerate}
+                  replyDraft={replyDrafts[item.id] || ''}
+                  busy={busyId === item.id}
+                  onVote={() => handleVote(item.id)}
+                  onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                  onOpenReport={() =>
+                    setReportTarget({ type: 'feedback', feedbackId: item.id })
+                  }
+                  onReplyDraftChange={(value) =>
+                    setReplyDrafts((prev) => ({ ...prev, [item.id]: value }))
+                  }
+                  onReplySubmit={() => void handleReplySubmit(item.id)}
+                  onStatusChange={(status) =>
+                    void handleModeration(item.id, 'status', status)
+                  }
+                  onHide={() => void handleModeration(item.id, 'hide')}
+                />
               ))}
-            </div>
-          </section>
-        )}
+            </BoardFeedbackList>
+          </div>
 
-        <BoardFooter canModerate={canModerate} projectId={board.projectId} />
+          <aside className="space-y-4 lg:sticky lg:top-6">
+            {recommendations.length > 0 && (
+              <section className="rounded-2xl border border-border/80 bg-card shadow-sm">
+                <div className="border-b border-border/70 px-4 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Explore more
+                  </p>
+                  <h2 className="mt-2 text-lg font-semibold text-foreground">
+                    Related product boards
+                  </h2>
+                </div>
+                <div className="space-y-3 p-4">
+                  {recommendations.map((entry) => (
+                    <Link
+                      key={entry.slug}
+                      href={`/p/${entry.slug}`}
+                      className="block rounded-xl border border-border/70 bg-background px-4 py-4 transition-colors hover:border-foreground/20"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-sm font-semibold text-foreground"
+                        >
+                          {entry.branding.logoEmoji || entry.title.slice(0, 1).toUpperCase()}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-foreground">
+                            {entry.title}
+                          </p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {entry.feedbackCount} requests
+                            {entry.trustScore >= 70
+                              ? ' · highly responsive'
+                              : entry.trustScore >= 45
+                                ? ' · active team'
+                                : ' · new board'}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-foreground/68">
+                        {entry.description}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <BoardFooter canModerate={canModerate} projectId={board.projectId} />
+          </aside>
+        </div>
       </div>
 
       {showSubmit && (

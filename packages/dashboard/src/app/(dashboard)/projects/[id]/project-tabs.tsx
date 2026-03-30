@@ -3,13 +3,14 @@
 import * as React from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { readStoredProjectApiKey, rememberProjectApiKey } from '@/lib/project-api-keys'
 import type { Project } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Copy, Check, Loader2, Trash2, Download } from 'lucide-react'
+import { ArrowLeft, Copy, Check, Loader2, Trash2, Download, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 import { BoardSettingsTab } from './board-settings'
 import { ApiDocs } from './api-docs'
@@ -46,18 +47,66 @@ function ProjectTabsInner({ project }: ProjectTabsProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [isInteractive, setIsInteractive] = React.useState(false)
+  const [apiKey, setApiKey] = React.useState<string | null>(project.api_key)
+  const [rotatingApiKey, setRotatingApiKey] = React.useState(false)
   const tabParam = searchParams.get('tab') as TabId | null
   const created = searchParams.get('created') === '1'
   const activeTab = tabs.some((t) => t.id === tabParam) ? tabParam! : 'install'
+  const apiKeyLastFour = React.useMemo(
+    () => apiKey?.slice(-4) || project.api_key_last_four || null,
+    [apiKey, project.api_key_last_four],
+  )
 
   React.useEffect(() => {
     setIsInteractive(true)
   }, [])
 
+  React.useEffect(() => {
+    if (project.api_key) {
+      rememberProjectApiKey(project.id, project.api_key)
+      setApiKey(project.api_key)
+      return
+    }
+
+    const storedKey = readStoredProjectApiKey(project.id)
+    if (storedKey) {
+      setApiKey(storedKey)
+    }
+  }, [project.api_key, project.id])
+
   const setActiveTab = (tab: TabId) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set('tab', tab)
     router.push(`?${params.toString()}`)
+  }
+
+  const handleRotateApiKey = async () => {
+    setRotatingApiKey(true)
+    try {
+      const response = await fetch(`/api/projects/${project.id}/rotate-key`, {
+        method: 'POST',
+      })
+      const payload = await response.json().catch(() => ({ error: 'Failed to rotate API key' }))
+      if (!response.ok || !payload.api_key) {
+        throw new Error(payload.error || 'Failed to rotate API key')
+      }
+
+      rememberProjectApiKey(project.id, payload.api_key)
+      setApiKey(payload.api_key)
+      toast({
+        title: 'New API key generated',
+        description: 'This key is only visible in this browser session. Copy it into your app or agent config now.',
+      })
+      router.refresh()
+    } catch (error) {
+      toast({
+        title: 'Failed to rotate API key',
+        description: error instanceof Error ? error.message : 'Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setRotatingApiKey(false)
+    }
   }
 
   return (
@@ -71,7 +120,12 @@ function ProjectTabsInner({ project }: ProjectTabsProps) {
         </Link>
         <h1 className="mt-2 text-2xl font-bold">{project.name}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <ApiKeyBadge apiKey={project.api_key} />
+          <ApiKeyBadge
+            apiKey={apiKey}
+            lastFour={apiKeyLastFour}
+            rotating={rotatingApiKey}
+            onRotate={handleRotateApiKey}
+          />
           <a href={`/api/projects/${project.id}/feedback.csv`} download>
             <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs font-medium">
               <Download className="h-3 w-3" />
@@ -99,30 +153,78 @@ function ProjectTabsInner({ project }: ProjectTabsProps) {
         </div>
       </div>
 
-      {activeTab === 'install' && <InstallTab project={project} created={created} />}
-      {activeTab === 'customize' && <CustomizeTab project={project} />}
+      {activeTab === 'install' && (
+        <InstallTab
+          project={project}
+          projectKey={apiKey}
+          apiKeyLastFour={apiKeyLastFour}
+          rotatingApiKey={rotatingApiKey}
+          onRotateApiKey={handleRotateApiKey}
+          created={created}
+        />
+      )}
+      {activeTab === 'customize' && (
+        <CustomizeTab
+          project={project}
+          projectKey={apiKey}
+          apiKeyLastFour={apiKeyLastFour}
+          rotatingApiKey={rotatingApiKey}
+          onRotateApiKey={handleRotateApiKey}
+        />
+      )}
       {activeTab === 'integrations' && <IntegrationsTab project={project} />}
       {activeTab === 'board' && <BoardSettingsTab project={project} />}
-      {activeTab === 'api' && <ApiDocs project={project} />}
+      {activeTab === 'api' && (
+        <ApiDocs
+          project={project}
+          projectKey={apiKey}
+          apiKeyLastFour={apiKeyLastFour}
+          rotatingApiKey={rotatingApiKey}
+          onRotateApiKey={handleRotateApiKey}
+        />
+      )}
       {activeTab === 'settings' && <SettingsTab project={project} />}
     </div>
   )
 }
 
-function ApiKeyBadge({ apiKey }: { apiKey: string }) {
+function ApiKeyBadge({
+  apiKey,
+  lastFour,
+  rotating,
+  onRotate,
+}: {
+  apiKey: string | null
+  lastFour: string | null
+  rotating: boolean
+  onRotate: () => Promise<void>
+}) {
   const [copied, setCopied] = React.useState(false)
   const copy = async () => {
+    if (!apiKey) return
     await navigator.clipboard.writeText(apiKey)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
   return (
-    <button onClick={copy} className="flex items-center gap-1.5" aria-label="Copy API key">
-      <Badge variant="outline" className="font-mono text-xs">
-        {apiKey.slice(0, 8)}••••
-      </Badge>
-      {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
-    </button>
+    <div className="flex flex-wrap items-center gap-2">
+      {apiKey ? (
+        <button onClick={copy} className="flex items-center gap-1.5" aria-label="Copy API key">
+          <Badge variant="outline" className="font-mono text-xs">
+            Key visible · ••••{lastFour || apiKey.slice(-4)}
+          </Badge>
+          {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+        </button>
+      ) : (
+        <Badge variant="outline" className="font-mono text-xs">
+          Key hidden{lastFour ? ` · ••••${lastFour}` : ''}
+        </Badge>
+      )}
+      <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs font-medium" onClick={() => void onRotate()} disabled={rotating}>
+        {rotating ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+        Rotate API key
+      </Button>
+    </div>
   )
 }
 

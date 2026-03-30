@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
-
-/** Hash an API key with SHA-256 */
-async function hashApiKey(key: string): Promise<string> {
-  const encoded = new TextEncoder().encode(key)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encoded)
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
+import { assertCanCreateProject } from '@/lib/billing'
+import {
+  generateProjectApiKey,
+  getProjectApiKeyLastFour,
+  hashProjectApiKey,
+} from '@/lib/project-api-keys'
 
 export async function GET() {
   try {
@@ -36,6 +33,14 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    const entitlement = await assertCanCreateProject(user.id, user.email)
+    if (!entitlement.allowed) {
+      return NextResponse.json(
+        { error: entitlement.message, code: entitlement.code, usage: entitlement.summary.usage },
+        { status: 403 },
+      )
+    }
+
     const body = await request.json()
     const name = body.name?.trim()
     if (!name || name.length < 1 || name.length > 100) {
@@ -44,9 +49,8 @@ export async function POST(request: NextRequest) {
 
     const domain = body.domain?.trim() || null
 
-    // Generate API key, store only hash
-    const rawApiKey = `fb_${crypto.randomUUID().replace(/-/g, '')}${crypto.randomUUID().replace(/-/g, '').slice(0, 8)}`
-    const apiKeyHash = await hashApiKey(rawApiKey)
+    const rawApiKey = generateProjectApiKey()
+    const apiKeyHash = await hashProjectApiKey(rawApiKey)
 
     const admin = await createAdminSupabase()
     const now = new Date().toISOString()
@@ -54,8 +58,9 @@ export async function POST(request: NextRequest) {
       id: crypto.randomUUID(),
       owner_user_id: user.id,
       name,
-      api_key: rawApiKey, // Store raw key for backward compat (TODO: remove after migration)
+      api_key: null,
       api_key_hash: apiKeyHash,
+      api_key_last_four: getProjectApiKeyLastFour(rawApiKey),
       domain,
       webhooks: {},
       settings: {},
@@ -66,7 +71,6 @@ export async function POST(request: NextRequest) {
     const { data, error } = await admin.from('projects').insert(project).select().single()
     if (error) return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
 
-    // Return the raw API key only once at creation
     return NextResponse.json({ ...data, api_key: rawApiKey }, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

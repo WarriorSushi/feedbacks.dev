@@ -60,14 +60,15 @@ export default function TermsPage() {
 
           <h2>7. Pricing</h2>
           <p>
-            The free tier includes limited projects and feedback. Paid plans may be
-            introduced — we&apos;ll notify you in advance of any changes.
+            The Free tier includes limited projects, monthly feedback volume, and a 30-day history window.
+            Pro unlocks additional projects, unlimited history, webhook routing, and the AI / MCP surfaces.
+            Billing is handled through Dodo Payments and subscription changes take effect after verified billing events are processed.
           </p>
 
           <h2>8. Termination</h2>
           <p>
-            You can delete your account at any time. We may suspend accounts that violate
-            these terms.
+            You can delete your account at any time from Settings. If you are on a paid plan, you must
+            cancel or downgrade it from Billing before deleting the account. We may suspend accounts that violate these terms.
           </p>
 
           <h2>9. Changes</h2>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
+import { assertFeatureAccess } from '@/lib/billing'
 import { resendWebhookDelivery, sendTestWebhook } from '@/lib/webhook-delivery'
 import type { WebhookConfig, WebhookEndpoint, GitHubEndpoint } from '@/lib/types'
 import { normalizeWebhookConfig } from '@/lib/webhook-config'
@@ -20,6 +21,12 @@ async function getAuthedProject(projectId: string) {
     .single()
 
   if (error || !project) return { error: NextResponse.json({ error: 'Project not found' }, { status: 404 }) }
+  const feature = await assertFeatureAccess(user.id, 'webhooks', user.email)
+  if (!feature.allowed) {
+    return {
+      error: NextResponse.json({ error: feature.message, code: feature.code }, { status: 403 }),
+    }
+  }
   return { project, admin }
 }
 

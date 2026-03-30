@@ -1,4 +1,5 @@
 import { createServerSupabase } from '@/lib/supabase-server'
+import { getCurrentUserBillingSummary, getHistoryCutoff } from '@/lib/billing'
 import { notFound } from 'next/navigation'
 import type { Feedback, FeedbackNote } from '@/lib/types'
 import { formatDate, getTypeIcon, getStatusColor, getTypeColor, statusConfig } from '@/lib/utils'
@@ -34,13 +35,22 @@ export default async function FeedbackDetailPage({
 }) {
   const { id } = await params
   const supabase = await createServerSupabase()
+  const billingSummary = await getCurrentUserBillingSummary()
+  const historyCutoff = billingSummary ? getHistoryCutoff(billingSummary) : null
 
   const [{ data: feedback }, { data: notes }] = await Promise.all([
-    supabase
-      .from('feedback')
-      .select('*, projects(id, name)')
-      .eq('id', id)
-      .single(),
+    (historyCutoff
+      ? supabase
+        .from('feedback')
+        .select('*, projects(id, name)')
+        .eq('id', id)
+        .gte('created_at', historyCutoff)
+        .single()
+      : supabase
+        .from('feedback')
+        .select('*, projects(id, name)')
+        .eq('id', id)
+        .single()),
     supabase
       .from('feedback_notes')
       .select('*')

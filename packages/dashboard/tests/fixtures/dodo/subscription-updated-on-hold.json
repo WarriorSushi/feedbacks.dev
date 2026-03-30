@@ -1,0 +1,19 @@
+{
+  "type": "subscription.updated",
+  "data": {
+    "subscription_id": "sub_test_hold",
+    "product_id": "prod_pro_monthly",
+    "status": "on_hold",
+    "metadata": {
+      "user_id": "00000000-0000-0000-0000-000000000002"
+    },
+    "customer": {
+      "customer_id": "cus_test_hold",
+      "email": "hold@example.com",
+      "name": "Hold User"
+    },
+    "previous_billing_date": "2026-03-10T00:00:00Z",
+    "next_billing_date": "2026-04-10T00:00:00Z",
+    "cancel_at_next_billing_date": true
+  }
+}

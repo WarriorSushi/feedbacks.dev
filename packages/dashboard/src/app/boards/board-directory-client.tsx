@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import { ArrowUpRight, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { BoardBranding } from '@/lib/public-board'
 
@@ -14,9 +15,13 @@ interface BoardDirectoryEntry {
   description: string
   displayName: string | null
   projectName: string
+  createdAt: string
   feedbackCount: number
   voteCount: number
   publicReplyCount: number
+  recentlyShippedCount: number
+  inProgressCount: number
+  trustScore: number
   branding: BoardBranding
   scores: Record<BoardSortMode, number>
   recentActivityAt: string | null
@@ -27,16 +32,19 @@ function sortEntries(entries: BoardDirectoryEntry[], sort: BoardSortMode): Board
   return [...entries].sort((a, b) => {
     const diff = b.scores[sort] - a.scores[sort]
     if (diff !== 0) return diff
-    return new Date(b.recentActivityAt || b.updatedAt).getTime() - new Date(a.recentActivityAt || a.updatedAt).getTime()
+    return (
+      new Date(b.recentActivityAt || b.updatedAt).getTime() -
+      new Date(a.recentActivityAt || a.updatedAt).getTime()
+    )
   })
 }
 
 const SORT_OPTIONS: Array<{ value: BoardSortMode; label: string; description: string }> = [
-  { value: 'trending', label: 'Trending', description: 'Boards with the most recent public activity.' },
-  { value: 'active', label: 'Active', description: 'Boards with frequent feedback and replies.' },
+  { value: 'trending', label: 'Trending', description: 'Recent public activity and momentum.' },
+  { value: 'active', label: 'Active', description: 'Boards with consistent feedback and replies.' },
   { value: 'responsive', label: 'Responsive', description: 'Boards where teams close the loop publicly.' },
-  { value: 'shipping', label: 'Shipping fast', description: 'Boards with strong in-progress and shipped signals.' },
-  { value: 'new', label: 'New', description: 'Freshly published boards worth a look.' },
+  { value: 'shipping', label: 'Shipping', description: 'Boards showing in-progress and shipped work.' },
+  { value: 'new', label: 'New', description: 'Fresh boards worth checking early.' },
 ]
 
 interface BoardDirectoryClientProps {
@@ -44,6 +52,26 @@ interface BoardDirectoryClientProps {
   categories: string[]
   initialSort: BoardSortMode
   initialCategory: string
+}
+
+function formatActivity(date: string | null, fallback: string) {
+  const target = new Date(date || fallback).getTime()
+  const diff = Date.now() - target
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+  if (days <= 0) return 'Updated today'
+  if (days === 1) return 'Updated yesterday'
+  if (days < 7) return `Updated ${days} days ago`
+  if (days < 30) return `Updated ${Math.floor(days / 7)} week${days >= 14 ? 's' : ''} ago`
+  return `Updated ${new Date(date || fallback).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+}
+
+function getBoardHealthLabel(entry: BoardDirectoryEntry) {
+  if (entry.recentlyShippedCount > 0) return 'Shipping publicly'
+  if (entry.publicReplyCount > 0) return 'Team responding'
+  if (entry.inProgressCount > 0) return 'Work in progress'
+  if (entry.feedbackCount > 0) return 'Collecting signal'
+  return 'Fresh board'
 }
 
 export function BoardDirectoryClient({
@@ -55,8 +83,13 @@ export function BoardDirectoryClient({
   const [sort, setSort] = React.useState<BoardSortMode>(initialSort)
   const [category, setCategory] = React.useState(initialCategory)
   const [search, setSearch] = React.useState('')
+  const [ready, setReady] = React.useState(false)
 
   const activeSort = SORT_OPTIONS.find((option) => option.value === sort) || SORT_OPTIONS[0]
+
+  React.useEffect(() => {
+    setReady(true)
+  }, [])
 
   const sorted = React.useMemo(() => {
     let filtered = entries
@@ -76,122 +109,128 @@ export function BoardDirectoryClient({
   }, [entries, category, search, sort])
 
   return (
-    <>
-      <section className="mt-6 rounded-3xl border bg-card p-5 shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap gap-2">
-            {SORT_OPTIONS.map((option) => (
+    <div data-board-directory-ready={ready ? 'true' : 'false'}>
+      <section className="mt-6 rounded-2xl border border-border/80 bg-card shadow-sm">
+        <div className="border-b border-border/70 px-5 py-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                Browse boards
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {SORT_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setSort(option.value)}
+                    className={cn(
+                      'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+                      sort === option.value
+                        ? 'border-foreground bg-foreground text-background shadow-sm'
+                        : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground',
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="relative min-w-[240px]">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search boards..."
+                  className="h-10 w-full rounded-lg border border-border bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+              <p className="max-w-[220px] text-sm leading-6 text-foreground/68">
+                {activeSort.description}
+              </p>
+            </div>
+          </div>
+
+          {categories.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
               <button
-                key={option.value}
-                onClick={() => setSort(option.value)}
+                onClick={() => setCategory('')}
                 className={cn(
-                  'rounded-full px-3.5 py-1.5 text-sm transition',
-                  sort === option.value
-                    ? 'bg-foreground text-background'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80',
+                  'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
+                  !category
+                    ? 'border-foreground bg-foreground text-background'
+                    : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground',
                 )}
               >
-                {option.label}
+                All categories
               </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <svg
-                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <input
-                type="text"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search boards..."
-                className="h-10 min-w-[200px] rounded-xl border border-border bg-card pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground"
-              />
+              {categories.map((entry) => (
+                <button
+                  key={entry}
+                  onClick={() => setCategory(category === entry ? '' : entry)}
+                  className={cn(
+                    'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
+                    category === entry
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground',
+                  )}
+                >
+                  {entry}
+                </button>
+              ))}
             </div>
-            <p className="hidden text-sm text-muted-foreground lg:block">{activeSort.description}</p>
-          </div>
+          )}
         </div>
 
-        {categories.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              onClick={() => setCategory('')}
-              className={cn(
-                'rounded-full border px-3 py-1 text-xs font-medium transition',
-                !category
-                  ? 'border-foreground bg-foreground text-background'
-                  : 'border-border text-muted-foreground hover:border-border/80',
-              )}
-            >
-              All categories
-            </button>
-            {categories.map((entry) => (
-              <button
-                key={entry}
-                onClick={() => setCategory(category === entry ? '' : entry)}
-                className={cn(
-                  'rounded-full border px-3 py-1 text-xs font-medium transition',
-                  category === entry
-                    ? 'border-foreground bg-foreground text-background'
-                    : 'border-border text-muted-foreground hover:border-border/80',
-                )}
-              >
-                {entry}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="flex items-center justify-between px-5 py-3 text-sm text-muted-foreground">
+          <span>
+            Showing <span className="font-medium text-foreground">{sorted.length}</span> of{' '}
+            <span className="font-medium text-foreground">{entries.length}</span> boards
+          </span>
+          <span className="hidden sm:inline">{activeSort.label} first</span>
+        </div>
       </section>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section className="mt-6 grid gap-4 xl:grid-cols-2">
         {sorted.map((entry) => (
           <Link
             key={entry.slug}
             href={`/p/${entry.slug}`}
-            className="rounded-3xl border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
+            className="group rounded-2xl border border-border/80 bg-card p-5 shadow-sm transition-colors hover:border-foreground/20 hover:shadow-md"
           >
-            <div className="flex items-center gap-3">
-              <span
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold text-white"
-                style={{ backgroundColor: entry.branding.accentColor || '#0f766e' }}
-              >
-                {entry.branding.logoEmoji || (entry.displayName || entry.title).slice(0, 1).toUpperCase()}
-              </span>
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-foreground">
-                  {entry.displayName || entry.title}
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex items-start gap-3">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background text-sm font-semibold text-foreground shadow-sm">
+                  {entry.branding.logoEmoji || (entry.displayName || entry.title).slice(0, 1).toUpperCase()}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-lg font-semibold tracking-tight text-foreground">
+                    {entry.displayName || entry.title}
+                  </p>
+                  <p className="truncate text-sm text-muted-foreground">{entry.projectName}</p>
+                </div>
+              </div>
+              <div className="hidden text-right sm:block">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  {getBoardHealthLabel(entry)}
                 </p>
-                <p className="truncate text-xs text-muted-foreground">{entry.projectName}</p>
+                <p className="mt-1 text-xs text-foreground/68">
+                  {formatActivity(entry.recentActivityAt, entry.updatedAt)}
+                </p>
               </div>
             </div>
 
-            {entry.branding.tagline && (
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {entry.branding.tagline}
-              </p>
-            )}
-            {!entry.branding.tagline && (
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {entry.description}
-              </p>
-            )}
+            <p className="mt-4 text-sm leading-7 text-foreground/72">
+              {entry.branding.tagline || entry.description}
+            </p>
 
             {entry.branding.categories && entry.branding.categories.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
-                {entry.branding.categories.slice(0, 3).map((tag) => (
+                {entry.branding.categories.slice(0, 4).map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-border bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground"
+                    className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground"
                   >
                     {tag}
                   </span>
@@ -199,25 +238,37 @@ export function BoardDirectoryClient({
               </div>
             )}
 
-            <div className="mt-5 flex items-center gap-4 text-sm text-muted-foreground">
-              <span>{entry.feedbackCount} ideas</span>
-              <span>{entry.voteCount} votes</span>
-              <span>{entry.publicReplyCount} replies</span>
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-border/70 pt-4">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                <span>
+                  <span className="font-semibold text-foreground">{entry.feedbackCount}</span> requests
+                </span>
+                <span>
+                  <span className="font-semibold text-foreground">{entry.voteCount}</span> votes
+                </span>
+                <span>
+                  <span className="font-semibold text-foreground">{entry.publicReplyCount}</span> replies
+                </span>
+              </div>
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-transform group-hover:translate-x-0.5">
+                Open board
+                <ArrowUpRight className="h-4 w-4" />
+              </span>
             </div>
           </Link>
         ))}
       </section>
 
       {sorted.length === 0 && (
-        <div className="mt-6 rounded-3xl border border-dashed bg-card/90 p-10 text-center shadow-sm">
+        <div className="mt-6 rounded-2xl border border-dashed border-border/80 bg-card px-6 py-12 text-center shadow-sm">
           <h2 className="text-xl font-semibold text-foreground">No boards match that filter yet</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm leading-7 text-foreground/68">
             {search.trim()
               ? `No results for "${search}". Try a different search.`
               : 'Try a different category or switch back to all boards.'}
           </p>
         </div>
       )}
-    </>
+    </div>
   )
 }

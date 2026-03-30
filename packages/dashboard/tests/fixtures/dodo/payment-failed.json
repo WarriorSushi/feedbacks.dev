@@ -1,0 +1,16 @@
+{
+  "type": "payment.failed",
+  "data": {
+    "subscription_id": "sub_test_past_due",
+    "product_id": "prod_pro_monthly",
+    "metadata": {
+      "user_id": "00000000-0000-0000-0000-000000000003"
+    },
+    "customer": {
+      "customer_id": "cus_test_past_due",
+      "email": "billing@example.com",
+      "name": "Billing User"
+    },
+    "next_billing_date": "2026-04-15T00:00:00Z"
+  }
+}
