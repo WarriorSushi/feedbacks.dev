@@ -140,7 +140,12 @@ pnpm add @feedbacks/widget-react
 pnpm add @feedbacks/widget-vue
 
 # CDN (no build step)
-<script src="https://feedbacks.dev/widget/latest.js"></script>
+<script
+  src="https://feedbacks.dev/widget/latest.js"
+  data-project="your-project-key"
+  data-api-url="https://feedbacks.dev/api/feedback"
+  defer
+></script>
 ```
 
 ---
