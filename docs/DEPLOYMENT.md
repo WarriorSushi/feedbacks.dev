@@ -23,6 +23,8 @@ Go to your **Supabase Dashboard** → **SQL Editor** → run these files in orde
 
 **How:** Copy-paste the contents of each file into the SQL Editor and click "Run".
 
+If the live schema already contains objects from `009` through `011` but your migration history does not, still run those files in order. They are the canonical source of truth for billing, API-key hardening, and notification digests, and applying them idempotently keeps the schema and migration ledger aligned.
+
 Do not treat `sql/000_full_reset_v2-ran this one for v2. nothing else needed.sql` as the canonical production migration path. It is a reset snapshot for local recovery, not the ordered migration source of truth.
 
 ---
