@@ -114,6 +114,9 @@ const DEFAULT_TRIGGER_TARGET_PREFIX = 'feedbacks-trigger'
 const DEFAULT_MODAL_POSITION: WidgetPosition = 'bottom-right'
 const DEFAULT_MODAL_MODE: EmbedMode = 'modal'
 const DEFAULT_BUTTON_TEXT = 'Feedback'
+const DEFAULT_PRIMARY_COLOR = '#6366f1'
+const DEFAULT_FORM_TITLE = 'Send Feedback'
+const DEFAULT_MESSAGE_PLACEHOLDER = "What's on your mind?"
 const HEX_COLOR_RE = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i
 const MIME_TYPE_RE = /^[a-z0-9!#$&^_.+-]+\/[a-z0-9!#$&^_.+-]+$/i
 
@@ -333,6 +336,76 @@ export function buildRuntimeWidgetConfig(
     target: nextTarget,
     apiUrl: options.apiUrl || sanitizedConfig.apiUrl || buildFeedbackApiUrl(options.appOrigin),
   }
+}
+
+export function buildWidgetEditorConfig(
+  projectKey: string,
+  savedConfig: SavedWidgetConfig | null | undefined = {},
+  options: { appOrigin?: string } = {},
+): SavedWidgetConfig {
+  const sanitizedConfig = sanitizeSavedWidgetConfig(savedConfig, {
+    projectKey,
+    appOrigin: options.appOrigin,
+  })
+  const runtimeConfig = buildRuntimeWidgetConfig(projectKey, sanitizedConfig, {
+    appOrigin: options.appOrigin,
+  })
+
+  return {
+    ...sanitizedConfig,
+    configVersion: runtimeConfig.configVersion || WIDGET_CONFIG_VERSION,
+    embedMode: runtimeConfig.embedMode || DEFAULT_MODAL_MODE,
+    position: runtimeConfig.position || DEFAULT_MODAL_POSITION,
+    buttonText: runtimeConfig.buttonText || DEFAULT_BUTTON_TEXT,
+    primaryColor: runtimeConfig.primaryColor || DEFAULT_PRIMARY_COLOR,
+    enableType: runtimeConfig.enableType ?? true,
+    enableRating: runtimeConfig.enableRating ?? true,
+    enableScreenshot: runtimeConfig.enableScreenshot ?? false,
+    requireEmail: runtimeConfig.requireEmail ?? false,
+    formTitle: runtimeConfig.formTitle || DEFAULT_FORM_TITLE,
+    messagePlaceholder: runtimeConfig.messagePlaceholder || DEFAULT_MESSAGE_PLACEHOLDER,
+  }
+}
+
+export function getWidgetModeLabel(
+  config: Pick<SavedWidgetConfig, 'embedMode'> | Pick<WidgetConfig, 'embedMode'>,
+): string {
+  return config.embedMode === 'inline'
+    ? 'Inline'
+    : config.embedMode === 'trigger'
+      ? 'Trigger'
+      : 'Modal'
+}
+
+export function getWidgetLauncherPositionLabel(
+  position?: WidgetPosition,
+): string {
+  switch (position) {
+    case 'bottom-left':
+      return 'lower-left corner'
+    case 'top-left':
+      return 'upper-left corner'
+    case 'top-right':
+      return 'upper-right corner'
+    default:
+      return 'lower-right corner'
+  }
+}
+
+export function getWidgetExpectation(
+  config: Pick<SavedWidgetConfig, 'embedMode' | 'position' | 'buttonText'> | Pick<WidgetConfig, 'embedMode' | 'position' | 'buttonText'>,
+): string {
+  const buttonText = config.buttonText?.trim() || DEFAULT_BUTTON_TEXT
+
+  if (config.embedMode === 'inline') {
+    return 'The widget renders directly inside the inline mount element.'
+  }
+
+  if (config.embedMode === 'trigger') {
+    return `Click "${buttonText}" to open the feedback form from your trigger element.`
+  }
+
+  return `Look for the floating "${buttonText}" launcher near the ${getWidgetLauncherPositionLabel(config.position)}.`
 }
 
 export function parseWidgetDataAttributes(

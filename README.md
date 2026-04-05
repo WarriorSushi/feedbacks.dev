@@ -38,13 +38,13 @@ Install with one line. Collects feedback with full context (URL, browser, screen
 pnpm add @feedbacks/widget
 ```
 
-```typescript
-import { FeedbacksWidget } from '@feedbacks/widget'
-
-FeedbacksWidget.init({
-  projectKey: 'your-project-key',
-  theme: 'auto'
-})
+```html
+<script
+  src="https://feedbacks.dev/widget/latest.js"
+  data-project="your-project-key"
+  data-api-url="https://feedbacks.dev/api/feedback"
+  defer
+></script>
 ```
 
 ### Smart Dashboard

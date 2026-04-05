@@ -1,7 +1,12 @@
 'use client'
 
 import * as React from 'react'
-import { buildRuntimeWidgetConfig, sanitizeSavedWidgetConfig } from '@feedbacks/shared'
+import {
+  buildRuntimeWidgetConfig,
+  buildWidgetEditorConfig,
+  getWidgetExpectation,
+  getWidgetModeLabel,
+} from '@feedbacks/shared'
 import { useRouter } from 'next/navigation'
 import type { Project, WidgetConfig } from '@/lib/types'
 import { publicEnv } from '@/lib/public-env'
@@ -36,58 +41,6 @@ const TRACKED_WIDGET_FIELDS: Array<[keyof WidgetConfig, string]> = [
   ['requireEmail', 'Require email'],
 ]
 
-function buildEditableWidgetConfig(existing: WidgetConfig = {}): WidgetConfig {
-  const sanitized = sanitizeSavedWidgetConfig(existing)
-  return {
-    ...sanitized,
-    embedMode: sanitized.embedMode || 'modal',
-    primaryColor: sanitized.primaryColor || '#6366f1',
-    buttonText: sanitized.buttonText || 'Feedback',
-    position: sanitized.position || 'bottom-right',
-    enableRating: sanitized.enableRating ?? true,
-    enableType: sanitized.enableType ?? true,
-    enableScreenshot: sanitized.enableScreenshot ?? false,
-    requireEmail: sanitized.requireEmail ?? false,
-    formTitle: sanitized.formTitle || 'Send Feedback',
-    messagePlaceholder: sanitized.messagePlaceholder || "What's on your mind?",
-  }
-}
-
-function getRuntimeModeLabel(config: ReturnType<typeof buildRuntimeWidgetConfig>) {
-  return config.embedMode === 'inline'
-    ? 'Inline'
-    : config.embedMode === 'trigger'
-      ? 'Trigger'
-      : 'Modal'
-}
-
-function getModalPositionLabel(position?: string) {
-  switch (position) {
-    case 'bottom-left':
-      return 'lower-left corner'
-    case 'top-left':
-      return 'upper-left corner'
-    case 'top-right':
-      return 'upper-right corner'
-    default:
-      return 'lower-right corner'
-  }
-}
-
-function getRuntimeExpectation(config: ReturnType<typeof buildRuntimeWidgetConfig>) {
-  const buttonText = config.buttonText?.trim() || 'Feedback'
-
-  if (config.embedMode === 'inline') {
-    return 'The widget renders directly inside the inline mount element.'
-  }
-
-  if (config.embedMode === 'trigger') {
-    return `Click "${buttonText}" to open the feedback form from your trigger element.`
-  }
-
-  return `Look for the floating "${buttonText}" launcher near the ${getModalPositionLabel(config.position)}.`
-}
-
 export function CustomizeTab({
   project,
   projectKey,
@@ -105,8 +58,8 @@ export function CustomizeTab({
   const [previewError, setPreviewError] = React.useState<string | null>(null)
   const storageKey = React.useMemo(() => `feedbacks-widget-draft:${project.id}`, [project.id])
   const serverSavedConfig = React.useMemo(
-    () => buildEditableWidgetConfig(project.settings?.widget_config || {}),
-    [project.settings?.widget_config],
+    () => buildWidgetEditorConfig(previewProjectKey, project.settings?.widget_config || {}, { appOrigin }),
+    [appOrigin, previewProjectKey, project.settings?.widget_config],
   )
   const [savedConfig, setSavedConfig] = React.useState<WidgetConfig>(serverSavedConfig)
   const [config, setConfig] = React.useState<WidgetConfig>(serverSavedConfig)
@@ -142,7 +95,7 @@ export function CustomizeTab({
     }
 
     try {
-      const parsed = buildEditableWidgetConfig(JSON.parse(raw) as WidgetConfig)
+      const parsed = buildWidgetEditorConfig(previewProjectKey, JSON.parse(raw) as WidgetConfig, { appOrigin })
       if (fingerprintConfig(parsed) !== fingerprintConfig(savedConfig)) {
         setConfig(parsed)
         setDraftRestored(true)
@@ -154,7 +107,7 @@ export function CustomizeTab({
     } finally {
       setDraftHydrated(true)
     }
-  }, [fingerprintConfig, savedConfig, storageKey])
+  }, [appOrigin, fingerprintConfig, previewProjectKey, savedConfig, storageKey])
 
   const savedFingerprint = React.useMemo(
     () => fingerprintConfig(savedConfig),
@@ -174,19 +127,19 @@ export function CustomizeTab({
     [appOrigin, previewProjectKey, savedConfig],
   )
   const savedModeLabel = React.useMemo(
-    () => getRuntimeModeLabel(savedRuntimeConfig),
+    () => getWidgetModeLabel(savedRuntimeConfig),
     [savedRuntimeConfig],
   )
   const draftModeLabel = React.useMemo(
-    () => getRuntimeModeLabel(runtimePreviewConfig),
+    () => getWidgetModeLabel(runtimePreviewConfig),
     [runtimePreviewConfig],
   )
   const savedExpectation = React.useMemo(
-    () => getRuntimeExpectation(savedRuntimeConfig),
+    () => getWidgetExpectation(savedRuntimeConfig),
     [savedRuntimeConfig],
   )
   const draftExpectation = React.useMemo(
-    () => getRuntimeExpectation(runtimePreviewConfig),
+    () => getWidgetExpectation(runtimePreviewConfig),
     [runtimePreviewConfig],
   )
   const changedFields = React.useMemo(
@@ -254,7 +207,7 @@ export function CustomizeTab({
       }
 
       const payload = await response.json()
-      const nextSavedConfig = buildEditableWidgetConfig(payload.settings?.widget_config || {})
+      const nextSavedConfig = buildWidgetEditorConfig(previewProjectKey, payload.settings?.widget_config || {}, { appOrigin })
       setSavedConfig(nextSavedConfig)
       setConfig(nextSavedConfig)
 

@@ -2,7 +2,13 @@
 
 import { Terminal } from '@/components/ui/terminal'
 
-export function LandingTerminalDemo() {
+interface LandingTerminalDemoProps {
+  websiteSnippet: string
+}
+
+export function LandingTerminalDemo({ websiteSnippet }: LandingTerminalDemoProps) {
+  const snippetLines = websiteSnippet.split('\n').filter(Boolean)
+
   return (
     <div className="w-full">
       <Terminal
@@ -13,12 +19,7 @@ export function LandingTerminalDemo() {
           'tail -n 1 feedbacks-inbox.log',
         ]}
         outputs={{
-          0: [
-            '<script src="https://feedbacks.dev/widget/latest.js"></script>',
-            '<script>',
-            "  FeedbacksWidget.init({ projectKey: 'fb_live_demo', theme: 'auto' })",
-            '</script>',
-          ],
+          0: snippetLines,
           1: [
             '▲ Next.js 15.1.0',
             '- Local: http://localhost:3000',

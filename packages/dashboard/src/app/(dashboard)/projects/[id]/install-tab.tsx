@@ -4,7 +4,10 @@ import * as React from 'react'
 import Link from 'next/link'
 import {
   buildFeedbackApiUrl,
+  buildRuntimeWidgetConfig,
   generateInstallSnippets,
+  getWidgetExpectation,
+  getWidgetModeLabel,
   type InstallSnippet,
   buildWidgetScriptUrl,
 } from '@feedbacks/shared'
@@ -55,30 +58,12 @@ export function InstallTab({
   const feedbackApiUrl = buildFeedbackApiUrl(appOrigin)
   const cspSnippet = `default-src 'self';\nscript-src 'self' ${new URL(widgetScriptUrl).origin};\nconnect-src 'self' ${new URL(feedbackApiUrl).origin};\nstyle-src 'self' 'unsafe-inline';\nimg-src 'self' data: blob:;`
   const sriCommand = `node -e "const fs=require('node:fs');const crypto=require('node:crypto');const file='packages/dashboard/public/widget/latest.js';const hash=crypto.createHash('sha384').update(fs.readFileSync(file)).digest('base64');console.log('integrity=\\\"sha384-'+hash+'\\\"')"`
-  const embedMode = savedConfig.embedMode || 'modal'
-  const buttonText = savedConfig.buttonText?.trim() || 'Feedback'
-  const modeLabel = embedMode === 'inline'
-    ? 'Inline'
-    : embedMode === 'trigger'
-      ? 'Trigger'
-      : 'Modal'
-  const modalPosition = (() => {
-    switch (savedConfig.position) {
-      case 'bottom-left':
-        return 'lower-left corner'
-      case 'top-left':
-        return 'upper-left corner'
-      case 'top-right':
-        return 'upper-right corner'
-      default:
-        return 'lower-right corner'
-    }
-  })()
-  const expectedResult = embedMode === 'inline'
-    ? 'The snippet includes the inline mount element, so the widget should render inside the page content as soon as the script loads.'
-    : embedMode === 'trigger'
-      ? `The snippet includes a trigger element. Clicking "${buttonText}" should open the feedback form.`
-      : `The default modal install shows a floating "${buttonText}" button near the ${modalPosition}.`
+  const runtimeConfig = React.useMemo(
+    () => buildRuntimeWidgetConfig(projectKey || 'fb_install_preview', savedConfig, { appOrigin }),
+    [appOrigin, projectKey, savedConfig],
+  )
+  const modeLabel = getWidgetModeLabel(runtimeConfig)
+  const expectedResult = getWidgetExpectation(runtimeConfig)
 
   const copyWebsiteSnippet = async () => {
     if (!websiteSnippet) return

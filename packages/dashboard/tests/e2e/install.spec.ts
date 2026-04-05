@@ -33,7 +33,7 @@ test('copy-paste install guidance stays visible for an existing project', async 
     page.getByText(/Paste the snippet into your site where global scripts load/i),
   ).toBeVisible({ timeout: 30_000 })
   await expect(
-    page.getByText(/The default modal install shows a floating "Feedback" button/i).first(),
+    page.getByText(/Look for the floating "Feedback" launcher near the lower-right corner/i).first(),
   ).toBeVisible({ timeout: 30_000 })
   await expect(page.getByRole('link', { name: 'Open verification page' })).toBeVisible()
 })

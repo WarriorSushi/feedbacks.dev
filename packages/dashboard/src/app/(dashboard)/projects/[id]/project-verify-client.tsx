@@ -4,6 +4,8 @@ import * as React from 'react'
 import Link from 'next/link'
 import {
   buildRuntimeWidgetConfig,
+  getWidgetExpectation,
+  getWidgetModeLabel,
   type SavedWidgetConfig,
 } from '@feedbacks/shared'
 import { readStoredProjectApiKey, rememberProjectApiKey } from '@/lib/project-api-keys'
@@ -55,17 +57,8 @@ export function ProjectVerifyClient({
     () => buildRuntimeWidgetConfig(resolvedProjectKey || 'fb_verify_placeholder', savedConfig, { appOrigin }),
     [appOrigin, resolvedProjectKey, savedConfig],
   )
-  const modeLabel = runtimeConfig.embedMode === 'inline'
-    ? 'Inline'
-    : runtimeConfig.embedMode === 'trigger'
-      ? 'Trigger'
-      : 'Modal'
-  const buttonText = runtimeConfig.buttonText?.trim() || 'Feedback'
-  const runtimeExpectation = runtimeConfig.embedMode === 'inline'
-    ? 'The widget should render directly inside the preview surface below.'
-    : runtimeConfig.embedMode === 'trigger'
-      ? `Click "${buttonText}" in the preview surface to open the feedback form.`
-      : `Look for the floating "${buttonText}" launcher near the lower-right corner.`
+  const modeLabel = getWidgetModeLabel(runtimeConfig)
+  const runtimeExpectation = getWidgetExpectation(runtimeConfig)
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">

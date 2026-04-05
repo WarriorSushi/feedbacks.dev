@@ -260,7 +260,7 @@ export default async function LandingPage() {
           </div>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
             <div className="space-y-3">
-              <LandingTerminalDemo />
+              <LandingTerminalDemo websiteSnippet={installSnippet} />
               <p className="text-sm text-zinc-500">
                 The terminal mirrors the first-run loop: inspect the Website snippet, verify the
                 widget locally, then confirm the first report lands with useful context.

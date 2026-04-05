@@ -29,8 +29,8 @@ test('keeps customize drafts local until the user saves them', async ({ page }) 
     .not.toBeNull()
 
   await page.goto(projectInstallPath(project.id), { waitUntil: 'domcontentloaded' })
-  await expect(page.getByText(/floating "Feedback" button/i).first()).toBeVisible()
-  await expect(page.getByText(/floating "Ideas" button/i)).toHaveCount(0)
+  await expect(page.getByText(/floating "Feedback" launcher/i).first()).toBeVisible()
+  await expect(page.getByText(/floating "Ideas" launcher/i)).toHaveCount(0)
 
   await page.goto(projectCustomizePath(project.id), { waitUntil: 'domcontentloaded' })
   await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
@@ -52,5 +52,5 @@ test('keeps customize drafts local until the user saves them', async ({ page }) 
   ).toBeVisible()
 
   await page.goto(projectInstallPath(project.id), { waitUntil: 'domcontentloaded' })
-  await expect(page.getByText(/floating "Ideas" button/i).first()).toBeVisible()
+  await expect(page.getByText(/floating "Ideas" launcher/i).first()).toBeVisible()
 })
