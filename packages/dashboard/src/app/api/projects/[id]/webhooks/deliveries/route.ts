@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import { assertFeatureAccess } from '@/lib/billing'
+import { hasE2EBypass } from '@/lib/e2e'
 import { listWebhookEndpointStates, normalizeWebhookConfig } from '@/lib/webhook-config'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
-async function getAuthedProject(projectId: string) {
+async function getAuthedProject(projectId: string, request: NextRequest) {
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
@@ -19,10 +20,12 @@ async function getAuthedProject(projectId: string) {
     .single()
 
   if (error || !project) return { error: NextResponse.json({ error: 'Project not found' }, { status: 404 }) }
-  const feature = await assertFeatureAccess(user.id, 'webhooks', user.email)
-  if (!feature.allowed) {
-    return {
-      error: NextResponse.json({ error: feature.message, code: feature.code }, { status: 403 }),
+  if (!hasE2EBypass(request)) {
+    const feature = await assertFeatureAccess(user.id, 'webhooks', user.email)
+    if (!feature.allowed) {
+      return {
+        error: NextResponse.json({ error: feature.message, code: feature.code }, { status: 403 }),
+      }
     }
   }
   return { project, admin }
@@ -31,7 +34,7 @@ async function getAuthedProject(projectId: string) {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
-    const result = await getAuthedProject(id)
+    const result = await getAuthedProject(id, _request)
     if ('error' in result && !('admin' in result)) return result.error
 
     const { project, admin } = result as Exclude<typeof result, { error: NextResponse }>

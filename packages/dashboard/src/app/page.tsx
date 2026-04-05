@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PLAN_MATRIX, generateInstallSnippets } from '@feedbacks/shared'
 import { CodeSnippet } from '@/components/code-snippet'
+import { LandingTerminalDemo } from '@/components/terminal-demo'
 import { publicEnv } from '@/lib/public-env'
 import { createServerSupabase } from '@/lib/supabase-server'
 import {
@@ -169,7 +170,7 @@ export default async function LandingPage() {
               <div className="mb-6 flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="gap-1.5 border-primary/20 bg-primary/[0.08] px-3 py-1 text-xs font-semibold text-primary">
                   <Sparkles className="h-3 w-3" />
-                  Source available &middot; FSL-1.1-MIT
+                  Install-first feedback stack
                 </Badge>
                 <Badge variant="outline" className="gap-1.5 px-3 py-1 text-xs font-medium text-muted-foreground">
                   <Code2 className="h-3 w-3" />
@@ -178,43 +179,42 @@ export default async function LandingPage() {
               </div>
 
               <h1 className="mb-6 text-5xl font-black leading-[0.95] tracking-tighter md:text-6xl lg:text-7xl">
-                Stop guessing
+                Install feedback
+                <br />
+                in minutes.
                 <br />
                 <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                  what to build.
+                  Triage the right issues fast.
                 </span>
               </h1>
 
-              <p className="mb-8 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg">
-                Embeddable widget, smart dashboard, public voting boards, and an AI agent
-                API &mdash; the complete feedback stack for developers who ship.
+              <p className="mb-8 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+                Create a project, paste one Website snippet, and verify a real submission without
+                wading through setup screens. feedbacks.dev keeps the first run small, captures
+                useful context automatically, and gives you public boards only when you are ready
+                to open the workflow up.
               </p>
 
               <div className="flex flex-wrap gap-3">
                 <Link href={isLoggedIn ? '/dashboard' : '/auth'}>
                   <Button size="lg" className="group h-12 px-7 font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/25">
-                    {isLoggedIn ? 'Go to Dashboard' : 'Start Free'}
+                    {isLoggedIn ? 'Go to Dashboard' : 'Create project'}
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                   </Button>
                 </Link>
-                <a
-                  href="https://github.com/WarriorSushi/feedbacks.dev-2026"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <Link href="/boards">
                   <Button variant="outline" size="lg" className="h-12 gap-2 font-semibold">
-                    <Github className="h-4 w-4" />
-                    View on GitHub
+                    Browse public boards
                   </Button>
-                </a>
+                </Link>
               </div>
 
               <div className="mt-8 flex flex-wrap gap-2.5">
                 {[
-                  { Icon: Zap, label: 'One-line install' },
-                  { Icon: LayoutDashboard, label: 'Smart inbox' },
-                  { Icon: Vote, label: 'Public voting boards' },
-                  { Icon: Bot, label: 'AI agent API' },
+                  { Icon: Zap, label: 'Create project' },
+                  { Icon: Code2, label: 'Paste Website snippet' },
+                  { Icon: LayoutDashboard, label: 'Verify and triage first item' },
+                  { Icon: Vote, label: 'Publish a board later' },
                 ].map(({ Icon, label }) => (
                   <span
                     key={label}
@@ -244,9 +244,9 @@ export default async function LandingPage() {
 
       {/* ── Install strip ────────────────────────────────────────────────────── */}
       <section id="install" className="border-b bg-zinc-950 px-6 py-16 dark:bg-zinc-900/80">
-        <div className="mx-auto max-w-2xl">
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15">
               <Terminal className="h-4 w-4 text-primary" />
             </div>
             <div>
@@ -254,14 +254,29 @@ export default async function LandingPage() {
                 Quick start
               </p>
               <h2 className="text-lg font-bold tracking-tight text-zinc-50">
-                One script tag. That&apos;s the whole install.
+                Create a project. Copy the Website snippet. Verify one submission.
               </h2>
             </div>
           </div>
-          <CodeSnippet tabs={[{ label: 'HTML', code: installSnippet, language: 'html' }]} />
-          <p className="mt-4 text-sm text-zinc-500">
-            Works with React, Vue, Svelte, plain HTML. Any framework, any stack. Under 20KB gzipped.
-          </p>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+            <div className="space-y-3">
+              <LandingTerminalDemo />
+              <p className="text-sm text-zinc-500">
+                The terminal mirrors the first-run loop: inspect the Website snippet, verify the
+                widget locally, then confirm the first report lands with useful context.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <CodeSnippet
+                className="border-zinc-800 bg-zinc-900/90 text-zinc-50"
+                tabs={[{ label: 'HTML', code: installSnippet, language: 'html' }]}
+              />
+              <p className="text-sm text-zinc-500">
+                Website is the recommended default. React and Vue snippets are ready when you need
+                them, but the first-run path stays intentionally small. Under 20KB gzipped.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -270,14 +285,17 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-14 max-w-2xl">
             <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-              Everything you need
+              Install first
             </p>
             <h2 className="mb-4 text-4xl font-black tracking-tighter md:text-5xl">
-              The complete developer feedback stack.
+              Start with the install loop.
+              <br />
+              Expand when the workflow earns it.
             </h2>
             <p className="text-muted-foreground">
-              Not another form builder. A purpose-built system for collecting, triaging, and
-              acting on user feedback &mdash; with tools designed for how developers actually work.
+              The product is full-surface, but the path to first value is not. Get the widget
+              live, confirm feedback lands in the inbox, then add routing, public boards, and
+              automation once the core loop is working.
             </p>
           </div>
 
@@ -287,20 +305,20 @@ export default async function LandingPage() {
               {
                 Icon: Code2,
                 headline: 'Embeddable Widget',
-                sub: 'Drop-in feedback',
-                body: 'One script tag, under 20KB gzipped. Modal, inline, or trigger modes. Custom branding. Works everywhere with no framework lock-in.',
+                sub: 'Install in minutes',
+                body: 'Create a project, copy the Website snippet, and get a live widget without a multi-step setup flow. Modal, inline, and trigger modes stay available when you need them.',
               },
               {
                 Icon: LayoutDashboard,
                 headline: 'Smart Dashboard',
-                sub: 'Triage at speed',
-                body: 'Unified inbox with filters, status workflow, team notes, and analytics. Every submission arrives with full context including URL, browser, rating, and screenshot.',
+                sub: 'Triage with context',
+                body: 'Every submission arrives with URL, browser, rating, and optional screenshot so the inbox helps you decide what matters quickly instead of becoming another pile of messages.',
               },
               {
-                Icon: Vote,
-                headline: 'Public Feature Boards',
-                sub: 'Let users vote',
-                body: 'Publish a voting board for your users. Track feature requests publicly, build roadmap transparency, and validate what to build next.',
+                Icon: Webhook,
+                headline: 'Workflow Routing',
+                sub: 'Move signal fast',
+                body: 'Send the important items into Slack, Discord, GitHub, or your own endpoints once the first install is already working. Integrations stay secondary to setup, not in the way of it.',
               },
             ].map(({ Icon, headline, sub, body }) => (
               <div key={headline} className="bg-card p-8 md:p-10">
@@ -320,9 +338,14 @@ export default async function LandingPage() {
           <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
+                Icon: Vote,
+                title: 'Public Boards',
+                desc: 'Turn repeated requests into a public roadmap and voting surface after the inbox is already collecting good signal.',
+              },
+              {
                 Icon: Compass,
                 title: 'Board Directory',
-                desc: 'Discover what other products are building. A public directory of feature boards across the ecosystem.',
+                desc: 'Browse public boards that show how teams turn private feedback loops into credible public product communication.',
               },
               {
                 Icon: Bot,
@@ -445,27 +468,27 @@ export default async function LandingPage() {
             Getting started
           </p>
           <h2 className="mb-14 text-4xl font-black tracking-tighter md:text-5xl">
-            Three steps. Two minutes.
+            From install to first signal in three steps.
           </h2>
           <div className="grid gap-8 md:grid-cols-3">
             {[
               {
                 num: '01',
-                title: 'Drop in the widget',
-                body: 'One script tag in your HTML. Works with React, Vue, Svelte, plain HTML — anything with a DOM. Takes 30 seconds.',
-                Icon: Code2,
+                title: 'Create the project',
+                body: 'Start with one project and get the Website snippet immediately. No wizard, no setup maze, no advanced configuration wall.',
+                Icon: LayoutDashboard,
               },
               {
                 num: '02',
-                title: 'Triage your inbox',
-                body: 'Every submission lands with context: URL, browser, rating, screenshot. Filter, tag, add team notes, update status. No noise.',
-                Icon: MessageSquare,
+                title: 'Paste the snippet',
+                body: 'Install the widget where your global scripts load, then open the hosted verify page and send one real test submission.',
+                Icon: Code2,
               },
               {
                 num: '03',
-                title: 'Ship what matters',
-                body: 'Publish a voting board to validate demand. Pipe feedback into Slack, Discord, or your agents. Build features users actually want.',
-                Icon: ThumbsUp,
+                title: 'Triage your inbox',
+                body: 'Once the first item lands, route what matters, publish a board if you want public signal, and build from a feedback loop that already proved itself.',
+                Icon: MessageSquare,
               },
             ].map(({ num, title, body, Icon }) => (
               <div key={num} className="relative rounded-2xl border bg-card/50 p-8">
@@ -494,8 +517,9 @@ export default async function LandingPage() {
               Built different. On purpose.
             </h2>
             <p className="text-muted-foreground">
-              Not a Typeform clone. Not a Canny clone. A developer-first feedback tool that
-              respects your stack, your workflow, and your users.
+              feedbacks.dev is opinionated about one thing: first-run success. The product earns
+              the right to be broader by making the install, verify, and triage loop feel obvious
+              before it asks you to think about anything else.
             </p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -645,13 +669,13 @@ export default async function LandingPage() {
             />
             <div className="relative">
               <h2 className="mb-4 text-4xl font-black tracking-tighter text-background md:text-5xl">
-                Every feature your users
+                Install the widget.
                 <br />
-                actually want.
+                Verify the first submission.
               </h2>
               <p className="mx-auto mb-8 max-w-md text-background/60">
-                Free to start. Source available. Up and running in under two minutes.
-                Stop building in the dark.
+                Start free, keep the setup path small, and add the public and automation layers
+                only after the core loop is working.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <Link href={isLoggedIn ? '/dashboard' : '/auth'}>

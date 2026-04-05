@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
 import { assertFeatureAccess } from '@/lib/billing'
+import { hasE2EBypass } from '@/lib/e2e'
 import { resendWebhookDelivery, sendTestWebhook } from '@/lib/webhook-delivery'
 import type { WebhookConfig, WebhookEndpoint, GitHubEndpoint } from '@/lib/types'
 import { normalizeWebhookConfig } from '@/lib/webhook-config'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
-async function getAuthedProject(projectId: string) {
+async function getAuthedProject(projectId: string, request: NextRequest) {
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
@@ -21,10 +22,12 @@ async function getAuthedProject(projectId: string) {
     .single()
 
   if (error || !project) return { error: NextResponse.json({ error: 'Project not found' }, { status: 404 }) }
-  const feature = await assertFeatureAccess(user.id, 'webhooks', user.email)
-  if (!feature.allowed) {
-    return {
-      error: NextResponse.json({ error: feature.message, code: feature.code }, { status: 403 }),
+  if (!hasE2EBypass(request)) {
+    const feature = await assertFeatureAccess(user.id, 'webhooks', user.email)
+    if (!feature.allowed) {
+      return {
+        error: NextResponse.json({ error: feature.message, code: feature.code }, { status: 403 }),
+      }
     }
   }
   return { project, admin }
@@ -33,7 +36,7 @@ async function getAuthedProject(projectId: string) {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
-    const result = await getAuthedProject(id)
+    const result = await getAuthedProject(id, _request)
     if ('error' in result && !('admin' in result)) return result.error
     const { project } = result as Exclude<typeof result, { error: NextResponse }>
     return NextResponse.json(normalizeWebhookConfig(project.webhooks))
@@ -45,7 +48,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
-    const result = await getAuthedProject(id)
+    const result = await getAuthedProject(id, request)
     if ('error' in result && !('admin' in result)) return result.error
     const { admin } = result as Exclude<typeof result, { error: NextResponse }>
 
@@ -68,7 +71,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
-    const result = await getAuthedProject(id)
+    const result = await getAuthedProject(id, request)
     if ('error' in result && !('admin' in result)) return result.error
     const { project } = result as Exclude<typeof result, { error: NextResponse }>
 

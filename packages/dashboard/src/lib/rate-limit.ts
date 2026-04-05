@@ -1,29 +1,5 @@
 import { createAdminSupabase } from '@/lib/supabase-server'
-
-function parseCookieValue(cookieHeader: string | null, name: string): string | null {
-  if (!cookieHeader) return null
-
-  const cookies = cookieHeader.split(';')
-  for (const cookie of cookies) {
-    const [rawName, ...rawValue] = cookie.trim().split('=')
-    if (rawName === name) {
-      return rawValue.join('=')
-    }
-  }
-
-  return null
-}
-
-function hasE2EBypass(request: Request): boolean {
-  const secret = process.env.E2E_AUTH_BYPASS_SECRET
-  if (!secret) return false
-
-  const headerSecret = request.headers.get('x-feedbacks-e2e-bypass')
-  if (headerSecret === secret) return true
-
-  const cookieSecret = parseCookieValue(request.headers.get('cookie'), 'feedbacks_e2e_bypass')
-  return cookieSecret === secret
-}
+import { hasE2EBypass } from '@/lib/e2e'
 
 export async function checkRateLimit(
   request: Request,

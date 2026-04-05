@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { assertCanReceiveFeedback, incrementFeedbackUsage } from '@/lib/billing'
+import { hasE2EBypass } from '@/lib/e2e'
 import { notifyProjectOwnerOfNewFeedback } from '@/lib/notifications'
 import { hashProjectApiKey } from '@/lib/project-api-keys'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -126,15 +127,17 @@ export async function POST(request: NextRequest) {
 
     if (!project) return jsonError('Invalid API key', 401)
 
-    const entitlement = await assertCanReceiveFeedback(project.owner_user_id)
-    if (!entitlement.allowed) {
-      return NextResponse.json(
-        {
-          error: entitlement.message,
-          code: entitlement.code,
-        },
-        { status: 403, headers: CORS_HEADERS },
-      )
+    if (!hasE2EBypass(request)) {
+      const entitlement = await assertCanReceiveFeedback(project.owner_user_id)
+      if (!entitlement.allowed) {
+        return NextResponse.json(
+          {
+            error: entitlement.message,
+            code: entitlement.code,
+          },
+          { status: 403, headers: CORS_HEADERS },
+        )
+      }
     }
 
     // Validate message

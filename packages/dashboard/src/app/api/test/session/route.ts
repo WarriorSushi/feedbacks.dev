@@ -43,7 +43,33 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error?.message || 'Failed to create session' }, { status: 500 })
   }
 
-  const response = NextResponse.json({ userId: data.user?.id || null, email })
+  const userId = data.user?.id || null
+  if (userId) {
+    const now = new Date().toISOString()
+    const { error: billingError } = await admin
+      .from('billing_accounts')
+      .upsert(
+        {
+          user_id: userId,
+          plan_tier: 'pro',
+          billing_status: 'active',
+          billing_email: email,
+          cancel_at_period_end: false,
+          updated_at: now,
+          created_at: now,
+        },
+        { onConflict: 'user_id', ignoreDuplicates: false },
+      )
+
+    if (
+      billingError &&
+      !billingError.message.includes("Could not find the table 'public.billing_accounts'")
+    ) {
+      return NextResponse.json({ error: billingError.message }, { status: 500 })
+    }
+  }
+
+  const response = NextResponse.json({ userId, email })
   response.cookies.set('feedbacks_e2e_bypass', bypassSecret, {
     httpOnly: true,
     sameSite: 'lax',

@@ -4,6 +4,8 @@ import { env, isBillingEnabled } from '@/lib/env'
 import type { BillingAccount, BillingSummary } from '@/lib/types'
 
 const FEEDBACK_USAGE_METRIC = 'feedback_submissions'
+const BILLING_MIGRATION_HINT = 'Run sql/009_billing_and_entitlements.sql against your Supabase project.'
+const billingSchemaWarnings = new Set<string>()
 
 const BILLING_STATUS_TO_PLAN: Record<BillingStatus, PlanTier> = {
   free: 'free',
@@ -41,6 +43,51 @@ function defaultBillingAccount(userId: string, email?: string | null): BillingAc
   }
 }
 
+type SupabaseErrorLike = {
+  code?: string
+  message?: string
+  details?: string | null
+  hint?: string | null
+}
+
+function isMissingBillingSchemaError(error: SupabaseErrorLike | null | undefined): boolean {
+  if (!error) return false
+
+  const haystack = [error.code, error.message, error.details, error.hint]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+
+  return (
+    haystack.includes('pgrst202') ||
+    haystack.includes('pgrst205') ||
+    haystack.includes('42p01') ||
+    haystack.includes('42883') ||
+    haystack.includes("could not find the table 'public.billing_accounts'") ||
+    haystack.includes("could not find the table 'public.usage_counters'") ||
+    haystack.includes('could not find the function public.increment_usage_counter') ||
+    haystack.includes('relation "public.billing_accounts" does not exist') ||
+    haystack.includes('relation "public.usage_counters" does not exist') ||
+    haystack.includes('function public.increment_usage_counter')
+  )
+}
+
+function warnBillingSchemaGap(scope: string, error: SupabaseErrorLike | null | undefined) {
+  const key = `${scope}:${error?.code || 'unknown'}:${error?.message || 'unknown'}`
+  if (billingSchemaWarnings.has(key)) return
+  billingSchemaWarnings.add(key)
+  console.warn(`[billing] ${scope} unavailable because the local Supabase schema is behind. ${BILLING_MIGRATION_HINT}`, error)
+}
+
+function defaultUsageSnapshot(entitlements: EntitlementSet, projectCount = 0): UsageSnapshot {
+  return {
+    projectCount,
+    feedbackThisMonth: 0,
+    feedbackLimit: entitlements.feedbackMonthlyLimit,
+    historyDays: entitlements.historyDays,
+  }
+}
+
 export function resolvePlanTier(account: Pick<BillingAccount, 'plan_tier' | 'billing_status'> | null): PlanTier {
   if (!account) return 'free'
   const statusPlan = BILLING_STATUS_TO_PLAN[account.billing_status]
@@ -50,22 +97,32 @@ export function resolvePlanTier(account: Pick<BillingAccount, 'plan_tier' | 'bil
 
 export async function getOrCreateBillingAccount(userId: string, email?: string | null) {
   const admin = await createAdminSupabase()
-  const { data: existing } = await admin
+  const { data: existing, error: selectError } = await admin
     .from('billing_accounts')
     .select('*')
     .eq('user_id', userId)
     .maybeSingle()
+
+  if (selectError && isMissingBillingSchemaError(selectError)) {
+    warnBillingSchemaGap('billing account lookup', selectError)
+    return defaultBillingAccount(userId, email)
+  }
 
   if (existing) {
     return existing as BillingAccount
   }
 
   const seed = defaultBillingAccount(userId, email)
-  const { data } = await admin
+  const { data, error: insertError } = await admin
     .from('billing_accounts')
     .insert(seed)
     .select('*')
     .single()
+
+  if (insertError && isMissingBillingSchemaError(insertError)) {
+    warnBillingSchemaGap('billing account seed', insertError)
+    return seed
+  }
 
   return (data as BillingAccount | null) || seed
 }
@@ -74,7 +131,7 @@ export async function getUsageSnapshot(userId: string, entitlements: Entitlement
   const admin = await createAdminSupabase()
   const monthStart = startOfCurrentMonth()
 
-  const [{ count: projectCount }, { data: usageRow }] = await Promise.all([
+  const [{ count: projectCount }, { data: usageRow, error: usageError }] = await Promise.all([
     admin
       .from('projects')
       .select('*', { count: 'exact', head: true })
@@ -87,6 +144,11 @@ export async function getUsageSnapshot(userId: string, entitlements: Entitlement
       .eq('period_start', monthStart)
       .maybeSingle(),
   ])
+
+  if (usageError && isMissingBillingSchemaError(usageError)) {
+    warnBillingSchemaGap('usage counter lookup', usageError)
+    return defaultUsageSnapshot(entitlements, projectCount ?? 0)
+  }
 
   return {
     projectCount: projectCount ?? 0,
@@ -124,16 +186,77 @@ export async function getCurrentUserBillingSummary() {
 
 export async function incrementFeedbackUsage(userId: string) {
   const admin = await createAdminSupabase()
+  const periodStart = startOfCurrentMonth()
   const { error } = await admin.rpc('increment_usage_counter', {
     p_user_id: userId,
     p_metric: FEEDBACK_USAGE_METRIC,
-    p_period_start: startOfCurrentMonth(),
+    p_period_start: periodStart,
     p_amount: 1,
   })
 
-  if (error) {
-    console.error('Failed to increment usage counter', error)
+  if (!error) {
+    return
   }
+
+  if (isMissingBillingSchemaError(error)) {
+    warnBillingSchemaGap('usage counter rpc', error)
+
+    const { data: existing, error: selectError } = await admin
+      .from('usage_counters')
+      .select('id, count')
+      .eq('user_id', userId)
+      .eq('metric', FEEDBACK_USAGE_METRIC)
+      .eq('period_start', periodStart)
+      .maybeSingle()
+
+    if (selectError) {
+      if (isMissingBillingSchemaError(selectError)) {
+        warnBillingSchemaGap('usage counter fallback select', selectError)
+        return
+      }
+      console.error('Failed to load usage counter for fallback increment', selectError)
+      return
+    }
+
+    if (existing?.id) {
+      const { error: updateError } = await admin
+        .from('usage_counters')
+        .update({
+          count: (existing.count || 0) + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+
+      if (updateError) {
+        if (isMissingBillingSchemaError(updateError)) {
+          warnBillingSchemaGap('usage counter fallback update', updateError)
+          return
+        }
+        console.error('Failed to update usage counter fallback', updateError)
+      }
+      return
+    }
+
+    const { error: insertError } = await admin
+      .from('usage_counters')
+      .insert({
+        user_id: userId,
+        metric: FEEDBACK_USAGE_METRIC,
+        period_start: periodStart,
+        count: 1,
+      })
+
+    if (insertError) {
+      if (isMissingBillingSchemaError(insertError)) {
+        warnBillingSchemaGap('usage counter fallback insert', insertError)
+        return
+      }
+      console.error('Failed to create usage counter fallback', insertError)
+    }
+    return
+  }
+
+  console.error('Failed to increment usage counter', error)
 }
 
 export async function assertCanCreateProject(userId: string, email?: string | null) {

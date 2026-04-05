@@ -37,11 +37,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const branding = parseBoardBranding(board)
 
-  return {
-    title: branding.heroTitle || board?.title || 'Feature Board',
-    description: branding.heroDescription || board?.description || 'Vote on features and share feedback',
+    return {
+      title: branding.heroTitle || board?.title || 'Feature Board',
+      description: branding.heroDescription || board?.description || 'Vote on requests, add context, and follow the public layer of the team feedback workflow.',
+    }
   }
-}
 
 export default async function PublicBoardPage({ params }: PageProps) {
   const { slug } = await params

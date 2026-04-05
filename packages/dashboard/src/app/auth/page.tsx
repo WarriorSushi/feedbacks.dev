@@ -16,10 +16,10 @@ import { useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
 const features = [
-  'Create a project, copy the snippet, and verify the widget',
+  'Sign in and land on project setup with the install snippet ready',
+  'Start with the Website snippet, then verify one real submission',
   'Capture URL, browser context, and optional screenshots automatically',
-  'Triage bugs, ideas, praise, and questions in one inbox',
-  'Route important feedback into Slack, Discord, or your own workflows',
+  'Add routing and public boards after the core loop is working',
 ]
 
 const codeSnippet = generateInstallSnippets({
@@ -123,12 +123,14 @@ function AuthPageInner() {
           {/* Middle: headline + features */}
           <div className="mt-auto">
             <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[hsl(238_72%_78%)]">
-              Install first
+              First-run setup
             </p>
             <h1 className="max-w-sm text-4xl font-bold leading-[1.1] text-white xl:text-[2.75rem]">
-              Create your project
+              Sign in,
               <br />
-              and paste the snippet.
+              create the project,
+              <br />
+              paste the snippet.
             </h1>
 
             <ul className="mt-8 space-y-3">
@@ -196,7 +198,7 @@ function AuthPageInner() {
             feedbacks<span className="text-primary">.dev</span>
           </Link>
           <h1 className="mt-3 text-2xl font-bold tracking-tight">
-            Create your project and paste the snippet.
+            Sign in and start setup.
           </h1>
         </div>
 
@@ -204,12 +206,12 @@ function AuthPageInner() {
           {/* Heading */}
           <div className="mb-8">
             <h2 className="text-2xl font-semibold tracking-tight">
-              {sent ? 'Check your inbox' : 'Create your project'}
+              {sent ? 'Check your inbox' : 'Sign in to start setup'}
             </h2>
             <p className="mt-1.5 text-[14px] text-muted-foreground">
               {sent
                 ? `We sent a magic link to ${email}`
-                : 'You will land in setup with the install snippet and first-run checklist.'}
+                : 'You will land on project setup with the install snippet, verify flow, and first-run checklist.'}
             </p>
           </div>
 

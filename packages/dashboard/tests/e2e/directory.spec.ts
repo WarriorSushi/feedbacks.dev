@@ -11,7 +11,7 @@ test('shows the public directory and category filters with realistic board activ
 
   await page.goto('/boards', { waitUntil: 'domcontentloaded' })
   await expect(page.locator('[data-board-directory-ready="true"]')).toBeVisible()
-  await expect(page.getByRole('heading', { name: /Discover Feedback Boards/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Public boards worth following/i })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Trending' })).toBeVisible()
   const analyticsFilter = page.getByRole('button', { name: 'analytics' })
   const firstBoardLink = page.locator(`a[href="/p/${boards.firstBoard.slug}"]`)

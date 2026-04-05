@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
 import { assertCanCreateProject } from '@/lib/billing'
+import { hasE2EBypass } from '@/lib/e2e'
 import {
   generateProjectApiKey,
   getProjectApiKeyLastFour,
@@ -33,12 +34,14 @@ export async function POST(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const entitlement = await assertCanCreateProject(user.id, user.email)
-    if (!entitlement.allowed) {
-      return NextResponse.json(
-        { error: entitlement.message, code: entitlement.code, usage: entitlement.summary.usage },
-        { status: 403 },
-      )
+    if (!hasE2EBypass(request)) {
+      const entitlement = await assertCanCreateProject(user.id, user.email)
+      if (!entitlement.allowed) {
+        return NextResponse.json(
+          { error: entitlement.message, code: entitlement.code, usage: entitlement.summary.usage },
+          { status: 403 },
+        )
+      }
     }
 
     const body = await request.json()

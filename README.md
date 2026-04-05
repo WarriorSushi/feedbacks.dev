@@ -115,10 +115,10 @@ cd feedbacks.dev-2026
 pnpm install
 
 # Configure
-cp packages/dashboard/.env.example packages/dashboard/.env.local
+cp packages/dashboard/.env.local.example packages/dashboard/.env.local
 # Add your Supabase URL and keys
 
-# Run migrations (execute SQL files in sql/ folder against your Supabase project)
+# Run migrations (see docs/DEPLOYMENT.md for the canonical ordered list)
 
 # Dev
 pnpm dev

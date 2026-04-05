@@ -4,7 +4,8 @@
 
 This repository is now a planning workspace for the rebuild of `feedbacks.dev`.
 
-The previous implementation lives in `archived_project/`. It is reference material, not the default source of truth.
+If `archived_project/` exists, it is reference material only and not the default source of truth.
+If it does not exist in the current workspace, do not block on it.
 
 ## Required reading order
 
@@ -43,7 +44,7 @@ Before proposing or building anything, read:
 
 ## Archived project usage
 
-Use `archived_project/` only when needed for:
+Use `archived_project/` only when it exists and is needed for:
 - prior UX lessons
 - implementation references
 - asset extraction

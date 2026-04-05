@@ -2,8 +2,8 @@ import { loadBoardDirectoryEntries, type BoardSortMode } from '@/lib/board-disco
 import { BoardDirectoryClient } from './board-directory-client'
 
 export const metadata = {
-  title: 'Discover Feedback Boards',
-  description: 'Browse public feedback boards from teams that ship in the open.',
+  title: 'Public Product Boards',
+  description: 'Browse public boards from teams that collect feedback in private and share priorities in public.',
 }
 
 export default async function BoardsPage({
@@ -27,10 +27,12 @@ export default async function BoardsPage({
                 Public boards
               </p>
               <h1 className="mt-3 text-4xl font-semibold tracking-tight text-foreground">
-                Discover Feedback Boards
+                Public boards worth following
               </h1>
               <p className="mt-3 max-w-3xl text-base leading-7 text-foreground/70">
-                Explore products that build in the open. Vote on features, track what ships, and jump into boards that treat roadmap discussion like a real product surface.
+                These boards are the public layer of real feedback workflows. Browse what teams are
+                hearing, vote on open requests, and see how roadmap discussion looks when the
+                private install and triage loop is already working.
               </p>
             </div>
 
@@ -45,7 +47,7 @@ export default async function BoardsPage({
               </div>
               <div className="rounded-xl border border-border/70 bg-background px-4 py-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Open requests
+                  Tracked requests
                 </p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
                   {totalRequests}

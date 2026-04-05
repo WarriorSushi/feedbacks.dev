@@ -100,6 +100,7 @@ export function CustomizeTab({
   const previewProjectKey = projectKey || 'fb_preview_only'
   const [saving, setSaving] = React.useState(false)
   const [draftRestored, setDraftRestored] = React.useState(false)
+  const [draftHydrated, setDraftHydrated] = React.useState(false)
   const [previewStatus, setPreviewStatus] = React.useState<'loading' | 'ready' | 'error'>('loading')
   const [previewError, setPreviewError] = React.useState<string | null>(null)
   const storageKey = React.useMemo(() => `feedbacks-widget-draft:${project.id}`, [project.id])
@@ -125,13 +126,20 @@ export function CustomizeTab({
   )
 
   React.useEffect(() => {
+    setDraftHydrated(false)
     setConfig(savedConfig)
     setDraftRestored(false)
 
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') {
+      setDraftHydrated(true)
+      return
+    }
 
     const raw = window.sessionStorage.getItem(storageKey)
-    if (!raw) return
+    if (!raw) {
+      setDraftHydrated(true)
+      return
+    }
 
     try {
       const parsed = buildEditableWidgetConfig(JSON.parse(raw) as WidgetConfig)
@@ -143,6 +151,8 @@ export function CustomizeTab({
       }
     } catch {
       window.sessionStorage.removeItem(storageKey)
+    } finally {
+      setDraftHydrated(true)
     }
   }, [fingerprintConfig, savedConfig, storageKey])
 
@@ -193,14 +203,14 @@ export function CustomizeTab({
       : `${changedFields.slice(0, 4).join(', ')} +${changedFields.length - 4} more`
 
   React.useEffect(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined' || !draftHydrated) return
 
     if (hasUnsavedChanges) {
       window.sessionStorage.setItem(storageKey, JSON.stringify(config))
     } else {
       window.sessionStorage.removeItem(storageKey)
     }
-  }, [config, hasUnsavedChanges, storageKey])
+  }, [config, draftHydrated, hasUnsavedChanges, storageKey])
 
   React.useEffect(() => {
     if (typeof window === 'undefined') return

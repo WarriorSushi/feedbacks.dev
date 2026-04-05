@@ -20,7 +20,7 @@ test('publishes a board and exercises duplicate and spam submission checks', asy
   await expect(page.locator('[data-public-board-ready="true"]')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Playwright board' })).toBeVisible()
   await page.getByRole('button', { name: /share feedback|submit feedback/i }).first().click()
-  const submitDialog = page.getByRole('dialog', { name: /submit feedback/i })
+  const submitDialog = page.getByRole('dialog', { name: /post a request or bug report|submit feedback/i })
   await expect(submitDialog).toBeVisible()
 
   const uniqueMessage = `Need clearer setup guidance ${Date.now().toString(36)}`

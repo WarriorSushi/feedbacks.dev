@@ -13,9 +13,17 @@ Go to your **Supabase Dashboard** → **SQL Editor** → run these files in orde
 
 1. `sql/001_initial_schema.sql` — base tables (projects, feedback, webhook_deliveries, etc.)
 2. `sql/004_fix_public_board.sql` — adds public board support (is_public, vote_count, votes table, triggers)
-3. `sql/007_phase6_hardening.sql` — typed board profile fields, announcements, follows, watches, reports, and durable webhook jobs
+3. `sql/005_security_fixes.sql` — security fixes, vote-count repair, and API key hardening prerequisites
+4. `sql/006_public_board_comments.sql` — public admin comments on board items
+5. `sql/007_phase6_hardening.sql` — typed board profile fields, announcements, follows, watches, reports, and durable webhook jobs
+6. `sql/008_board_display_name.sql` — public board display name support
+7. `sql/009_billing_and_entitlements.sql` — billing accounts, events, usage counters, and quota helpers
+8. `sql/010_api_key_hardening.sql` — final API-key storage hardening
+9. `sql/011_notification_digests.sql` — digest scheduling support
 
 **How:** Copy-paste the contents of each file into the SQL Editor and click "Run".
+
+Do not treat `sql/000_full_reset_v2-ran this one for v2. nothing else needed.sql` as the canonical production migration path. It is a reset snapshot for local recovery, not the ordered migration source of truth.
 
 ---
 
@@ -57,14 +65,14 @@ Go to **Supabase Dashboard** → **Authentication**:
 ## Step 4: Environment Variables
 
 ### For local development
-Your `.env.local` at `packages/dashboard/.env.local` needs:
+Copy `packages/dashboard/.env.local.example` to `packages/dashboard/.env.local`, then fill in:
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-NEXT_PUBLIC_APP_ORIGIN=http://localhost:3000
-CRON_SECRET=your-cron-secret
+NEXT_PUBLIC_APP_ORIGIN=http://127.0.0.1:3000
+# CRON_SECRET=your-cron-secret
 ```
 
 Find these in **Supabase Dashboard → Settings → API**.
@@ -77,8 +85,10 @@ BOARD_REPORT_SALT=your-board-report-salt
 E2E_AUTH_BYPASS_SECRET=your-e2e-auth-bypass-secret
 ```
 
+`E2E_AUTH_BYPASS_SECRET` is only needed for the local Playwright acceptance flow.
+
 ### For Vercel
-Add the same 3 variables in **Vercel → Project Settings → Environment Variables**.
+Add the required server/runtime variables in **Vercel → Project Settings → Environment Variables**. Keep `SUPABASE_SERVICE_ROLE_KEY`, webhook secrets, billing secrets, and email keys server-only. Only `NEXT_PUBLIC_*` values should reach the browser.
 
 ---
 
@@ -146,7 +156,6 @@ Test this checklist:
 - [ ] Webhook retries are processed by the cron-backed queue
 - [ ] API key auth works for `/api/v1/` endpoints
 - [ ] CSV export downloads at `/api/projects/[id]/feedback.csv`
-- [ ] Widget demo page works at `/widget-demo`
 - [ ] Privacy and Terms pages load
 
 ---
@@ -193,4 +202,4 @@ The widget JS is served from `/widget/latest.js` on your domain.
 | No feedback appearing | Check RLS policies, ensure feedback table has data |
 | Widget not loading | Check browser console, verify script URL |
 | Build fails on Vercel | Ensure root directory is `packages/dashboard`, Node 20+ |
-| Public board empty | Run SQL migration 004, check `is_public` column exists |
+| Public board empty | Verify migrations `004` through `008` ran, then check `is_public` and `public_board_settings` rows |

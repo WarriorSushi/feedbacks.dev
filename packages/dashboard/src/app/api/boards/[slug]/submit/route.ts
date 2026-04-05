@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { assertCanReceiveFeedback, incrementFeedbackUsage } from '@/lib/billing'
+import { hasE2EBypass } from '@/lib/e2e'
 import { notifyProjectOwnerOfNewFeedback } from '@/lib/notifications'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { buildSuggestionEntries, isLikelySpam, normalizeBoardMessageTitle } from '@/lib/board-submissions'
@@ -47,12 +48,14 @@ export async function POST(
     .eq('id', board.project_id)
     .single()
 
-  const entitlement = projectOwner
-    ? await assertCanReceiveFeedback(projectOwner.owner_user_id)
-    : null
+  if (!hasE2EBypass(req)) {
+    const entitlement = projectOwner
+      ? await assertCanReceiveFeedback(projectOwner.owner_user_id)
+      : null
 
-  if (entitlement && !entitlement.allowed) {
-    return NextResponse.json({ error: entitlement.message, code: entitlement.code }, { status: 403 })
+    if (entitlement && !entitlement.allowed) {
+      return NextResponse.json({ error: entitlement.message, code: entitlement.code }, { status: 403 })
+    }
   }
 
   if (typeof hp === 'string' && hp.trim().length > 0) {
