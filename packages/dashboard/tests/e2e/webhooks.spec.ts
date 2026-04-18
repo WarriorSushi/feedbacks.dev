@@ -11,8 +11,7 @@ type Delivery = {
 const env = skipE2EIfNeeded()
 test.skip(!env.ready, env.skipReason)
 
-/** Kinds we can fully validate with a local test target */
-const LOCAL_KINDS = ['slack', 'discord', 'generic'] as const
+const WEBHOOK_KINDS = ['slack', 'discord', 'generic', 'github'] as const
 
 async function readDeliveries(page: import('@playwright/test').Page, projectId: string) {
   const response = await page.request.get(`/api/projects/${projectId}/webhooks/deliveries`)
@@ -39,58 +38,57 @@ async function waitForDeliveries(
   throw new Error(`Timed out waiting for webhook deliveries: ${JSON.stringify(finalDeliveries)}`)
 }
 
-test('saves webhook config and sends test deliveries via API', async ({ page }) => {
+test('configures endpoints, sends tests, and replays deliveries from the integrations UI', async ({ page }) => {
   await signInWithTestSession(page)
   const project = await createProjectViaApi(page, { name: `Playwright Webhooks ${Date.now().toString(36)}` })
 
-  // Save webhook config with test target URLs for local kinds
-  const saveResponse = await page.request.put(`/api/projects/${project.id}/webhooks`, {
-    data: {
-      slack: {
-        endpoints: [{
-          id: 'slack-e2e',
-          url: `${env.appOrigin}/api/test/webhook-target/slack`,
-          enabled: true, delivery: 'immediate', format: 'full',
-        }],
-      },
-      discord: {
-        endpoints: [{
-          id: 'discord-e2e',
-          url: `${env.appOrigin}/api/test/webhook-target/discord`,
-          enabled: true, delivery: 'immediate', format: 'full',
-        }],
-      },
-      generic: {
-        endpoints: [{
-          id: 'generic-e2e',
-          url: `${env.appOrigin}/api/test/webhook-target/generic`,
-          enabled: true, delivery: 'immediate', format: 'full',
-        }],
-      },
-    },
-  })
-  expect(saveResponse.ok()).toBe(true)
+  await page.goto(`/projects/${project.id}?tab=integrations`)
+  await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
 
-  // Verify config was persisted
+  const placeholders = {
+    slack: 'https://hooks.slack.com/services/...',
+    discord: 'https://discord.com/api/webhooks/...',
+    generic: 'https://example.com/webhooks/feedback',
+  } as const
+
+  for (const kind of ['slack', 'discord', 'generic'] as const) {
+    const section = page.locator(`[data-webhook-kind="${kind}"]`)
+    await section.getByRole('button', { name: 'Add endpoint' }).click()
+    await page
+      .locator(`[data-webhook-kind="${kind}"] input[placeholder="${placeholders[kind]}"]`)
+      .fill(`${env.appOrigin}/api/test/webhook-target/${kind}`)
+  }
+
+  const githubSection = page.locator('[data-webhook-kind="github"]')
+  await githubSection.getByRole('button', { name: 'Add endpoint' }).click()
+  await page.locator('[data-webhook-kind="github"] input[placeholder="owner/repo"]').fill('feedbacks/e2e-webhooks')
+  await page.locator('[data-webhook-kind="github"] input[placeholder="github_pat_..."]').fill(env.authBypassSecret)
+
+  const saveResponse = page.waitForResponse((response) =>
+    response.url().includes(`/api/projects/${project.id}/webhooks`)
+    && response.request().method() === 'PUT',
+  )
+  await page.getByRole('button', { name: 'Save Integrations' }).click()
+  expect((await saveResponse).status()).toBe(200)
+
   const getResponse = await page.request.get(`/api/projects/${project.id}/webhooks`)
   expect(getResponse.ok()).toBe(true)
   const savedConfig = await getResponse.json()
   expect(savedConfig.slack?.endpoints).toHaveLength(1)
   expect(savedConfig.discord?.endpoints).toHaveLength(1)
   expect(savedConfig.generic?.endpoints).toHaveLength(1)
+  expect(savedConfig.github?.endpoints).toHaveLength(1)
 
-  // Send test webhook for each local kind via API
-  for (const kind of LOCAL_KINDS) {
-    const endpoint = savedConfig[kind]?.endpoints?.[0]
-    expect(endpoint).toBeTruthy()
-
-    const testResponse = await page.request.post(`/api/projects/${project.id}/webhooks`, {
-      data: { type: kind, endpoint },
-    })
-    expect(testResponse.ok()).toBe(true)
+  for (const kind of WEBHOOK_KINDS) {
+    const section = page.locator(`[data-webhook-kind="${kind}"]`)
+    const testResponse = page.waitForResponse((response) =>
+      response.url().includes(`/api/projects/${project.id}/webhooks`)
+      && response.request().method() === 'POST',
+    )
+    await section.getByRole('button', { name: 'Send test' }).click()
+    expect((await testResponse).status()).toBe(200)
   }
 
-  // Verify all 3 deliveries succeeded
   const deliveries = await waitForDeliveries(
     page,
     project.id,
@@ -99,26 +97,27 @@ test('saves webhook config and sends test deliveries via API', async ({ page }) 
       for (const item of items) {
         if (item.status === 'success') successByKind.set(item.kind, true)
       }
-      return LOCAL_KINDS.every((kind) => successByKind.get(kind))
+      return WEBHOOK_KINDS.every((kind) => successByKind.get(kind))
     },
   )
 
-  expect(deliveries.filter((d) => d.status === 'success').length).toBeGreaterThanOrEqual(3)
+  expect(deliveries.filter((d) => d.status === 'success').length).toBeGreaterThanOrEqual(4)
 
-  // Resend the first slack delivery via API
-  const slackDelivery = deliveries.find((d) => d.kind === 'slack' && d.status === 'success')
-  expect(slackDelivery).toBeTruthy()
+  for (const kind of WEBHOOK_KINDS) {
+    const replayResponse = page.waitForResponse((response) =>
+      response.url().includes(`/api/projects/${project.id}/webhooks`)
+      && response.request().method() === 'POST',
+    )
+    await page.locator(`[data-delivery-kind="${kind}"]`).first().getByRole('button', { name: 'Resend' }).click()
+    expect((await replayResponse).status()).toBe(200)
+  }
 
-  const resendResponse = await page.request.post(`/api/projects/${project.id}/webhooks`, {
-    data: { action: 'resend', deliveryId: slackDelivery!.id },
-  })
-  expect(resendResponse.ok()).toBe(true)
-
-  // Verify we now have at least 2 successful slack deliveries
   await waitForDeliveries(
     page,
     project.id,
-    (items) => items.filter((d) => d.kind === 'slack' && d.status === 'success').length >= 2,
+    (items) => WEBHOOK_KINDS.every((kind) =>
+      items.filter((d) => d.kind === kind && d.status === 'success').length >= 2,
+    ),
   )
 })
 

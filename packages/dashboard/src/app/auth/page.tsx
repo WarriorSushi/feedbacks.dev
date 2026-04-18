@@ -34,7 +34,7 @@ function AuthPageInner() {
   const [sent, setSent] = React.useState(false)
   const [error, setError] = React.useState('')
   const searchParams = useSearchParams()
-  const redirect = searchParams.get('redirect') || '/dashboard'
+  const redirect = searchParams.get('redirect') || '/projects/new'
 
   const supabase = React.useMemo(() => createClient(), [])
 
@@ -211,7 +211,7 @@ function AuthPageInner() {
             <p className="mt-1.5 text-[14px] text-muted-foreground">
               {sent
                 ? `We sent a magic link to ${email}`
-                : 'You will land on project setup with the install snippet, verify flow, and first-run checklist.'}
+                : 'You will land on project setup first: create a project, copy the Website snippet, then verify one real submission.'}
             </p>
           </div>
 

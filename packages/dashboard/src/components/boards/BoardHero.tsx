@@ -43,7 +43,7 @@ export function BoardHero({
   const heroDescription =
     board.branding.heroDescription ||
     board.description ||
-    'Vote on requests, add context, and follow the public layer of the team feedback workflow.'
+    'Vote on requests, add context, and follow the public layer of a feedback workflow that starts inside the product.'
   const categories = board.branding.categories?.slice(0, 4) || []
   const websiteHost = getWebsiteHost(board.branding.websiteUrl)
 
@@ -62,7 +62,7 @@ export function BoardHero({
             </Link>
             <span className="text-muted-foreground/35">/</span>
             <span className="font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              {board.branding.heroEyebrow || 'Public workflow'}
+              {board.branding.heroEyebrow || 'Public feedback layer'}
             </span>
             {canModerate && (
               <Link
@@ -147,7 +147,7 @@ export function BoardHero({
         <div className="w-full lg:max-w-xs">
           <div className="rounded-xl border border-border/70 bg-background p-4 shadow-sm">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Public participation
+              Public feedback layer
             </p>
             <div className="mt-4 space-y-2">
               {board.allow_submissions && (

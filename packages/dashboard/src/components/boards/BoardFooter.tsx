@@ -15,7 +15,7 @@ export function BoardFooter({ canModerate, projectId }: BoardFooterProps) {
           href="https://feedbacks.dev"
           className="font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          Powered by feedbacks.dev
+          Powered by feedbacks.dev — install feedback first, publish boards when ready
         </Link>
         {canModerate && (
           <Link
