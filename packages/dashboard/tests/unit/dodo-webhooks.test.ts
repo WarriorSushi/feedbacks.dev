@@ -7,7 +7,8 @@ process.env.NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'anon-key'
 process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'service-role-key'
 process.env.NEXT_PUBLIC_APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || 'https://app.feedbacks.dev'
-process.env.DODO_PAYMENTS_WEBHOOK_SECRET = process.env.DODO_PAYMENTS_WEBHOOK_SECRET || 'whsec_test'
+// standardwebhooks expects whsec_ + base64-encoded secret
+process.env.DODO_PAYMENTS_WEBHOOK_SECRET = process.env.DODO_PAYMENTS_WEBHOOK_SECRET || 'whsec_' + Buffer.from('testsecret123456789012345').toString('base64')
 
 async function loadFixture(name: string) {
   const fixtureUrl = new URL(`../fixtures/dodo/${name}.json`, import.meta.url)
@@ -60,10 +61,16 @@ test('verifies valid Dodo webhook signatures', async () => {
   const fixture = await loadFixture('subscription-active')
   const payload = JSON.stringify(fixture)
   const webhookId = 'evt_test_valid'
-  const timestamp = '1710000000'
-  const signature = createHmac('sha256', process.env.DODO_PAYMENTS_WEBHOOK_SECRET!)
-    .update(`${webhookId}.${timestamp}.${payload}`)
-    .digest('hex')
+  const timestamp = Math.floor(Date.now() / 1000).toString()
+
+  // standardwebhooks expects: whsec_ prefix stripped, base64-decoded secret
+  // signature format: v1,<base64-hmac>
+  const secret = process.env.DODO_PAYMENTS_WEBHOOK_SECRET!
+  const secretBytes = Buffer.from(secret.replace(/^whsec_/, ''), 'base64')
+  const signedContent = `${webhookId}.${timestamp}.${payload}`
+  const signature = 'v1,' + createHmac('sha256', secretBytes)
+    .update(signedContent)
+    .digest('base64')
 
   const request = new Request('https://example.com/api/billing/webhook', {
     method: 'POST',
@@ -97,5 +104,5 @@ test('rejects invalid Dodo webhook signatures', async () => {
     body: payload,
   })
 
-  await assert.rejects(() => verifyDodoWebhook(request), /Invalid webhook signature/)
+  await assert.rejects(() => verifyDodoWebhook(request), /WebhookVerificationError/)
 })

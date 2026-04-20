@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { Webhook } from 'standardwebhooks'
 import { env } from './env.ts'
 
 const API_BASES = {
@@ -81,40 +81,26 @@ export async function createDodoCustomerPortalSession(payload: DodoPortalRequest
   }>(`/customers/${payload.customerId}/customer-portal/session`, {})
 }
 
-function headerValue(headers: Headers, key: string) {
-  return headers.get(key) || headers.get(key.toLowerCase())
-}
-
 export async function verifyDodoWebhook(request: Request) {
   if (!env.DODO_PAYMENTS_WEBHOOK_SECRET) {
     throw new Error('Dodo webhook secret is not configured')
   }
 
   const payload = await request.text()
-  const signature = headerValue(request.headers, 'webhook-signature')
-  const webhookId = headerValue(request.headers, 'webhook-id')
-  const timestamp = headerValue(request.headers, 'webhook-timestamp')
-
-  if (!signature || !webhookId || !timestamp) {
-    throw new Error('Missing Dodo webhook headers')
+  const headers: Record<string, string> = {}
+  for (const key of ['webhook-id', 'webhook-signature', 'webhook-timestamp']) {
+    const value = request.headers.get(key)
+    if (!value) {
+      throw new Error(`Missing Dodo webhook header: ${key}`)
+    }
+    headers[key] = value
   }
 
-  const signedContent = `${webhookId}.${timestamp}.${payload}`
-  const expected = createHmac('sha256', env.DODO_PAYMENTS_WEBHOOK_SECRET)
-    .update(signedContent)
-    .digest('hex')
-
-  const expectedBuffer = Buffer.from(expected)
-  const signatureBuffer = Buffer.from(signature)
-  if (
-    expectedBuffer.length !== signatureBuffer.length ||
-    !timingSafeEqual(expectedBuffer, signatureBuffer)
-  ) {
-    throw new Error('Invalid webhook signature')
-  }
+  const wh = new Webhook(env.DODO_PAYMENTS_WEBHOOK_SECRET)
+  wh.verify(payload, headers)
 
   return {
-    webhookId,
+    webhookId: headers['webhook-id'],
     payload,
     event: JSON.parse(payload) as DodoEventPayload,
   }
