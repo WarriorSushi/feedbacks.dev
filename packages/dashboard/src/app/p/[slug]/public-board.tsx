@@ -317,12 +317,14 @@ export function PublicBoard({
                   comments={commentsByFeedback[item.id] || []}
                   isExpanded={expandedId === item.id}
                   voted={votedIds.has(item.id)}
+                  watched={watchedIds.has(item.id)}
                   voting={votingId === item.id}
                   canModerate={canModerate}
                   replyDraft={replyDrafts[item.id] || ''}
                   busy={busyId === item.id}
                   onVote={() => handleVote(item.id)}
                   onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                  onToggleWatch={() => void toggleWatched(item.id)}
                   onOpenReport={() =>
                     setReportTarget({ type: 'feedback', feedbackId: item.id })
                   }

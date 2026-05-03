@@ -2,13 +2,12 @@ import { createServerSupabase } from '@/lib/supabase-server'
 import { getCurrentUserBillingSummary, getHistoryCutoff } from '@/lib/billing'
 import { notFound } from 'next/navigation'
 import type { Feedback, FeedbackNote } from '@/lib/types'
-import { formatDate, getTypeIcon, getStatusColor, getTypeColor, statusConfig } from '@/lib/utils'
+import { formatDate, getTypeIcon, getTypeColor, statusConfig } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
 import {
-  ArrowLeft,
   Globe,
   Monitor,
   Mail,

@@ -5,7 +5,6 @@ import type {
   FeedbackStatus,
   FeedbackType,
   PlanTier,
-  QuotaErrorCode,
   SavedWidgetConfig,
   UsageSnapshot,
 } from '@feedbacks/shared'

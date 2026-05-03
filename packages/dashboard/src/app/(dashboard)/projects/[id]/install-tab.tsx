@@ -83,17 +83,17 @@ export function InstallTab({
             <Badge variant="outline">{modeLabel} mode</Badge>
             <span className="text-xs font-medium text-primary">First feedback in three steps</span>
           </div>
-          <CardTitle className="text-xl">Get a working install live before you customize anything else</CardTitle>
+          <CardTitle className="text-xl">Install the saved widget you just designed</CardTitle>
           <CardDescription>
-            Start with the Website snippet. It is the canonical copy-paste path, and the hosted verification page uses the same saved config.
+            The snippet below is generated from your saved customization. Copy it, run the hosted verification page, then check the inbox.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              '1. Copy the Website snippet from this page.',
-              '2. Open the verification page and submit one test message.',
-              '3. Open the project inbox and confirm the item arrived.',
+              '1. Copy the Website snippet.',
+              '2. Verify one test message.',
+              '3. Confirm it lands in the inbox.',
             ].map((step) => (
               <div key={step} className="rounded-lg border border-primary/20 bg-background/80 px-4 py-3 text-sm leading-relaxed">
                 {step}
@@ -196,7 +196,7 @@ export function InstallTab({
           </div>
 
           <div className="rounded-lg border border-dashed bg-muted/10 p-4 text-sm text-muted-foreground">
-            Saved changes from the <span className="font-medium text-foreground">Customize</span> tab update these snippets after you click <span className="font-medium text-foreground">Save Changes</span>. Draft edits stay out of the install flow until you explicitly save them.
+            Need to change the button, use your own trigger, or embed the form directly on a page? Go back to <span className="font-medium text-foreground">Customize</span>, save the design, then return here for the updated snippet.
           </div>
         </CardContent>
       </Card>
@@ -254,7 +254,7 @@ export function InstallTab({
           <div>
             <p className="text-lg font-semibold text-foreground">Need React or Vue instead?</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              These examples are generated from the same saved config. Use them once you have proven the basic install path.
+              These examples are generated from the same saved config. Use them when your app shell is React or Vue.
             </p>
           </div>
           <span className="text-sm font-medium text-primary">Show framework examples</span>

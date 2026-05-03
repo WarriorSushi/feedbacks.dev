@@ -71,5 +71,11 @@ export function buildSuggestionEntries(
     .filter((row) => row.score >= 25)
     .sort((a, b) => b.score - a.score || b.vote_count - a.vote_count)
     .slice(0, limit)
-    .map(({ score: _score, ...rest }) => rest)
+    .map((row) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      status: row.status,
+      vote_count: row.vote_count,
+    }))
 }

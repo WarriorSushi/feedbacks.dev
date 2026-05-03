@@ -35,7 +35,7 @@ export async function GET(
   // Get public feedback for this project (capped at 100)
   const { data: feedback, error: feedbackError } = await admin
     .from('feedback')
-    .select('id, message, type, status, vote_count, created_at, email')
+    .select('id, message, type, status, vote_count, created_at')
     .eq('project_id', board.project_id)
     .eq('is_public', true)
     .eq('is_archived', false)
@@ -47,8 +47,7 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to load feedback' }, { status: 500 })
   }
 
-  // Strip emails from response
-  const safeFeedback = (feedback || []).map(({ email, ...rest }) => rest)
+  const safeFeedback = feedback || []
 
   // Get public admin comments
   const feedbackIds = safeFeedback.map((f) => f.id)

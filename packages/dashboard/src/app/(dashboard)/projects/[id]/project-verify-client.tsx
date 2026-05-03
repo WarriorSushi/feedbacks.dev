@@ -24,10 +24,6 @@ interface ProjectVerifyClientProps {
   savedConfig: SavedWidgetConfig
 }
 
-type WidgetRuntimeWindow = Window & {
-  FeedbacksWidget?: new (config: ReturnType<typeof buildRuntimeWidgetConfig>) => { destroy?: () => void }
-}
-
 export function ProjectVerifyClient({
   appOrigin,
   projectId,

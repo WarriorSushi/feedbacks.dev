@@ -49,7 +49,7 @@ export default function NewProjectPage() {
       if (payload.api_key) {
         rememberProjectApiKey(payload.id, payload.api_key)
       }
-      router.push(`/projects/${payload.id}?created=1`)
+      router.push(`/projects/${payload.id}?created=1&tab=customize`)
     } catch {
       setError('Failed to create project')
     } finally {
@@ -70,7 +70,7 @@ export default function NewProjectPage() {
         <CardHeader>
           <CardTitle>New Project</CardTitle>
           <CardDescription>
-            Create a project, then copy the install snippet and verify the widget before you customize anything else.
+            Create a project, choose how the feedback form should appear, then copy the generated install snippet.
           </CardDescription>
         </CardHeader>
         <CardContent>

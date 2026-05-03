@@ -50,12 +50,14 @@ interface BoardFeedbackCardProps {
   comments: AdminComment[]
   isExpanded: boolean
   voted: boolean
+  watched: boolean
   voting: boolean
   canModerate: boolean
   replyDraft: string
   busy: boolean
   onVote: () => void
   onToggle: () => void
+  onToggleWatch: () => void
   onOpenReport: () => void
   onReplyDraftChange: (value: string) => void
   onReplySubmit: () => void
@@ -68,12 +70,14 @@ export function BoardFeedbackCard({
   comments,
   isExpanded,
   voted,
+  watched,
   voting,
   canModerate,
   replyDraft,
   busy,
   onVote,
   onToggle,
+  onToggleWatch,
   onOpenReport,
   onReplyDraftChange,
   onReplySubmit,
@@ -147,6 +151,15 @@ export function BoardFeedbackCard({
             >
               <ShieldAlert className="h-4 w-4" />
               Report post
+            </button>
+            <button
+              onClick={onToggleWatch}
+              className={cn(
+                'font-medium transition-colors',
+                watched ? 'text-primary hover:text-primary/80' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {watched ? 'Watching' : 'Watch updates'}
             </button>
           </div>
 

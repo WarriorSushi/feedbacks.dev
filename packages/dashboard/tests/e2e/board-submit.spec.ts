@@ -1,7 +1,7 @@
 import { expect, test, skipE2EIfNeeded } from './fixtures'
 import { signInWithTestSession } from './helpers/auth'
 import { createProjectViaApi } from './helpers/project'
-import { saveBoardSettings, submitBoardFeedback, submitDuplicateBoardFeedback } from './helpers/board'
+import { saveBoardSettings, submitDuplicateBoardFeedback } from './helpers/board'
 
 const env = skipE2EIfNeeded()
 test.skip(!env.ready, env.skipReason)

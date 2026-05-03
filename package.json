@@ -17,6 +17,7 @@
     "ci:verify": "pnpm type-check && pnpm lint && pnpm build && pnpm widget:check-size",
     "test:unit": "node --experimental-strip-types --test packages/dashboard/tests/unit/**/*.test.ts",
     "test:e2e": "playwright test",
+    "test:e2e:required": "node scripts/check-e2e-env.mjs && playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:install": "playwright install --with-deps"

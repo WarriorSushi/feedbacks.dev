@@ -16,7 +16,7 @@ test('supports public replies, status changes, and hiding a board item', async (
     categories: ['trust', 'operations'],
   })
 
-  const feedback = await submitBoardFeedback(page, project, board, {
+  await submitBoardFeedback(page, project, board, {
     message: 'The export flow needs a clearer success message before shipping.',
     type: 'idea',
   })

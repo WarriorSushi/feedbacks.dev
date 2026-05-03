@@ -171,6 +171,9 @@ sql/              # Supabase migration files
 pnpm dev              # Start dashboard dev server
 pnpm build            # Build everything
 pnpm type-check       # TypeScript validation
+pnpm test:unit        # Unit tests
+pnpm test:e2e         # Playwright suite; skips when local E2E env is incomplete
+pnpm test:e2e:required # Playwright suite with required env preflight for acceptance
 pnpm widget:dev       # Widget dev server
 pnpm widget:build     # Build widget only
 ```

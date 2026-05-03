@@ -7,9 +7,7 @@ import { cn, formatRelativeTime, truncate, getTypeIcon, getStatusColor } from '@
 import type { Feedback } from '@/lib/types'
 import Link from 'next/link'
 import {
-  MessageSquare,
   Star,
-  FolderOpen,
   Bell,
   ArrowRight,
   Plus,

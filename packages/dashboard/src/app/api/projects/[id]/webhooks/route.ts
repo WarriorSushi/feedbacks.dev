@@ -3,7 +3,7 @@ import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server
 import { assertFeatureAccess } from '@/lib/billing'
 import { hasE2EBypass } from '@/lib/e2e'
 import { resendWebhookDelivery, sendTestWebhook } from '@/lib/webhook-delivery'
-import type { WebhookConfig, WebhookEndpoint, GitHubEndpoint } from '@/lib/types'
+import type { WebhookEndpoint, GitHubEndpoint } from '@/lib/types'
 import { normalizeWebhookConfig } from '@/lib/webhook-config'
 
 type RouteParams = { params: Promise<{ id: string }> }

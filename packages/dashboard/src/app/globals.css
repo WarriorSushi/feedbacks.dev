@@ -122,24 +122,6 @@
   to   { background-position: -200% 0; }
 }
 
-/* Auth page animated gradient blobs */
-@keyframes blob-drift-1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(40px, -30px) scale(1.06); }
-  66%       { transform: translate(-22px, 24px) scale(0.94); }
-}
-
-@keyframes blob-drift-2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  40%       { transform: translate(-35px, 28px) scale(0.97); }
-  70%       { transform: translate(28px, -16px) scale(1.04); }
-}
-
-@keyframes blob-drift-3 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50%       { transform: translate(22px, 32px) scale(1.03); }
-}
-
 /* ─── Utilities ───────────────────────────────────────────────────────────── */
 
 @layer utilities {
@@ -209,37 +191,6 @@
     );
     background-size: 400% 100%;
     border-radius: var(--radius);
-  }
-
-  /* Auth page blob drift classes */
-  .blob-drift-1 {
-    animation: blob-drift-1 18s ease-in-out infinite;
-  }
-
-  .blob-drift-2 {
-    animation: blob-drift-2 22s ease-in-out infinite;
-  }
-
-  .blob-drift-3 {
-    animation: blob-drift-3 16s ease-in-out infinite;
-  }
-
-  /* Gradient text — for display headings only */
-  .text-gradient {
-    @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(
-      135deg,
-      hsl(var(--foreground)) 0%,
-      hsl(var(--muted-foreground)) 100%
-    );
-  }
-
-  .dark .text-gradient {
-    background-image: linear-gradient(
-      135deg,
-      hsl(85 10% 97%) 0%,
-      hsl(85 8% 62%) 100%
-    );
   }
 
   /* Dot grid background */

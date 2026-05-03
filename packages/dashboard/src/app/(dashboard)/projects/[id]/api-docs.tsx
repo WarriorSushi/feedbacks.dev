@@ -27,7 +27,7 @@ function CopyButton({ text }: { text: string }) {
 
 function CodeBlock({ code, language = 'bash' }: { code: string; language?: string }) {
   return (
-    <div className="relative">
+    <div className="relative" aria-label={`${language} code sample`}>
       <div className="absolute right-2 top-2 z-10">
         <CopyButton text={code} />
       </div>

@@ -12,7 +12,6 @@ import {
   Github,
   Zap,
   Bot,
-  ThumbsUp,
   MessageSquare,
   Shield,
   Sparkles,
@@ -143,17 +142,10 @@ export default async function LandingPage() {
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b">
-        {/* Atmospheric gradient backdrop */}
+        {/* Structured backdrop */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.06] via-transparent to-background" />
-          <div
-            className="absolute -left-1/4 top-0 h-[600px] w-[600px] rounded-full opacity-25 blur-[120px]"
-            style={{ background: 'radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)' }}
-          />
-          <div
-            className="absolute -right-1/4 top-1/4 h-[400px] w-[400px] rounded-full opacity-15 blur-[100px]"
-            style={{ background: 'radial-gradient(circle, hsl(85 60% 40%) 0%, transparent 70%)' }}
-          />
+          <div className="absolute inset-0 bg-primary/[0.035]" />
+          <div className="absolute inset-x-0 top-0 h-px bg-primary/20" />
         </div>
         {/* Subtle dot grid */}
         <div
@@ -183,7 +175,7 @@ export default async function LandingPage() {
                 <br />
                 in minutes.
                 <br />
-                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                <span className="text-primary">
                   Triage the right issues fast.
                 </span>
               </h1>
@@ -661,11 +653,6 @@ export default async function LandingPage() {
                 backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
                 backgroundSize: '24px 24px',
               }}
-            />
-            {/* Glow */}
-            <div
-              className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-[100px]"
-              style={{ background: 'hsl(var(--primary))' }}
             />
             <div className="relative">
               <h2 className="mb-4 text-4xl font-black tracking-tighter text-background md:text-5xl">

@@ -77,28 +77,8 @@ function AuthPageInner() {
         {/* Dark indigo base */}
         <div className="absolute inset-0 bg-[hsl(238_40%_10%)]" />
 
-        {/* Animated gradient blobs */}
-        <div
-          className="blob-drift-1 absolute -left-32 -top-32 h-[480px] w-[480px] rounded-full opacity-60"
-          style={{
-            background: 'radial-gradient(circle, hsl(238 70% 52%) 0%, transparent 70%)',
-            filter: 'blur(64px)',
-          }}
-        />
-        <div
-          className="blob-drift-2 absolute -bottom-24 -right-24 h-[420px] w-[420px] rounded-full opacity-50"
-          style={{
-            background: 'radial-gradient(circle, hsl(258 60% 58%) 0%, transparent 70%)',
-            filter: 'blur(72px)',
-          }}
-        />
-        <div
-          className="blob-drift-3 absolute bottom-1/3 left-1/3 h-[260px] w-[260px] rounded-full opacity-35"
-          style={{
-            background: 'radial-gradient(circle, hsl(220 80% 65%) 0%, transparent 70%)',
-            filter: 'blur(48px)',
-          }}
-        />
+        <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-white/[0.03]" />
 
         {/* Subtle dot grid overlay */}
         <div

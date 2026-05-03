@@ -16,9 +16,9 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, RotateCcw } from 'lucide-react'
+import { Code2, Loader2, MousePointerClick, PanelTop, RotateCcw, Send } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import { WidgetPreviewSurface } from './widget-preview-surface'
+import { WidgetFormPreview } from './widget-form-preview'
 
 interface CustomizeTabProps {
   project: Project
@@ -54,8 +54,6 @@ export function CustomizeTab({
   const [saving, setSaving] = React.useState(false)
   const [draftRestored, setDraftRestored] = React.useState(false)
   const [draftHydrated, setDraftHydrated] = React.useState(false)
-  const [previewStatus, setPreviewStatus] = React.useState<'loading' | 'ready' | 'error'>('loading')
-  const [previewError, setPreviewError] = React.useState<string | null>(null)
   const storageKey = React.useMemo(() => `feedbacks-widget-draft:${project.id}`, [project.id])
   const serverSavedConfig = React.useMemo(
     () => buildWidgetEditorConfig(previewProjectKey, project.settings?.widget_config || {}, { appOrigin }),
@@ -262,11 +260,11 @@ export function CustomizeTab({
               <Badge variant="outline">{draftModeLabel} mode</Badge>
             </div>
             <div>
-              <CardTitle className="text-lg">Customize widget</CardTitle>
+              <CardTitle className="text-lg">Make the feedback form fit your product</CardTitle>
               <CardDescription className="mt-1">
                 {hasUnsavedChanges
-                  ? 'You are previewing a local draft. Install snippets and the hosted verify page still use the last saved config until you save changes here.'
-                  : 'Install snippets, hosted verify, and this preview are currently aligned on the same saved config.'}
+                  ? 'You are previewing a local draft. Save it when the form looks right, then install that exact saved version.'
+                  : 'This is the saved version that install snippets and hosted verification will use.'}
               </CardDescription>
             </div>
             {draftRestored && hasUnsavedChanges && (
@@ -290,8 +288,8 @@ export function CustomizeTab({
 
         <CardContent className="grid gap-4 border-t bg-background/40 pt-6 lg:grid-cols-2">
           <div className="rounded-xl border bg-background/80 p-4">
-            <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              Install snippets and hosted verify currently use
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              Saved install uses
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">{savedModeLabel} mode</p>
             <p className="mt-1 text-sm text-muted-foreground">{savedExpectation}</p>
@@ -299,7 +297,7 @@ export function CustomizeTab({
 
           <div className="rounded-xl border bg-background/80 p-4">
             <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
-              Preview in this tab is showing
+              Preview is showing
             </p>
             <p className="mt-2 text-sm font-medium text-foreground">
               {hasUnsavedChanges ? `${draftModeLabel} draft` : `${draftModeLabel} saved config`}
@@ -319,10 +317,48 @@ export function CustomizeTab({
           <CardHeader>
             <CardTitle className="text-lg">Widget settings</CardTitle>
             <CardDescription>
-              Keep install simple first. This tab is for secondary tuning after the snippet already works.
+              Pick the placement first. You can install the saved result after this looks right.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="grid gap-3 md:grid-cols-3">
+              {[
+                {
+                  mode: 'modal',
+                  title: 'Floating button',
+                  body: 'Adds a small launcher to the corner of your app.',
+                  Icon: Send,
+                },
+                {
+                  mode: 'trigger',
+                  title: 'Your own button',
+                  body: 'Attach the form to an existing menu item, button, or link.',
+                  Icon: MousePointerClick,
+                },
+                {
+                  mode: 'inline',
+                  title: 'Form on a page',
+                  body: 'Embed the whole feedback form inside existing page content.',
+                  Icon: PanelTop,
+                },
+              ].map(({ mode, title, body, Icon }) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => updateConfig('embedMode', mode)}
+                  className={`rounded-xl border p-4 text-left transition-colors ${
+                    (config.embedMode || 'modal') === mode
+                      ? 'border-primary/40 bg-primary/10'
+                      : 'hover:border-foreground/20 hover:bg-muted/30'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 text-primary" />
+                  <p className="mt-3 text-sm font-semibold text-foreground">{title}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{body}</p>
+                </button>
+              ))}
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="embed-mode">Embed Mode</Label>
@@ -333,9 +369,9 @@ export function CustomizeTab({
                   value={config.embedMode || 'modal'}
                   onChange={(e) => updateConfig('embedMode', e.target.value)}
                 >
-                  <option value="modal">Modal launcher</option>
-                  <option value="inline">Inline embed</option>
-                  <option value="trigger">Custom trigger button</option>
+                  <option value="modal">Floating button</option>
+                  <option value="trigger">Your own button</option>
+                  <option value="inline">Form on a page</option>
                 </select>
               </div>
               <div className="space-y-2">
@@ -430,9 +466,9 @@ export function CustomizeTab({
 
         <Card className="overflow-hidden">
           <CardHeader className="border-b bg-muted/20">
-            <CardTitle className="text-lg">Preview current edits</CardTitle>
+            <CardTitle className="text-lg">Live form preview</CardTitle>
             <CardDescription>
-              This surface renders your draft immediately. Saving publishes the same settings to install snippets and the hosted verification page.
+              See the opened form, not just the button. Placement, color, copy, and optional fields update as you edit.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-6">
@@ -440,20 +476,10 @@ export function CustomizeTab({
               <Badge variant={hasUnsavedChanges ? 'default' : 'secondary'}>
                 {hasUnsavedChanges ? 'Previewing unsaved changes' : 'Preview matches saved config'}
               </Badge>
-              <Badge variant="outline">
-                {previewStatus === 'loading' ? 'Loading runtime' : previewStatus === 'ready' ? 'Runtime ready' : 'Preview error'}
-              </Badge>
+              <Badge variant="outline">{draftModeLabel}</Badge>
             </div>
 
-            <WidgetPreviewSurface
-              appOrigin={appOrigin}
-              projectKey={previewProjectKey}
-              config={config}
-              onStatusChange={(status, error) => {
-                setPreviewStatus(status)
-                setPreviewError(error || null)
-              }}
-            />
+            <WidgetFormPreview config={config} />
 
             <div className="space-y-2 text-sm text-muted-foreground">
               <p>
@@ -462,15 +488,11 @@ export function CustomizeTab({
               <p>
                 This preview is rendering: <span className="font-medium text-foreground">{draftModeLabel}</span>
               </p>
-              {previewStatus === 'ready' && runtimePreviewConfig.embedMode === 'modal' && (
-                <p>{draftExpectation}</p>
-              )}
-              {previewStatus === 'ready' && runtimePreviewConfig.embedMode !== 'modal' && (
-                <p>{draftExpectation}</p>
-              )}
-              {previewStatus === 'error' && previewError && (
-                <p className="text-destructive">{previewError}</p>
-              )}
+              <p>{draftExpectation}</p>
+              <p className="inline-flex items-center gap-1.5">
+                <Code2 className="h-4 w-4" />
+                Save changes before copying the install snippet.
+              </p>
             </div>
           </CardContent>
         </Card>
