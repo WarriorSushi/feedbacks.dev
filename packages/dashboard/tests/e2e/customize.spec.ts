@@ -13,16 +13,17 @@ test('keeps customize drafts local until the user saves them', async ({ page }) 
   await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
 
   await expect(
-    page.getByText(/This is the saved version that install snippets and hosted verification will use/i),
+    page.getByText(/Saved version used by install snippets and hosted verification/i),
   ).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Live form preview' })).toBeVisible()
   await expect(page.getByText(/See the opened form, not just the button/i)).toBeVisible()
-  await expect(page.getByRole('button', { name: /Your own button Attach the/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Form on a page Embed the whole/ })).toBeVisible()
-  await page.getByLabel('Button Text').fill('Ideas')
-  await expect(page.getByLabel('Button Text')).toHaveValue('Ideas')
+  await expect(page.getByRole('button', { name: /Your own button Open the form/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Form on a page Embed the full/ })).toBeVisible()
+  await expect(page.getByLabel('Widget embed mode')).toHaveCount(0)
+  await page.getByLabel('Button text').fill('Ideas')
+  await expect(page.getByLabel('Button text')).toHaveValue('Ideas')
   await expect(
-    page.getByText(/Save it when the form looks right, then install that exact saved version/i),
+    page.getByText(/Preview your draft, save it, then install that exact version/i),
   ).toBeVisible()
   await expect(page.getByText(/Draft changes: Button text/i)).toBeVisible()
   await expect(page.getByText(/Previewing unsaved changes/i)).toBeVisible()
@@ -38,9 +39,9 @@ test('keeps customize drafts local until the user saves them', async ({ page }) 
 
   await page.goto(projectCustomizePath(project.id), { waitUntil: 'domcontentloaded' })
   await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
-  await expect(page.getByLabel('Button Text')).toHaveValue('Ideas')
+  await expect(page.getByLabel('Button text')).toHaveValue('Ideas')
   await expect(
-    page.getByText(/Save it when the form looks right, then install that exact saved version/i),
+    page.getByText(/Preview your draft, save it, then install that exact version/i),
   ).toBeVisible()
   await expect(page.getByText(/Previewing unsaved changes/i)).toBeVisible()
 
@@ -52,7 +53,7 @@ test('keeps customize drafts local until the user saves them', async ({ page }) 
   await page.getByRole('button', { name: 'Save Changes' }).click()
   await saveResponse
   await expect(
-    page.getByText(/This is the saved version that install snippets and hosted verification will use/i),
+    page.getByText(/Saved version used by install snippets and hosted verification/i),
   ).toBeVisible()
 
   await page.goto(projectInstallPath(project.id), { waitUntil: 'domcontentloaded' })

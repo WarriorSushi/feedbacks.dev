@@ -17,9 +17,9 @@ test('creates a project and lands on customization before install', async ({ pag
   await expect(page.getByText('Start by choosing how the widget should appear.')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Make the feedback form fit your product' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Live form preview' })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Floating button Adds a small/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Your own button Attach the/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: /Form on a page Embed the whole/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Floating button Add a launcher/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Your own button Open the form/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Form on a page Embed the full/ })).toBeVisible()
 
   await page.getByRole('button', { name: 'Install', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Install the saved widget you just designed' })).toBeVisible()

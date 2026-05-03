@@ -4,7 +4,7 @@ import * as React from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { readStoredProjectApiKey, rememberProjectApiKey } from '@/lib/project-api-keys'
-import type { Project } from '@/lib/types'
+import type { BillingSummary, Project } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,6 +22,7 @@ import { IntegrationsTab } from './integrations-tab'
 
 interface ProjectTabsProps {
   project: Project
+  billingSummary: BillingSummary | null
 }
 
 type TabId = 'install' | 'customize' | 'integrations' | 'board' | 'api' | 'settings'
@@ -35,15 +36,15 @@ const tabs: { id: TabId; label: string }[] = [
   { id: 'settings', label: 'Settings' },
 ]
 
-export function ProjectTabs({ project }: ProjectTabsProps) {
+export function ProjectTabs({ project, billingSummary }: ProjectTabsProps) {
   return (
     <Suspense>
-      <ProjectTabsInner project={project} />
+      <ProjectTabsInner project={project} billingSummary={billingSummary} />
     </Suspense>
   )
 }
 
-function ProjectTabsInner({ project }: ProjectTabsProps) {
+function ProjectTabsInner({ project, billingSummary }: ProjectTabsProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [isInteractive, setIsInteractive] = React.useState(false)
@@ -140,7 +141,24 @@ function ProjectTabsInner({ project }: ProjectTabsProps) {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="space-y-2 md:hidden">
+        <Label htmlFor="project-section">Project section</Label>
+        <select
+          id="project-section"
+          aria-label="Project section"
+          className="h-11 w-full rounded-md border bg-background px-3 text-sm font-medium"
+          value={activeTab}
+          onChange={(event) => setActiveTab(event.target.value as TabId)}
+        >
+          {tabs.map((tab) => (
+            <option key={tab.id} value={tab.id}>
+              {tab.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="hidden md:block">
         <div className="flex gap-1 border-b">
           {tabs.map((tab) => (
             <button
@@ -177,7 +195,7 @@ function ProjectTabsInner({ project }: ProjectTabsProps) {
           onRotateApiKey={handleRotateApiKey}
         />
       )}
-      {activeTab === 'integrations' && <IntegrationsTab project={project} />}
+      {activeTab === 'integrations' && <IntegrationsTab project={project} initialBillingSummary={billingSummary} />}
       {activeTab === 'board' && <BoardSettingsTab project={project} />}
       {activeTab === 'api' && (
         <ApiDocs

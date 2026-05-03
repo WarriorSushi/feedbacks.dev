@@ -1,4 +1,5 @@
 import { expect, test, skipE2EIfNeeded } from './fixtures'
+import { createClient } from '@supabase/supabase-js'
 import { signInWithTestSession } from './helpers/auth'
 import { createProjectViaApi } from './helpers/project'
 
@@ -12,6 +13,28 @@ const env = skipE2EIfNeeded()
 test.skip(!env.ready, env.skipReason)
 
 const WEBHOOK_KINDS = ['slack', 'discord', 'generic', 'github'] as const
+
+async function setBillingPlan(userId: string, plan: 'free' | 'pro') {
+  const admin = createClient(env.supabaseUrl, env.supabaseServiceRoleKey)
+  const now = new Date().toISOString()
+  const { error } = await admin
+    .from('billing_accounts')
+    .upsert(
+      {
+        user_id: userId,
+        plan_tier: plan,
+        billing_status: plan === 'pro' ? 'active' : 'free',
+        cancel_at_period_end: false,
+        updated_at: now,
+        created_at: now,
+      },
+      { onConflict: 'user_id', ignoreDuplicates: false },
+    )
+
+  if (error) {
+    throw new Error(`Failed to set billing plan: ${error.message}`)
+  }
+}
 
 async function readDeliveries(page: import('@playwright/test').Page, projectId: string) {
   const response = await page.request.get(`/api/projects/${projectId}/webhooks/deliveries`)
@@ -146,4 +169,33 @@ test('integrations UI shows saved endpoints', async ({ page }) => {
   // The slack section should show the saved endpoint with a "Send test" button
   const slackSection = page.locator('[data-webhook-kind="slack"]')
   await expect(slackSection.getByRole('button', { name: 'Send test' })).toBeVisible()
+})
+
+test('free plan opens integrations without requesting forbidden delivery logs', async ({ page }) => {
+  await signInWithTestSession(page)
+  const project = await createProjectViaApi(page, { name: `Playwright Free Webhooks ${Date.now().toString(36)}` })
+  const summaryResponse = await page.request.get('/api/billing/sync')
+  expect(summaryResponse.ok()).toBe(true)
+  const summary = await summaryResponse.json()
+  const userId = summary.account.user_id as string
+
+  try {
+    await setBillingPlan(userId, 'free')
+    const deliveriesPath = `/api/projects/${project.id}/webhooks/deliveries`
+
+    await page.goto(`/projects/${project.id}?tab=integrations`)
+    await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Unlock delivery logs, replay, and live routing with Pro' })).toBeVisible()
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const deliveryRequests = await page.evaluate((path) => {
+      return performance
+        .getEntriesByType('resource')
+        .filter((entry) => entry.name.includes(path))
+        .map((entry) => entry.name)
+    }, deliveriesPath)
+
+    expect(deliveryRequests).toEqual([])
+  } finally {
+    await setBillingPlan(userId, 'pro')
+  }
 })

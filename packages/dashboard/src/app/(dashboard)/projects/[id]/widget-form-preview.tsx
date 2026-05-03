@@ -1,6 +1,6 @@
 'use client'
 
-import { Camera, MessageSquareText, MousePointerClick, PanelTop, Star } from 'lucide-react'
+import { Camera, MessageSquareText, MousePointerClick, Star } from 'lucide-react'
 import type { SavedWidgetConfig } from '@feedbacks/shared'
 import { cn } from '@/lib/utils'
 
@@ -111,28 +111,16 @@ export function WidgetFormPreview({ config, className }: WidgetFormPreviewProps)
   const mode = config.embedMode || 'modal'
   const primary = colorOrDefault(config.primaryColor, '#4d7c0f')
   const buttonText = config.buttonText || 'Feedback'
+  const position = config.position || 'bottom-right'
+  const launcherPositionClass = {
+    'bottom-left': 'bottom-5 left-5',
+    'top-left': 'top-5 left-5',
+    'top-right': 'top-5 right-5',
+    'bottom-right': 'bottom-5 right-5',
+  }[position]
 
   return (
     <div className={cn('rounded-xl border bg-background p-4', className)}>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {[
-          { id: 'modal', label: 'Floating button', Icon: MessageSquareText },
-          { id: 'trigger', label: 'Your own button', Icon: MousePointerClick },
-          { id: 'inline', label: 'Form on page', Icon: PanelTop },
-        ].map(({ id, label, Icon }) => (
-          <span
-            key={id}
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium',
-              mode === id ? 'border-primary/30 bg-primary/10 text-primary' : 'text-muted-foreground',
-            )}
-          >
-            <Icon className="h-3.5 w-3.5" />
-            {label}
-          </span>
-        ))}
-      </div>
-
       <div className="overflow-hidden rounded-xl border bg-zinc-100">
         <div className="flex items-center gap-1.5 border-b bg-white px-3 py-2">
           <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
@@ -160,9 +148,9 @@ export function WidgetFormPreview({ config, className }: WidgetFormPreviewProps)
               <button
                 type="button"
                 className={cn(
-                  'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm',
+                  'relative z-20 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm ring-4 ring-white/70',
                   mode === 'modal'
-                    ? 'absolute bottom-5 right-5'
+                    ? `absolute ${launcherPositionClass} text-white`
                     : 'mt-7 border border-zinc-200 bg-white text-zinc-900',
                 )}
                 style={mode === 'modal' ? { backgroundColor: primary } : undefined}
@@ -175,7 +163,7 @@ export function WidgetFormPreview({ config, className }: WidgetFormPreviewProps)
                 {mode === 'modal' ? buttonText : 'Open feedback'}
               </button>
 
-              <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/28 p-5">
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-950/24 p-5">
                 <div className="w-full max-w-[420px]">
                   <PreviewForm config={config} compact />
                 </div>

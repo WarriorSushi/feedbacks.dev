@@ -41,6 +41,7 @@ import {
 
 interface IntegrationsTabProps {
   project: Project
+  initialBillingSummary: BillingSummary | null
 }
 
 const FEEDBACK_TYPES: readonly FeedbackType[] = ['bug', 'idea', 'praise', 'question']
@@ -50,6 +51,12 @@ const HEALTH_LABELS: Record<EndpointHealthStatus, string> = {
   failing: 'Failing',
   disabled: 'Disabled',
   idle: 'No deliveries yet',
+}
+
+function webhooksLockReason(summary: BillingSummary | null) {
+  return summary
+    ? `Your ${summary.entitlements.label} plan does not include this feature.`
+    : 'Upgrade to Pro to use webhook routing, logs, and replay.'
 }
 
 const SECTION_META: Array<{
@@ -300,21 +307,23 @@ function DeliveryLogList({
   )
 }
 
-export function IntegrationsTab({ project }: IntegrationsTabProps) {
+export function IntegrationsTab({ project, initialBillingSummary }: IntegrationsTabProps) {
   const [config, setConfig] = React.useState<WebhookConfig>(() => normalizeWebhookConfig(project.webhooks))
   const [deliveries, setDeliveries] = React.useState<WebhookDeliveryLog[]>([])
   const [health, setHealth] = React.useState<WebhookEndpointState[]>(() =>
     listWebhookEndpointStates(normalizeWebhookConfig(project.webhooks)),
   )
-  const [billingSummary, setBillingSummary] = React.useState<BillingSummary | null>(null)
-  const [loadingOps, setLoadingOps] = React.useState(true)
+  const [billingSummary, setBillingSummary] = React.useState<BillingSummary | null>(initialBillingSummary)
+  const [loadingOps, setLoadingOps] = React.useState(initialBillingSummary?.entitlements.webhooks !== false)
   const [saving, setSaving] = React.useState(false)
   const [testingKey, setTestingKey] = React.useState<string | null>(null)
   const [resendingId, setResendingId] = React.useState<string | null>(null)
-  const [featureLocked, setFeatureLocked] = React.useState(false)
-  const [lockReason, setLockReason] = React.useState('Upgrade to Pro to use webhook routing, logs, and replay.')
+  const [featureLocked, setFeatureLocked] = React.useState(initialBillingSummary?.entitlements.webhooks === false)
+  const [lockReason, setLockReason] = React.useState(() => webhooksLockReason(initialBillingSummary))
 
   React.useEffect(() => {
+    if (billingSummary) return
+
     const loadBilling = async () => {
       try {
         const response = await fetch('/api/billing/sync', { cache: 'no-store' })
@@ -327,7 +336,7 @@ export function IntegrationsTab({ project }: IntegrationsTabProps) {
     }
 
     void loadBilling()
-  }, [])
+  }, [billingSummary])
 
   const handleLockedResponse = React.useCallback(async (response: Response, fallback: string) => {
     const payload = await response.json().catch(() => ({ error: fallback }))
@@ -370,8 +379,19 @@ export function IntegrationsTab({ project }: IntegrationsTabProps) {
   }, [handleLockedResponse, project.id])
 
   React.useEffect(() => {
+    if (!billingSummary) return
+
+    if (!billingSummary.entitlements.webhooks) {
+      setFeatureLocked(true)
+      setLockReason(webhooksLockReason(billingSummary))
+      setDeliveries([])
+      setHealth([])
+      setLoadingOps(false)
+      return
+    }
+
     void loadOperations()
-  }, [loadOperations])
+  }, [billingSummary, loadOperations])
 
   const endpointHealth = React.useMemo(() => {
     return new Map(health.map((state) => [endpointKey(state.kind, state.endpoint), state]))
