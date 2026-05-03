@@ -1,5 +1,6 @@
 'use client'
 
+import * as React from 'react'
 import { Camera, MessageSquareText, MousePointerClick, Star } from 'lucide-react'
 import type { SavedWidgetConfig } from '@feedbacks/shared'
 import { cn } from '@/lib/utils'
@@ -108,87 +109,88 @@ function PreviewForm({ config, compact = false }: { config: SavedWidgetConfig; c
 }
 
 export function WidgetFormPreview({ config, className }: WidgetFormPreviewProps) {
+  const [isFormOpen, setIsFormOpen] = React.useState(true)
   const mode = config.embedMode || 'modal'
   const primary = colorOrDefault(config.primaryColor, '#4d7c0f')
   const buttonText = config.buttonText || 'Feedback'
   const position = config.position || 'bottom-right'
-  const launcherPositionClass = {
-    'bottom-left': 'bottom-5 left-5',
-    'top-left': 'top-5 left-5',
-    'top-right': 'top-5 right-5',
-    'bottom-right': 'bottom-5 right-5',
-  }[position]
+  const alignLauncher = position.endsWith('left') ? 'justify-start' : 'justify-end'
+  const launcherIsTop = position.startsWith('top')
+
+  React.useEffect(() => {
+    setIsFormOpen(true)
+  }, [mode])
+
+  const launcher = (
+    <button
+      type="button"
+      aria-pressed={isFormOpen}
+      onClick={() => setIsFormOpen((open) => !open)}
+      className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform active:scale-[0.98]"
+      style={{ backgroundColor: primary }}
+    >
+      <MessageSquareText className="h-4 w-4" />
+      {buttonText}
+    </button>
+  )
 
   return (
-    <div className={cn('rounded-xl border bg-background p-4', className)}>
-      <div className="overflow-hidden rounded-xl border bg-zinc-100">
-        <div className="flex items-center gap-1.5 border-b bg-white px-3 py-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
-          <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
-          <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
-          <span className="ml-3 text-[11px] font-medium text-zinc-500">app.example.com</span>
-        </div>
-
-        <div className="relative min-h-[520px] bg-[linear-gradient(180deg,#fafafa,#f4f4f5)] p-5">
-          <div className="max-w-md space-y-3">
-            <div className="h-8 w-40 rounded bg-zinc-300/70" />
-            <div className="h-4 w-64 rounded bg-zinc-200" />
-            <div className="grid grid-cols-2 gap-3 pt-3">
-              <div className="h-24 rounded-lg border bg-white" />
-              <div className="h-24 rounded-lg border bg-white" />
-            </div>
-          </div>
-
-          {mode === 'inline' ? (
-            <div className="mt-6 max-w-lg">
-              <PreviewForm config={config} />
-            </div>
-          ) : (
-            <>
-              <button
-                type="button"
-                className={cn(
-                  'relative z-20 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-sm ring-4 ring-white/70',
-                  mode === 'modal'
-                    ? `absolute ${launcherPositionClass} text-white`
-                    : 'mt-7 border border-zinc-200 bg-white text-zinc-900',
-                )}
-                style={mode === 'modal' ? { backgroundColor: primary } : undefined}
-              >
-                {mode === 'modal' ? (
-                  <MessageSquareText className="h-4 w-4" />
-                ) : (
-                  <MousePointerClick className="h-4 w-4" />
-                )}
-                {mode === 'modal' ? buttonText : 'Open feedback'}
-              </button>
-
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-950/24 p-5">
-                <div className="w-full max-w-[420px]">
-                  <PreviewForm config={config} compact />
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+    <div className={cn('overflow-hidden rounded-xl border bg-white', className)}>
+      <div className="flex items-center gap-1.5 border-b px-3 py-2">
+        <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
+        <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
+        <span className="h-2.5 w-2.5 rounded-full bg-zinc-300" />
+        <span className="ml-3 text-[11px] font-medium text-zinc-500">app.example.com</span>
       </div>
 
-      <div className="mt-4 rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground">
-        {mode === 'modal' && (
-          <p>
-            Users see a floating <span className="font-medium text-foreground">{buttonText}</span> launcher.
-            This preview shows the opened form so you can judge the full experience.
-          </p>
-        )}
-        {mode === 'trigger' && (
-          <p>
-            You connect feedbacks.dev to your own button or menu item. The form opens over the page when that trigger is clicked.
-          </p>
-        )}
-        {mode === 'inline' && (
-          <p>
-            The feedback form sits directly in your page content. Use this for docs, account pages, or dedicated feedback sections.
-          </p>
+      <div className="min-h-[620px] bg-zinc-200 p-4">
+        <div className="max-w-md space-y-3">
+          <div className="h-8 w-40 rounded bg-zinc-400/70" />
+          <div className="h-4 w-64 max-w-full rounded bg-zinc-300" />
+          <div className="grid grid-cols-2 gap-3 pt-3">
+            <div className="h-20 rounded-lg border bg-white shadow-sm" />
+            <div className="h-20 rounded-lg border bg-white shadow-sm" />
+          </div>
+        </div>
+
+        {mode === 'inline' ? (
+          <div className="mt-6 max-w-lg">
+            <PreviewForm config={config} />
+          </div>
+        ) : (
+          <>
+            {mode === 'trigger' && (
+              <button
+                type="button"
+                aria-pressed={isFormOpen}
+                onClick={() => setIsFormOpen((open) => !open)}
+                className="mt-6 inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 shadow-sm transition-transform active:scale-[0.98]"
+              >
+                <MousePointerClick className="h-4 w-4" />
+                {isFormOpen ? 'Close feedback' : 'Open feedback'}
+              </button>
+            )}
+
+            {mode === 'modal' && launcherIsTop && (
+              <div className={cn('mt-6 flex', alignLauncher)}>
+                {launcher}
+              </div>
+            )}
+
+            <div className="mt-6 flex min-h-[430px] justify-center">
+              {isFormOpen && (
+                <div className="w-full max-w-[340px]">
+                  <PreviewForm config={config} compact />
+                </div>
+              )}
+            </div>
+
+            {mode === 'modal' && !launcherIsTop && (
+              <div className={cn('mt-4 flex', alignLauncher)}>
+                {launcher}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

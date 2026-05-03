@@ -1,12 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import {
-  buildRuntimeWidgetConfig,
-  buildWidgetEditorConfig,
-  getWidgetExpectation,
-  getWidgetModeLabel,
-} from '@feedbacks/shared'
+import { buildRuntimeWidgetConfig, buildWidgetEditorConfig, getWidgetModeLabel } from '@feedbacks/shared'
 import { useRouter } from 'next/navigation'
 import type { Project, WidgetConfig } from '@/lib/types'
 import { publicEnv } from '@/lib/public-env'
@@ -16,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Code2, Loader2, MousePointerClick, PanelTop, RotateCcw, Send } from 'lucide-react'
+import { Loader2, MousePointerClick, PanelTop, RotateCcw, Send } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { WidgetFormPreview } from './widget-form-preview'
 
@@ -130,10 +125,6 @@ export function CustomizeTab({
   )
   const draftModeLabel = React.useMemo(
     () => getWidgetModeLabel(runtimePreviewConfig),
-    [runtimePreviewConfig],
-  )
-  const draftExpectation = React.useMemo(
-    () => getWidgetExpectation(runtimePreviewConfig),
     [runtimePreviewConfig],
   )
   const changedFields = React.useMemo(
@@ -508,20 +499,6 @@ export function CustomizeTab({
             </div>
 
             <WidgetFormPreview config={config} />
-
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p>
-                Install snippets currently use: <span className="font-medium text-foreground">{savedModeLabel}</span>
-              </p>
-              <p>
-                This preview is rendering: <span className="font-medium text-foreground">{draftModeLabel}</span>
-              </p>
-              <p>{draftExpectation}</p>
-              <p className="inline-flex items-center gap-1.5">
-                <Code2 className="h-4 w-4" />
-                Save changes before copying the install snippet.
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>
