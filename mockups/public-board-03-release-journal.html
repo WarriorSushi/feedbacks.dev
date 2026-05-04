@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Public Board Mockup 03 - Release Journal</title>
+  <style>
+    :root {
+      --bg: #f1f3ef;
+      --paper: #fbfcf9;
+      --ink: #10150f;
+      --muted: #626c60;
+      --line: #dce4d9;
+      --accent: #4e970b;
+      --accent-soft: #e8f4df;
+      --accent-ink: #ffffff;
+      --warn: #fff1d8;
+      --warn-ink: #855000;
+      --blue: #e7f1ff;
+      --blue-ink: #0a4d82;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .top {
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .top-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px 24px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 22px;
+      align-items: center;
+    }
+
+    .crumbs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 31px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 8px 0 0;
+      color: #2f382d;
+      line-height: 1.55;
+      max-width: 760px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .meta strong { color: var(--ink); }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      min-height: 42px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      padding: 0 16px;
+      background: var(--paper);
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+      color: var(--ink);
+    }
+
+    .primary {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: var(--accent);
+    }
+
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 26px 24px 72px;
+    }
+
+    .feature {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr);
+      gap: 34px;
+      align-items: stretch;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 26px;
+      margin-bottom: 24px;
+    }
+
+    .release {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 24px;
+    }
+
+    .kicker {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      font-size: 12px;
+      font-weight: 850;
+      margin: 0 0 12px;
+    }
+
+    .release h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.12;
+    }
+
+    .release p {
+      color: #344031;
+      line-height: 1.65;
+      margin: 12px 0 0;
+    }
+
+    .release-list {
+      margin: 18px 0 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .release-list div {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: #2d362a;
+      line-height: 1.5;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      margin-top: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .pulse {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 58%, var(--paper)), var(--paper));
+    }
+
+    .meter {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .meter-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 42px;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .track {
+      height: 9px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--line) 80%, var(--paper));
+      overflow: hidden;
+    }
+
+    .track span {
+      display: block;
+      height: 100%;
+      background: var(--accent);
+      border-radius: inherit;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 0;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 10px;
+      padding: 9px 12px;
+      color: var(--muted);
+      font-weight: 750;
+    }
+
+    .tab.active {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+
+    .search {
+      min-height: 42px;
+      width: 280px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 10px;
+      padding: 0 14px;
+      font: inherit;
+    }
+
+    .feed {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 30px;
+      align-items: start;
+    }
+
+    .stories {
+      display: grid;
+    }
+
+    .story {
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr);
+      gap: 20px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .vote {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 14px;
+      padding: 12px 8px;
+      align-self: start;
+      text-align: center;
+    }
+
+    .vote .arrow { font-size: 23px; }
+    .vote strong { display: block; margin-top: 4px; font-size: 20px; }
+    .vote span { color: var(--muted); font-size: 12px; }
+
+    .story h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.28;
+    }
+
+    .story p {
+      margin: 9px 0 0;
+      color: #3a4536;
+      line-height: 1.6;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 11px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    .chip.green { background: var(--accent-soft); color: #35690e; border-color: #cbe4be; }
+    .chip.blue { background: var(--blue); color: var(--blue-ink); border-color: #c8ddfb; }
+    .chip.warn { background: var(--warn); color: var(--warn-ink); border-color: #f1d49e; }
+
+    .side {
+      position: sticky;
+      top: 22px;
+      display: grid;
+      gap: 22px;
+      padding-top: 20px;
+    }
+
+    .side-section {
+      border-left: 1px solid var(--line);
+      padding-left: 20px;
+    }
+
+    .side-section h3 {
+      margin: 0 0 12px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      color: var(--muted);
+    }
+
+    .mini {
+      display: grid;
+      gap: 12px;
+      line-height: 1.5;
+      color: #344030;
+      font-size: 14px;
+    }
+
+    .mini strong { color: var(--ink); }
+
+    .compose {
+      display: grid;
+      gap: 10px;
+    }
+
+    .compose textarea {
+      width: 100%;
+      min-height: 116px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font: inherit;
+      background: var(--paper);
+    }
+
+    @media (max-width: 900px) {
+      .top-inner, .page { padding-left: 16px; padding-right: 16px; }
+      .top-inner, .feature, .controls, .feed { grid-template-columns: 1fr; }
+      .actions { width: 100%; }
+      .actions button { flex: 1; }
+      .search { width: 100%; }
+      .story { grid-template-columns: 70px minmax(0, 1fr); }
+      .side { position: static; }
+      .side-section { border-left: 0; border-top: 1px solid var(--line); padding: 18px 0 0; }
+      .meter-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <div>
+        <div class="crumbs">All boards <span>/</span> Public feedback journal</div>
+        <h1>Acme Analytics public journal</h1>
+        <p class="lead">A board that blends release notes, roadmap decisions, and customer requests so visitors can see what changed and what is next.</p>
+        <div class="meta">
+          <span><strong>42</strong> requests</span>
+          <span><strong>13</strong> shipped</span>
+          <span><strong>318</strong> votes</span>
+          <span>Open submissions</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="primary">Share feedback</button>
+        <button>Follow</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="feature">
+      <article class="release">
+        <p class="kicker">Latest product update</p>
+        <h2>Annotations now stay attached to exports</h2>
+        <p>CSV and PDF reports now include the notes teams attach to chart spikes. This shipped because customers upvoted export context and shared examples from executive reporting workflows.</p>
+        <div class="release-list">
+          <div><span class="dot"></span><span>3 public requests closed by this release</span></div>
+          <div><span class="dot"></span><span>Follow-up API export work moved into discovery</span></div>
+          <div><span class="dot"></span><span>Team reply added to every related request</span></div>
+        </div>
+      </article>
+
+      <aside class="pulse">
+        <p class="kicker">Community pulse</p>
+        <h2 style="margin:0;font-size:22px;">What customers are asking for</h2>
+        <div class="meter">
+          <div class="meter-row"><span>Reporting</span><div class="track"><span style="width:78%"></span></div><strong>78%</strong></div>
+          <div class="meter-row"><span>Integrations</span><div class="track"><span style="width:54%"></span></div><strong>54%</strong></div>
+          <div class="meter-row"><span>Admin</span><div class="track"><span style="width:41%"></span></div><strong>41%</strong></div>
+          <div class="meter-row"><span>Mobile</span><div class="track"><span style="width:28%"></span></div><strong>28%</strong></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="controls">
+      <div>
+        <p class="kicker">Feedback feed</p>
+        <div class="tabs">
+          <button class="tab active">Top requests</button>
+          <button class="tab">Recently updated</button>
+          <button class="tab">Team replied</button>
+          <button class="tab">Shipped</button>
+        </div>
+      </div>
+      <input class="search" placeholder="Search feedback..." />
+    </section>
+
+    <section class="feed">
+      <div class="stories">
+        <article class="story">
+          <div class="vote"><div class="arrow">↑</div><strong>86</strong><span>votes</span></div>
+          <div>
+            <h2>Share saved dashboard filters across the workspace</h2>
+            <p>Teams want shared filter presets for recurring reports instead of asking every teammate to recreate the same setup.</p>
+            <div class="chips">
+              <span class="chip blue">Feature request</span>
+              <span class="chip green">Accepted</span>
+              <span class="chip">12 comments</span>
+              <span class="chip">Team reply</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="story">
+          <div class="vote"><div class="arrow">↑</div><strong>63</strong><span>votes</span></div>
+          <div>
+            <h2>API exports should include annotations too</h2>
+            <p>CSV and PDF are fixed. API users still need the same context when syncing reports into internal tools.</p>
+            <div class="chips">
+              <span class="chip blue">Feature request</span>
+              <span class="chip warn">Discovery</span>
+              <span class="chip">7 comments</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="story">
+          <div class="vote"><div class="arrow">↑</div><strong>29</strong><span>votes</span></div>
+          <div>
+            <h2>Dashboard cards flicker while date ranges reload</h2>
+            <p>The new loading behavior helped, but some stacked cards still blank out under slow network conditions.</p>
+            <div class="chips">
+              <span class="chip warn">Bug</span>
+              <span class="chip">Needs reproduction</span>
+              <span class="chip">2 comments</span>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <aside class="side">
+        <section class="side-section">
+          <h3>Submit signal</h3>
+          <div class="compose">
+            <textarea placeholder="What happened, what did you expect, or what would help?"></textarea>
+            <button class="primary">Post feedback</button>
+          </div>
+        </section>
+
+        <section class="side-section">
+          <h3>Review rhythm</h3>
+          <div class="mini">
+            <div><strong>Weekly triage:</strong> every Tuesday</div>
+            <div><strong>Decision notes:</strong> published when status changes</div>
+            <div><strong>Response goal:</strong> top 10 requests within 48 hours</div>
+          </div>
+        </section>
+
+        <section class="side-section">
+          <h3>Other public boards</h3>
+          <div class="mini">
+            <div><strong>SDK board</strong><br />Install, API, and webhook requests</div>
+            <div><strong>Billing board</strong><br />Seats, invoices, and plan feedback</div>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

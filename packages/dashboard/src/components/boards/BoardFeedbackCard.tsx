@@ -29,7 +29,7 @@ function UpvoteButton({
       onClick={onClick}
       disabled={loading}
       className={cn(
-        'flex min-w-[78px] shrink-0 flex-col items-center justify-center rounded-xl border border-border/80 bg-background px-3 py-3 text-sm shadow-sm transition-colors',
+        'flex w-14 shrink-0 flex-col items-center justify-center rounded-xl border border-border/80 bg-background px-2 py-3 text-sm shadow-sm transition-colors sm:w-[58px]',
         voted
           ? 'border-primary/25 bg-primary/10 text-primary'
           : 'text-foreground/72 hover:border-primary/25 hover:text-foreground',
@@ -93,11 +93,11 @@ export function BoardFeedbackCard({
     <article
       id={`feedback-${item.id}`}
       className={cn(
-        'rounded-2xl border border-border/80 bg-card px-4 py-4 shadow-sm transition-colors',
-        isExpanded ? 'border-foreground/20' : 'hover:border-border',
+        'border-b border-border/70 py-5 transition-colors last:border-b-0',
+        isExpanded ? 'bg-card/40' : 'hover:bg-card/35',
       )}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-4 px-0 sm:px-0">
         <UpvoteButton count={item.vote_count} voted={voted} onClick={onVote} loading={voting} />
 
         <div className="min-w-0 flex-1">
@@ -176,7 +176,7 @@ export function BoardFeedbackCard({
                   {comments.map((comment) => (
                     <div
                       key={comment.id}
-                      className="rounded-xl border border-border/70 bg-background px-4 py-4"
+                      className="rounded-xl border border-border/70 bg-background px-4 py-4 shadow-sm"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -195,7 +195,7 @@ export function BoardFeedbackCard({
               )}
 
               {canModerate && (
-                <div className="space-y-3 rounded-xl border border-border/70 bg-background px-4 py-4">
+                <div className="space-y-3 rounded-xl border border-border/70 bg-background px-4 py-4 shadow-sm">
                   <div className="flex flex-wrap items-center gap-3">
                     <select
                       aria-label="Update status"

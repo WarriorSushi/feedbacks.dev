@@ -49,8 +49,8 @@ export function BoardHero({
   const submissionLabel = board.allow_submissions ? 'Open submissions' : 'Read only'
 
   return (
-    <section className="border-b border-border/80 bg-card/95 shadow-[0_1px_0_rgba(15,23,42,0.02)]">
-      <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-5">
+    <section className="z-20 border-b border-border/80 bg-card/95 shadow-[0_1px_0_rgba(15,23,42,0.02)] backdrop-blur-xl lg:sticky lg:top-0">
+      <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6">
         <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <Link
             href="/boards"
@@ -74,9 +74,9 @@ export function BoardHero({
           )}
         </div>
 
-        <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-[1.9rem]">
               {displayTitle}
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/72 sm:text-base">
@@ -126,7 +126,7 @@ export function BoardHero({
             )}
           </div>
 
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:justify-end">
             {board.allow_submissions && (
               <Button onClick={onSubmitClick} className="gap-2 px-4 font-semibold">
                 Share feedback
