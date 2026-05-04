@@ -268,19 +268,19 @@ export function PublicBoard({
       className="min-h-screen bg-[linear-gradient(180deg,_hsl(var(--background))_0%,_hsl(var(--muted))_100%)]"
     >
       {board.customCss ? <style>{board.customCss}</style> : null}
-      <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
-        <BoardHero
-          board={board}
-          feedbackCount={feedback.length}
-          totalVotes={totalVotes}
-          followed={followed}
-          viewerSignedIn={viewerSignedIn}
-          canModerate={canModerate}
-          projectId={board.projectId}
-          onFollowToggle={() => void toggleFollowed()}
-          onSubmitClick={() => setShowSubmit(true)}
-        />
+      <BoardHero
+        board={board}
+        feedbackCount={feedback.length}
+        totalVotes={totalVotes}
+        followed={followed}
+        viewerSignedIn={viewerSignedIn}
+        canModerate={canModerate}
+        projectId={board.projectId}
+        onFollowToggle={() => void toggleFollowed()}
+        onSubmitClick={() => setShowSubmit(true)}
+      />
 
+      <div className="mx-auto max-w-6xl space-y-5 px-4 py-6 sm:px-6 sm:py-8">
         <BoardAnnouncements announcements={initialAnnouncements} />
 
         {justSubmitted && (
@@ -342,8 +342,8 @@ export function PublicBoard({
         </main>
 
         {recommendations.length > 0 && (
-          <section className="rounded-2xl border border-border/80 bg-card shadow-sm">
-            <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <section className="border-t border-border/70 pt-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="max-w-2xl">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Other public boards
@@ -366,7 +366,7 @@ export function PublicBoard({
             </div>
 
             {showRecommendations && (
-              <div className="grid gap-3 border-t border-border/70 p-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {recommendations.map((entry) => (
                   <Link
                     key={entry.slug}

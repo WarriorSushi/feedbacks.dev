@@ -46,128 +46,104 @@ export function BoardHero({
     'Vote on requests, add context, and follow the public layer of a feedback workflow that starts inside the product.'
   const categories = board.branding.categories?.slice(0, 4) || []
   const websiteHost = getWebsiteHost(board.branding.websiteUrl)
+  const submissionLabel = board.allow_submissions ? 'Open submissions' : 'Read only'
 
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/45 to-transparent" />
-      <div className="flex flex-col gap-6 px-5 py-5 sm:px-7 sm:py-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+    <section className="border-b border-border/80 bg-card/95 shadow-[0_1px_0_rgba(15,23,42,0.02)]">
+      <div className="mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-5">
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <Link
+            href="/boards"
+            className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            All boards
+          </Link>
+          <span className="text-muted-foreground/35">/</span>
+          <span className="font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {board.branding.heroEyebrow || 'Public board'}
+          </span>
+          {canModerate && (
             <Link
-              href="/boards"
-              className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-foreground"
+              href={`/projects/${projectId}?tab=board`}
+              className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-foreground sm:ml-auto"
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              All boards
+              Manage
+              <ArrowUpRight className="h-3.5 w-3.5" />
             </Link>
-            <span className="text-muted-foreground/35">/</span>
-            <span className="font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              {board.branding.heroEyebrow || 'Public feedback layer'}
-            </span>
-            {canModerate && (
-              <Link
-                href={`/projects/${projectId}?tab=board`}
-                className="inline-flex items-center gap-1.5 font-medium transition-colors hover:text-foreground lg:ml-auto"
-              >
-                Manage in dashboard
-                <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
-            )}
-          </div>
-
-          <div className="mt-5 flex items-start gap-4">
-            <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border/80 bg-background text-lg font-semibold text-foreground shadow-sm">
-              {board.branding.logoEmoji || (board.title || 'F').slice(0, 1).toUpperCase()}
-            </span>
-            <div className="min-w-0">
-              {board.branding.tagline && (
-                <p className="text-sm font-medium text-foreground/70">{board.branding.tagline}</p>
-              )}
-              <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                {displayTitle}
-              </h1>
-              <p className="mt-3 max-w-3xl text-base leading-7 text-foreground/72 sm:text-[1.0625rem]">
-                {heroDescription}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-3 sm:max-w-2xl sm:grid-cols-3">
-            <div className="rounded-xl border border-border/70 bg-background px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Open requests
-              </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-                {feedbackCount}
-              </p>
-            </div>
-            <div className="rounded-xl border border-border/70 bg-background px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Total votes
-              </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-                {totalVotes}
-              </p>
-            </div>
-            <div className="rounded-xl border border-border/70 bg-background px-4 py-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Submission mode
-              </p>
-              <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">
-                {board.allow_submissions ? 'Open' : 'Read only'}
-              </p>
-            </div>
-          </div>
-
-          {(categories.length > 0 || websiteHost) && (
-            <div className="mt-5 flex flex-wrap items-center gap-2.5">
-              {categories.map((category) => (
-                <span
-                  key={category}
-                  className="inline-flex rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground"
-                >
-                  {category}
-                </span>
-              ))}
-              {board.branding.websiteUrl && websiteHost && (
-                <a
-                  href={board.branding.websiteUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  {websiteHost}
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              )}
-            </div>
           )}
         </div>
 
-        <div className="w-full lg:max-w-xs">
-          <div className="rounded-xl border border-border/70 bg-background/80 p-3 shadow-sm">
-            <div className="space-y-2">
-              {board.allow_submissions && (
-                <Button
-                  onClick={onSubmitClick}
-                  className="w-full justify-between px-4 font-semibold"
-                >
-                  Share feedback
-                  <MessageSquarePlus className="h-4 w-4" />
-                </Button>
+        <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              {displayTitle}
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-foreground/72 sm:text-base">
+              {heroDescription}
+            </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+              <span>
+                <strong className="font-semibold text-foreground">{feedbackCount}</strong> requests
+              </span>
+              <span className="hidden h-1 w-1 rounded-full bg-muted-foreground/45 sm:inline-flex" />
+              <span>
+                <strong className="font-semibold text-foreground">{totalVotes}</strong> votes
+              </span>
+              <span className="hidden h-1 w-1 rounded-full bg-muted-foreground/45 sm:inline-flex" />
+              <span className="font-medium text-foreground/75">{submissionLabel}</span>
+              {board.branding.tagline && (
+                <>
+                  <span className="hidden h-1 w-1 rounded-full bg-muted-foreground/45 sm:inline-flex" />
+                  <span>{board.branding.tagline}</span>
+                </>
               )}
-              <Button
-                onClick={onFollowToggle}
-                variant={followed ? 'secondary' : 'outline'}
-                className={cn(
-                  'w-full justify-between px-4',
-                  followed && 'border-primary/20 bg-primary/10 text-primary hover:bg-primary/15',
-                )}
-              >
-                <span>{followed ? 'Following' : viewerSignedIn ? 'Follow board' : 'Sign in to follow'}</span>
-                <BellPlus className="h-4 w-4" />
-              </Button>
             </div>
+
+            {(categories.length > 0 || websiteHost) && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {categories.map((category) => (
+                  <span
+                    key={category}
+                    className="inline-flex rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium text-muted-foreground"
+                  >
+                    {category}
+                  </span>
+                ))}
+                {board.branding.websiteUrl && websiteHost && (
+                  <a
+                    href={board.branding.websiteUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {websiteHost}
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            {board.allow_submissions && (
+              <Button onClick={onSubmitClick} className="gap-2 px-4 font-semibold">
+                Share feedback
+                <MessageSquarePlus className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              onClick={onFollowToggle}
+              variant={followed ? 'secondary' : 'outline'}
+              className={cn(
+                'gap-2 px-4',
+                followed && 'border-primary/20 bg-primary/10 text-primary hover:bg-primary/15',
+              )}
+            >
+              <span>{followed ? 'Following' : viewerSignedIn ? 'Follow board' : 'Sign in to follow'}</span>
+              <BellPlus className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
