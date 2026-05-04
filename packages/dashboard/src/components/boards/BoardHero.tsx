@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, ArrowUpRight, BellPlus, Compass, ExternalLink, MessageSquarePlus } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, BellPlus, ExternalLink, MessageSquarePlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { BoardInfo } from './board-types'
@@ -145,11 +145,8 @@ export function BoardHero({
         </div>
 
         <div className="w-full lg:max-w-xs">
-          <div className="rounded-xl border border-border/70 bg-background p-4 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Public feedback layer
-            </p>
-            <div className="mt-4 space-y-2">
+          <div className="rounded-xl border border-border/70 bg-background/80 p-3 shadow-sm">
+            <div className="space-y-2">
               {board.allow_submissions && (
                 <Button
                   onClick={onSubmitClick}
@@ -169,12 +166,6 @@ export function BoardHero({
               >
                 <span>{followed ? 'Following' : viewerSignedIn ? 'Follow board' : 'Sign in to follow'}</span>
                 <BellPlus className="h-4 w-4" />
-              </Button>
-              <Button asChild variant="ghost" className="w-full justify-between px-4">
-                <Link href="/boards">
-                  Browse more boards
-                  <Compass className="h-4 w-4" />
-                </Link>
               </Button>
             </div>
           </div>

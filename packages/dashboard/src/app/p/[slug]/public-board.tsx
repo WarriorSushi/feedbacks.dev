@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import { ChevronDown } from 'lucide-react'
 import type { BoardAnnouncement } from '@/lib/public-board'
 import {
   type BoardInfo,
@@ -21,7 +22,6 @@ import { BoardFeedbackList } from '@/components/boards/BoardFeedbackList'
 import { BoardFeedbackCard } from '@/components/boards/BoardFeedbackCard'
 import { BoardSubmitForm } from '@/components/boards/BoardSubmitForm'
 import { BoardReportModal } from '@/components/boards/BoardReportModal'
-import { BoardFooter } from '@/components/boards/BoardFooter'
 
 export function PublicBoard({
   board,
@@ -60,6 +60,7 @@ export function PublicBoard({
   const [replyDrafts, setReplyDrafts] = React.useState<Record<string, string>>({})
   const [busyId, setBusyId] = React.useState<string | null>(null)
   const [ready, setReady] = React.useState(false)
+  const [showRecommendations, setShowRecommendations] = React.useState(false)
   const votesKey = `votes:${board.slug}`
 
   const commentsByFeedback = React.useMemo(() => {
@@ -289,108 +290,117 @@ export function PublicBoard({
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-          <div className="space-y-4">
-            <BoardFilters
-              showTypes={board.show_types}
-              filter={filter}
-              sort={sort}
-              search={search}
-              onFilterChange={setFilter}
-              onSortChange={setSort}
-              onSearchChange={setSearch}
-            />
+        <main className="space-y-4" aria-label="Public feedback requests">
+          <BoardFilters
+            showTypes={board.show_types}
+            filter={filter}
+            sort={sort}
+            search={search}
+            onFilterChange={setFilter}
+            onSortChange={setSort}
+            onSearchChange={setSearch}
+          />
 
-            <BoardFeedbackList
-              emptyTitle={board.branding.emptyStateTitle || 'No public requests yet'}
-              emptyDescription={
-                board.branding.emptyStateDescription ||
-                'Be the first person to submit something the team can respond to publicly.'
-              }
-              searchQuery={search}
-              isEmpty={filtered.length === 0}
-            >
-              {filtered.map((item) => (
-                <BoardFeedbackCard
-                  key={item.id}
-                  item={item}
-                  comments={commentsByFeedback[item.id] || []}
-                  isExpanded={expandedId === item.id}
-                  voted={votedIds.has(item.id)}
-                  watched={watchedIds.has(item.id)}
-                  voting={votingId === item.id}
-                  canModerate={canModerate}
-                  replyDraft={replyDrafts[item.id] || ''}
-                  busy={busyId === item.id}
-                  onVote={() => handleVote(item.id)}
-                  onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
-                  onToggleWatch={() => void toggleWatched(item.id)}
-                  onOpenReport={() =>
-                    setReportTarget({ type: 'feedback', feedbackId: item.id })
-                  }
-                  onReplyDraftChange={(value) =>
-                    setReplyDrafts((prev) => ({ ...prev, [item.id]: value }))
-                  }
-                  onReplySubmit={() => void handleReplySubmit(item.id)}
-                  onStatusChange={(status) =>
-                    void handleModeration(item.id, 'status', status)
-                  }
-                  onHide={() => void handleModeration(item.id, 'hide')}
+          <BoardFeedbackList
+            emptyTitle={board.branding.emptyStateTitle || 'No public requests yet'}
+            emptyDescription={
+              board.branding.emptyStateDescription ||
+              'Be the first person to submit something the team can respond to publicly.'
+            }
+            searchQuery={search}
+            isEmpty={filtered.length === 0}
+          >
+            {filtered.map((item) => (
+              <BoardFeedbackCard
+                key={item.id}
+                item={item}
+                comments={commentsByFeedback[item.id] || []}
+                isExpanded={expandedId === item.id}
+                voted={votedIds.has(item.id)}
+                watched={watchedIds.has(item.id)}
+                voting={votingId === item.id}
+                canModerate={canModerate}
+                replyDraft={replyDrafts[item.id] || ''}
+                busy={busyId === item.id}
+                onVote={() => handleVote(item.id)}
+                onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
+                onToggleWatch={() => void toggleWatched(item.id)}
+                onOpenReport={() =>
+                  setReportTarget({ type: 'feedback', feedbackId: item.id })
+                }
+                onReplyDraftChange={(value) =>
+                  setReplyDrafts((prev) => ({ ...prev, [item.id]: value }))
+                }
+                onReplySubmit={() => void handleReplySubmit(item.id)}
+                onStatusChange={(status) =>
+                  void handleModeration(item.id, 'status', status)
+                }
+                onHide={() => void handleModeration(item.id, 'hide')}
+              />
+            ))}
+          </BoardFeedbackList>
+        </main>
+
+        {recommendations.length > 0 && (
+          <section className="rounded-2xl border border-border/80 bg-card shadow-sm">
+            <div className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+              <div className="max-w-2xl">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Other public boards
+                </p>
+                <h2 className="mt-2 text-lg font-semibold text-foreground">
+                  Explore related boards when you are done here
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRecommendations((value) => !value)}
+                aria-expanded={showRecommendations}
+                className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
+              >
+                {showRecommendations ? 'Hide other boards' : 'View other public boards'}
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${showRecommendations ? 'rotate-180' : ''}`}
                 />
-              ))}
-            </BoardFeedbackList>
-          </div>
+              </button>
+            </div>
 
-          <aside className="space-y-4 lg:sticky lg:top-6">
-            {recommendations.length > 0 && (
-              <section className="rounded-2xl border border-border/80 bg-card shadow-sm">
-                <div className="border-b border-border/70 px-4 py-4">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    Explore more
-                  </p>
-                  <h2 className="mt-2 text-lg font-semibold text-foreground">
-                    Related product boards
-                  </h2>
-                </div>
-                <div className="space-y-3 p-4">
-                  {recommendations.map((entry) => (
-                    <Link
-                      key={entry.slug}
-                      href={`/p/${entry.slug}`}
-                      className="block rounded-xl border border-border/70 bg-background px-4 py-4 transition-colors hover:border-foreground/20"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-sm font-semibold text-foreground"
-                        >
-                          {entry.branding.logoEmoji || entry.title.slice(0, 1).toUpperCase()}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-foreground">
-                            {entry.title}
-                          </p>
-                          <p className="truncate text-xs text-muted-foreground">
-                            {entry.feedbackCount} requests
-                            {entry.trustScore >= 70
-                              ? ' · highly responsive'
-                              : entry.trustScore >= 45
-                                ? ' · active team'
-                                : ' · new board'}
-                          </p>
-                        </div>
+            {showRecommendations && (
+              <div className="grid gap-3 border-t border-border/70 p-4 sm:grid-cols-2 lg:grid-cols-3">
+                {recommendations.map((entry) => (
+                  <Link
+                    key={entry.slug}
+                    href={`/p/${entry.slug}`}
+                    className="group rounded-xl border border-border/70 bg-background px-4 py-4 transition-colors hover:border-foreground/25 hover:bg-accent/40"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-sm font-semibold text-foreground">
+                        {entry.branding.logoEmoji || entry.title.slice(0, 1).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-foreground">
+                          {entry.title}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {entry.feedbackCount} requests
+                          {entry.trustScore >= 70
+                            ? ' · responsive'
+                            : entry.trustScore >= 45
+                              ? ' · active'
+                              : ' · new'}
+                        </p>
                       </div>
-                      <p className="mt-3 text-sm leading-6 text-foreground/68">
-                        {entry.description}
-                      </p>
-                    </Link>
-                  ))}
-                </div>
-              </section>
+                    </div>
+                    <p className="mt-3 line-clamp-2 text-sm leading-6 text-foreground/68">
+                      {entry.description}
+                    </p>
+                  </Link>
+                ))}
+              </div>
             )}
+          </section>
+        )}
 
-            <BoardFooter canModerate={canModerate} projectId={board.projectId} />
-          </aside>
-        </div>
       </div>
 
       {showSubmit && (
