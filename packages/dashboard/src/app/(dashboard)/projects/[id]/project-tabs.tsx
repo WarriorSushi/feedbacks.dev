@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Copy, Check, Loader2, Trash2, Download, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Copy, Check, Loader2, Trash2, Download, RefreshCw, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { BoardSettingsTab } from './board-settings'
 import { ApiDocs } from './api-docs'
@@ -50,6 +50,7 @@ function ProjectTabsInner({ project, billingSummary }: ProjectTabsProps) {
   const [isInteractive, setIsInteractive] = React.useState(false)
   const [apiKey, setApiKey] = React.useState<string | null>(project.api_key)
   const [rotatingApiKey, setRotatingApiKey] = React.useState(false)
+  const [publicBoardUrl, setPublicBoardUrl] = React.useState<string | null>(null)
   const tabParam = searchParams.get('tab') as TabId | null
   const created = searchParams.get('created') === '1'
   const activeTab = tabs.some((t) => t.id === tabParam) ? tabParam! : 'customize'
@@ -74,6 +75,32 @@ function ProjectTabsInner({ project, billingSummary }: ProjectTabsProps) {
       setApiKey(storedKey)
     }
   }, [project.api_key, project.id])
+
+  React.useEffect(() => {
+    let cancelled = false
+
+    async function loadPublicBoardUrl() {
+      try {
+        const response = await fetch(`/api/projects/${project.id}/board`, { cache: 'no-store' })
+        const data = await response.json().catch(() => null)
+        const board = data?.board
+        const visibility = board?.profile?.visibility || 'public'
+        const isVisible = Boolean(board?.enabled && board?.slug && visibility !== 'private')
+
+        if (!cancelled) {
+          setPublicBoardUrl(isVisible ? `/p/${board.slug}` : null)
+        }
+      } catch {
+        if (!cancelled) setPublicBoardUrl(null)
+      }
+    }
+
+    void loadPublicBoardUrl()
+
+    return () => {
+      cancelled = true
+    }
+  }, [project.id, activeTab])
 
   const setActiveTab = (tab: TabId) => {
     const params = new URLSearchParams(searchParams.toString())
@@ -138,6 +165,14 @@ function ProjectTabsInner({ project, billingSummary }: ProjectTabsProps) {
               Export CSV
             </Button>
           </a>
+          {publicBoardUrl && (
+            <Button size="sm" variant="outline" className="h-7 gap-1.5 text-xs font-medium" asChild>
+              <a href={publicBoardUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3 w-3" />
+                Public page
+              </a>
+            </Button>
+          )}
         </div>
       </div>
 

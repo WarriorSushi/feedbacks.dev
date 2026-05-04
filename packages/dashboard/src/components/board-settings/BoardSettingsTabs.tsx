@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Check, Copy, ExternalLink, Loader2 } from 'lucide-react'
+import { Check, Copy, ExternalLink, Globe2, Loader2, Lock, Rocket, Settings2 } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { BoardIdentitySection } from './BoardIdentitySection'
@@ -153,6 +153,13 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
     : `/p/${settings.slug}`
   const isPrivate = (settings.branding.visibility || 'public') === 'private'
   const isListed = (settings.branding.visibility || 'public') === 'public' && settings.branding.directoryOptIn !== false
+  const canOpenBoard = settings.enabled && !isPrivate
+  const launchSteps = [
+    { label: 'URL ready', done: Boolean(settings.slug) },
+    { label: 'Public access enabled', done: canOpenBoard },
+    { label: 'Visitors can post', done: settings.allow_submissions },
+  ]
+  const completedSteps = launchSteps.filter((step) => step.done).length
 
   const updateSettings = (patch: Partial<BoardSettingsState>) => {
     setSettings((prev) => ({ ...prev, ...patch }))
@@ -165,28 +172,31 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
     }))
   }
 
-  const handleSave = async () => {
+  const persistSettings = async (
+    nextSettings: BoardSettingsState,
+    successTitle = 'Board settings saved',
+  ) => {
     setSaving(true)
 
     const response = await fetch(`/api/projects/${project.id}/board`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        id: settings.id,
-        enabled: settings.enabled,
-        slug: settings.slug,
-        display_name: settings.display_name,
-        title: settings.title,
-        description: settings.description,
-        show_types: settings.show_types,
-        allow_submissions: settings.allow_submissions,
-        require_email_to_vote: settings.require_email_to_vote,
-        custom_css: settings.custom_css,
+        id: nextSettings.id,
+        enabled: nextSettings.enabled,
+        slug: nextSettings.slug,
+        display_name: nextSettings.display_name,
+        title: nextSettings.title,
+        description: nextSettings.description,
+        show_types: nextSettings.show_types,
+        allow_submissions: nextSettings.allow_submissions,
+        require_email_to_vote: nextSettings.require_email_to_vote,
+        custom_css: nextSettings.custom_css,
         branding: {
-          ...settings.branding,
-          displayName: settings.display_name,
+          ...nextSettings.branding,
+          displayName: nextSettings.display_name,
         },
-        announcements: settings.announcements,
+        announcements: nextSettings.announcements,
       }),
     })
     const payload = await response.json().catch(() => null)
@@ -220,9 +230,26 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
       setStats(payload.stats || { followerCount: 0, watchCount: 0, openReportCount: 0 })
     }
 
-    toast({ title: 'Board settings saved' })
+    toast({ title: successTitle })
     setSaving(false)
     router.refresh()
+  }
+
+  const handleSave = async () => {
+    await persistSettings(settings)
+  }
+
+  const handleEnableAndSave = async () => {
+    const nextSettings = {
+      ...settings,
+      enabled: true,
+      branding: {
+        ...settings.branding,
+        visibility: isPrivate ? 'public' : settings.branding.visibility || 'public',
+      },
+    }
+    setSettings(nextSettings)
+    await persistSettings(nextSettings, 'Public board enabled')
   }
 
   const copyUrl = async () => {
@@ -312,73 +339,115 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header: status badges + live link + stats */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={settings.enabled ? 'secondary' : 'outline'}>
-              {settings.enabled ? 'Board enabled' : 'Board disabled'}
-            </Badge>
-            <Badge variant="outline">
-              {(settings.branding.visibility || 'public') === 'public'
-                ? 'Public'
-                : (settings.branding.visibility || 'public') === 'unlisted'
-                  ? 'Unlisted'
-                  : 'Private'}
-            </Badge>
-            {isListed && <Badge variant="outline">Listed in directory</Badge>}
-          </div>
-          <CardTitle className="mt-3 text-lg">Public board settings</CardTitle>
-          <CardDescription>
-            Shape the board into a lightweight product hub: public feedback, updates, and product context without turning setup into an enterprise control panel.
-          </CardDescription>
-
-          {settings.enabled && !isPrivate && (
-            <div className="mt-3 flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
-              <span className="flex-1 truncate font-mono text-sm">{boardUrl}</span>
-              <Button size="sm" variant="outline" onClick={copyUrl}>
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-              </Button>
-              <Button size="sm" variant="outline" asChild>
-                <a href={boardUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                </a>
-              </Button>
+      <Card className="overflow-hidden">
+        <CardHeader className="border-b bg-muted/20">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={canOpenBoard ? 'secondary' : 'outline'}>
+                  {canOpenBoard ? 'Live public page' : settings.enabled ? 'Private draft' : 'Not published'}
+                </Badge>
+                <Badge variant="outline">
+                  {(settings.branding.visibility || 'public') === 'public'
+                    ? 'Public'
+                    : (settings.branding.visibility || 'public') === 'unlisted'
+                      ? 'Unlisted'
+                      : 'Private'}
+                </Badge>
+                {isListed && <Badge variant="outline">Listed in directory</Badge>}
+              </div>
+              <CardTitle className="mt-3 text-xl">Public board</CardTitle>
+              <CardDescription className="mt-1 max-w-2xl">
+                Publish a clean customer-facing page for feedback, votes, public replies, and product updates.
+              </CardDescription>
             </div>
-          )}
-        </CardHeader>
-      </Card>
 
-      {/* Stats cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Followers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold text-slate-900">{stats.followerCount}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Signed-in users following this board.</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Watched posts</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold text-slate-900">{stats.watchCount}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Account-backed watches on public requests.</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Open reports</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-semibold text-slate-900">{stats.openReportCount}</p>
-            <p className="mt-1 text-xs text-muted-foreground">First-party abuse or trust reports awaiting review.</p>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex flex-wrap gap-2">
+              {!canOpenBoard && (
+                <Button onClick={() => void handleEnableAndSave()} disabled={saving}>
+                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Rocket className="mr-2 h-4 w-4" />}
+                  Enable and save
+                </Button>
+              )}
+              <Button variant="outline" onClick={copyUrl} disabled={!settings.slug}>
+                {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                Copy link
+              </Button>
+              {canOpenBoard ? (
+                <Button variant="outline" asChild>
+                  <a href={boardUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Open public board
+                  </a>
+                </Button>
+              ) : (
+                <Button variant="outline" disabled>
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  Open public board
+                </Button>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-5 p-5">
+          <div className="flex flex-col gap-3 rounded-xl border bg-background p-3 sm:flex-row sm:items-center">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-muted/30">
+              {canOpenBoard ? <Globe2 className="h-5 w-5 text-primary" /> : <Lock className="h-5 w-5 text-muted-foreground" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                {canOpenBoard ? 'Share this board with customers' : 'Finish setup, then publish'}
+              </p>
+              <p className="mt-1 truncate font-mono text-sm text-muted-foreground">{boardUrl}</p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                { label: 'Followers', value: stats.followerCount, description: 'People following the board.' },
+                { label: 'Watched posts', value: stats.watchCount, description: 'Requests watched for updates.' },
+                { label: 'Open reports', value: stats.openReportCount, description: 'Reports awaiting review.' },
+              ].map(({ label, value, description }) => (
+                <div key={label} className="rounded-xl border bg-background px-4 py-3">
+                  <p className="text-xs font-medium text-muted-foreground">{label}</p>
+                  <p className="mt-1 text-2xl font-semibold tabular-nums text-foreground">{value}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-xl border bg-background px-4 py-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-foreground">Launch checklist</p>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {completedSteps}/{launchSteps.length}
+                </span>
+              </div>
+              <div className="mt-3 space-y-2">
+                {launchSteps.map((step) => (
+                  <div key={step.label} className="flex items-center gap-2 text-sm">
+                    <span
+                      className={cn(
+                        'flex h-5 w-5 items-center justify-center rounded-full border',
+                        step.done
+                          ? 'border-primary/30 bg-primary/10 text-primary'
+                          : 'border-border text-muted-foreground',
+                      )}
+                    >
+                      {step.done ? <Check className="h-3.5 w-3.5" /> : <Settings2 className="h-3.5 w-3.5" />}
+                    </span>
+                    <span className={step.done ? 'text-foreground' : 'text-muted-foreground'}>
+                      {step.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Tab bar */}
       <div className="flex flex-wrap gap-1 rounded-full border bg-muted/50 p-1">
@@ -437,8 +506,7 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
         />
       )}
 
-      {/* Save button */}
-      <Button onClick={handleSave} disabled={saving}>
+      <Button onClick={() => void handleSave()} disabled={saving}>
         {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Save Board Settings
       </Button>

@@ -16,6 +16,12 @@ test('publishes a board and exercises duplicate and spam submission checks', asy
     categories: ['developer-tools', 'testing'],
   })
 
+  await page.goto(`/projects/${project.id}?tab=board`, { waitUntil: 'domcontentloaded' })
+  await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Public board' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Public page' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Open public board' })).toBeVisible()
+
   await page.goto(board.url, { waitUntil: 'domcontentloaded' })
   await expect(page.locator('[data-public-board-ready="true"]')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Playwright board' })).toBeVisible()
