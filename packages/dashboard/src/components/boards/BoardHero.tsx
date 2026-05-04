@@ -1,20 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, ArrowUpRight, BellPlus, ExternalLink, MessageSquarePlus } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, ExternalLink, MessageSquarePlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import type { BoardInfo } from './board-types'
 
 interface BoardHeroProps {
   board: BoardInfo
   feedbackCount: number
   totalVotes: number
-  followed: boolean
-  viewerSignedIn: boolean
   canModerate: boolean
   projectId: string
-  onFollowToggle: () => void
   onSubmitClick: () => void
 }
 
@@ -31,11 +27,8 @@ export function BoardHero({
   board,
   feedbackCount,
   totalVotes,
-  followed,
-  viewerSignedIn,
   canModerate,
   projectId,
-  onFollowToggle,
   onSubmitClick,
 }: BoardHeroProps) {
   const displayTitle =
@@ -43,7 +36,7 @@ export function BoardHero({
   const heroDescription =
     board.branding.heroDescription ||
     board.description ||
-    'Vote on requests, add context, and follow the public layer of a feedback workflow that starts inside the product.'
+    'Vote on requests, add context, and track the public layer of a feedback workflow that starts inside the product.'
   const categories = board.branding.categories?.slice(0, 4) || []
   const websiteHost = getWebsiteHost(board.branding.websiteUrl)
   const submissionLabel = board.allow_submissions ? 'Open submissions' : 'Read only'
@@ -133,17 +126,6 @@ export function BoardHero({
                 <MessageSquarePlus className="h-4 w-4" />
               </Button>
             )}
-            <Button
-              onClick={onFollowToggle}
-              variant={followed ? 'secondary' : 'outline'}
-              className={cn(
-                'gap-2 px-4',
-                followed && 'border-primary/20 bg-primary/10 text-primary hover:bg-primary/15',
-              )}
-            >
-              <span>{followed ? 'Following' : viewerSignedIn ? 'Follow board' : 'Sign in to follow'}</span>
-              <BellPlus className="h-4 w-4" />
-            </Button>
           </div>
         </div>
       </div>

@@ -30,7 +30,6 @@ export function PublicBoard({
   initialAnnouncements = [],
   canModerate = false,
   viewerSignedIn = false,
-  initialFollowed = false,
   initialWatchedIds = [],
   recommendations = [],
 }: {
@@ -51,7 +50,6 @@ export function PublicBoard({
   const [search, setSearch] = React.useState('')
   const [votedIds, setVotedIds] = React.useState<Set<string>>(new Set())
   const [watchedIds, setWatchedIds] = React.useState<Set<string>>(new Set(initialWatchedIds))
-  const [followed, setFollowed] = React.useState(initialFollowed)
   const [votingId, setVotingId] = React.useState<string | null>(null)
   const [expandedId, setExpandedId] = React.useState<string | null>(null)
   const [showSubmit, setShowSubmit] = React.useState(false)
@@ -88,27 +86,6 @@ export function PublicBoard({
   const redirectToAuth = () => {
     const redirect = encodeURIComponent(`/p/${board.slug}`)
     window.location.href = `/auth?redirect=${redirect}`
-  }
-
-  const toggleFollowed = async () => {
-    const next = !followed
-    const response = await fetch(`/api/boards/${board.slug}/follow`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ following: next }),
-    })
-
-    if (response.status === 401) {
-      redirectToAuth()
-      return
-    }
-
-    if (!response.ok) {
-      window.alert('Could not update your board follow right now.')
-      return
-    }
-
-    setFollowed(next)
   }
 
   const toggleWatched = async (feedbackId: string) => {
@@ -314,11 +291,8 @@ export function PublicBoard({
         board={board}
         feedbackCount={feedback.length}
         totalVotes={totalVotes}
-        followed={followed}
-        viewerSignedIn={viewerSignedIn}
         canModerate={canModerate}
         projectId={board.projectId}
-        onFollowToggle={() => void toggleFollowed()}
         onSubmitClick={() => setShowSubmit(true)}
       />
 
@@ -383,6 +357,7 @@ export function PublicBoard({
                   watched={watchedIds.has(item.id)}
                   voting={votingId === item.id}
                   canModerate={canModerate}
+                  canWatchUpdates={viewerSignedIn}
                   replyDraft={replyDrafts[item.id] || ''}
                   busy={busyId === item.id}
                   onVote={() => handleVote(item.id)}

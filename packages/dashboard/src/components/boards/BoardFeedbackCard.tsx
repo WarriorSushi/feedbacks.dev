@@ -53,6 +53,7 @@ interface BoardFeedbackCardProps {
   watched: boolean
   voting: boolean
   canModerate: boolean
+  canWatchUpdates: boolean
   replyDraft: string
   busy: boolean
   onVote: () => void
@@ -73,6 +74,7 @@ export function BoardFeedbackCard({
   watched,
   voting,
   canModerate,
+  canWatchUpdates,
   replyDraft,
   busy,
   onVote,
@@ -152,15 +154,17 @@ export function BoardFeedbackCard({
               <ShieldAlert className="h-4 w-4" />
               Report post
             </button>
-            <button
-              onClick={onToggleWatch}
-              className={cn(
-                'font-medium transition-colors',
-                watched ? 'text-primary hover:text-primary/80' : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {watched ? 'Watching' : 'Watch updates'}
-            </button>
+            {canWatchUpdates && (
+              <button
+                onClick={onToggleWatch}
+                className={cn(
+                  'font-medium transition-colors',
+                  watched ? 'text-primary hover:text-primary/80' : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {watched ? 'Watching' : 'Watch updates'}
+              </button>
+            )}
           </div>
 
           {isExpanded && (
