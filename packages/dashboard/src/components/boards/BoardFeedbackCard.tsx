@@ -90,6 +90,10 @@ export function BoardFeedbackCard({
   const status = statusConfig[item.status] || statusConfig.new
   const details = getFullDescription(item.message)
   const replyCount = comments.length
+  const threadLabel =
+    replyCount > 0
+      ? `View ${replyCount === 1 ? 'team reply' : 'team replies'}`
+      : 'View request'
 
   return (
     <article
@@ -145,7 +149,7 @@ export function BoardFeedbackCard({
               onClick={onToggle}
               className="font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              {isExpanded ? 'Collapse thread' : 'Details'}
+              {isExpanded ? 'Collapse thread' : threadLabel}
             </button>
             <button
               onClick={onOpenReport}
