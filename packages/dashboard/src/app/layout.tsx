@@ -9,11 +9,24 @@ import { Toaster } from '@/components/toaster'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://feedbacks.dev'),
   title: {
     default: 'feedbacks.dev | Feedback forms and product updates',
     template: '%s | feedbacks.dev',
   },
   description: 'Collect in-product feedback and show product updates to users with one lightweight embed. Install once, verify, and manage remotely.',
+  applicationName: 'feedbacks.dev',
+  keywords: [
+    'user feedback widget',
+    'in-app feedback',
+    'product feedback',
+    'feature request board',
+    'product updates',
+    'feedback API',
+  ],
+  authors: [{ name: 'feedbacks.dev', url: 'https://feedbacks.dev' }],
+  creator: 'feedbacks.dev',
+  publisher: 'feedbacks.dev',
   icons: {
     icon: [
       { url: '/new_logo_feedbacks.dev.svg', type: 'image/svg+xml' },
