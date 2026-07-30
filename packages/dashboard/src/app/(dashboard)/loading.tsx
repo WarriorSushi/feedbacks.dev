@@ -25,7 +25,7 @@ export default function DashboardLoading() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="rounded-xl border bg-card p-4">
+          <div key={i} className="rounded-lg border bg-card p-4">
             <Skeleton className="h-3 w-16 mb-3" />
             <Skeleton className="h-8 w-12 mb-2" />
             <Skeleton className="h-2 w-20" />
@@ -46,7 +46,7 @@ export default function DashboardLoading() {
 
       {/* Activity + sidebar */}
       <div className="grid gap-5 lg:grid-cols-[1fr_272px]">
-        <div className="rounded-xl border bg-card">
+        <div className="rounded-lg border bg-card">
           <div className="flex items-center justify-between p-4 pb-3">
             <Skeleton className="h-5 w-32" />
             <Skeleton className="h-7 w-16" />
@@ -64,7 +64,7 @@ export default function DashboardLoading() {
           </div>
         </div>
         <div className="space-y-4">
-          <div className="rounded-xl border bg-card p-4">
+          <div className="rounded-lg border bg-card p-4">
             <Skeleton className="h-5 w-20 mb-4" />
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, i) => (

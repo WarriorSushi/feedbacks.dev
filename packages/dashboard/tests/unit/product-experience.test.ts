@@ -54,9 +54,9 @@ test('first-run and public feedback screens keep optional work out of the main p
   const publicForm = read('../../src/components/boards/BoardSubmitForm.tsx')
 
   assert.match(newProject, /Name your app or website/)
-  assert.match(newProject, /Start with something else/)
+  assert.match(newProject, /Choose a different first goal/)
   assert.doesNotMatch(newProject, /What happens next/)
-  assert.match(inbox, /Read new messages\. Decide what to do next\./)
+  assert.match(inbox, /Review new messages and move the useful signal forward\./)
   assert.match(inbox, /showMoreFilters/)
   assert.match(publicForm, /What do you need\?/)
   assert.match(publicForm, /className="sr-only"/)
@@ -80,7 +80,7 @@ test('navigation gives product updates user context instead of an ambiguous rele
   const updatesOnboarding = read('../../src/components/product-updates/UpdatesOnboarding.tsx')
 
   assert.match(sidebar, /Updates for users/)
-  assert.match(projectHome, /Show product updates to users/)
+  assert.match(projectHome, /Product updates/)
   assert.match(updatesOnboarding, /useState<Choice>\(["']updates["']\)/)
   assert.doesNotMatch(updatesOnboarding, /localStorage/)
   assert.doesNotMatch(sidebar, /label: 'Release notes'/)
@@ -92,11 +92,11 @@ test('dense dashboard forms use clear tonal sections instead of one flat canvas'
   const boardVisibility = read('../../src/components/board-settings/BoardVisibilitySection.tsx')
   const inbox = read('../../src/app/(dashboard)/feedback/page.tsx')
 
-  assert.match(section, /rounded-xl border bg-card/)
-  assert.match(section, /border-b bg-muted\/25/)
+  assert.match(section, /rounded-lg border bg-card/)
+  assert.match(section, /border-b bg-surface-raised\/55/)
   assert.match(boardIdentity, /WorkspaceSection/)
   assert.match(boardVisibility, /WorkspaceSection/)
-  assert.match(inbox, /rounded-xl border bg-card/)
+  assert.match(inbox, /rounded-lg border bg-card/)
 })
 
 test('sidebar exposes a stable Home destination and groups project work by user intent', () => {
@@ -126,10 +126,10 @@ test('theme tokens use perceptual OKLCH colors in both themes', () => {
   const css = read('../../src/app/globals.css')
   const tailwind = read('../../tailwind.config.cjs')
 
-  assert.match(css, /--background: 0\.985/)
-  assert.match(css, /\.dark[\s\S]*--background: 0\.135/)
-  assert.match(css, /\.dark[\s\S]*--surface-raised: 0\.225/)
-  assert.match(css, /\.dark[\s\S]*--card: 0\.195/)
+  assert.match(css, /--background: 0\.968/)
+  assert.match(css, /\.dark[\s\S]*--background: 0\.115/)
+  assert.match(css, /\.dark[\s\S]*--surface-raised: 0\.235/)
+  assert.match(css, /\.dark[\s\S]*--card: 0\.185/)
   assert.match(css, /\[class~="shadow-\[var\(--shadow-card\)\]"\]/)
   assert.match(css, /--surface-sidebar:/)
   assert.match(css, /--surface-selected:/)
@@ -138,22 +138,24 @@ test('theme tokens use perceptual OKLCH colors in both themes', () => {
   assert.doesNotMatch(tailwind, /hsl\(var\(--primary\)/)
 })
 
-test('authenticated workspaces use elevated cards instead of flat divider-only canvases', () => {
+test('authenticated workspaces use page headers, section panels, and progressive disclosure', () => {
   const card = read('../../src/components/ui/card.tsx')
   const install = read('../../src/app/(dashboard)/projects/[id]/install-tab.tsx')
   const projectHome = read('../../src/app/(dashboard)/projects/[id]/project-home.tsx')
   const customize = read('../../src/app/(dashboard)/projects/[id]/customize-tab.tsx')
   const verify = read('../../src/app/(dashboard)/projects/[id]/project-verify-client.tsx')
 
-  assert.match(card, /rounded-xl border border-border\/80 bg-card/)
-  assert.match(card, /border-b bg-muted\/25/)
+  assert.match(card, /rounded-lg border border-border bg-card/)
+  assert.match(card, /border-b bg-surface-raised\/55/)
   assert.match(card, /shadow-\[var\(--shadow-card\)\]/)
-  assert.match(install, /<Card data-tour="install-snippet">/)
+  assert.match(install, /title="Choose your stack"/)
+  assert.match(install, /dataTour="install-snippet"/)
   assert.match(install, /surface-raised/)
-  assert.doesNotMatch(install, /grid gap-8 border-b/)
-  assert.match(projectHome, /<Card>/)
-  assert.match(customize, /rounded-xl border bg-card/)
-  assert.match(verify, /rounded-xl border bg-card/)
+  assert.match(install, /Connection details/)
+  assert.match(projectHome, /<PageHeader/)
+  assert.match(projectHome, /<SectionPanel/)
+  assert.match(customize, /Optional fields and protection/)
+  assert.match(verify, /<PageHeader/)
 })
 
 test('public docs use the stable canonical embed and remote customization language', () => {

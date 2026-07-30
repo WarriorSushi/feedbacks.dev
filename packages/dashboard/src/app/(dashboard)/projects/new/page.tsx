@@ -79,11 +79,13 @@ export default function NewProjectPage() {
         const modulePayload = await modulesResponse.json().catch(() => null)
         throw new Error(modulePayload?.error || 'Project created, but the product choice could not be saved.')
       }
-      router.push(goal === 'feedback'
+      const destination = goal === 'feedback'
         ? `/projects/${payload.id}/install?created=1`
         : goal === 'updates'
           ? `/projects/${payload.id}/release-notes`
-          : `/projects/${payload.id}`)
+          : `/projects/${payload.id}`
+      router.push(destination)
+      router.refresh()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Failed to create project')
     } finally {
@@ -92,7 +94,7 @@ export default function NewProjectPage() {
   }
 
   return (
-    <div className="mx-auto max-w-xl animate-fade-in">
+    <div className="mx-auto max-w-xl">
       <Link
         href="/projects"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -102,9 +104,9 @@ export default function NewProjectPage() {
 
       <Card className="mt-6">
       <CardHeader>
-        <p className="text-xs font-semibold text-primary">New project</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">New project</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-[-0.035em]">Name your app or website</h1>
-        <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">That is all we need to start. You will make the feedback form on the next screen.</p>
+        <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">One name is enough. The recommended install snippet comes next.</p>
       </CardHeader>
 
       <CardContent>
@@ -128,7 +130,7 @@ export default function NewProjectPage() {
 
             <details className="overflow-hidden rounded-lg border bg-[oklch(var(--surface-raised))] px-4">
               <summary className="cursor-pointer py-3 text-sm font-medium text-muted-foreground hover:text-foreground">
-                Start with something else <span className="font-normal">· {productChoices.find((choice) => choice.value === goal)?.label}</span>
+                Choose a different first goal <span className="font-normal">· {productChoices.find((choice) => choice.value === goal)?.label}</span>
               </summary>
               <fieldset className="space-y-2 border-t py-4">
                 <legend className="sr-only">First tool</legend>
@@ -145,7 +147,7 @@ export default function NewProjectPage() {
 
             <details className="overflow-hidden rounded-lg border bg-[oklch(var(--surface-raised))] px-4">
               <summary className="cursor-pointer py-3 text-sm font-medium text-muted-foreground hover:text-foreground">
-                Add an icon or domain <span className="font-normal">· optional</span>
+                Add project details <span className="font-normal">· optional</span>
               </summary>
               <div className="space-y-5 border-t py-4">
                 <fieldset className="space-y-2">
@@ -212,10 +214,10 @@ export default function NewProjectPage() {
             )}
             <Button data-tour="project-create-submit" type="submit" size="lg" className="h-12 w-full gap-2" disabled={loading || !name.trim()}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {goal === 'updates' ? 'Create project and write a user message' : goal === 'both' ? 'Create project' : 'Create project and make the form'}
+              {goal === 'updates' ? 'Create project and write an update' : goal === 'both' ? 'Create project' : 'Create project and get the snippet'}
               {!loading && <ArrowRight className="h-4 w-4" />}
             </Button>
-            <p className="text-center text-xs leading-5 text-muted-foreground">Next: make the form, add one code block, then send a test.</p>
+            <p className="text-center text-xs leading-5 text-muted-foreground">Next: copy the snippet and verify one test.</p>
       </form>
       </CardContent>
       </Card>

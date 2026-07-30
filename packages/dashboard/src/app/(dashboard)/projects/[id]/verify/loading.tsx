@@ -11,10 +11,10 @@ export default function ProjectVerifyLoading() {
         </div>
       </div>
 
-      <div className="rounded-xl border-2 border-foreground/15 bg-card p-3 dark:border-primary/25">
+      <div className="rounded-lg border-2 border-foreground/15 bg-card p-3 dark:border-primary/25">
         <div className="grid gap-3 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, index) => (
-            <div key={index} className="rounded-xl border-2 border-foreground/15 bg-background p-4">
+            <div key={index} className="rounded-lg border-2 border-foreground/15 bg-background p-4">
               <div className="flex gap-3">
                 <Skeleton className="h-7 w-7 rounded-full" />
                 <div className="space-y-2">
@@ -39,8 +39,8 @@ export default function ProjectVerifyLoading() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <Skeleton className="h-[32rem] rounded-xl" />
-        <Skeleton className="h-[36rem] rounded-xl" />
+        <Skeleton className="h-[32rem] rounded-lg" />
+        <Skeleton className="h-[36rem] rounded-lg" />
       </div>
     </div>
   )

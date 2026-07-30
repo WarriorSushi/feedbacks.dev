@@ -5,7 +5,7 @@ export default function SettingsLoading() {
     <div className="mx-auto max-w-2xl space-y-6">
       <Skeleton className="h-7 w-28" />
       {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="rounded-xl border bg-card p-6">
+        <div key={index} className="rounded-lg border bg-card p-6">
           <Skeleton className="h-5 w-32" />
           <div className="mt-5 space-y-4">
             <Skeleton className="h-4 w-24" />

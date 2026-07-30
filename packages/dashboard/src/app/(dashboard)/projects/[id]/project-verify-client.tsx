@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { CheckCircle2, ExternalLink, RefreshCw } from 'lucide-react'
 import { WidgetPreviewSurface } from './widget-preview-surface'
 import { SetupProgress } from './project-flow-nav'
+import { PageHeader } from '@/components/ui/workspace-shell'
 
 interface ProjectVerifyClientProps {
   appOrigin: string
@@ -84,7 +85,7 @@ export function ProjectVerifyClient({
       <SetupProgress projectId={projectId} activeStep="verify" />
 
       {verifiedFeedbackId && (
-        <div className="flex flex-col gap-4 rounded-xl border border-primary/35 bg-card p-5 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between" role="status">
+        <div className="flex flex-col gap-4 rounded-lg border border-primary/35 bg-card p-5 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between" role="status">
           <div className="flex min-w-0 gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
@@ -103,31 +104,21 @@ export function ProjectVerifyClient({
         </div>
       )}
 
-      <header data-tour="verify-guide" className="flex flex-wrap items-end justify-between gap-4 rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-[-0.035em]">Send one test. Know the connection works.</h1>
-          <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
-            This page is a safe test page. It proves your saved form can send feedback. It does not check the code on your own website.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href={`/feedback?projectId=${projectId}`}>
-            <Button variant="outline">Open project inbox</Button>
-          </Link>
-          <Link href={`/projects/${projectId}/feedback-form`}>
-            <Button variant="outline">Manage feedback form</Button>
-          </Link>
-        </div>
-      </header>
+      <div data-tour="verify-guide">
+        <PageHeader
+          eyebrow={projectName}
+          title="Verify one test"
+          description="Send a known message here, then confirm it reaches the project inbox. This hosted page tests the saved form and inbox path."
+        />
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]">
+        <aside className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)]">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">Saved config</Badge>
               <Badge variant="outline">{modeLabel} mode</Badge>
             </div>
-            <h2 className="mt-5 text-lg font-semibold">Three quick checks</h2>
-            <p className="mt-1 text-sm text-muted-foreground">This hosted page tests your saved form and inbox path.</p>
+            <h2 className="mt-5 text-base font-semibold">Three quick checks</h2>
           <ol className="mt-5 divide-y overflow-hidden rounded-lg border bg-[oklch(var(--surface-raised))] px-4 text-sm text-muted-foreground">
             <li className="grid grid-cols-[24px_1fr] gap-2 py-3">
               <span className="font-medium text-foreground">1</span><span>Find the form here. {verifyInstruction}</span>
@@ -147,7 +138,7 @@ export function ProjectVerifyClient({
             </div>
         </aside>
 
-        <section className="min-w-0 overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)]">
+        <section className="min-w-0 overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]">
             <div className="bg-muted/25 p-5 sm:p-7">
               <div className="max-w-xl space-y-3">
                 <p className="text-xs font-medium text-primary">Live saved configuration</p>

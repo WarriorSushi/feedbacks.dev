@@ -4,7 +4,6 @@ import * as React from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from '@/hooks/use-toast'
 import type { BillingSummary } from '@/lib/types'
 import { Loader2 } from 'lucide-react'
@@ -122,9 +121,9 @@ export function BillingClient({ initialSummary }: BillingClientProps) {
       : `Latest ${summary.entitlements.webhookDeliveryLogLimit} deliveries`
 
   return (
-    <div className="space-y-6">
-      <Card className="overflow-hidden rounded-xl shadow-[var(--shadow-card)]">
-        <CardHeader className="border-b bg-muted/25">
+    <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+      <section>
+        <header className="border-b bg-surface-raised px-5 py-5 sm:px-6">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={summary.account.plan_tier === 'pro' ? 'default' : 'secondary'}>
               {summary.entitlements.label}
@@ -132,13 +131,13 @@ export function BillingClient({ initialSummary }: BillingClientProps) {
             <Badge variant="outline">{summary.account.billing_status}</Badge>
             {!summary.billingEnabled && <Badge variant="outline">Billing offline</Badge>}
           </div>
-          <CardTitle className="mt-3 text-lg">Billing and plan</CardTitle>
-          <CardDescription>
+          <h2 className="mt-3 text-lg font-semibold">Billing and plan</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             See your plan, usage, limits, and renewal date in one place.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-6">
-          <div className="divide-y border-y bg-muted/10">
+          </p>
+        </header>
+        <div className="space-y-4 p-5 sm:p-6">
+          <div className="divide-y border-y bg-surface-raised/60">
             {[
               {
                 label: 'Projects',
@@ -181,17 +180,17 @@ export function BillingClient({ initialSummary }: BillingClientProps) {
               Refresh status
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      <Card className="overflow-hidden rounded-xl shadow-[var(--shadow-card)]">
-        <CardHeader className="border-b bg-muted/25">
-          <CardTitle className="text-base">Entitlements</CardTitle>
-          <CardDescription>
+      <section className="border-t">
+        <header className="border-b bg-surface-raised px-5 py-4 sm:px-6">
+          <h2 className="font-semibold">Plan capabilities</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
             Free includes the core setup tools with smaller limits. Pro raises those limits for teams.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid pt-6 md:grid-cols-2 md:divide-x">
+          </p>
+        </header>
+        <div className="grid p-5 sm:p-6 md:grid-cols-2 md:divide-x">
           <div className="pb-4 text-sm md:pb-0 md:pr-6">
             <p className="font-medium">Included now</p>
             <ul className="mt-2 space-y-1 text-muted-foreground">
@@ -211,8 +210,8 @@ export function BillingClient({ initialSummary }: BillingClientProps) {
               <li>If billing looks stale after checkout, use Refresh status after a minute.</li>
             </ul>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   )
 }

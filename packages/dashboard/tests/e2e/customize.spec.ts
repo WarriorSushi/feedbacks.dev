@@ -14,7 +14,7 @@ test('publishes saved feedback-form changes remotely without changing install co
   await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
 
   await expect(
-    page.getByText(/saved version is delivered remotely/i),
+    page.getByText(/without replacing the installed snippet/i),
   ).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Live form preview' })).toBeVisible()
   await expect(page.getByText(/Placement, color, copy, and optional fields update/i)).toBeVisible()
@@ -25,9 +25,9 @@ test('publishes saved feedback-form changes remotely without changing install co
   await page.getByLabel('Button text').fill('Ideas')
   await expect(page.getByLabel('Button text')).toHaveValue('Ideas')
   await expect(
-    page.getByText(/Save to publish these changes/i),
+    page.getByText(/Preview the draft, then save once/i),
   ).toBeVisible()
-  await expect(page.getByText(/Draft changes: Button text/i)).toBeVisible()
+  await expect(page.getByText(/Unsaved changes: Button text/i)).toBeVisible()
   await expect(page.getByText(/Previewing unsaved changes/i)).toBeVisible()
   await expect(page.getByText(/Publish remote changes/i)).toBeVisible()
   await expect
@@ -44,7 +44,7 @@ test('publishes saved feedback-form changes remotely without changing install co
   await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
   await expect(page.getByLabel('Button text')).toHaveValue('Ideas')
   await expect(
-    page.getByText(/Save to publish these changes/i),
+    page.getByText(/Preview the draft, then save once/i),
   ).toBeVisible()
   await expect(page.getByText(/Previewing unsaved changes/i)).toBeVisible()
 
@@ -56,7 +56,7 @@ test('publishes saved feedback-form changes remotely without changing install co
   await page.getByRole('button', { name: 'Save changes' }).first().click()
   await saveResponse
   await expect(
-    page.getByText(/saved version is delivered remotely/i),
+    page.getByText(/without replacing the installed snippet/i),
   ).toBeVisible()
 
   const bootstrapResponse = await page.request.get(`/api/widget/bootstrap?projectKey=${encodeURIComponent(project.apiKey)}&runtimeVersion=e2e`)

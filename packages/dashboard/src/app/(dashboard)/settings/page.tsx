@@ -6,8 +6,9 @@ import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { PageHeader } from '@/components/ui/workspace-shell'
 import { AlertTriangle, Loader2, Mail } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import Link from 'next/link'
@@ -158,127 +159,120 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <header className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
-        <p className="text-xs font-semibold text-primary">Your account</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">Settings</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Manage your profile, alerts, theme, and account.</p>
-      </header>
+      <PageHeader eyebrow="Account" title="Settings" description="Manage your profile, alerts, appearance, and account." />
 
-      {/* Profile */}
-      <Card className="overflow-hidden rounded-xl shadow-[var(--shadow-card)]">
-        <CardHeader className="border-b bg-muted/25">
-          <CardTitle className="text-lg">Profile</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-6">
-          <div className="space-y-2">
-            <Label htmlFor="settings-email">Email</Label>
-            <Input id="settings-email" value={email} disabled />
+      <div className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
+        <section className="grid gap-6 p-5 sm:p-6 md:grid-cols-[150px_minmax(0,1fr)]">
+          <div>
+            <h2 className="font-semibold">Profile</h2>
+            <p className="mt-1 text-sm text-muted-foreground">How your account appears.</p>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="settings-name">Display name</Label>
-            <Input
-              id="settings-name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your name"
-            />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="settings-email">Email</Label>
+              <Input id="settings-email" value={email} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="settings-name">Display name</Label>
+              <Input
+                id="settings-name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your name"
+              />
+            </div>
+            <Button onClick={handleSaveProfile} disabled={saving}>
+              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save profile
+            </Button>
           </div>
-          <Button onClick={handleSaveProfile} disabled={saving}>
-            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save profile
-          </Button>
-        </CardContent>
-      </Card>
+        </section>
 
-      {/* Notifications */}
-      <Card className="overflow-hidden rounded-xl shadow-[var(--shadow-card)]">
-        <CardHeader className="border-b bg-muted/25">
-          <CardTitle className="text-lg">Notifications</CardTitle>
-          <CardDescription>
-            Choose which account alerts reach your email.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3 pt-6">
-          <div className="divide-y border-y bg-muted/10">
-            <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
-              <input
-                type="checkbox"
-                className="mt-0.5 h-4 w-4 rounded border accent-primary"
-                checked={emailNotifications}
-                onChange={(event) => setEmailNotifications(event.target.checked)}
-              />
-              <span>
-                <span className="block font-medium text-foreground">Email me when new feedback arrives</span>
-                <span className="text-muted-foreground">
-                  Immediate owner alerts for newly submitted feedback. Off by default.
-                </span>
-              </span>
-            </label>
-            <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
-              <input
-                type="checkbox"
-                className="mt-0.5 h-4 w-4 rounded border accent-primary"
-                checked={dailyDigest}
-                onChange={(event) => setDailyDigest(event.target.checked)}
-              />
-              <span>
-                <span className="block font-medium text-foreground">Send a daily feedback digest</span>
-                <span className="text-muted-foreground">
-                  A once-per-day summary of new feedback across your projects.
-                </span>
-              </span>
-            </label>
-            <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
-              <input
-                type="checkbox"
-                className="mt-0.5 h-4 w-4 rounded border accent-primary"
-                checked={webhookFailureEmails}
-                onChange={(event) => setWebhookFailureEmails(event.target.checked)}
-                disabled={!emailNotifications}
-              />
-              <span>
-                <span className="block font-medium text-foreground">Email me when an integration is auto-disabled</span>
-                <span className="text-muted-foreground">
-                  Sends an alert if repeated webhook failures disable an endpoint.
-                </span>
-              </span>
-            </label>
-            <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
-              <input
-                type="checkbox"
-                className="mt-0.5 h-4 w-4 rounded border accent-primary"
-                checked={billingFailureEmails}
-                onChange={(event) => setBillingFailureEmails(event.target.checked)}
-              />
-              <span>
-                <span className="block font-medium text-foreground">Email me when billing needs attention</span>
-                <span className="text-muted-foreground">
-                  Sends a direct alert when Dodo reports a failed recurring payment.
-                </span>
-              </span>
-            </label>
+        <section className="grid gap-6 p-5 sm:p-6 md:grid-cols-[150px_minmax(0,1fr)]">
+          <div>
+            <h2 className="font-semibold">Notifications</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Choose which account alerts reach your email.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/projects">
-              <Button variant="outline" size="sm">Choose a project</Button>
-            </Link>
-            <Link href="/billing">
-              <Button variant="ghost" size="sm">View billing</Button>
-            </Link>
+          <div className="space-y-3">
+            <div className="divide-y border-y bg-surface-raised/60">
+              <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 rounded border accent-primary"
+                  checked={emailNotifications}
+                  onChange={(event) => setEmailNotifications(event.target.checked)}
+                />
+                <span>
+                  <span className="block font-medium text-foreground">Email me when new feedback arrives</span>
+                  <span className="text-muted-foreground">
+                    Immediate owner alerts for newly submitted feedback. Off by default.
+                  </span>
+                </span>
+              </label>
+              <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 rounded border accent-primary"
+                  checked={dailyDigest}
+                  onChange={(event) => setDailyDigest(event.target.checked)}
+                />
+                <span>
+                  <span className="block font-medium text-foreground">Send a daily feedback digest</span>
+                  <span className="text-muted-foreground">
+                    A once-per-day summary of new feedback across your projects.
+                  </span>
+                </span>
+              </label>
+              <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 rounded border accent-primary"
+                  checked={webhookFailureEmails}
+                  onChange={(event) => setWebhookFailureEmails(event.target.checked)}
+                  disabled={!emailNotifications}
+                />
+                <span>
+                  <span className="block font-medium text-foreground">Email me when an integration is auto-disabled</span>
+                  <span className="text-muted-foreground">
+                    Sends an alert if repeated webhook failures disable an endpoint.
+                  </span>
+                </span>
+              </label>
+              <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 rounded border accent-primary"
+                  checked={billingFailureEmails}
+                  onChange={(event) => setBillingFailureEmails(event.target.checked)}
+                />
+                <span>
+                  <span className="block font-medium text-foreground">Email me when billing needs attention</span>
+                  <span className="text-muted-foreground">
+                    Sends a direct alert when Dodo reports a failed recurring payment.
+                  </span>
+                </span>
+              </label>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/projects">
+                <Button variant="outline" size="sm">Choose a project</Button>
+              </Link>
+              <Link href="/billing">
+                <Button variant="ghost" size="sm">View billing</Button>
+              </Link>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Mail className="h-4 w-4" />
+              Slack, Discord, GitHub, and webhooks are set up inside each project.
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Mail className="h-4 w-4" />
-            Slack, Discord, GitHub, and webhooks are set up inside each project.
-          </div>
-        </CardContent>
-      </Card>
+        </section>
 
-      {/* Theme */}
-      <Card className="overflow-hidden rounded-xl shadow-[var(--shadow-card)]">
-        <CardHeader className="border-b bg-muted/25">
-          <CardTitle className="text-lg">Appearance</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
+        <section className="grid gap-6 p-5 sm:p-6 md:grid-cols-[150px_minmax(0,1fr)]">
+          <div>
+            <h2 className="font-semibold">Appearance</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Use light, dark, or your system preference.</p>
+          </div>
           <div className="flex gap-2">
             {(['light', 'dark', 'system'] as const).map((t) => (
               <Button
@@ -291,18 +285,15 @@ export default function SettingsPage() {
               </Button>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </section>
+      </div>
 
-      {/* Account */}
-      <Card className="overflow-hidden rounded-xl border-destructive/35 shadow-[var(--shadow-card)]">
-        <CardHeader className="border-b border-destructive/25 bg-destructive/[0.045]">
-          <CardTitle className="text-lg">Account</CardTitle>
-          <CardDescription>
-            Delete your account and all associated data.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4 pt-6">
+      <section className="overflow-hidden rounded-lg border border-destructive/35 bg-card shadow-sm">
+        <div className="border-b border-destructive/25 bg-destructive/[0.045] px-5 py-4 sm:px-6">
+          <h2 className="font-semibold">Delete account</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Permanently remove your account and all associated data.</p>
+        </div>
+        <div className="space-y-4 p-5 sm:p-6">
           <div className="border-y border-destructive/30 bg-destructive/5 px-4 py-4 text-sm">
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 h-4 w-4 text-destructive" />
@@ -331,8 +322,8 @@ export default function SettingsPage() {
             {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Delete account
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </section>
     </div>
   )
 }

@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 export default function BillingLoading() {
   return (
     <div className="space-y-6">
-      <div className="rounded-xl border bg-card p-6">
+      <div className="rounded-lg border bg-card p-6">
         <div className="flex gap-2">
           <Skeleton className="h-6 w-16 rounded-full" />
           <Skeleton className="h-6 w-24 rounded-full" />
@@ -21,8 +21,8 @@ export default function BillingLoading() {
         </div>
       </div>
       <div className="grid gap-3 md:grid-cols-2">
-        <Skeleton className="h-40 rounded-xl" />
-        <Skeleton className="h-40 rounded-xl" />
+        <Skeleton className="h-40 rounded-lg" />
+        <Skeleton className="h-40 rounded-lg" />
       </div>
     </div>
   )

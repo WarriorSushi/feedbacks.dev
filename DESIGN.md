@@ -12,7 +12,7 @@ Developer-led teams, indie founders, and small SaaS builders. They should feel t
 
 ## Scene
 
-A developer is adding feedback collection during a normal build session, switching between code, docs, and the dashboard on a laptop or desktop monitor. The UI should default to dark mode for focus and continuity with developer tools, while keeping light mode available and equally usable.
+A developer is adding feedback collection during a normal build session, switching between code, docs, and the dashboard on a laptop or desktop monitor. The interface should default to a calm light canvas that keeps code and actions easy to distinguish. Dark mode remains fully supported for users who choose it.
 
 ## Principles
 
@@ -24,17 +24,19 @@ A developer is adding feedback collection during a normal build session, switchi
 
 ## Visual System
 
-- Theme: dark-first by default, with restrained contrast, crisp separation, and a fully usable light mode for users who choose it.
+- Theme: light-first by default. Both themes use visibly distinct canvas, sidebar, panel, raised, selected, popover, and code roles.
 - Typography: system sans or the existing app font stack. Fixed sizes, no viewport-scaled product text.
 - Accent: controlled green/primary accent for primary actions, active state, success, and focus. Do not use accent as decoration.
-- Structure: crisp 1px borders, neutral panels, compact spacing, and clear section separation.
-- Radius: keep product cards and controls modest. Avoid oversized rounded cards unless already established by a component.
+- Structure: crisp 1px borders, neutral panels, compact spacing, and clear section separation. Prefer page headers, rows, tables, and disclosures over card stacks.
+- Radius: keep panels and controls modest. Avoid oversized rounded containers and repeated pill shapes.
 - Icons: use the existing icon system for actions and status. Prefer icon plus label for unfamiliar actions.
 
 ## Component Rules
 
 - Primary actions should be obvious and singular on first-run screens.
 - Secondary actions should stay visible but quieter, especially verification, docs, billing, and integration settings.
+- Code and its copy action should appear before explanatory setup material.
+- Keep common controls open. Put advanced, security, agent, and reference content in disclosures.
 - Empty states must teach the next action: create project, copy snippet, verify install, add endpoint, publish board.
 - Loading states should preserve the layout with skeletons or in-place states.
 - Error states must say what failed and what to try next.

@@ -22,7 +22,7 @@ export function FeedbackProjectScope({
   if (projects.length === 0) return null
 
   return (
-    <div className="rounded-xl border bg-card p-3 shadow-[var(--shadow-card)]">
+    <div className="rounded-lg border bg-card p-3 shadow-[var(--shadow-card)]">
       <div className="mb-2 px-0.5">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Project view</p>
         <p className="text-[11px] text-muted-foreground">Choose one project or include the whole workspace.</p>

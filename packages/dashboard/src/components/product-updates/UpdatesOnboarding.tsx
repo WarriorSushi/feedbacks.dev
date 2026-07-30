@@ -160,7 +160,7 @@ export function UpdatesOnboarding({
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
-      <section className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+      <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
         <p className="text-xs font-semibold text-primary">
           Updates for your users
         </p>
@@ -174,7 +174,7 @@ export function UpdatesOnboarding({
         </p>
       </section>
 
-      <section className="space-y-5 rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+      <section className="space-y-5 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
         <Step title="Choose what the shared embed should do" />
         <div className="grid gap-3 sm:grid-cols-3">
           <ChoiceButton
@@ -206,7 +206,7 @@ export function UpdatesOnboarding({
       </section>
 
       {modules.updates && (
-        <section className="space-y-5 rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+        <section className="space-y-5 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
           <Step title="Install the shared embed" />
           <div className="flex flex-wrap gap-2">
             {(["AI assistant", "Script tag", "React", "Vue"] as Method[]).map(

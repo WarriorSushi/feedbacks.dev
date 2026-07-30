@@ -37,7 +37,7 @@ export function BoardAdvancedSection({
 }: BoardAdvancedSectionProps) {
   return (
     <div className="space-y-6">
-      <details className="overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)]">
+      <details className="overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]">
         <summary className="cursor-pointer border-b bg-muted/25 px-5 py-4 text-base font-semibold">Custom CSS <span className="text-sm font-normal text-muted-foreground">· optional</span></summary>
         <div className="space-y-3 p-5 sm:p-6">
           <textarea

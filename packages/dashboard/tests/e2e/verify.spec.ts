@@ -13,7 +13,7 @@ test('renders the live widget and accepts a test submission', async ({ page }) =
   const widgetRuntimeResponse = await page.request.fetch('/widget/latest.js')
 
   await expect(page.getByRole('navigation', { name: 'Setup steps' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Send one test. Know the connection works.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Verify one test' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Three quick checks' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Send one test message.' })).toBeVisible()
   expect(widgetRuntimeResponse.ok()).toBeTruthy()

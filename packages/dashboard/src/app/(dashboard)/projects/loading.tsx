@@ -11,7 +11,7 @@ export default function ProjectsLoading() {
         <Skeleton className="h-10 w-32 rounded-md" />
       </div>
 
-      <div className="overflow-hidden rounded-xl border bg-card">
+      <div className="overflow-hidden rounded-lg border bg-card">
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={index}

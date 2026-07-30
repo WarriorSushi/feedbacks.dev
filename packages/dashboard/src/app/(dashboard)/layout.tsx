@@ -76,7 +76,7 @@ export default async function DashboardLayout({
         })
       : {}
   return (
-    <div className="flex h-dvh flex-col bg-background md:flex-row">
+    <div className="dashboard-shell flex h-dvh flex-col bg-background md:flex-row">
       <Sidebar
         user={{
           email: user.email,
@@ -88,7 +88,7 @@ export default async function DashboardLayout({
         billingAccount={billingAccount}
       />
       <main className="min-h-0 flex-1 overflow-y-auto bg-background pb-[env(safe-area-inset-bottom,0px)]">
-        <div className="mx-auto max-w-[1240px] px-4 py-5 md:px-8 md:py-8">{children}</div>
+        <div className="mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 md:px-8 md:py-7">{children}</div>
       </main>
       <ProductTour
         initialOpen={false}

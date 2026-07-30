@@ -220,7 +220,7 @@ export function WidgetPreviewSurface({
     <div
       ref={hostRef}
       className={cn(
-        'relative min-h-[280px] rounded-xl border bg-background p-6',
+        'relative min-h-[280px] rounded-lg border bg-background p-6',
         className,
       )}
     />
