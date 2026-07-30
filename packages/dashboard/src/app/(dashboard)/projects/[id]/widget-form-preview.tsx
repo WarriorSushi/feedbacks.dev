@@ -23,7 +23,7 @@ function PreviewForm({ config, compact = false }: { config: SavedWidgetConfig; c
   return (
     <div
       className={cn(
-        'rounded-xl border bg-white text-zinc-950 shadow-sm',
+        'rounded-lg border bg-white text-zinc-950 shadow-sm',
         compact ? 'p-4' : 'p-5',
       )}
       style={{ borderColor: `${primary}26` }}
@@ -135,7 +135,7 @@ export function WidgetFormPreview({ config, className }: WidgetFormPreviewProps)
   )
 
   return (
-    <div className={cn('rounded-xl border bg-zinc-50 p-4', className)}>
+    <div className={cn('rounded-lg border bg-zinc-50 p-4', className)}>
       {mode === 'inline' ? (
         <PreviewForm config={config} />
       ) : (
@@ -161,7 +161,7 @@ export function WidgetFormPreview({ config, className }: WidgetFormPreviewProps)
           {isFormOpen ? (
             <PreviewForm config={config} compact />
           ) : (
-            <div className="rounded-xl border border-dashed bg-white p-6 text-sm text-zinc-500">
+            <div className="rounded-lg border border-dashed bg-white p-6 text-sm text-zinc-500">
               The form is closed. Use the preview button to open it.
             </div>
           )}

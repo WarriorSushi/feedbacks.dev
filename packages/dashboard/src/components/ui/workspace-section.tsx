@@ -23,14 +23,14 @@ export function WorkspaceSection({
   return (
     <section
       className={cn(
-        'overflow-hidden rounded-xl border bg-card text-card-foreground shadow-[var(--shadow-card)]',
+        'overflow-hidden rounded-lg border bg-card text-card-foreground shadow-[var(--shadow-card)]',
         tone === 'danger' && 'border-destructive/35',
         className,
       )}
     >
       <header
         className={cn(
-          'flex flex-col gap-3 border-b bg-muted/25 px-5 py-4 sm:flex-row sm:items-start sm:justify-between',
+          'flex flex-col gap-3 border-b bg-surface-raised/55 px-5 py-4 sm:flex-row sm:items-start sm:justify-between',
           tone === 'danger' && 'border-destructive/25 bg-destructive/[0.045]',
         )}
       >

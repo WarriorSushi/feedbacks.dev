@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { ArrowRight, Code2, FolderOpen, Inbox, Key, Plus } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { CURRENT_PROJECT_COOKIE, getSelectedProject } from '@/lib/project-selection'
+import { PageHeader } from '@/components/ui/workspace-shell'
 
 export const metadata = { title: 'Projects' }
 
@@ -40,24 +41,18 @@ export default async function ProjectsPage() {
 
   return (
     <div data-tour="project-surface" className="space-y-6">
-      <div className="flex items-center justify-between rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
-        <div>
-          <h1 className="text-2xl font-bold">Projects</h1>
-          {billingSummary && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {billingSummary.entitlements.label} plan · {billingSummary.usage.projectCount}
-              {billingSummary.entitlements.projectLimit
-                ? ` of ${billingSummary.entitlements.projectLimit} projects used`
-                : ' projects'}
-            </p>
-          )}
-        </div>
-        <Link href="/projects/new" data-tour="new-project">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> New Project
+      <PageHeader
+        eyebrow="Workspace"
+        title="Projects"
+        description={billingSummary
+          ? `${billingSummary.entitlements.label} plan · ${billingSummary.usage.projectCount}${billingSummary.entitlements.projectLimit ? ` of ${billingSummary.entitlements.projectLimit} projects used` : ' projects'}`
+          : 'Manage each product connection.'}
+        action={
+          <Button asChild>
+            <Link href="/projects/new" data-tour="new-project"><Plus className="mr-2 h-4 w-4" />New project</Link>
           </Button>
-        </Link>
-      </div>
+        }
+      />
 
       {billingSummary?.entitlements.projectLimit &&
         billingSummary.usage.projectCount >= billingSummary.entitlements.projectLimit && (
@@ -100,11 +95,11 @@ export default async function ProjectsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)]">
+        <div className="overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]">
           {(projects as Project[]).map((project) => (
             <Link
               key={project.id}
-              href={`/projects/${project.id}?tab=customize`}
+              href={`/projects/${project.id}`}
               className="group grid gap-3 border-b px-4 py-4 transition-colors last:border-b-0 hover:bg-accent/40 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
             >
               <div className="min-w-0">

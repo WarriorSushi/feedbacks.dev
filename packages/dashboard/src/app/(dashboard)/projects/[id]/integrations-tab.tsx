@@ -27,8 +27,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { toast } from '@/hooks/use-toast'
+import { PageHeader } from '@/components/ui/workspace-shell'
 import {
-  BellRing,
   Github,
   Loader2,
   Mail,
@@ -548,34 +548,19 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
 
   return (
     <div className="space-y-4" data-tour="integration-workspace">
-      <Card className="overflow-hidden rounded-xl shadow-[var(--shadow-card)]">
-        <CardHeader className="border-b bg-muted/25">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">Workflow routing</Badge>
-            <Badge variant="outline">Operational logs</Badge>
-            <Badge variant="outline">Rules and health</Badge>
-            {billingSummary?.entitlements.label === 'Free' && (
-              <Badge variant="outline">Limited on Free</Badge>
-            )}
-          </div>
-          <CardTitle className="mt-3 text-lg">Route important feedback where your team already works</CardTitle>
-          <CardDescription>
-            Slack, Discord, GitHub, and generic webhooks are available here. Free includes one active endpoint; Pro removes that cap.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <PageHeader
+        eyebrow={project.name}
+        title="Integrations"
+        description="Send important feedback to Slack, Discord, GitHub, or your own webhook."
+      />
 
       {!featureLocked && billingSummary && (
-        <Card className="overflow-hidden rounded-xl bg-muted/15 shadow-[var(--shadow-card)]">
-          <CardContent className="flex flex-col gap-3 p-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 border-b pb-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm font-semibold text-foreground">
+              <p className="text-sm font-medium text-foreground">
                 {endpointLimit === null
                   ? 'Unlimited active endpoints on Pro'
                   : `${activeEndpointCount} of ${endpointLimit} active endpoint${endpointLimit === 1 ? '' : 's'} used on Free`}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Disable an endpoint to free the slot, or upgrade when you need multiple destinations.
               </p>
             </div>
             {billingSummary.entitlements.label === 'Free' && (
@@ -583,8 +568,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                 <Button variant="outline" size="sm">View Pro limits</Button>
               </Link>
             )}
-          </CardContent>
-        </Card>
+        </div>
       )}
 
       {featureLocked && (
@@ -615,12 +599,13 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
         const Icon = section.icon
 
         return (
-          <Card key={section.kind} data-webhook-kind={section.kind} data-tour="integration-endpoint" className="overflow-hidden rounded-xl shadow-[var(--shadow-card)]">
-            <CardHeader className="flex flex-col gap-3 border-b bg-muted/25 md:flex-row md:items-start md:justify-between">
+          <details key={section.kind} data-webhook-kind={section.kind} data-tour="integration-endpoint" className="group overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]">
+            <summary className="flex cursor-pointer list-none flex-col gap-3 bg-surface-raised/55 px-5 py-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <div className="flex items-center gap-2">
                   <Icon className="h-4 w-4 text-primary" />
                   <CardTitle className="text-base">{section.title}</CardTitle>
+                  <span className="text-xs text-muted-foreground">{endpoints.length > 0 ? `${endpoints.length} configured` : 'Not connected'}</span>
                 </div>
                 <CardDescription className="mt-1">{section.description}</CardDescription>
               </div>
@@ -628,16 +613,20 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => addEndpoint(section.kind)}
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.currentTarget.closest('details')?.setAttribute('open', '')
+                  addEndpoint(section.kind)
+                }}
                 disabled={endpointLimitReached}
                 title={endpointLimitReached ? 'Free includes one active endpoint. Disable another endpoint or upgrade.' : undefined}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Add endpoint
               </Button>
-            </CardHeader>
+            </summary>
 
-            <CardContent className="space-y-4 pt-6">
+            <div className="space-y-4 border-t p-5">
               {endpoints.length === 0 ? (
                 <div className="border-y border-dashed bg-muted/10 p-4 text-sm text-muted-foreground">
                   No {section.title.toLowerCase()} endpoint yet. Add one when you are ready to send feedback there.
@@ -794,39 +783,25 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                   )
                 })
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </details>
         )
       })}
 
-      <Card className="overflow-hidden rounded-xl border-dashed shadow-[var(--shadow-card)]">
-        <CardHeader className="border-b bg-muted/25">
-          <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <CardTitle className="text-base">Email Notifications</CardTitle>
-            <Badge variant="secondary">Live in Settings</Badge>
-          </div>
-          <CardDescription>
-            Email alerts for new feedback and failed integrations are managed in account settings.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="bg-muted/10 pt-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-dashed bg-surface-raised/35 p-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <BellRing className="h-4 w-4" />
-              Use email for personal alerts. Use Slack, Discord, GitHub, or a webhook for team workflows.
+              <Mail className="h-4 w-4" />
+              Personal email alerts are managed in account settings.
             </div>
             <Link href="/settings">
               <Button variant="outline" size="sm">Manage email alerts</Button>
             </Link>
-          </div>
-        </CardContent>
-      </Card>
+      </div>
 
       {!featureLocked && (
         <>
-          <Card className="overflow-hidden rounded-xl shadow-[var(--shadow-card)]">
-            <CardHeader className="flex flex-col gap-3 border-b bg-muted/25 md:flex-row md:items-start md:justify-between">
+          <Card className="overflow-hidden rounded-lg shadow-[var(--shadow-card)]">
+            <CardHeader className="flex flex-col gap-3 border-b bg-surface-raised/55 md:flex-row md:items-start md:justify-between">
               <div>
                 <CardTitle className="text-base">Recent delivery history</CardTitle>
                 <CardDescription>

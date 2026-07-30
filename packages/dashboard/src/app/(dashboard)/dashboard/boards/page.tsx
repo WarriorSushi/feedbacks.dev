@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { getMarketingOrigin } from '@/lib/domain-routing'
 import { CURRENT_PROJECT_COOKIE } from '@/lib/project-selection'
+import { PageHeader } from '@/components/ui/workspace-shell'
 
 export const metadata = { title: 'Your Public Boards' }
 
@@ -50,24 +51,22 @@ export default async function DashboardBoardsPage({
 
   return (
     <div className="mx-auto max-w-6xl space-y-6" data-tour="owner-boards">
-      <div data-tour="owner-boards-summary" className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold text-primary">Public feedback page</p>
-          <h1 className="mt-2 text-2xl font-bold">{selectedProject ? selectedProject.name : 'Your public page'}</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Let users share ideas, vote, and see your replies.
-          </p>
-        </div>
-        <Button variant="outline" asChild>
-          <a href={publicBoardsUrl}>
+      <div data-tour="owner-boards-summary">
+        <PageHeader
+          eyebrow="Public feedback page"
+          title={selectedProject ? selectedProject.name : 'Your public page'}
+          description="Let users share ideas, vote, and see your replies."
+          action={<Button variant="outline" asChild>
+            <a href={publicBoardsUrl}>
             <Globe className="mr-2 h-4 w-4" />
             See public pages
-          </a>
-        </Button>
+            </a>
+          </Button>}
+        />
       </div>
 
       {!selectedProject ? (
-        <div className="rounded-xl border bg-card p-8 text-center shadow-[var(--shadow-card)] sm:p-12">
+        <div className="rounded-lg border bg-card p-8 text-center shadow-[var(--shadow-card)] sm:p-12">
           <h2 className="text-lg font-semibold">Create a project first</h2>
           <p className="mt-2 text-sm text-muted-foreground">Each public page belongs to one project.</p>
           <Button className="mt-5" asChild><Link href="/projects/new">Create project</Link></Button>

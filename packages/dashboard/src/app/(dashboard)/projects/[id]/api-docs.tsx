@@ -4,17 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CopyButton } from '@/components/copy-button'
 import type { Project } from '@/lib/types'
+import { CodeSnippet } from '@/components/code-snippet'
+import { PageHeader } from '@/components/ui/workspace-shell'
 
 function CodeBlock({ code, language = 'bash' }: { code: string; language?: string }) {
   return (
-    <div className="relative" aria-label={`${language} code sample`}>
-      <div className="absolute right-2 top-2 z-10">
-        <CopyButton value={code} variant="outline" size="sm" className="bg-background/95" />
-      </div>
-      <pre className="max-h-96 overflow-auto rounded-lg bg-muted p-4 pr-20 text-sm">
-        <code>{code}</code>
-      </pre>
-    </div>
+    <CodeSnippet tabs={[{ label: language.toUpperCase(), code, language }]} maxHeightClassName="max-h-96" />
   )
 }
 
@@ -134,27 +129,22 @@ export function ApiDocs({
 
   return (
     <div className="space-y-6">
-      <Card className="border-primary/30 bg-primary/[0.04]">
-        <CardHeader>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="secondary">Available on Free</Badge>
-            <Badge variant="outline">REST + MCP</Badge>
-          </div>
-          <CardTitle className="mt-3 text-base">Use API and MCP when code or agents need feedback access</CardTitle>
-          <CardDescription>
-            Free access follows your Free project, monthly feedback, and history limits. Use the key in backend code or trusted agent configuration, not public browser code.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <PageHeader
+        eyebrow={project.name}
+        title="API and MCP"
+        description="Use the project key from a backend, script, or trusted agent. Never expose it in public browser code."
+      />
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Operational limits and trust boundaries</CardTitle>
-          <CardDescription>
-            Keep API and MCP traffic in trusted runtime contexts. The browser widget uses its generated browser-safe key instead.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="divide-y rounded-b-lg border-t p-0">
+      <details className="group rounded-lg border bg-card shadow-[var(--shadow-card)]">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Limits and trust boundaries</p>
+            <p className="mt-1 text-sm text-muted-foreground">Project scope, plan limits, rate limits, and webhook compatibility.</p>
+          </div>
+          <span className="text-xs font-medium text-primary group-open:hidden">Show</span>
+          <span className="hidden text-xs font-medium text-primary group-open:inline">Hide</span>
+        </summary>
+        <div className="divide-y border-t bg-surface-raised/35">
           {[
             ['Project scope', 'Each API key can access only its attached project.'],
             ['Plan limits', 'Free access follows the shared Free plan quotas and history window; Pro removes the short history limit.'],
@@ -167,8 +157,8 @@ export function ApiDocs({
               <p className="text-sm leading-6 text-muted-foreground">{body}</p>
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </details>
 
       <Card>
         <CardHeader className="pb-3">
@@ -217,7 +207,7 @@ export function ApiDocs({
         </CardContent>
       </Card>
 
-      <details className="group rounded-xl border bg-card">
+      <details className="group rounded-lg border bg-card">
         <summary className="flex cursor-pointer list-none flex-wrap items-start justify-between gap-3 px-6 py-5">
           <div>
             <p className="text-base font-semibold text-foreground">Endpoint reference</p>
@@ -239,7 +229,7 @@ export function ApiDocs({
         </CardContent>
       </details>
 
-      <details className="group rounded-xl border bg-card">
+      <details className="group rounded-lg border bg-card">
         <summary className="flex cursor-pointer list-none flex-wrap items-start justify-between gap-3 px-6 py-5">
           <div>
             <p className="text-base font-semibold text-foreground">MCP server and agent tools</p>

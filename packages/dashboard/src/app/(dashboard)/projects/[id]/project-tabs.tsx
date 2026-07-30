@@ -21,6 +21,7 @@ import { IntegrationsTab } from './integrations-tab'
 import { SetupProgress } from './project-flow-nav'
 import { ProductUpdatesTab } from '@/components/product-updates/ProductUpdatesTab'
 import { ProjectHome } from './project-home'
+import { PageHeader } from '@/components/ui/workspace-shell'
 
 interface ProjectTabsProps {
   project: Project
@@ -39,7 +40,7 @@ export function ProjectTabs({ project, billingSummary, initialTab, updatesView, 
   return (
     <Suspense
       fallback={
-        <div className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
+        <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">
           Loading project workspace...
         </div>
       }
@@ -229,9 +230,10 @@ function SettingsTab({ project }: { project: Project }) {
 
   return (
     <div className="space-y-6">
+      <PageHeader eyebrow={project.name} title="Project settings" description="Manage identity, allowed origins, and project lifecycle." />
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Project Settings</CardTitle>
+          <CardTitle className="text-lg">Project details</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -286,7 +288,7 @@ function SettingsTab({ project }: { project: Project }) {
 
       <Card className="border-destructive/50">
         <CardHeader>
-          <CardTitle className="text-lg text-destructive">Danger Zone</CardTitle>
+          <CardTitle className="text-lg text-destructive">Delete project</CardTitle>
           <CardDescription>
             Permanently delete this project and all its feedback.
           </CardDescription>

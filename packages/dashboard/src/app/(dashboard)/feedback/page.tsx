@@ -21,6 +21,7 @@ import type { BillingSummary, Feedback, FeedbackPriority, FeedbackStatus, Feedba
 import { CURRENT_PROJECT_COOKIE, getSelectedProject } from '@/lib/project-selection'
 import { FeedbackProjectScope } from './feedback-project-scope'
 import { SavedInboxViews } from './saved-inbox-views'
+import { PageHeader } from '@/components/ui/workspace-shell'
 import {
   Search,
   ChevronLeft,
@@ -369,24 +370,22 @@ function FeedbackInboxInner() {
 
   const hasFilters = status || type || search || agent || publicOnly || priority || projectId || tag || read === 'unread'
   return (
-    <div className="animate-fade-in space-y-5 pb-[calc(6rem+env(safe-area-inset-bottom,0px))]">
+    <div className="space-y-5 pb-[calc(6rem+env(safe-area-inset-bottom,0px))]">
       {/* ─── Header ─────────────────────────────────────── */}
-      <div className="flex items-end justify-between rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]">
-        <div>
-          <p className="text-xs font-semibold text-primary">Your users</p>
-          <h1 className="mt-2 text-2xl font-bold tracking-tight">Feedback</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Read new messages. Decide what to do next.</p>
-          {billingSummary?.entitlements.historyDays && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Free plan view limited to the most recent {billingSummary.entitlements.historyDays} days.
-            </p>
-          )}
-        </div>
-        <div className="text-right"><p className="text-2xl font-semibold tabular-nums">{loading ? '…' : total}</p><p className="text-xs text-muted-foreground">{hasFilters ? 'shown' : total === 1 ? 'message' : 'messages'}</p></div>
-      </div>
+      <PageHeader
+        eyebrow="Inbox"
+        title="Feedback"
+        description="Review new messages and move the useful signal forward."
+        meta={billingSummary?.entitlements.historyDays && (
+          <p className="text-xs text-muted-foreground">
+            Free plan shows the most recent {billingSummary.entitlements.historyDays} days.
+          </p>
+        )}
+        action={<div className="text-right"><p className="text-xl font-semibold tabular-nums">{loading ? '…' : total}</p><p className="text-xs text-muted-foreground">{hasFilters ? 'shown' : total === 1 ? 'message' : 'messages'}</p></div>}
+      />
 
       {/* ─── Filters ─────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-[var(--shadow-card)]">
+      <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 shadow-[var(--shadow-card)]">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <form data-tour="inbox-search" onSubmit={handleSearch} className="w-full lg:max-w-md">
             <div className="relative">
@@ -441,7 +440,7 @@ function FeedbackInboxInner() {
             </FilterPill>
           ))}
 
-          <button type="button" onClick={() => setShowMoreFilters((value) => !value)} aria-expanded={showMoreFilters} className={cn('flex min-h-11 flex-shrink-0 items-center gap-1.5 rounded-full px-3 text-[11px] font-medium md:min-h-8', showMoreFilters ? 'bg-foreground text-background' : 'bg-muted text-muted-foreground hover:text-foreground')}><SlidersHorizontal className="h-3.5 w-3.5"/> More</button>
+          <button type="button" onClick={() => setShowMoreFilters((value) => !value)} aria-expanded={showMoreFilters} className={cn('flex min-h-11 flex-shrink-0 items-center gap-1.5 rounded-md border px-3 text-[11px] font-medium md:min-h-8', showMoreFilters ? 'border-primary/30 bg-surface-selected text-foreground' : 'border-transparent bg-surface-raised text-muted-foreground hover:text-foreground')}><SlidersHorizontal className="h-3.5 w-3.5"/> More filters</button>
 
           {hasFilters && (
             <button
@@ -467,7 +466,7 @@ function FeedbackInboxInner() {
         />
 
         {showMoreFilters && (
-          <div className="space-y-3 rounded-xl border bg-[oklch(var(--surface-raised))] p-4">
+          <div className="space-y-3 rounded-md border bg-surface-raised p-4">
             <div className="flex flex-wrap gap-1.5">
               {(['reviewed', 'in_progress', 'closed'] as FeedbackStatus[]).map((s) => <FilterPill key={s} active={status === s} onClick={() => updateParams({ status: status === s ? '' : s })}><span className={cn('h-1.5 w-1.5 rounded-full', statusMeta[s].dot)}/>{statusMeta[s].label}</FilterPill>)}
               {types.map((t) => <FilterPill key={t} active={type === t} onClick={() => updateParams({ type: type === t ? '' : t })}><TypeIcon type={t} className="h-3.5 w-3.5"/><span className="capitalize">{t}</span></FilterPill>)}
@@ -484,7 +483,7 @@ function FeedbackInboxInner() {
       </div>
 
       {/* ─── Main List ────────────────────────────────────── */}
-      <section data-tour="inbox-list" className="overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)]">
+      <section data-tour="inbox-list" className="overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -581,7 +580,7 @@ function FeedbackInboxInner() {
             : 'translate-y-4 opacity-0 pointer-events-none'
         )}
       >
-        <div className="flex items-center gap-1.5 overflow-x-auto rounded-xl border bg-background px-3 py-2 shadow-xl ring-1 ring-black/5 scrollbar-thin dark:ring-white/5 md:rounded-full">
+        <div className="flex items-center gap-1.5 overflow-x-auto rounded-lg border bg-background px-3 py-2 shadow-xl ring-1 ring-black/5 scrollbar-thin dark:ring-white/5 md:rounded-full">
           <span className="shrink-0 pl-1 pr-2 text-xs font-semibold">
             {selected.size} selected
           </span>
@@ -685,11 +684,11 @@ function FilterPill({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        'flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-medium transition-all',
+        'flex items-center gap-1 rounded-md border px-3 py-1 text-[11px] font-medium transition-colors',
         'min-h-11 flex-shrink-0 snap-start md:min-h-8',
         active
-          ? 'bg-foreground text-background shadow-sm'
-          : 'bg-muted text-muted-foreground hover:bg-accent hover:text-foreground'
+          ? 'border-primary/30 bg-surface-selected text-foreground'
+          : 'border-transparent bg-surface-raised text-muted-foreground hover:border-border hover:bg-accent hover:text-foreground'
       )}
     >
       {children}
@@ -721,10 +720,8 @@ function FeedbackRow({
       data-feedback-row-id={fb.id}
       className={cn(
         'group relative flex items-start gap-3 border-b px-4 py-3.5 transition-colors last:border-b-0',
-        isUnread
-          ? 'bg-primary/[0.04] ring-1 ring-inset ring-primary/15 hover:bg-primary/[0.06] dark:bg-primary/[0.07]'
-          : 'hover:bg-accent/30',
-        selected && 'bg-accent/50',
+        isUnread ? 'bg-surface-selected/45 hover:bg-surface-selected/65' : 'hover:bg-surface-raised/55',
+        selected && 'bg-accent/60',
         active && 'ring-2 ring-inset ring-ring/60',
       )}
     >

@@ -21,10 +21,10 @@ export default function ProjectLoading() {
         </div>
       </div>
 
-      <div className="rounded-xl border-2 border-foreground/15 bg-card p-3 dark:border-primary/25">
+      <div className="rounded-lg border-2 border-foreground/15 bg-card p-3 dark:border-primary/25">
         <div className="grid gap-3 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-border/80 bg-background p-4 shadow-[var(--shadow-card)] dark:border-primary/25">
+            <div key={i} className="rounded-lg border border-border/80 bg-background p-4 shadow-[var(--shadow-card)] dark:border-primary/25">
               <div className="flex gap-3">
                 <Skeleton className="h-7 w-7 rounded-full" />
                 <div className="space-y-2">
@@ -37,7 +37,7 @@ export default function ProjectLoading() {
         </div>
       </div>
 
-      <div className="rounded-xl border bg-card p-6">
+      <div className="rounded-lg border bg-card p-6">
         <Skeleton className="h-5 w-32" />
         <Skeleton className="mt-3 h-4 w-64" />
         <Skeleton className="mt-6 h-36 w-full rounded-lg" />

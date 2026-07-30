@@ -15,10 +15,9 @@ import type { Project } from '@/lib/types'
 import { publicEnv } from '@/lib/public-env'
 import { Button } from '@/components/ui/button'
 import { CodeSnippet } from '@/components/code-snippet'
-import { CopyButton } from '@/components/copy-button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Bot, CheckCircle2, Code2, Loader2, RefreshCw, XCircle } from 'lucide-react'
+import { PageHeader, SectionPanel } from '@/components/ui/workspace-shell'
+import { ArrowRight, Bot, CheckCircle2, KeyRound, Loader2, RefreshCw, XCircle } from 'lucide-react'
 
 interface InstallTabProps {
   project: Project
@@ -51,6 +50,7 @@ export function InstallTab({
   const [setupPacketError, setSetupPacketError] = React.useState<string | null>(null)
   const [setupTokens, setSetupTokens] = React.useState<SetupTokenStatus[]>([])
   const [activePlatform, setActivePlatform] = React.useState<InstallPlatform>('website')
+  const [hasCopiedSnippet, setHasCopiedSnippet] = React.useState(false)
   const appOrigin = publicEnv.NEXT_PUBLIC_APP_ORIGIN
   const savedConfig = React.useMemo(
     () => project.settings?.widget_config || {},
@@ -207,20 +207,6 @@ ${JSON.stringify(setupPacket, null, 2)}`
   const activeSetupTokens = setupTokens.filter((token) => {
     return !token.revoked_at && new Date(token.expires_at).getTime() > Date.now()
   })
-  const installSteps = [
-    {
-      title: 'Choose platform',
-      body: 'Pick the environment where this widget will run.',
-    },
-    {
-      title: 'Copy code',
-      body: 'Add the stable embed once near your app root.',
-    },
-    {
-      title: 'Verify one message',
-      body: 'Submit a test item and confirm it reaches the inbox.',
-    },
-  ]
   const nextSnippet = projectKey ? `"use client"
 
 import Script from "next/script"
@@ -319,192 +305,164 @@ export function FeedbacksWidgetScript() {
     },
   ]
   const selectedTarget = installTargets.find((target) => target.id === activePlatform) || installTargets[0]
+  const primaryTargets = installTargets.filter((target) => ['website', 'react', 'next', 'vue'].includes(target.id))
+  const secondaryTargets = installTargets.filter((target) => !['website', 'react', 'next', 'vue'].includes(target.id))
 
   return (
-    <div className="space-y-8" data-tour="install-workspace">
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <Card>
-          <CardHeader>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-primary"><Code2 className="h-4 w-4" /> One shared connection</div>
-          <CardTitle className="mt-2 text-2xl tracking-[-0.035em]">Install once. Keep the code unchanged.</CardTitle>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-            This stable embed powers the feedback form and the product updates you show to users. Saved dashboard changes arrive remotely on the next page load.
-          </p>
-          </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-3">
-              {installSteps.map((step, index) => (
-                <div key={step.title} className="flex gap-3 rounded-lg border bg-[oklch(var(--surface-raised))] p-4">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">
-                    {index + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground">{step.title}</p>
-                    <p className="mt-0.5 text-sm leading-5 text-muted-foreground">{step.body}</p>
-                  </div>
-                </div>
+    <div className="space-y-6" data-tour="install-workspace">
+      <PageHeader
+        eyebrow={project.name}
+        title="Install feedback"
+        description="Choose your stack, copy the snippet once, then verify a real test."
+      />
+
+      <SectionPanel
+        title="Choose your stack"
+        description={selectedTarget.body}
+        dataTour="install-snippet"
+        contentClassName="space-y-4"
+      >
+        <div data-tour="install-platforms" className="flex flex-wrap gap-1 rounded-md border bg-surface-raised p-1" role="group" aria-label="Install platform">
+          {primaryTargets.map((target) => (
+            <button
+              key={target.id}
+              type="button"
+              aria-pressed={activePlatform === target.id}
+              onClick={() => setActivePlatform(target.id)}
+              className={`min-h-10 rounded px-3 text-sm font-medium transition-colors ${
+                activePlatform === target.id
+                  ? 'bg-card text-foreground shadow-sm ring-1 ring-border'
+                  : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
+              }`}
+            >
+              {target.label}
+              {target.id === 'website' && <span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wide text-primary">Recommended</span>}
+            </button>
+          ))}
+          <details className="group relative">
+            <summary className={`flex min-h-10 cursor-pointer list-none items-center rounded px-3 text-sm font-medium transition-colors ${
+              secondaryTargets.some((target) => target.id === activePlatform)
+                ? 'bg-card text-foreground shadow-sm ring-1 ring-border'
+                : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
+            }`}>
+              Other
+            </summary>
+            <div className="absolute left-0 top-11 z-20 min-w-52 overflow-hidden rounded-md border bg-popover p-1 shadow-[var(--shadow-float)]">
+              {secondaryTargets.map((target) => (
+                <button
+                  key={target.id}
+                  type="button"
+                  aria-pressed={activePlatform === target.id}
+                  onClick={() => setActivePlatform(target.id)}
+                  className={`flex min-h-10 w-full items-center rounded px-3 text-left text-sm ${
+                    activePlatform === target.id ? 'bg-surface-selected text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                  }`}
+                >
+                  {target.label}
+                </button>
               ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex-row items-center justify-between space-y-0">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                <CardTitle className="text-base">Connection details</CardTitle>
-                </div>
-                <Badge variant="outline">{modeLabel}</Badge>
-          </CardHeader>
-          <CardContent>
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-1">
-                <div className="min-w-0">
-                  <p className="text-xs font-medium text-muted-foreground">Project key</p>
-                  {projectKey ? (
-                    <p className="mt-1 break-all font-mono text-xs text-foreground">
-                      {projectKey}
-                    </p>
-                  ) : (
-                    <div className="mt-1">
-                      <p className="text-sm leading-5 text-muted-foreground">
-                        Key hidden{apiKeyLastFour ? `, ending in ${apiKeyLastFour}` : ''}. Generate a fresh key to copy a new snippet.
-                      </p>
-                      <Button size="sm" variant="outline" className="mt-3" onClick={() => void onRotateApiKey()} disabled={rotatingApiKey}>
-                        {rotatingApiKey && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Generate fresh key
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground">Current feedback form</p>
-                  <p className="mt-1 text-sm font-medium text-foreground">{modeLabel}</p>
-                  <p className="mt-1 text-sm leading-5 text-muted-foreground">{verifyInstruction}</p>
-                </div>
-              </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <Card data-tour="install-snippet">
-        <CardHeader data-tour="install-snippet-header" className="gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <CardTitle className="text-lg">Choose where you are installing</CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Select your environment and add this once near the application root.
-            </p>
-          </div>
-          </div>
-          <div data-tour="install-platforms" className="flex flex-wrap gap-1 rounded-lg bg-[oklch(var(--surface-raised))] p-1" role="group" aria-label="Install platform">
-            {installTargets.map((target) => (
-              <button
-                key={target.id}
-                type="button"
-                aria-pressed={activePlatform === target.id}
-                onClick={() => setActivePlatform(target.id)}
-                className={`min-h-9 rounded-md px-3 text-sm font-medium transition-colors ${
-                  activePlatform === target.id
-                    ? 'bg-card text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
-                }`}
-              >
-                {target.label}
-              </button>
-            ))}
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-5">
-          <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border bg-[oklch(var(--surface-raised))] p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="text-sm font-semibold text-foreground">{selectedTarget.title}</p>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">{selectedTarget.body}</p>
-              </div>
-              {selectedTarget.code && (
-                <CopyButton
-                  value={selectedTarget.code}
-                  label="Copy code"
-                  copiedLabel="Copied"
-                  size="sm"
-                  onCopied={() => {
-                    void fetch(`/api/projects/${project.id}/activation`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ event: 'install_code_copied' }),
-                    })
-                  }}
-                />
-              )}
-              {selectedTarget.id === 'mobile' && (
-                <Link href={`/projects/${project.id}?tab=api`}>
-                  <Button variant="outline" size="sm">Open API docs</Button>
-                </Link>
-              )}
             </div>
-          </div>
+          </details>
+        </div>
 
-          {projectKey ? (
-            selectedTarget.code ? (
-              <div data-tour="install-code">
-                <CodeSnippet
-                  tabs={[
-                    {
-                      label: selectedTarget.label,
-                      code: selectedTarget.code,
-                      language: selectedTarget.language,
-                    },
-                  ]}
-                />
-              </div>
-            ) : (
-              <div className="rounded-lg border border-dashed bg-muted/10 p-4 text-sm leading-6 text-muted-foreground">
-                Native mobile apps do not use a browser script tag. Use the API from your backend, or inject the Website snippet only inside WebView content.
-              </div>
-            )
+        {projectKey ? (
+          selectedTarget.code ? (
+            <div data-tour="install-code">
+              <CodeSnippet
+                tabs={[{
+                  label: selectedTarget.label,
+                  code: selectedTarget.code,
+                  language: selectedTarget.language,
+                }]}
+                onCopied={() => {
+                  setHasCopiedSnippet(true)
+                  void fetch(`/api/projects/${project.id}/activation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ event: 'install_code_copied' }),
+                  })
+                }}
+              />
+            </div>
           ) : (
-            <div className="rounded-lg border border-dashed bg-muted/10 p-4 text-sm text-muted-foreground">
-              Generate a fresh key to reveal a new install snippet. Existing deployed clients keep working with the old key because only the raw database copy was removed.
+            <div className="rounded-md border border-dashed bg-surface-raised/60 p-4 text-sm leading-6 text-muted-foreground">
+              Native apps use the REST API. The browser snippet only works in web content or a WebView.
+              <Link href={`/projects/${project.id}?tab=api`} className="ml-1 font-medium text-primary hover:underline">Open API docs</Link>
             </div>
-          )}
-
-          <div className="divide-y overflow-hidden rounded-lg border bg-[oklch(var(--surface-raised))]">
-            <div className="grid gap-1 px-4 py-3 md:grid-cols-[180px_minmax(0,1fr)]">
-              <p className="text-sm font-medium text-foreground">Where this goes</p>
-              <p className="text-sm leading-6 text-muted-foreground">{selectedTarget.placement}</p>
-            </div>
-            <div className="grid gap-1 px-4 py-3 md:grid-cols-[180px_minmax(0,1fr)]">
-              <p className="text-sm font-medium text-foreground">What appears</p>
-              <p data-testid="install-verify-instruction" className="text-sm leading-6 text-muted-foreground">
-                {verifyInstruction}
-              </p>
-            </div>
-            <div className="grid gap-1 px-4 py-3 md:grid-cols-[180px_minmax(0,1fr)]">
-              <p className="text-sm font-medium text-foreground">Check it worked</p>
-              <p className="text-sm leading-6 text-muted-foreground">
-                Use your real site first. Send one test, then open the inbox and look for it.
-              </p>
-            </div>
+          )
+        ) : (
+          <div className="rounded-md border border-primary/30 bg-primary/[0.045] p-4">
+            <p className="text-sm font-medium text-foreground">Generate a fresh key to reveal the snippet.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Existing deployed clients keep working with the previous key.</p>
+            <Button size="sm" variant="outline" className="mt-3" onClick={() => void onRotateApiKey()} disabled={rotatingApiKey}>
+              {rotatingApiKey && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Generate fresh key
+            </Button>
           </div>
+        )}
 
-          <div className="flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/[0.055] px-4 py-3 text-sm text-muted-foreground">
+        <div className="divide-y rounded-md border bg-surface-raised/55">
+          <div className="grid gap-1 px-4 py-3 md:grid-cols-[140px_minmax(0,1fr)]">
+            <p className="text-sm font-medium text-foreground">Paste it here</p>
+            <p className="text-sm leading-6 text-muted-foreground">{selectedTarget.placement}</p>
+          </div>
+          <div className="grid gap-1 px-4 py-3 md:grid-cols-[140px_minmax(0,1fr)]">
+            <p className="text-sm font-medium text-foreground">You should see</p>
+            <p data-testid="install-verify-instruction" className="text-sm leading-6 text-muted-foreground">{verifyInstruction}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 gap-2.5 text-sm text-muted-foreground">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <p>After installation, change the button, fields, wording, placement, captcha, and user-facing product updates from the dashboard. <span className="font-medium text-foreground">You will not need a new snippet.</span></p>
+            <p><span className="font-medium text-foreground">The snippet stays the same.</span> Form and product-update changes publish remotely.</p>
           </div>
-        </CardContent>
-      </Card>
+          <Button asChild className="min-h-11 shrink-0 gap-2">
+            <Link href={`/projects/${project.id}/verify`}>
+              {hasCopiedSnippet ? 'Verify installation' : 'Continue to verification'}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </SectionPanel>
 
-      <details className="group rounded-xl border bg-card shadow-[var(--shadow-card)]">
+      <details className="group rounded-lg border bg-card shadow-[var(--shadow-card)]">
+        <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-5 py-3">
+          <span className="flex items-center gap-2.5 text-sm font-medium text-foreground">
+            <KeyRound className="h-4 w-4 text-muted-foreground" />
+            Connection details
+          </span>
+          <span className="text-xs text-muted-foreground">{modeLabel}</span>
+        </summary>
+        <div className="grid gap-5 border-t bg-surface-raised/35 p-5 sm:grid-cols-2">
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-muted-foreground">Project key</p>
+            {projectKey ? (
+              <p className="mt-1 break-all font-mono text-xs text-foreground">{projectKey}</p>
+            ) : (
+              <p className="mt-1 text-sm text-muted-foreground">Hidden{apiKeyLastFour ? `, ending in ${apiKeyLastFour}` : ''}.</p>
+            )}
+          </div>
+          <div>
+            <p className="text-xs font-medium text-muted-foreground">Current form</p>
+            <p className="mt-1 text-sm font-medium text-foreground">{modeLabel}</p>
+            <p className="mt-1 text-sm leading-5 text-muted-foreground">{verifyInstruction}</p>
+          </div>
+        </div>
+      </details>
+
+      <details className="group rounded-lg border bg-card shadow-[var(--shadow-card)]">
         <summary className="flex cursor-pointer list-none flex-wrap items-start justify-between gap-3 px-6 py-5">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
                 <Bot className="h-4 w-4" />
               </div>
-              <Badge variant="secondary">Agent setup</Badge>
-              <Badge variant="outline">Copyable prompt</Badge>
+              <Badge variant="secondary">Optional</Badge>
             </div>
-            <p className="mt-3 text-lg font-semibold text-foreground">Give this to your AI builder</p>
+            <p className="mt-3 text-base font-semibold text-foreground">Install with an AI coding agent</p>
             <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-              Optional setup packet and prompt for Cursor, Claude Code, Codex, Windsurf, or another repo-aware builder.
+              Create a short-lived setup packet or copy a repo-aware prompt.
             </p>
           </div>
           <span className="text-sm font-medium text-primary">
@@ -637,12 +595,12 @@ export function FeedbacksWidgetScript() {
         </div>
       </details>
 
-      <details className="group rounded-xl border bg-card">
+      <details className="group rounded-lg border bg-card">
         <summary className="flex cursor-pointer list-none flex-wrap items-start justify-between gap-3 px-6 py-5">
           <div>
-            <p className="text-lg font-semibold text-foreground">After the widget is live: deployment hardening</p>
+            <p className="text-base font-semibold text-foreground">Security and deployment hardening</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Keep CSP, SRI, and stronger human-verification as a second pass after the snippet is already working.
+              Add CSP, SRI, or stronger human verification after the first test works.
             </p>
           </div>
           <span className="text-sm font-medium text-primary">Show security guidance</span>
@@ -671,7 +629,7 @@ export function FeedbacksWidgetScript() {
           />
 
           <div className="rounded-lg border border-dashed bg-muted/10 p-4 text-sm text-muted-foreground">
-            Captcha keys stay secondary to install. Verify the widget first, then enable human-verification if your site is public-facing or you expect abuse risk.
+            Verify the widget first. Add captcha only when the public form needs stronger abuse protection.
           </div>
         </div>
       </details>

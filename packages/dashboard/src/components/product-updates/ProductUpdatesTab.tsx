@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { UpdatesOnboarding } from "./UpdatesOnboarding";
+import { PageHeader } from "@/components/ui/workspace-shell";
 
 type Update = {
   id: string;
@@ -529,7 +530,7 @@ export function ProductUpdatesTab({
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-wrap items-start justify-between gap-4 rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+      <section className="flex flex-wrap items-start justify-between gap-4 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold text-primary">
             Update shown to your users
@@ -552,7 +553,7 @@ export function ProductUpdatesTab({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
-          <section className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+          <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">
@@ -723,7 +724,7 @@ export function ProductUpdatesTab({
         </div>
 
         <aside className="space-y-6 xl:sticky xl:top-6 xl:self-start">
-          <section className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]">
+          <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)]">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold">Preview</h3>
               <div className="flex gap-1">
@@ -773,7 +774,7 @@ export function ProductUpdatesTab({
             </Button>
           </section>
           {selected && (
-            <section className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)]">
+            <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)]">
               <h3 className="font-semibold">Approximate metrics</h3>
               <p className="mt-1 text-xs text-muted-foreground">
                 Last {entitlements?.analyticsDays || 7} days, aggregate only.
@@ -829,7 +830,7 @@ function UpdatesOverview({
   if (!updates.length) {
     return (
       <div className="mx-auto max-w-3xl space-y-5">
-        <section className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+        <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
           <p className="text-xs font-semibold text-primary">
             Updates for your users
           </p>
@@ -841,7 +842,7 @@ function UpdatesOverview({
             is already connected, so publishing here requires no code change.
           </p>
         </section>
-        <section className="rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+        <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
           <h3 className="text-lg font-semibold">
             Create the first product update
           </h3>
@@ -860,19 +861,12 @@ function UpdatesOverview({
 
   return (
     <div className="space-y-5">
-      <section className="flex flex-wrap items-start justify-between gap-4 rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
-        <div>
-          <p className="text-xs font-semibold text-primary">
-            Inside your product
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.035em]">
-            Updates for your users
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Publish clear “What’s new” messages through the connected embed.
-          </p>
-        </div>
-        <div className="flex gap-2">
+      <PageHeader
+        eyebrow="Inside your product"
+        title="Updates for your users"
+        description="Publish concise “What’s new” messages through the connected embed."
+        action={
+          <div className="flex gap-2">
           <Button variant="outline" onClick={onSettings}>
             <Settings2 className="mr-2 h-4 w-4" />
             Settings
@@ -881,9 +875,10 @@ function UpdatesOverview({
             <Plus className="mr-2 h-4 w-4" />
             New product update
           </Button>
-        </div>
-      </section>
-      <div className="divide-y overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)]">
+          </div>
+        }
+      />
+      <div className="divide-y overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]">
         {updates.map((update) => (
           <div
             key={update.id}
@@ -965,7 +960,7 @@ function UpdatesSettings({
   const hasCustomDelay = ![0, 3, 5].includes(delaySeconds);
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <section className="flex flex-wrap items-start justify-between gap-4 rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+      <section className="flex flex-wrap items-start justify-between gap-4 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
         <div>
           <p className="text-xs font-semibold text-primary">
             Updates for your users
@@ -981,7 +976,7 @@ function UpdatesSettings({
           Back to updates
         </Button>
       </section>
-      <div className="space-y-5 rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+      <div className="space-y-5 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
         <Check
           label="Show product updates to users"
           value={draft.enabled}

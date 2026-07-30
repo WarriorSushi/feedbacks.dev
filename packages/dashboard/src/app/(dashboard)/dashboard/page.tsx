@@ -1,11 +1,9 @@
 import { createServerSupabase } from '@/lib/supabase-server'
 import { cookies } from 'next/headers'
 import { getCurrentUserBillingSummary, getHistoryCutoff } from '@/lib/billing'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CollapsibleDashboardSection } from '@/components/collapsible-dashboard-section'
 import { DashboardRefresher } from '@/components/dashboard-refresher'
+import { PageHeader, SectionPanel } from '@/components/ui/workspace-shell'
 import { isFeedbackUnread } from '@/lib/feedback-read-state'
 import { cn, formatRelativeTime, truncate, getStatusColor } from '@/lib/utils'
 import type { Feedback } from '@/lib/types'
@@ -14,14 +12,12 @@ import { loadDashboardStats } from '@/lib/dashboard-stats'
 import Link from 'next/link'
 import {
   Star,
-  Bell,
   ArrowRight,
   Plus,
   Inbox,
   TrendingUp,
   Bot,
   Code2,
-  ShieldCheck,
   BarChart3,
   Bug,
   Lightbulb,
@@ -97,9 +93,6 @@ export default async function DashboardPage({
   let ratingQuery = historyCutoff
     ? supabase.from('feedback').select('rating').not('rating', 'is', null).eq('is_archived', false).gte('created_at', historyCutoff)
     : supabase.from('feedback').select('rating').not('rating', 'is', null).eq('is_archived', false)
-  let agentQuery = historyCutoff
-    ? supabase.from('feedback').select('*', { count: 'exact', head: true }).not('agent_name', 'is', null).eq('is_archived', false).gte('created_at', historyCutoff)
-    : supabase.from('feedback').select('*', { count: 'exact', head: true }).not('agent_name', 'is', null).eq('is_archived', false)
   let recentQuery = historyCutoff
     ? supabase.from('feedback').select('*, projects(id, name)').eq('is_archived', false).gte('created_at', historyCutoff).order('created_at', { ascending: false }).limit(8)
     : supabase.from('feedback').select('*, projects(id, name)').eq('is_archived', false).order('created_at', { ascending: false }).limit(8)
@@ -116,7 +109,6 @@ export default async function DashboardPage({
     totalQuery = totalQuery.eq('project_id', scopedProjectId)
     unreadQuery = unreadQuery.eq('project_id', scopedProjectId)
     ratingQuery = ratingQuery.eq('project_id', scopedProjectId)
-    agentQuery = agentQuery.eq('project_id', scopedProjectId)
     recentQuery = recentQuery.eq('project_id', scopedProjectId)
     typeQuery = typeQuery.eq('project_id', scopedProjectId)
     sparkQuery = sparkQuery.eq('project_id', scopedProjectId)
@@ -140,7 +132,6 @@ export default async function DashboardPage({
 
   let total = aggregateStats?.total || 0
   let unread = aggregateStats?.unread || 0
-  let agents = aggregateStats?.agentCount || 0
   let avgRating = aggregateStats?.averageRating ?? null
   let ratingCount = aggregateStats?.ratingCount || 0
   const typeCounts = { bug: 0, idea: 0, praise: 0, question: 0, other: 0 }
@@ -157,13 +148,11 @@ export default async function DashboardPage({
       { count: totalCount },
       { count: unreadCount },
       { data: ratingData },
-      { count: agentCount },
       { data: typeDist },
       { data: sparkData },
-    ] = await Promise.all([totalQuery, unreadQuery, ratingQuery, agentQuery, typeQuery, sparkQuery])
+    ] = await Promise.all([totalQuery, unreadQuery, ratingQuery, typeQuery, sparkQuery])
     total = totalCount || 0
     unread = unreadCount || 0
-    agents = agentCount || 0
     ratingCount = ratingData?.length || 0
     avgRating = ratingCount
       ? ratingData!.reduce((sum, feedback) => sum + (feedback.rating || 0), 0) / ratingCount
@@ -218,22 +207,6 @@ export default async function DashboardPage({
       sub: ratingCount ? `${ratingCount} rated` : 'no ratings yet',
       href: feedbackHref,
     },
-    ...(showingAllProjects ? [{
-        id: 'projects',
-        label: 'Projects',
-        value: projects,
-        urgent: false,
-        sub: 'active',
-        href: '/projects',
-      }] : []),
-    {
-      id: 'agents',
-      label: 'From agents',
-      value: agents,
-      urgent: false,
-      sub: agents > 0 ? 'AI submitted' : 'none yet',
-      href: feedbackLink({ agent: '1' }),
-    },
   ]
 
   const typeColorMap: Record<string, string> = {
@@ -246,166 +219,112 @@ export default async function DashboardPage({
 
   if (projects === 0) {
     return (
-      <div className="animate-fade-in mx-auto max-w-5xl space-y-6">
-        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <Card className="overflow-hidden border-primary/25 bg-card">
-            <CardContent className="p-6 sm:p-8">
-              <Badge className="bg-primary/90 text-primary-foreground">First run</Badge>
-              <h1 className="mt-5 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">
-                Good {getGreeting()}, {displayName}. Create one project, copy the install, send one test.
-              </h1>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Start with the basic setup path. Advanced settings, public boards, API access, and integrations can wait until feedback reaches the inbox.
+      <div className="mx-auto max-w-4xl space-y-6">
+        <PageHeader
+          eyebrow="Welcome"
+          title={`Good ${getGreeting()}, ${displayName}`}
+          description="Create one project, copy one snippet, and send one test. That is the whole first run."
+        />
+        <SectionPanel contentClassName="p-0">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="p-6 sm:p-8">
+              <p className="text-sm font-medium text-primary">Start here</p>
+              <h2 className="mt-2 max-w-xl text-2xl font-semibold tracking-[-0.035em]">
+                Name the product that will collect feedback.
+              </h2>
+              <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+                Only the name is required. The recommended Website snippet appears on the next screen.
               </p>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button asChild size="lg" className="mt-6 gap-2">
                 <Link href="/projects/new">
-                  <Button size="lg" className="w-full gap-2 sm:w-auto">
-                    <Plus className="h-4 w-4" />
-                    Create your first project
-                  </Button>
+                  Create your first project
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href="/projects">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                    View setup steps
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">What happens next</CardTitle>
-              <CardDescription>
-                The dashboard keeps the first setup run in order.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
+              </Button>
+            </div>
+            <ol className="divide-y border-t bg-surface-raised/55 lg:border-l lg:border-t-0">
               {[
-                ['1', 'Create project', 'Only the project name is required.'],
-                ['2', 'Install and test', 'Add the shared embed once, then check the inbox.'],
-                ['3', 'Manage remotely', 'Change the feedback form or publish updates to users without replacing code.'],
-              ].map(([step, title, body]) => (
-                <div key={step} className="flex gap-3 rounded-lg border bg-muted/20 p-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                ['1', 'Name project'],
+                ['2', 'Copy snippet'],
+                ['3', 'Verify test'],
+              ].map(([step, label], index) => (
+                <li key={step} className="flex items-center gap-3 px-5 py-4">
+                  <span className={cn(
+                    'flex h-6 w-6 items-center justify-center rounded-full border text-xs font-semibold',
+                    index === 0 ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground',
+                  )}>
                     {step}
                   </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium">{title}</p>
-                    <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{body}</p>
-                  </div>
-                </div>
+                  <span className={cn('text-sm font-medium', index === 0 ? 'text-foreground' : 'text-muted-foreground')}>{label}</span>
+                </li>
               ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardContent className="divide-y p-0">
-            {[
-              { Icon: Code2, title: 'One stable embed', body: 'Install once. Saved feedback-form and release-note changes arrive remotely.' },
-              { Icon: ShieldCheck, title: 'Safe by default', body: 'The first snippet uses the browser-safe project key, not private server credentials.' },
-              { Icon: Inbox, title: 'One test proves the loop', body: 'Send a short test message, then use the inbox for triage and routing.' },
-            ].map(({ Icon, title, body }) => (
-              <div key={title} className="flex gap-3 px-5 py-4">
-                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">{title}</p>
-                  <p className="mt-0.5 text-sm leading-6 text-muted-foreground">{body}</p>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+            </ol>
+          </div>
+        </SectionPanel>
       </div>
     )
   }
 
   return (
-    <div className="animate-fade-in space-y-5">
-      {/* ─── Header ───────────────────────────────────────── */}
-      <div className="grid gap-4 rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6 lg:grid-cols-[minmax(260px,1fr)_auto_minmax(220px,auto)] lg:items-center">
-        <div className="min-w-0">
-          <h1 className="truncate text-2xl font-semibold tracking-[-0.035em] sm:text-3xl">
-            Good {getGreeting()}, {displayName}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {unread > 0 ? (
-              <>
-                <span className="font-semibold text-foreground">{unread}</span> unread{' '}
-                {unread === 1 ? 'item' : 'items'} waiting in your inbox.
-              </>
-            ) : total > 0 ? (
-              'All caught up. Here is your overview.'
-            ) : (
-              'Customize a project, install the code, then send one test message.'
-            )}
-          </p>
-          {selectedProject && (
-            <div className="mt-2 inline-flex items-center rounded-md border bg-card p-0.5 text-[11px]" aria-label="Dashboard project scope">
-              <Link
-                href="/dashboard"
-                data-testid="dashboard-current-project-scope"
-                aria-current={!showingAllProjects ? 'page' : undefined}
-                className={cn(
-                  'rounded px-2 py-1 font-medium transition-colors',
-                  !showingAllProjects ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                {selectedProject.name}
-              </Link>
-              <Link
-                href="/dashboard?scope=all"
-                data-testid="dashboard-all-projects-scope"
-                aria-current={showingAllProjects ? 'page' : undefined}
-                className={cn(
-                  'rounded px-2 py-1 font-medium transition-colors',
-                  showingAllProjects ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                All projects
-              </Link>
-            </div>
-          )}
-        </div>
-        <div data-tour="dashboard-actions" className="flex flex-wrap items-center gap-2 lg:justify-center">
-          <Link href="/projects/new">
-            <Button size="sm" variant="outline" className="h-8 gap-1.5 px-2.5 text-xs font-medium">
-              <Plus className="h-3.5 w-3.5" />
-              New project
-            </Button>
-          </Link>
-          <Link href={feedbackHref}>
-            <Button size="sm" className="h-8 gap-1.5 text-xs font-medium">
-              <Inbox className="h-3.5 w-3.5" />
-              Inbox
-              {unread > 0 && (
-                <span className="ml-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-white/20 px-1 text-[11px] font-bold">
-                  {unread}
-                </span>
+    <div className="space-y-5">
+      <PageHeader
+        title={`Good ${getGreeting()}, ${displayName}`}
+        description={unread > 0
+          ? `${unread} unread ${unread === 1 ? 'item needs' : 'items need'} review.`
+          : total > 0
+            ? 'Your inbox is clear. Recent product signal is below.'
+            : 'Connect the project and send one test to start the feedback loop.'}
+        meta={selectedProject && (
+          <div className="inline-flex items-center rounded-md border bg-surface-raised p-0.5 text-xs" aria-label="Dashboard project scope">
+            <Link
+              href="/dashboard"
+              data-testid="dashboard-current-project-scope"
+              aria-current={!showingAllProjects ? 'page' : undefined}
+              className={cn(
+                'rounded px-2.5 py-1.5 font-medium transition-colors',
+                !showingAllProjects ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
               )}
-            </Button>
-          </Link>
-        </div>
-        {billingSummary && (
-          <div className="min-w-0 border-l border-foreground/10 pl-4 lg:justify-self-end">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Plan</p>
-            <p className="mt-0.5 truncate text-xs font-medium">
-              {billingSummary.entitlements.label} · {billingSummary.entitlements.feedbackMonthlyLimit
-                ? `${billingSummary.usage.feedbackThisMonth}/${billingSummary.entitlements.feedbackMonthlyLimit} feedback`
-                : 'Unlimited feedback'}
-            </p>
-            <p className="truncate text-[11px] text-muted-foreground">
-              {billingSummary.entitlements.historyDays
-                ? `Last ${billingSummary.entitlements.historyDays} days visible`
-                : 'Full history visible'}
-            </p>
+            >
+              {selectedProject.name}
+            </Link>
+            <Link
+              href="/dashboard?scope=all"
+              data-testid="dashboard-all-projects-scope"
+              aria-current={showingAllProjects ? 'page' : undefined}
+              className={cn(
+                'rounded px-2.5 py-1.5 font-medium transition-colors',
+                showingAllProjects ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              All projects
+            </Link>
           </div>
         )}
-      </div>
+        action={
+          <div data-tour="dashboard-actions" className="flex items-center gap-2">
+            <Button asChild size="sm" variant="outline" className="gap-1.5">
+              <Link href="/projects/new"><Plus className="h-3.5 w-3.5" />New project</Link>
+            </Button>
+            <Button asChild size="sm" className="gap-1.5">
+              <Link href={feedbackHref}><Inbox className="h-3.5 w-3.5" />Inbox{unread > 0 && ` (${unread})`}</Link>
+            </Button>
+          </div>
+        }
+      />
+
+      {billingSummary && (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-3 text-xs text-muted-foreground">
+          <span>{billingSummary.entitlements.label} plan</span>
+          <span>
+            {billingSummary.entitlements.feedbackMonthlyLimit
+              ? `${billingSummary.usage.feedbackThisMonth} of ${billingSummary.entitlements.feedbackMonthlyLimit} monthly feedback used`
+              : 'Unlimited feedback and full history'}
+          </span>
+        </div>
+      )}
 
       {total === 0 && primaryProject ? (
-        <div data-tour="dashboard-capabilities" className="flex flex-col gap-4 rounded-xl border border-primary/25 bg-card p-5 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between">
+        <div data-tour="dashboard-capabilities" className="flex flex-col gap-4 rounded-lg border border-primary/25 bg-card p-5 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between">
           <div className="flex min-w-0 gap-3">
             <Code2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
@@ -423,92 +342,16 @@ export default async function DashboardPage({
         </div>
       ) : <DashboardRefresher />}
 
-      {/* ─── Onboarding (shown when no projects) ──────────── */}
-      {projects === 0 && (
-        <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-br from-primary/[0.04] via-background to-background">
-          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/5 blur-3xl" />
-          <CardContent className="relative p-6 sm:p-8">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold tracking-tight">Get started in 2 minutes</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Set up your first project and start collecting feedback from your users.
-              </p>
-            </div>
-            <div className="space-y-3">
-              {[
-                {
-                  step: 1,
-                  title: 'Create your first project',
-                  description: 'Give it a name and optional domain',
-                  href: '/projects/new',
-                  done: false,
-                  cta: 'Create project',
-                },
-                {
-                  step: 2,
-                  title: 'Install the shared embed',
-                  description: 'Add one stable snippet near your application root',
-                  href: null,
-                  done: false,
-                  cta: null,
-                },
-                {
-                  step: 3,
-                  title: 'Verify and manage remotely',
-                  description: 'Confirm one inbox item, then configure products from the dashboard',
-                  href: null,
-                  done: false,
-                  cta: null,
-                },
-              ].map((item) => (
-                <div
-                  key={item.step}
-                  className={cn(
-                    'flex items-center gap-4 rounded-xl border p-4 transition-all',
-                    item.step === 1
-                      ? 'border-primary/30 bg-primary/[0.04] shadow-sm'
-                      : 'border-border/60 opacity-60'
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold',
-                      item.step === 1
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground'
-                    )}
-                  >
-                    {item.step}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">{item.description}</p>
-                  </div>
-                  {item.href && item.cta && (
-                    <Link href={item.href}>
-                      <Button size="sm" className="h-8 gap-1.5 text-xs font-medium">
-                        {item.cta}
-                        <ArrowRight className="h-3 w-3" />
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* ─── Stat Cards ───────────────────────────────────── */}
-      <div className="grid grid-cols-2 overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)] sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)] sm:grid-cols-3">
         {statCards.map((stat) => (
-          <Link key={stat.id} href={stat.href} className={cn('block border-b border-r border-foreground/10 p-4 transition-colors hover:bg-muted/25 lg:border-b-0', stat.urgent && 'bg-amber-50/50 dark:bg-amber-950/15')}>
+          <Link key={stat.id} href={stat.href} className={cn('block border-b border-border p-4 transition-colors last:border-b-0 hover:bg-surface-raised/55 sm:border-b-0 sm:border-r sm:last:border-r-0', stat.urgent && 'bg-amber-50/55 dark:bg-amber-950/20')}>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   {stat.label}
                 </p>
                 <p
                   className={cn(
-                    'mt-1 text-2xl font-bold leading-none tabular-nums',
+                    'mt-2 text-xl font-semibold leading-none tabular-nums',
                     stat.urgent && 'text-amber-600 dark:text-amber-400'
                   )}
                 >
@@ -521,33 +364,8 @@ export default async function DashboardPage({
 
       {/* ─── Activity + Sidebar ───────────────────────────── */}
       <div className="grid gap-5 lg:grid-cols-[1fr_272px]">
-        {/* Mobile quick actions stay readable without horizontal scrolling. */}
-        <div className="lg:hidden">
-          <CollapsibleDashboardSection
-            storageId="quick-actions-mobile"
-            title="Shortcuts"
-            contentClassName="grid grid-cols-2 gap-2 pb-3 pt-0"
-          >
-            <Link href={feedbackLink({ read: 'unread' })} className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2.5 text-xs font-medium hover:bg-accent">
-              <Bell className="h-3.5 w-3.5 text-muted-foreground" />
-              Unread
-              {unread > 0 && <Badge variant="secondary" className="ml-auto h-5 text-[10px]">{unread}</Badge>}
-            </Link>
-            <Link href={feedbackLink({ type: 'bug' })} className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2.5 text-xs font-medium hover:bg-accent">
-              <Bug className="h-3.5 w-3.5 text-muted-foreground" /> Bugs
-            </Link>
-            <Link href={feedbackLink({ type: 'idea' })} className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2.5 text-xs font-medium hover:bg-accent">
-              <Lightbulb className="h-3.5 w-3.5 text-muted-foreground" /> Ideas
-            </Link>
-            <Link href="/projects/new" className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2.5 text-xs font-medium hover:bg-accent">
-              <Plus className="h-3.5 w-3.5 text-muted-foreground" /> New project
-            </Link>
-          </CollapsibleDashboardSection>
-        </div>
-
         {/* Recent Activity Feed */}
-        <CollapsibleDashboardSection
-          storageId="recent-activity"
+        <SectionPanel
           title="Recent activity"
           contentClassName="p-0"
           action={
@@ -568,14 +386,14 @@ export default async function DashboardPage({
                 <Inbox className="h-10 w-10 text-muted-foreground/40" />
                 <p className="mt-4 text-sm font-medium">No feedback yet</p>
                 <p className="mt-1.5 max-w-[240px] text-xs leading-relaxed text-muted-foreground">
-                  Set up a project and feedback will appear here as it arrives.
+                  Your first verified test will appear here.
                 </p>
-                <Link href="/projects/new" className="mt-4">
+                {primaryProject && <Link href={`/projects/${primaryProject.id}/install`} className="mt-4">
                   <Button variant="outline" size="sm" className="h-7 gap-1.5 text-xs">
-                    <Plus className="h-3 w-3" />
-                    Create a project
+                    Continue setup
+                    <ArrowRight className="h-3 w-3" />
                   </Button>
-                </Link>
+                </Link>}
               </div>
             ) : (
               <div>
@@ -650,15 +468,14 @@ export default async function DashboardPage({
                 ))}
               </div>
             )}
-        </CollapsibleDashboardSection>
+        </SectionPanel>
 
         {/* Hide this sidebar on mobile and show shortcuts above instead. */}
         <div className="hidden flex-col gap-4 lg:flex">
           {/* Type Breakdown */}
-          <CollapsibleDashboardSection
-            storageId="by-type"
+          <SectionPanel
             title="Feedback types"
-            contentClassName="space-y-3 pb-4 pt-0"
+            contentClassName="space-y-3 p-4"
           >
               {total === 0 ? (
                 <div className="py-6 text-center">
@@ -701,83 +518,13 @@ export default async function DashboardPage({
                     )
                   })
               )}
-          </CollapsibleDashboardSection>
+          </SectionPanel>
 
-          {/* Quick Actions */}
-          <CollapsibleDashboardSection
-            storageId="quick-actions"
-            title="Shortcuts"
-            contentClassName="space-y-0.5 pb-3 pt-0"
-          >
-              <Link
-                href={feedbackLink({ read: 'unread' })}
-                className="flex items-center justify-between rounded-md px-2 py-2 transition-colors hover:bg-accent"
-              >
-                <span className="flex items-center gap-2 text-[12px]">
-                  <Bell className="h-3.5 w-3.5 text-muted-foreground" />
-                  Review unread
-                </span>
-                {unread > 0 && (
-                  <Badge variant="secondary" className="h-5 text-[10px]">
-                    {unread}
-                  </Badge>
-                )}
-              </Link>
-              <Link
-                href={feedbackLink({ type: 'bug' })}
-                className="flex items-center justify-between rounded-md px-2 py-2 transition-colors hover:bg-accent"
-              >
-                <span className="flex items-center gap-2 text-[12px]">
-                  <Bug className="h-3.5 w-3.5 text-muted-foreground" />
-                  Bug reports
-                </span>
-                {typeCounts.bug > 0 && (
-                  <Badge variant="secondary" className="h-5 text-[10px]">
-                    {typeCounts.bug}
-                  </Badge>
-                )}
-              </Link>
-              <Link
-                href={feedbackLink({ type: 'idea' })}
-                className="flex items-center justify-between rounded-md px-2 py-2 transition-colors hover:bg-accent"
-              >
-                <span className="flex items-center gap-2 text-[12px]">
-                  <Lightbulb className="h-3.5 w-3.5 text-muted-foreground" />
-                  Feature requests
-                </span>
-                {typeCounts.idea > 0 && (
-                  <Badge variant="secondary" className="h-5 text-[10px]">
-                    {typeCounts.idea}
-                  </Badge>
-                )}
-              </Link>
-              {agents > 0 && (
-                <Link
-                  href={feedbackLink({ agent: '1' })}
-                  className="flex items-center justify-between rounded-md px-2 py-2 transition-colors hover:bg-accent"
-                >
-                  <span className="flex items-center gap-2 text-[12px]">
-                    <Bot className="h-3.5 w-3.5 text-muted-foreground" />
-                    Agent submissions
-                  </span>
-                  <Badge variant="secondary" className="h-5 text-[10px]">
-                    {agents}
-                  </Badge>
-                </Link>
-              )}
-              <Link
-                href="/projects/new"
-                className="flex items-center gap-2 rounded-md px-2 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                New project
-              </Link>
-          </CollapsibleDashboardSection>
         </div>
       </div>
 
       {/* ─── 7-Day Trend Chart ────────────────────────────── */}
-      <section className="border-t border-foreground/10 pt-4">
+      {total > 0 && <section className="border-t border-foreground/10 pt-4">
         <header className="flex flex-row items-center justify-between pb-3">
           <div>
             <h2 className="text-sm font-semibold">Feedback volume</h2>
@@ -786,15 +533,6 @@ export default async function DashboardPage({
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </header>
         <div>
-          {total === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <TrendingUp className="h-9 w-9 text-muted-foreground/40" />
-              <p className="mt-3 text-sm font-medium">No data yet</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Trend will appear once you receive your first feedback.
-              </p>
-            </div>
-          ) : (
             <div className="flex items-end gap-1.5 sm:gap-2" style={{ height: 96 }}>
               {days7.map((day, i) => {
                 const count = sparkCounts[i] || 0
@@ -833,9 +571,8 @@ export default async function DashboardPage({
                 )
               })}
             </div>
-          )}
         </div>
-      </section>
+      </section>}
     </div>
   )
 }

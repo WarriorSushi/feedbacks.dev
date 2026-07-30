@@ -5,7 +5,7 @@ export default function FeedbackDetailLoading() {
     <div className="mx-auto max-w-5xl space-y-6">
       <Skeleton className="h-4 w-28" />
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="rounded-xl border bg-card p-6">
+        <div className="rounded-lg border bg-card p-6">
           <div className="flex flex-wrap gap-2">
             <Skeleton className="h-6 w-20 rounded-full" />
             <Skeleton className="h-6 w-24 rounded-full" />
@@ -18,8 +18,8 @@ export default function FeedbackDetailLoading() {
           </div>
         </div>
         <div className="space-y-4">
-          <Skeleton className="h-48 rounded-xl" />
-          <Skeleton className="h-40 rounded-xl" />
+          <Skeleton className="h-48 rounded-lg" />
+          <Skeleton className="h-40 rounded-lg" />
         </div>
       </div>
     </div>

@@ -78,8 +78,8 @@ export function ThemeToggle({ collapsed = false }: ThemeToggleProps) {
       type="button"
       role="switch"
       aria-checked={isDark}
-      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-      title={collapsed ? (isDark ? 'Light mode' : 'Dark mode') : undefined}
+      aria-label={isDark ? 'Use light appearance' : 'Use dark appearance'}
+      title={collapsed ? (isDark ? 'Use light appearance' : 'Use dark appearance') : undefined}
       onClick={toggleTheme}
       className={cn(
         'group flex w-full items-center rounded-lg text-[13px] font-medium',
@@ -94,28 +94,10 @@ export function ThemeToggle({ collapsed = false }: ThemeToggleProps) {
         ) : (
           <Sun className="h-[17px] w-[17px] shrink-0" />
         )}
-        {!collapsed && <span>{isDark ? 'Dark mode' : 'Light mode'}</span>}
+        {!collapsed && <span>Appearance</span>}
       </span>
 
-      {!collapsed && (
-        <span
-          aria-hidden="true"
-          className={cn(
-            'relative h-5 w-9 shrink-0 rounded-full border transition-colors duration-200',
-            isDark
-              ? 'border-primary/30 bg-primary/20'
-              : 'border-border bg-muted',
-          )}
-        >
-          <span
-            className={cn(
-              'absolute top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full',
-              'bg-background shadow-sm ring-1 ring-border transition-transform duration-200 [transition-timing-function:var(--ease-out-quart)]',
-              isDark ? 'translate-x-[18px]' : 'translate-x-[2px]',
-            )}
-          />
-        </span>
-      )}
+      {!collapsed && <span className="text-[11px] font-medium text-muted-foreground">{isDark ? 'Dark' : 'Light'}</span>}
     </button>
   )
 }

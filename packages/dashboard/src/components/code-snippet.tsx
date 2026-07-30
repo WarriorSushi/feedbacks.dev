@@ -15,45 +15,54 @@ interface CodeSnippetProps {
   className?: string
   wrap?: boolean
   maxHeightClassName?: string
+  onCopied?: () => void
 }
 
-export function CodeSnippet({ tabs, className, wrap = false, maxHeightClassName }: CodeSnippetProps) {
+export function CodeSnippet({ tabs, className, wrap = false, maxHeightClassName, onCopied }: CodeSnippetProps) {
   const [activeTab, setActiveTab] = React.useState(0)
 
   return (
-    <div className={cn('overflow-hidden rounded-lg border bg-muted', className)}>
-      {tabs.length > 1 && (
-        <div className="flex border-b bg-muted/50">
+    <div className={cn('overflow-hidden rounded-lg border border-zinc-700/80 bg-surface-code text-zinc-100 shadow-sm', className)}>
+      <div className="flex min-h-11 items-center justify-between gap-3 border-b border-zinc-700/80 bg-zinc-900/45 px-2">
+        <div className="flex min-w-0 items-center">
+          {tabs.length > 1 ? (
+            <div className="flex min-w-0">
           {tabs.map((tab, i) => (
             <button
               key={tab.label}
               onClick={() => setActiveTab(i)}
               className={cn(
-                'px-4 py-2 text-sm font-medium transition-colors',
+                    'min-h-10 border-b-2 px-3 text-xs font-medium transition-colors',
                 i === activeTab
-                  ? 'border-b-2 border-primary text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
+                      ? 'border-primary text-zinc-50'
+                      : 'border-transparent text-zinc-400 hover:text-zinc-100'
               )}
             >
               {tab.label}
             </button>
           ))}
+            </div>
+          ) : (
+            <span className="truncate px-2 font-mono text-[11px] uppercase tracking-[0.12em] text-zinc-400">
+              {tabs[activeTab].label}
+            </span>
+          )}
         </div>
-      )}
-      <div className="relative">
         <CopyButton
           value={tabs[activeTab].code}
-          label="Copy"
+            label="Copy code"
           copiedLabel="Copied"
-          variant="outline"
           size="sm"
-          className="absolute right-2 top-2 z-10 h-8 border-zinc-600 bg-zinc-800 px-2 text-xs text-zinc-100 shadow-md hover:bg-zinc-700 hover:text-zinc-50"
+          onCopied={onCopied}
+            className="h-8 shrink-0 border border-zinc-600 bg-zinc-800 px-2.5 text-xs text-zinc-100 shadow-none hover:bg-zinc-700 hover:text-zinc-50"
         />
+      </div>
+      <div>
         <pre
           tabIndex={0}
           aria-label={`${tabs[activeTab].label} code`}
           className={cn(
-            'p-4 pr-24 text-sm',
+            'p-4 text-[13px] leading-6 text-zinc-100',
             wrap ? 'overflow-x-hidden overflow-y-auto whitespace-pre-wrap break-words' : 'overflow-x-auto',
             maxHeightClassName
           )}

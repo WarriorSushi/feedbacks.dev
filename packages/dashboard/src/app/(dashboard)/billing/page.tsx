@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUserBillingSummary } from '@/lib/billing'
 import { BillingClient } from './billing-client'
+import { PageHeader } from '@/components/ui/workspace-shell'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Billing' }
@@ -13,12 +14,11 @@ export default async function BillingPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Billing</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Plan state, usage, and self-serve upgrade or billing management.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Account"
+        title="Billing"
+        description="Review plan usage, upgrade, or manage the active subscription."
+      />
 
       <BillingClient initialSummary={summary} />
     </div>

@@ -224,7 +224,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   const sidebarContent = (
     <>
       {/* Logo row */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b px-3">
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-border/80 px-3">
         <div
           className={cn(
             'overflow-hidden transition-[width,opacity] duration-200',
@@ -263,17 +263,17 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
 
       {/* Project switcher */}
       {visibleProjects.length > 0 && !collapsed && (
-        <div data-tour="project-switcher" className="shrink-0 border-b p-2.5" ref={dropdownRef}>
+        <div data-tour="project-switcher" className="shrink-0 border-b border-border/80 p-2.5" ref={dropdownRef}>
           <button
             onClick={() => setProjectOpen(!projectOpen)}
             aria-expanded={projectOpen}
             aria-label="Switch project"
             className={cn(
               'group flex min-h-12 w-full items-center justify-between rounded-lg border px-2.5 py-2 text-left text-[13px]',
-              'border-border/80 bg-surface-raised shadow-sm shadow-black/[0.025]',
-              'transition-[background-color,border-color,box-shadow,transform] duration-150 hover:border-border hover:bg-surface-overlay',
+              'border-border bg-card shadow-sm shadow-black/[0.025]',
+              'transition-[background-color,border-color,box-shadow,transform] duration-150 hover:border-primary/25 hover:bg-surface-overlay',
               'active:scale-[0.99]',
-              projectOpen && 'border-primary/25 bg-surface-overlay shadow-md shadow-black/[0.06]'
+              projectOpen && 'border-primary/35 bg-surface-overlay shadow-md shadow-black/[0.06]'
             )}
           >
             <span className="flex min-w-0 items-center gap-2">
@@ -365,7 +365,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
       )}
 
       {visibleProjects.length === 0 && !collapsed && (
-        <div className="shrink-0 border-b p-2.5">
+        <div className="shrink-0 border-b border-border/80 p-2.5">
           <Link
             href="/projects/new"
             prefetch={false}
@@ -634,7 +634,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
       {/* ── Desktop sidebar (static flex child, full height from parent) ─ */}
       <aside
         className={cn(
-          'hidden md:flex md:flex-col md:border-r md:bg-surface-sidebar',
+          'hidden md:flex md:flex-col md:border-r md:border-border/80 md:bg-surface-sidebar',
           'transition-[width] duration-300 [transition-timing-function:cubic-bezier(0.25,1,0.5,1)]',
           collapsed ? 'md:w-[60px]' : 'md:w-[232px]'
         )}

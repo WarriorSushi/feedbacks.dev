@@ -6,6 +6,7 @@ import { getFeedbackReadAtUpdate } from '@/lib/feedback-read-state'
 import { cn, formatDate, getTypeColor, statusConfig } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
 import {
@@ -29,6 +30,7 @@ import {
 } from 'lucide-react'
 import { FeedbackActions } from './feedback-actions'
 import { FeedbackScreenshot } from './feedback-screenshot'
+import { PageHeader } from '@/components/ui/workspace-shell'
 
 export const metadata = { title: 'Feedback Details' }
 
@@ -105,17 +107,17 @@ export default async function FeedbackDetailPage({
   )
 
   return (
-    <div className="animate-fade-in space-y-6">
-      {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Link href="/feedback" className="transition-colors hover:text-foreground">
-          Inbox
-        </Link>
-        <span>/</span>
-        <span className="text-foreground font-medium">
-          {fb.type || 'Detail'}
-        </span>
-      </nav>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Inbox"
+        title="Feedback detail"
+        description={fb.projects ? `From ${fb.projects.name} · ${formatDate(fb.created_at)}` : formatDate(fb.created_at)}
+        action={
+          <Button asChild variant="outline" size="sm">
+            <Link href="/feedback">Back to inbox</Link>
+          </Button>
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main content */}
@@ -144,7 +146,7 @@ export default async function FeedbackDetailPage({
               </div>
             </CardHeader>
             <CardContent>
-              <p className="max-w-prose whitespace-pre-wrap text-sm leading-relaxed">
+              <p className="max-w-[72ch] whitespace-pre-wrap text-base leading-7 text-foreground">
                 {fb.message}
               </p>
               <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">

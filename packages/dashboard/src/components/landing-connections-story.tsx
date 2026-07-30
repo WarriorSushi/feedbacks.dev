@@ -33,20 +33,20 @@ export function LandingConnectionsStory() {
           </div>
 
           <div className="py-6">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-500">Send it where work happens</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400">Send it where work happens</p>
             <div className="mt-4 divide-y divide-white/[0.08] border-y border-white/10">
               {destinations.map(({ label, detail, Icon, tone }, index) => (
                 <div key={label} className="flex items-center gap-3 py-3.5">
                   <Icon className={`h-4 w-4 shrink-0 ${tone}`} />
                   <span className="text-xs font-semibold">{label}</span>
-                  <span className="ml-auto text-[11px] text-zinc-500">{detail}</span>
+                  <span className="ml-auto text-[11px] text-zinc-400">{detail}</span>
                   {index < 2 && <Check className="h-3.5 w-3.5 text-lime-300" />}
                 </div>
               ))}
             </div>
           </div>
 
-          <p className="text-[11px] leading-5 text-zinc-500">Choose what gets sent. Check delivery history and replay a failed send from the dashboard.</p>
+          <p className="text-[11px] leading-5 text-zinc-400">Choose what gets sent. Check delivery history and replay a failed send from the dashboard.</p>
         </div>
 
         <div className="grid sm:grid-rows-2">
@@ -74,7 +74,7 @@ export function LandingConnectionsStory() {
             </div>
             <div className="mt-5 divide-y divide-white/[0.08] border-y border-white/10">
               <div className="flex items-center gap-3 py-3 text-xs"><span className="font-mono text-lime-300">24</span><span className="font-medium">Add saved report views</span><span className="ml-auto text-[10px] text-sky-300">Planned</span></div>
-              <div className="flex items-center gap-3 py-3 text-xs"><span className="font-mono text-zinc-500">11</span><span className="font-medium">Faster CSV exports</span><span className="ml-auto text-[10px] text-lime-300">Shipped</span></div>
+              <div className="flex items-center gap-3 py-3 text-xs"><span className="font-mono text-zinc-400">11</span><span className="font-medium">Faster CSV exports</span><span className="ml-auto text-[10px] text-lime-300">Shipped</span></div>
             </div>
           </div>
         </div>

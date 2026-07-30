@@ -20,7 +20,7 @@ export default function FeedbackLoading() {
       </div>
 
       {/* List */}
-      <div className="rounded-xl border bg-card overflow-hidden">
+      <div className="rounded-lg border bg-card overflow-hidden">
         <div className="flex items-center gap-3 border-b bg-muted/20 px-4 py-2">
           <Skeleton className="h-3.5 w-3.5 rounded" />
           <Skeleton className="h-3 w-32" />

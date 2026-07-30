@@ -16,6 +16,7 @@ import { BoardIdentitySection } from './BoardIdentitySection'
 import { BoardContentSection } from './BoardContentSection'
 import { BoardVisibilitySection } from './BoardVisibilitySection'
 import { BoardAdvancedSection } from './BoardAdvancedSection'
+import { PageHeader } from '@/components/ui/workspace-shell'
 
 interface BoardSettingsState {
   id?: string
@@ -326,11 +327,12 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
 
   return (
     <div className="space-y-5">
-      <section className="overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)]">
-        <div className="p-5 sm:p-6">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
+      <PageHeader
+        eyebrow={project.name}
+        title="Public feedback page"
+        description="Give users one place to share ideas, vote, and see your replies."
+        meta={
+          <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={canOpenBoard ? 'secondary' : 'outline'}>
                   {canOpenBoard ? 'Live public page' : settings.enabled ? 'Private draft' : 'Not published'}
                 </Badge>
@@ -342,12 +344,10 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
                       : 'Private'}
                 </Badge>
                 {isListed && <Badge variant="outline">Listed in directory</Badge>}
-              </div>
-              <h2 className="mt-3 text-xl font-semibold">Public feedback page</h2>
-              <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">Give users one place to share ideas, vote, and see your replies.</p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
+          </div>
+        }
+        action={
+          <div className="flex flex-wrap gap-2">
               {!canOpenBoard && (
                 <Button onClick={() => void handleEnableAndSave()} disabled={saving}>
                   {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Rocket className="mr-2 h-4 w-4" />}
@@ -368,18 +368,17 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
                   Open page
                 </Button>
               )}
-            </div>
           </div>
-        </div>
-          <div className="flex flex-col gap-3 border-t bg-muted/20 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        }
+      />
+      <div className="flex flex-col gap-3 rounded-lg border bg-surface-raised/55 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="min-w-0 truncate font-mono text-xs text-muted-foreground">{boardUrl}</p>
             <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
               <span><strong className="font-semibold text-foreground">{stats.followerCount}</strong> followers</span>
               <span><strong className="font-semibold text-foreground">{stats.watchCount}</strong> watched posts</span>
               <span><strong className="font-semibold text-foreground">{stats.openReportCount}</strong> reports to check</span>
             </div>
-          </div>
-      </section>
+      </div>
 
       {/* Tab bar */}
       <div className="flex gap-2 overflow-x-auto rounded-lg border bg-[oklch(var(--surface-raised))] p-1.5 scrollbar-thin">

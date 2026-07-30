@@ -5,7 +5,7 @@ export default function NewProjectLoading() {
     <div className="mx-auto max-w-4xl space-y-6">
       <Skeleton className="h-4 w-28" />
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="rounded-xl border bg-card p-6">
+        <div className="rounded-lg border bg-card p-6">
           <Skeleton className="h-6 w-48" />
           <Skeleton className="mt-3 h-4 w-72 max-w-full" />
           <div className="mt-6 space-y-4">
@@ -15,7 +15,7 @@ export default function NewProjectLoading() {
             <Skeleton className="h-11 w-full rounded-md" />
           </div>
         </div>
-        <div className="rounded-xl border bg-card p-6">
+        <div className="rounded-lg border bg-card p-6">
           <Skeleton className="h-5 w-36" />
           <Skeleton className="mt-2 h-4 w-44" />
           <div className="mt-5 space-y-3">

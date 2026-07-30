@@ -11,9 +11,10 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, MousePointerClick, PanelTop, RotateCcw, Send } from 'lucide-react'
+import { Loader2, MousePointerClick, PanelTop, Send, ShieldCheck } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { WidgetFormPreview } from './widget-form-preview'
+import { PageHeader } from '@/components/ui/workspace-shell'
 
 interface CustomizeTabProps {
   project: Project
@@ -34,6 +35,8 @@ const TRACKED_WIDGET_FIELDS: Array<[keyof WidgetConfig, string]> = [
   ['enableType', 'Feedback type picker'],
   ['enableScreenshot', 'Screenshot capture'],
   ['requireEmail', 'Require email'],
+  ['requireCaptcha', 'Human verification'],
+  ['captchaProvider', 'Captcha provider'],
 ]
 
 export function CustomizeTab({
@@ -222,58 +225,21 @@ export function CustomizeTab({
 
   return (
     <div className="space-y-7">
-      <header className={`space-y-4 rounded-xl border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6 ${hasUnsavedChanges ? 'border-amber-400/60' : 'border-border/80'}`}>
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="min-w-0 space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant={hasUnsavedChanges ? 'default' : 'secondary'}>
-                  {hasUnsavedChanges ? 'Unsaved draft' : 'Saved'}
-                </Badge>
-                <Badge variant="outline">{draftModeLabel}</Badge>
-              </div>
-              <div>
-                <h1 className="text-2xl font-semibold tracking-[-0.035em]">Make the feedback form feel native</h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {hasUnsavedChanges
-                    ? 'Save to publish these changes to every installed embed.'
-                    : 'This saved version is delivered remotely. Your installed code stays the same.'}
-                </p>
-              </div>
-              {draftRestored && hasUnsavedChanges && (
-                <p className="text-sm text-muted-foreground">
-                  A local draft was restored for this project. Save it to use it outside this browser.
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-2 md:justify-end">
-              <Button variant="outline" onClick={handleReset} disabled={saving || !hasUnsavedChanges}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                Discard draft
-              </Button>
-              <Button onClick={handleSave} disabled={saving || !hasUnsavedChanges}>
-                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save changes
-              </Button>
-            </div>
+      <PageHeader
+        eyebrow={project.name}
+        title="Feedback form"
+        description={hasUnsavedChanges
+          ? 'Preview the draft, then save once to publish it to every installed embed.'
+          : 'Edit the saved form without replacing the installed snippet.'}
+        meta={
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <Badge variant={hasUnsavedChanges ? 'default' : 'secondary'}>{hasUnsavedChanges ? 'Unsaved draft' : 'Saved'}</Badge>
+            <span>{draftModeLabel}</span>
+            <span>Saved placement: {savedModeLabel}</span>
+            {draftRestored && hasUnsavedChanges && <span>Local draft restored</span>}
           </div>
-
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-foreground/10 pt-3 text-sm text-muted-foreground">
-            <span>
-              Saved placement: <span className="font-medium text-foreground">{savedModeLabel}</span>
-            </span>
-            <span className="hidden h-1 w-1 rounded-full bg-border sm:block" />
-            <span>
-              {hasUnsavedChanges ? (
-                <>
-                  Draft changes: <span className="font-medium text-foreground">{changedFieldsSummary}</span>
-                </>
-              ) : (
-                'Active remote configuration'
-              )}
-            </span>
-          </div>
-      </header>
+        }
+      />
 
       {!projectKey && (
         <div className="flex flex-col gap-3 rounded-lg border border-primary/30 bg-primary/[0.04] p-3 text-sm md:flex-row md:items-center md:justify-between">
@@ -451,14 +417,17 @@ export function CustomizeTab({
 
             <Separator />
 
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm font-semibold text-foreground">Fields</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Add only the inputs you need for useful feedback.
-                </p>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
+            <details className="group rounded-md border bg-surface-raised/45">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Optional fields and protection</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Ratings, screenshots, email, and captcha.</p>
+                </div>
+                <span className="text-xs font-medium text-primary group-open:hidden">Show</span>
+                <span className="hidden text-xs font-medium text-primary group-open:inline">Hide</span>
+              </summary>
+              <div className="space-y-5 border-t p-4">
+                <div className="grid gap-2 sm:grid-cols-2">
               {(
                 [
                   ['enableRating', 'Rating stars'],
@@ -480,19 +449,49 @@ export function CustomizeTab({
                   {label}
                 </label>
               ))}
-              </div>
-            </div>
+                </div>
 
-            <div className="flex flex-wrap gap-2 border-t pt-5">
-              <Button onClick={handleSave} disabled={saving || !hasUnsavedChanges}>
-                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save changes
-              </Button>
-              <Button variant="outline" onClick={handleReset} disabled={saving || !hasUnsavedChanges}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                Discard draft
-              </Button>
-            </div>
+                <div className="border-t pt-4">
+                  <label className="flex min-h-11 items-start gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={!!config.requireCaptcha}
+                      onChange={(e) => updateConfig('requireCaptcha', e.target.checked)}
+                      className="mt-1 h-4 w-4 rounded border"
+                    />
+                    <span>
+                      <span className="flex items-center gap-2 font-medium text-foreground"><ShieldCheck className="h-4 w-4 text-muted-foreground" />Require human verification</span>
+                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">Keep this off until the form works. Enable it when a public form needs stronger abuse protection.</span>
+                    </span>
+                  </label>
+                  {config.requireCaptcha && (
+                    <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="captcha-provider">Provider</Label>
+                        <select
+                          id="captcha-provider"
+                          className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                          value={config.captchaProvider || 'turnstile'}
+                          onChange={(e) => updateConfig('captchaProvider', e.target.value)}
+                        >
+                          <option value="turnstile">Cloudflare Turnstile</option>
+                          <option value="hcaptcha">hCaptcha</option>
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="captcha-site-key">Site key</Label>
+                        <Input
+                          id="captcha-site-key"
+                          value={(config.captchaProvider || 'turnstile') === 'hcaptcha' ? config.hcaptchaSiteKey || '' : config.turnstileSiteKey || ''}
+                          onChange={(e) => updateConfig((config.captchaProvider || 'turnstile') === 'hcaptcha' ? 'hcaptchaSiteKey' : 'turnstileSiteKey', e.target.value)}
+                          placeholder="Public site key"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </details>
           </CardContent>
         </Card>
 
@@ -517,7 +516,7 @@ export function CustomizeTab({
       </div>
 
       {hasUnsavedChanges && (
-        <div className="sticky bottom-4 z-20 border border-amber-300/80 bg-amber-50 p-3 shadow-lg dark:bg-amber-950">
+        <div className="sticky bottom-4 z-20 rounded-lg border border-amber-300/80 bg-amber-50 p-3 shadow-lg dark:bg-amber-950">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-foreground">Publish remote changes</p>
