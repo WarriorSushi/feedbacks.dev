@@ -6,6 +6,7 @@ import { notifyProjectOwnerOfNewFeedback } from '@/lib/notifications'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { buildSuggestionEntries, isLikelySpam, normalizeBoardMessageTitle } from '@/lib/board-submissions'
 import { isBoardPubliclyAccessible } from '@/lib/public-board'
+import { readJsonBody } from '@/lib/api-request'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -17,10 +18,13 @@ export async function POST(
   const admin = await createAdminSupabase()
 
   // Rate limit
-  const { allowed } = await checkRateLimit(req, 'board-submit', 5, 5)
+  const { allowed } = await checkRateLimit(req, 'board-submit', 5, 5, slug)
 
   if (!allowed) {
-    return NextResponse.json({ error: 'Too many submissions. Please wait.' }, { status: 429 })
+    return NextResponse.json(
+      { error: 'Too many submissions. Try again in a few minutes.' },
+      { status: 429, headers: { 'Retry-After': '300' } },
+    )
   }
 
   // Validate board
@@ -39,7 +43,14 @@ export async function POST(
     return NextResponse.json({ error: 'Submissions are disabled' }, { status: 403 })
   }
 
-  const body = await req.json()
+  const bodyResult = await readJsonBody<{
+    message?: string
+    type?: string
+    email?: string
+    hp?: string
+  }>(req)
+  if (!bodyResult.ok) return bodyResult.response
+  const body = bodyResult.data
   const { message, type, email, hp } = body
 
   const { data: projectOwner } = await admin

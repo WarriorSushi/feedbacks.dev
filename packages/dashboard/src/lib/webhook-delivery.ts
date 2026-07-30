@@ -6,6 +6,12 @@ import { buildE2ETestWebhookUrl, getE2EBypassSecret, isE2ETestWebhookUrl } from 
 import { buildGenericWebhookSignatureHeaders } from '@/lib/webhook-signing'
 import { postPublicWebhookJson, WEBHOOK_REQUEST_TIMEOUT_MS } from '@/lib/webhook-http'
 import {
+  integrationDestinationHint,
+  redactWebhookDestination,
+  resolveIntegrationEndpoint,
+  toSafeEndpoint,
+} from '@/lib/integration-secrets'
+import {
   buildDigestPayload,
   buildPayload,
   isDigestPayload,
@@ -181,7 +187,16 @@ async function deliverSingle(
   endpoint: WebhookEndpoint | GitHubEndpoint,
   payload: WebhookDeliveryPayload,
   projectId: string,
-  admin: Awaited<ReturnType<typeof createAdminSupabase>>
+  admin: Awaited<ReturnType<typeof createAdminSupabase>>,
+  destinationHint = integrationDestinationHint(
+    type,
+    {
+      url: endpoint.url,
+      token: type === 'github' ? (endpoint as GitHubEndpoint).token : undefined,
+      signingSecret: type === 'generic' ? endpoint.signingSecret : undefined,
+    },
+    type === 'github' ? endpoint as GitHubEndpoint : undefined,
+  ),
 ) {
   const deliveryId = crypto.randomUUID()
   let status: 'success' | 'failed' = 'failed'
@@ -245,7 +260,8 @@ async function deliverSingle(
     project_id: projectId,
     event: payload.event,
     kind: type,
-    url: endpoint.url,
+    endpoint_id: endpoint.id,
+    url: destinationHint,
     status,
     status_code: statusCode,
     response_body: responseBody,
@@ -261,7 +277,7 @@ async function deliverSingle(
       .select('status')
       .eq('project_id', projectId)
       .eq('kind', type)
-      .eq('url', endpoint.url)
+      .eq('endpoint_id', endpoint.id)
       .order('created_at', { ascending: false })
       .limit(3)
 
@@ -280,7 +296,7 @@ async function deliverSingle(
             ep.enabled = false
             await admin.from('projects').update({ webhooks }).eq('id', projectId)
             if (project.owner_user_id) {
-              void notifyUserOfWebhookFailure(project.owner_user_id, project.name, endpoint.url)
+              void notifyUserOfWebhookFailure(project.owner_user_id, project.name, destinationHint)
             }
           }
         }
@@ -362,9 +378,9 @@ export async function enqueueWebhookJobs(
         project_id: project.id,
         kind: type,
         endpoint_id: endpoint.id,
-        endpoint_url: endpoint.url,
+        endpoint_url: endpoint.destinationHint || redactWebhookDestination(endpoint.url),
         event: payload.event,
-        payload: buildQueuedPayload(endpoint, payload),
+        payload: buildQueuedPayload(toSafeEndpoint(type, endpoint, endpoint.destinationHint), payload),
         status: 'pending',
         attempt: 0,
         max_attempts: event === 'feedback.test' ? 1 : 4,
@@ -383,9 +399,9 @@ export async function enqueueWebhookJobs(
         project_id: project.id,
         kind: 'github',
         endpoint_id: endpoint.id,
-        endpoint_url: endpoint.url,
+        endpoint_url: endpoint.destinationHint || endpoint.repo,
         event: payload.event,
-        payload: buildQueuedPayload(endpoint, payload),
+        payload: buildQueuedPayload(toSafeEndpoint('github', endpoint, endpoint.destinationHint || endpoint.repo), payload),
         status: 'pending',
         attempt: 0,
         max_attempts: event === 'feedback.test' ? 1 : 4,
@@ -516,12 +532,19 @@ export async function processWebhookDigests({ limit = 100 }: { limit?: number } 
         timestamps[timestamps.length - 1] || new Date().toISOString(),
       )
       const firstClaimed = claimed[0]
-      const delivery = await deliverSingle(
+      const resolved = await resolveIntegrationEndpoint(
+        admin,
+        firstClaimed.project_id,
         firstClaimed.kind as WebhookKind,
         first.endpoint,
+      )
+      const delivery = await deliverSingle(
+        firstClaimed.kind as WebhookKind,
+        resolved.endpoint,
         digestPayload,
         firstClaimed.project_id,
         admin,
+        resolved.destinationHint,
       )
 
       const exhausted = delivery.status === 'failed' && nextAttempt >= Math.max(...group.map((item) => item.max_attempts))
@@ -605,12 +628,19 @@ export async function processWebhookJobs({
 
     try {
       const queued = parseQueuedPayload(claimed.payload)
-      const delivery = await deliverSingle(
+      const resolved = await resolveIntegrationEndpoint(
+        admin,
+        claimed.project_id,
         claimed.kind as WebhookKind,
         queued.endpoint,
+      )
+      const delivery = await deliverSingle(
+        claimed.kind as WebhookKind,
+        resolved.endpoint,
         queued.payload,
         claimed.project_id,
         admin,
+        resolved.destinationHint,
       )
 
       const exhausted = delivery.status === 'failed' && claimed.attempt >= claimed.max_attempts
@@ -663,7 +693,12 @@ export async function deliverWebhooks(
 export async function sendTestWebhook(
   type: WebhookKind,
   endpoint: WebhookEndpoint | GitHubEndpoint,
-  project: Pick<Project, 'id' | 'name'>
+  project: Pick<Project, 'id' | 'name'>,
+  destinationHint = integrationDestinationHint(
+    type,
+    { url: endpoint.url, token: type === 'github' ? (endpoint as GitHubEndpoint).token : undefined },
+    type === 'github' ? endpoint as GitHubEndpoint : undefined,
+  ),
 ) {
   const testFeedback: Partial<Feedback> = {
     id: 'test-' + crypto.randomUUID(),
@@ -682,9 +717,12 @@ export async function sendTestWebhook(
       project_id: project.id,
       kind: type,
       endpoint_id: endpoint.id,
-      endpoint_url: endpoint.url,
+      endpoint_url: destinationHint,
       event: 'feedback.test',
-      payload: buildQueuedPayload(endpoint, buildPayload(testFeedback, project, 'feedback.test')),
+      payload: buildQueuedPayload(
+        toSafeEndpoint(type, endpoint, destinationHint),
+        buildPayload(testFeedback, project, 'feedback.test'),
+      ),
       status: 'pending',
       attempt: 0,
       max_attempts: 1,
@@ -707,14 +745,19 @@ export async function sendTestWebhook(
 function findReplayEndpoint(
   type: WebhookKind,
   webhooks: WebhookConfig,
+  endpointId: string | null,
   url: string,
 ): WebhookEndpoint | GitHubEndpoint | null {
   const normalized = normalizeWebhookConfig(webhooks)
   if (type === 'github') {
-    return normalized.github?.endpoints?.find((endpoint) => endpoint.url === url) || null
+    return normalized.github?.endpoints?.find((endpoint) =>
+      endpointId ? endpoint.id === endpointId : endpoint.url === url || endpoint.destinationHint === url
+    ) || null
   }
 
-  return normalized[type]?.endpoints?.find((endpoint) => endpoint.url === url) || null
+  return normalized[type]?.endpoints?.find((endpoint) =>
+    endpointId ? endpoint.id === endpointId : endpoint.url === url || endpoint.destinationHint === url
+  ) || null
 }
 
 export async function resendWebhookDelivery(
@@ -734,7 +777,7 @@ export async function resendWebhookDelivery(
 
   const { data: delivery } = await admin
     .from('webhook_deliveries')
-    .select('id, kind, url, payload')
+    .select('id, kind, endpoint_id, url, payload')
     .eq('id', deliveryId)
     .eq('project_id', projectId)
     .single()
@@ -752,7 +795,7 @@ export async function resendWebhookDelivery(
   }
 
   const type = delivery.kind as WebhookKind
-  const endpoint = findReplayEndpoint(type, project.webhooks as WebhookConfig, delivery.url)
+  const endpoint = findReplayEndpoint(type, project.webhooks as WebhookConfig, delivery.endpoint_id, delivery.url)
 
   if (!endpoint) {
     throw new Error(
@@ -768,9 +811,9 @@ export async function resendWebhookDelivery(
       project_id: project.id,
       kind: type,
       endpoint_id: endpoint.id,
-      endpoint_url: endpoint.url,
+      endpoint_url: endpoint.destinationHint || redactWebhookDestination(endpoint.url),
       event: payload.event,
-      payload: buildQueuedPayload(endpoint, payload),
+      payload: buildQueuedPayload(toSafeEndpoint(type, endpoint, endpoint.destinationHint), payload),
       status: 'pending',
       attempt: 0,
       max_attempts: 1,

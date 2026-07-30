@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAgentSetupToken } from '@/lib/agent-setup'
 import { getAuthedUserAndProject } from '@/lib/api-auth'
 import { env } from '@/lib/env'
-import { hashProjectApiKey } from '@/lib/project-api-keys'
+import { getProjectPublishableKey } from '@/lib/project-api-keys'
+import { readJsonBody } from '@/lib/api-request'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -24,23 +25,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     if ('error' in result) return result.error
 
     const { user, project, admin } = result
-    const body = await request.json().catch(() => ({}))
+    const bodyResult = await readJsonBody<{ projectKey?: string }>(request, { maxBytes: 4_096 })
+    if (!bodyResult.ok) return bodyResult.response
+    const body = bodyResult.data
     const providedProjectKey = typeof body.projectKey === 'string' ? body.projectKey.trim() : ''
-    const projectKey = providedProjectKey || project.api_key || ''
-
-    if (!projectKey) {
-      return NextResponse.json(
-        {
-          error: 'Generate a fresh project key before creating an agent setup packet.',
-          code: 'project_key_required',
-        },
-        { status: 409 },
-      )
-    }
-
-    const projectWithHash = project as typeof project & { api_key_hash?: string | null }
-    const providedHash = await hashProjectApiKey(projectKey)
-    if (projectWithHash.api_key_hash && providedHash !== projectWithHash.api_key_hash) {
+    const projectKey = getProjectPublishableKey(project.id)
+    if (providedProjectKey && providedProjectKey !== projectKey) {
       return NextResponse.json({ error: 'Project key does not match this project.' }, { status: 400 })
     }
 
@@ -88,9 +78,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       packetUrl,
       expiresAt: payload.expiresAt,
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create setup token' },
+      { error: 'Failed to create setup token. Please retry.' },
       { status: 500 },
     )
   }
@@ -118,9 +108,9 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     }
 
     return NextResponse.json({ tokens: data || [] })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to load setup tokens' },
+      { error: 'Failed to load setup tokens. Please retry.' },
       { status: 500 },
     )
   }
@@ -133,7 +123,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     if ('error' in result) return result.error
 
     const { user, project, admin } = result
-    const body = await request.json().catch(() => ({}))
+    const bodyResult = await readJsonBody<{ tokenId?: string }>(request, { maxBytes: 4_096 })
+    if (!bodyResult.ok) return bodyResult.response
+    const body = bodyResult.data
     const tokenId = typeof body.tokenId === 'string' ? body.tokenId.trim() : ''
     if (!tokenId) {
       return NextResponse.json({ error: 'tokenId is required' }, { status: 400 })
@@ -171,9 +163,9 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     }).then(() => undefined, () => undefined)
 
     return NextResponse.json({ token: revokedToken })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to revoke setup token' },
+      { error: 'Failed to revoke setup token. Please retry.' },
       { status: 500 },
     )
   }

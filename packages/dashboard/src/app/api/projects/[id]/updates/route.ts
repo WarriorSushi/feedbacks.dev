@@ -4,6 +4,7 @@ import { getAuthedUserAndProject } from '@/lib/api-auth'
 import { getProductUpdateEntitlements, getProductUpdateMetricsCutoff } from '@/lib/product-update-entitlements'
 import { mapProductUpdateSettings, publicImageUrl } from '@/lib/product-update-service'
 import { recordActivationMilestone } from '@/lib/activation-milestones'
+import { readJsonBody } from '@/lib/api-request'
 
 const headers = { 'Cache-Control': 'no-store' }
 
@@ -37,8 +38,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { id } = await params
   const auth = await getAuthedUserAndProject(id)
   if ('error' in auth) return auth.error
-  let body: unknown
-  try { body = await request.json() } catch { return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400, headers }) }
+  const bodyResult = await readJsonBody(request)
+  if (!bodyResult.ok) return bodyResult.response
+  const body: unknown = bodyResult.data
   if (body && typeof body === 'object' && 'status' in body) return NextResponse.json({ error: 'Draft creation cannot set status.' }, { status: 400, headers })
   const parsed = sanitizeProductUpdateInput(body, { requirePublishFields: true })
   if (Object.keys(parsed.errors).length) return NextResponse.json({ errors: parsed.errors }, { status: 400, headers })
@@ -46,6 +48,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     project_id: id, created_by: auth.user.id, status: 'draft', version_label: dataValue(parsed.data.versionLabel),
     title: parsed.data.title, summary: parsed.data.summary, highlights: parsed.data.highlights || [],
     cta_label: dataValue(parsed.data.ctaLabel), cta_url: dataValue(parsed.data.ctaUrl),
+    image_alt_text: dataValue(parsed.data.imageAltText),
   }).select('*').single()
   if (error || !data) return NextResponse.json({ error: 'Unable to save draft.' }, { status: 500, headers })
   void recordActivationMilestone({ projectId: id, userId: auth.user.id, eventName: 'updates_first_draft_created', admin: auth.admin })

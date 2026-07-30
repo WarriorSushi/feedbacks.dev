@@ -19,6 +19,10 @@ function readNestedObject(record: Record<string, unknown>, key: string): Record<
   return value as Record<string, unknown>
 }
 
+function readInteger(value: unknown): number | null {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : null
+}
+
 export function getEventData(event: DodoEventPayload) {
   return event.data && typeof event.data === 'object' && !Array.isArray(event.data)
     ? (event.data as Record<string, unknown>)
@@ -89,6 +93,17 @@ export interface BillingEventContext {
   currentPeriodStart: string | null
   currentPeriodEnd: string | null
   cancelAtPeriodEnd: boolean
+  occurredAt: string | null
+  recurringAmount: number | null
+  currency: string | null
+  billingInterval: string | null
+  billingIntervalCount: number | null
+}
+
+function normalizeTimestamp(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) return null
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString()
 }
 
 export function extractBillingEventContext(event: DodoEventPayload): BillingEventContext {
@@ -131,5 +146,10 @@ export function extractBillingEventContext(event: DodoEventPayload): BillingEven
     ),
     cancelAtPeriodEnd:
       data.cancel_at_period_end === true || data.cancel_at_next_billing_date === true,
+    occurredAt: normalizeTimestamp(event.timestamp),
+    recurringAmount: readInteger(data.recurring_pre_tax_amount) ?? readInteger(data.total_amount),
+    currency: readString(data.currency)?.toUpperCase() || null,
+    billingInterval: readString(data.payment_frequency_interval)?.toLowerCase() || null,
+    billingIntervalCount: readInteger(data.payment_frequency_count),
   }
 }

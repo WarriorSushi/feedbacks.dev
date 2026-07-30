@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticateApiKey } from '@/lib/api-auth'
 import { assertFeatureAccess } from '@/lib/billing'
+import { apiV1Error } from '@/lib/api-v1-response'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -13,7 +14,7 @@ function json(data: unknown, status = 200) {
 }
 
 function jsonError(message: string, status: number) {
-  return json({ error: message }, status)
+  return apiV1Error(message, status, CORS_HEADERS)
 }
 
 export async function OPTIONS() {
@@ -23,7 +24,7 @@ export async function OPTIONS() {
 export async function GET(request: NextRequest) {
   try {
     // Use API key auth only. Wildcard CORS routes have no cookie fallback.
-    const apiAuth = await authenticateApiKey(request)
+    const apiAuth = await authenticateApiKey(request, 'project:read')
     if (!apiAuth) return jsonError('Invalid or missing API key', 401)
 
     const feature = await assertFeatureAccess(apiAuth.project.owner_user_id, 'apiAccess')

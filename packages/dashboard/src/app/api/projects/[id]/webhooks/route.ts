@@ -3,9 +3,14 @@ import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server
 import { assertFeatureAccess } from '@/lib/billing'
 import { hasE2EBypass } from '@/lib/e2e'
 import { resendWebhookDelivery, sendTestWebhook } from '@/lib/webhook-delivery'
-import type { WebhookEndpoint, GitHubEndpoint } from '@/lib/types'
 import { countActiveWebhookEndpoints, normalizeWebhookConfig } from '@/lib/webhook-config'
 import { recordActivationMilestone } from '@/lib/activation-milestones'
+import {
+  persistWebhookConfig,
+  resolveIntegrationEndpoint,
+  toSafeWebhookConfig,
+} from '@/lib/integration-secrets'
+import { readJsonBody } from '@/lib/api-request'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -40,8 +45,24 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const { id } = await params
     const result = await getAuthedProject(id, _request)
     if ('error' in result && !('admin' in result)) return result.error
-    const { project } = result as Exclude<typeof result, { error: NextResponse }>
-    return NextResponse.json(normalizeWebhookConfig(project.webhooks))
+    const { project, admin } = result as Exclude<typeof result, { error: NextResponse }>
+    const normalized = normalizeWebhookConfig(project.webhooks)
+    const containsLegacySecrets = [
+      ...(normalized.slack?.endpoints || []),
+      ...(normalized.discord?.endpoints || []),
+      ...(normalized.generic?.endpoints || []),
+      ...(normalized.github?.endpoints || []),
+    ].some((endpoint) => !endpoint.secretStored)
+    if (containsLegacySecrets) {
+      const migrated = await persistWebhookConfig(admin, project.id, normalized)
+      const { error } = await admin
+        .from('projects')
+        .update({ webhooks: migrated, updated_at: new Date().toISOString() })
+        .eq('id', project.id)
+      if (error) throw new Error(error.message)
+      return NextResponse.json(migrated)
+    }
+    return NextResponse.json(toSafeWebhookConfig(normalized))
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
@@ -54,7 +75,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if ('error' in result && !('admin' in result)) return result.error
     const { admin, summary, project } = result as Exclude<typeof result, { error: NextResponse }>
 
-    const webhooks = normalizeWebhookConfig(await request.json())
+    const requestBodyResult = await readJsonBody(request)
+    if (!requestBodyResult.ok) return requestBodyResult.response
+    const requestBody = requestBodyResult.data
+    const webhooks = normalizeWebhookConfig(requestBody)
     const endpointLimit = summary?.entitlements.webhookEndpointLimit ?? null
     const activeEndpointCount = countActiveWebhookEndpoints(webhooks)
 
@@ -70,14 +94,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       )
     }
 
+    const safeWebhooks = await persistWebhookConfig(admin, id, webhooks)
     const { data, error } = await admin
       .from('projects')
-      .update({ webhooks, updated_at: new Date().toISOString() })
+      .update({ webhooks: safeWebhooks, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select('webhooks')
       .single()
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) return NextResponse.json({ code: 'integration_save_failed', error: 'Integration settings could not be saved.' }, { status: 500 })
     if (activeEndpointCount > 0) {
       await recordActivationMilestone({
         projectId: id,
@@ -97,9 +122,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const { id } = await params
     const result = await getAuthedProject(id, request)
     if ('error' in result && !('admin' in result)) return result.error
-    const { project } = result as Exclude<typeof result, { error: NextResponse }>
+    const { project, admin } = result as Exclude<typeof result, { error: NextResponse }>
 
-    const body = await request.json()
+    const bodyResult = await readJsonBody<{
+      action?: string
+      deliveryId?: string
+      type?: 'slack' | 'discord' | 'generic' | 'github'
+      endpointId?: string
+    }>(request)
+    if (!bodyResult.ok) return bodyResult.response
+    const body = bodyResult.data
 
     if (body?.action === 'resend') {
       if (!body.deliveryId) {
@@ -110,29 +142,31 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json(replay)
     }
 
-    const { type, endpoint } = body as {
+    const { type, endpointId } = body as {
       type: 'slack' | 'discord' | 'generic' | 'github'
-      endpoint: WebhookEndpoint | GitHubEndpoint
+      endpointId: string
     }
 
-    if (!type || !endpoint?.url) {
-      return NextResponse.json({ error: 'type and endpoint.url are required' }, { status: 400 })
+    if (!type || !endpointId) {
+      return NextResponse.json({ error: 'type and endpointId are required' }, { status: 400 })
     }
 
-    const normalized = normalizeWebhookConfig({
-      [type]: type === 'github'
-        ? { endpoints: [endpoint] }
-        : { endpoints: [endpoint] },
-    })
+    const normalized = normalizeWebhookConfig(project.webhooks)
     const normalizedEndpoint = type === 'github'
-      ? normalized.github?.endpoints?.[0]
-      : normalized[type]?.endpoints?.[0]
+      ? normalized.github?.endpoints?.find((endpoint) => endpoint.id === endpointId)
+      : normalized[type]?.endpoints?.find((endpoint) => endpoint.id === endpointId)
 
     if (!normalizedEndpoint) {
-      return NextResponse.json({ error: 'Endpoint is invalid' }, { status: 400 })
+      return NextResponse.json({ error: 'Save this endpoint before sending a test' }, { status: 409 })
     }
 
-    const delivery = await sendTestWebhook(type, normalizedEndpoint, { id: project.id, name: project.name })
+    const resolved = await resolveIntegrationEndpoint(admin, project.id, type, normalizedEndpoint)
+    const delivery = await sendTestWebhook(
+      type,
+      resolved.endpoint,
+      { id: project.id, name: project.name },
+      resolved.destinationHint,
+    )
     return NextResponse.json(delivery)
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

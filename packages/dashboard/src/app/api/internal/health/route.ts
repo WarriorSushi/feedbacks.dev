@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
   const admin = await createAdminSupabase()
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
   const [
     cronResult,
     backlogResult,
@@ -25,6 +26,10 @@ export async function GET(request: NextRequest) {
     deliveredResult,
     submissionResult,
     activationResults,
+    failedBillingResult,
+    staleBillingResult,
+    deletionFailureResult,
+    publicBoardResult,
   ] = await Promise.all([
     admin
       .from('cron_runs')
@@ -54,8 +59,10 @@ export async function GET(request: NextRequest) {
       .gte('created_at', oneDayAgo),
     admin
       .from('feedback')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', oneHourAgo),
+      .select('id, projects!inner(environment, quarantined_at)', { count: 'exact', head: true })
+      .gte('created_at', oneHourAgo)
+      .eq('projects.environment', 'production')
+      .is('projects.quarantined_at', null),
     Promise.all([
       'project_created',
       'install_code_copied',
@@ -64,10 +71,41 @@ export async function GET(request: NextRequest) {
     ].map((eventName) => admin
       .from('activation_milestones')
       .select('project_id', { count: 'exact', head: true })
-      .eq('event_name', eventName))),
+      .eq('event_name', eventName)
+      .eq('environment', 'production'))),
+    admin
+      .from('billing_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'failed')
+      .gte('created_at', oneDayAgo),
+    admin
+      .from('billing_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'processing')
+      .lt('locked_at', fiveMinutesAgo),
+    admin
+      .from('account_deletion_jobs')
+      .select('id', { count: 'exact', head: true })
+      .in('status', ['failed', 'blocked']),
+    admin
+      .from('public_board_settings')
+      .select('id', { count: 'exact', head: true })
+      .eq('enabled', true)
+      .neq('visibility', 'private'),
   ])
 
-  const databaseError = [cronResult, backlogResult, oldestResult, failedResult, deliveredResult, submissionResult]
+  const databaseError = [
+    cronResult,
+    backlogResult,
+    oldestResult,
+    failedResult,
+    deliveredResult,
+    submissionResult,
+    failedBillingResult,
+    staleBillingResult,
+    deletionFailureResult,
+    publicBoardResult,
+  ]
     .map((result) => result.error)
     .find(Boolean)
   if (databaseError) {
@@ -84,12 +122,28 @@ export async function GET(request: NextRequest) {
   const queueBacklog = backlogResult.count || 0
   const failedLast24Hours = failedResult.count || 0
   const deliveredLast24Hours = deliveredResult.count || 0
+  const failedBillingLast24Hours = failedBillingResult.count || 0
+  const staleBillingClaims = staleBillingResult.count || 0
+  const failedOrBlockedDeletions = deletionFailureResult.count || 0
   const activationAvailable = activationResults.every((result) => !result.error)
   const [projectsCreated, installCodesCopied, verified, reachedFirstFeedback] = activationResults
     .map((result) => result.count || 0)
   const healthy = Object.values(cron).every((job) => job.healthy)
     && queueBacklog < 100
     && failedLast24Hours < 20
+    && failedBillingLast24Hours === 0
+    && staleBillingClaims === 0
+    && failedOrBlockedDeletions === 0
+
+  if (!healthy) {
+    logOperationalEvent('warn', 'health.degraded', requestId, {
+      queueBacklog,
+      failedWebhookJobs: failedLast24Hours,
+      failedBillingEvents: failedBillingLast24Hours,
+      staleBillingClaims,
+      failedOrBlockedDeletions,
+    })
+  }
 
   return NextResponse.json({
     healthy,
@@ -103,6 +157,17 @@ export async function GET(request: NextRequest) {
     },
     submissions: {
       receivedLastHour: submissionResult.count || 0,
+    },
+    billing: {
+      failedLast24Hours: failedBillingLast24Hours,
+      staleProcessingClaims: staleBillingClaims,
+    },
+    accountDeletion: {
+      failedOrBlocked: failedOrBlockedDeletions,
+    },
+    publicPages: {
+      publishedBoards: publicBoardResult.count || 0,
+      performance: 'Vercel Speed Insights',
     },
     installation: !activationAvailable
       ? { available: false }

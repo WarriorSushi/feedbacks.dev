@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { publicEnv } from '@/lib/public-env'
+import { getProjectPublishableKey } from '@/lib/project-api-keys'
 import type { Project } from '@/lib/types'
 import { ProjectVerifyClient } from '../project-verify-client'
 
@@ -25,8 +26,7 @@ export default async function ProjectVerifyPage({
     <ProjectVerifyClient
       appOrigin={publicEnv.NEXT_PUBLIC_APP_ORIGIN}
       projectId={project.id}
-      projectKey={project.api_key}
-      apiKeyLastFour={(project as Project).api_key_last_four || null}
+      projectKey={getProjectPublishableKey(project.id)}
       projectName={project.name}
       savedConfig={(project as Project).settings?.widget_config || {}}
     />

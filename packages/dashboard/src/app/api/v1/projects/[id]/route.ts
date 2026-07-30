@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { authenticateApiKey } from '@/lib/api-auth'
 import { assertFeatureAccess } from '@/lib/billing'
+import { apiV1Error } from '@/lib/api-v1-response'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +15,7 @@ function json(data: unknown, status = 200) {
 }
 
 function jsonError(message: string, status: number) {
-  return json({ error: message }, status)
+  return apiV1Error(message, status, CORS_HEADERS)
 }
 
 export async function OPTIONS() {
@@ -27,7 +28,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const auth = await authenticateApiKey(request)
+    const auth = await authenticateApiKey(request, 'project:read')
     if (!auth) return jsonError('Invalid or missing API key', 401)
     if (auth.project.id !== id) return jsonError('Forbidden', 403)
 

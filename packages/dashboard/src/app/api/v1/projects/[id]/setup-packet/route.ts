@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { authenticateApiKey } from '@/lib/api-auth'
 import { assertFeatureAccess } from '@/lib/billing'
+import { apiV1Error } from '@/lib/api-v1-response'
 import { buildAgentSetupPacket } from '@/lib/agent-setup'
+import { getProjectPublishableKey } from '@/lib/project-api-keys'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -14,7 +16,7 @@ function json(data: unknown, status = 200) {
 }
 
 function jsonError(message: string, status: number) {
-  return json({ error: message }, status)
+  return apiV1Error(message, status, CORS_HEADERS)
 }
 
 export async function OPTIONS() {
@@ -27,17 +29,14 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const auth = await authenticateApiKey(request)
+    const auth = await authenticateApiKey(request, 'setup:read')
     if (!auth) return jsonError('Invalid or missing API key', 401)
     if (auth.project.id !== id) return jsonError('Forbidden', 403)
 
     const feature = await assertFeatureAccess(auth.project.owner_user_id, 'apiAccess')
     if (!feature.allowed) return jsonError(feature.message, 403)
 
-    const projectKey = request.headers.get('X-API-Key')
-    if (!projectKey) return jsonError('Invalid or missing API key', 401)
-
-    return json(buildAgentSetupPacket(auth.project, projectKey))
+    return json(buildAgentSetupPacket(auth.project, getProjectPublishableKey(auth.project.id)))
   } catch (error) {
     console.error('v1 setup packet error:', error)
     return jsonError('Internal server error', 500)

@@ -72,6 +72,13 @@ export default async function DashboardPage({
     ownedProjects || [],
     requestedParams.project || cookieStore.get(CURRENT_PROJECT_COOKIE)?.value,
   )
+  const { data: embedInstallation } = selectedProject
+    ? await supabase
+        .from('project_embed_installations')
+        .select('last_seen_at')
+        .eq('project_id', selectedProject.id)
+        .maybeSingle()
+    : { data: null }
   const showingAllProjects = requestedParams.scope === 'all'
   const scopedProjectId = showingAllProjects ? undefined : selectedProject?.id
   const feedbackHref = showingAllProjects
@@ -328,15 +335,21 @@ export default async function DashboardPage({
           <div className="flex min-w-0 gap-3">
             <Code2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div>
-              <h2 className="text-sm font-semibold">Send the first test for {primaryProject.name}</h2>
+              <h2 className="text-sm font-semibold">
+                {embedInstallation
+                  ? `Send the first test for ${primaryProject.name}`
+                  : `Install feedback in ${primaryProject.name}`}
+              </h2>
               <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Copy the default install code, send one known test, then confirm it reaches the inbox.
+                {embedInstallation
+                  ? 'The embed has connected. Send one recognizable test and confirm it reaches the inbox.'
+                  : 'Copy the visible publishable snippet into your app shell, then load the page once.'}
               </p>
             </div>
           </div>
           <Button asChild className="min-h-11 shrink-0 sm:min-h-10">
-            <Link href={`/projects/${primaryProject.id}?tab=install`}>
-              Continue setup <ArrowRight className="ml-2 h-4 w-4" />
+            <Link href={embedInstallation ? `/projects/${primaryProject.id}/verify` : `/projects/${primaryProject.id}/install`}>
+              {embedInstallation ? 'Send test' : 'Install embed'} <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>

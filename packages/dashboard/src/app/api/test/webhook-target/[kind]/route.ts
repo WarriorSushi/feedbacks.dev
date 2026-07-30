@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { isSafeE2EEnvironment } from '@/lib/e2e-environment'
+import { readJsonBody } from '@/lib/api-request'
 
 const WEBHOOK_KINDS = new Set(['slack', 'discord', 'generic', 'github'])
 
@@ -11,6 +13,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ kind: string }> },
 ) {
+  if (!isSafeE2EEnvironment()) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
   const { kind } = await params
 
   if (!WEBHOOK_KINDS.has(kind)) {
@@ -21,7 +26,9 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const payload = await request.json().catch(() => null)
+  const bodyResult = await readJsonBody(request)
+  if (!bodyResult.ok) return bodyResult.response
+  const payload = bodyResult.data
   return NextResponse.json({
     ok: true,
     kind,

@@ -21,10 +21,7 @@ import { ArrowRight, Bot, CheckCircle2, KeyRound, Loader2, RefreshCw, XCircle } 
 
 interface InstallTabProps {
   project: Project
-  projectKey: string | null
-  apiKeyLastFour: string | null
-  rotatingApiKey: boolean
-  onRotateApiKey: () => Promise<void>
+  projectKey: string
 }
 
 interface SetupTokenStatus {
@@ -39,9 +36,6 @@ type InstallPlatform = 'website' | 'wordpress' | 'html-block' | 'react' | 'next'
 export function InstallTab({
   project,
   projectKey,
-  apiKeyLastFour,
-  rotatingApiKey,
-  onRotateApiKey,
 }: InstallTabProps) {
   const [setupPacket, setSetupPacket] = React.useState<{ tokenId: string; packetUrl: string; expiresAt: string } | null>(null)
   const [setupPacketLoading, setSetupPacketLoading] = React.useState(false)
@@ -57,14 +51,11 @@ export function InstallTab({
     [project.settings?.widget_config],
   )
   const snippets = React.useMemo<InstallSnippet[]>(
-    () =>
-      projectKey
-        ? generateInstallSnippets({
-          projectKey,
-          savedConfig,
-          appOrigin,
-        })
-        : [],
+    () => generateInstallSnippets({
+      projectKey,
+      savedConfig,
+      appOrigin,
+    }),
     [appOrigin, projectKey, savedConfig],
   )
   const websiteSnippet = snippets.find((snippet) => snippet.label === 'Website')?.code || ''
@@ -75,7 +66,7 @@ export function InstallTab({
   const cspSnippet = `default-src 'self';\nscript-src 'self' ${new URL(widgetScriptUrl).origin};\nconnect-src 'self' ${new URL(feedbackApiUrl).origin};\nstyle-src 'self' 'unsafe-inline';\nimg-src 'self' data: blob:;`
   const sriCommand = `node -e "const fs=require('node:fs');const crypto=require('node:crypto');const file='packages/dashboard/public/widget/latest.js';const hash=crypto.createHash('sha384').update(fs.readFileSync(file)).digest('base64');console.log('integrity=\\\"sha384-'+hash+'\\\"')"`
   const runtimeConfig = React.useMemo(
-    () => buildRuntimeWidgetConfig(projectKey || 'fb_install_preview', savedConfig, { appOrigin }),
+    () => buildRuntimeWidgetConfig(projectKey, savedConfig, { appOrigin }),
     [appOrigin, projectKey, savedConfig],
   )
   const modeLabel = getWidgetModeLabel(runtimeConfig)
@@ -90,7 +81,7 @@ export function InstallTab({
       project: {
         id: project.id,
         name: project.name,
-        publicKey: projectKey || 'generate-a-fresh-project-key-first',
+        publicKey: projectKey,
         domain: project.domain || null,
       },
       widget: {
@@ -150,11 +141,6 @@ ${JSON.stringify(setupPacket, null, 2)}`
   }, [loadSetupTokens])
 
   const createSetupPacketLink = async () => {
-    if (!projectKey) {
-      setSetupPacketError('Generate a fresh project key before creating a setup packet link.')
-      return
-    }
-
     setSetupPacketLoading(true)
     setSetupPacketError(null)
     try {
@@ -207,7 +193,7 @@ ${JSON.stringify(setupPacket, null, 2)}`
   const activeSetupTokens = setupTokens.filter((token) => {
     return !token.revoked_at && new Date(token.expires_at).getTime() > Date.now()
   })
-  const nextSnippet = projectKey ? `"use client"
+  const nextSnippet = `"use client"
 
 import Script from "next/script"
 
@@ -222,7 +208,7 @@ export function FeedbacksWidgetScript() {
       />
     </>
   )
-}` : ''
+}`
   const installTargets: Array<{
     id: InstallPlatform
     label: string
@@ -365,39 +351,28 @@ export function FeedbacksWidgetScript() {
           </details>
         </div>
 
-        {projectKey ? (
-          selectedTarget.code ? (
-            <div data-tour="install-code">
-              <CodeSnippet
-                tabs={[{
-                  label: selectedTarget.label,
-                  code: selectedTarget.code,
-                  language: selectedTarget.language,
-                }]}
-                onCopied={() => {
-                  setHasCopiedSnippet(true)
-                  void fetch(`/api/projects/${project.id}/activation`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ event: 'install_code_copied' }),
-                  })
-                }}
-              />
-            </div>
-          ) : (
-            <div className="rounded-md border border-dashed bg-surface-raised/60 p-4 text-sm leading-6 text-muted-foreground">
-              Native apps use the REST API. The browser snippet only works in web content or a WebView.
-              <Link href={`/projects/${project.id}?tab=api`} className="ml-1 font-medium text-primary hover:underline">Open API docs</Link>
-            </div>
-          )
+        {selectedTarget.code ? (
+          <div data-tour="install-code">
+            <CodeSnippet
+              tabs={[{
+                label: selectedTarget.label,
+                code: selectedTarget.code,
+                language: selectedTarget.language,
+              }]}
+              onCopied={() => {
+                setHasCopiedSnippet(true)
+                void fetch(`/api/projects/${project.id}/activation`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ event: 'install_code_copied' }),
+                })
+              }}
+            />
+          </div>
         ) : (
-          <div className="rounded-md border border-primary/30 bg-surface-selected/35 p-4 dark:bg-surface-selected/55">
-            <p className="text-sm font-medium text-foreground">Generate a fresh key to reveal the snippet.</p>
-            <p className="mt-1 text-sm text-muted-foreground">Existing deployed clients keep working with the previous key.</p>
-            <Button size="sm" variant="outline" className="mt-3" onClick={() => void onRotateApiKey()} disabled={rotatingApiKey}>
-              {rotatingApiKey && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Generate fresh key
-            </Button>
+          <div className="rounded-md border border-dashed bg-surface-raised/60 p-4 text-sm leading-6 text-muted-foreground">
+            Native apps use the REST API. The browser snippet only works in web content or a WebView.
+            <Link href={`/projects/${project.id}?tab=api`} className="ml-1 font-medium text-primary hover:underline">Open API docs</Link>
           </div>
         )}
 
@@ -437,11 +412,7 @@ export function FeedbacksWidgetScript() {
         <div className="grid gap-5 border-t bg-surface-inset/60 p-5 sm:grid-cols-2">
           <div className="min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Project key</p>
-            {projectKey ? (
-              <p className="mt-1 break-all font-mono text-xs text-foreground">{projectKey}</p>
-            ) : (
-              <p className="mt-1 text-sm text-muted-foreground">Hidden{apiKeyLastFour ? `, ending in ${apiKeyLastFour}` : ''}.</p>
-            )}
+            <p className="mt-1 break-all font-mono text-xs text-foreground">{projectKey}</p>
           </div>
           <div>
             <p className="text-xs font-medium text-muted-foreground">Current form</p>
@@ -471,11 +442,6 @@ export function FeedbacksWidgetScript() {
           </span>
         </summary>
         <div className="space-y-4 border-t px-6 py-5">
-          {!projectKey && (
-            <div className="rounded-lg border border-primary/30 bg-primary/[0.04] p-4 text-sm text-muted-foreground">
-              Generate a fresh project key before using the prompt in a real codebase. The current prompt includes a placeholder so your agent does not guess credentials.
-            </div>
-          )}
           <div className="rounded-lg border bg-muted/20 p-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
@@ -487,7 +453,7 @@ export function FeedbacksWidgetScript() {
               <Button
                 variant="outline"
                 onClick={() => void createSetupPacketLink()}
-                disabled={!projectKey || setupPacketLoading}
+                disabled={setupPacketLoading}
               >
                 {setupPacketLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create packet link

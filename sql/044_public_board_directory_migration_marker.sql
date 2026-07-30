@@ -1,0 +1,2 @@
+-- Migration marker retained because the initial directory RPC was applied to the live
+-- database under version 044. The authoritative, type-scoped definition follows in 045.

@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic'
 export default async function BoardsPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ sort?: string; category?: string; page?: string }>
+  searchParams?: Promise<{ sort?: string; category?: string; page?: string; q?: string }>
 }) {
   const params = await searchParams
   const authHref = `${publicEnv.NEXT_PUBLIC_APP_ORIGIN}/auth`
@@ -44,7 +44,7 @@ export default async function BoardsPage({
         </div>
       </header>
 
-      <BoardDirectorySurface sort={params?.sort} category={params?.category} page={params?.page} />
+      <BoardDirectorySurface sort={params?.sort} category={params?.category} page={params?.page} query={params?.q} />
     </div>
   )
 }

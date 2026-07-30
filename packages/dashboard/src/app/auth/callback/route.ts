@@ -15,5 +15,8 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/auth?error=auth_failed`)
+  const authUrl = new URL('/auth', origin)
+  authUrl.searchParams.set('error', 'auth_failed')
+  authUrl.searchParams.set('redirect', redirect)
+  return NextResponse.redirect(authUrl)
 }

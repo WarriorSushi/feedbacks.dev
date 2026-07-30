@@ -1,6 +1,6 @@
 import { Compass } from 'lucide-react'
-import { loadBoardDirectoryEntries, type BoardSortMode } from '@/lib/board-discovery'
-import { buildDirectoryCategoryOptions } from '@/lib/board-categories'
+import { loadBoardDirectoryPage, type BoardSortMode } from '@/lib/board-discovery'
+import { getBoardCategoryLabel } from '@/lib/board-categories'
 import { BoardDirectoryClient } from './board-directory-client'
 import { cn } from '@/lib/utils'
 
@@ -8,6 +8,7 @@ interface BoardDirectorySurfaceProps {
   sort?: string
   category?: string
   page?: string
+  query?: string
   variant?: 'public' | 'dashboard'
 }
 
@@ -15,12 +16,23 @@ export async function BoardDirectorySurface({
   sort,
   category,
   page,
+  query,
   variant = 'public',
 }: BoardDirectorySurfaceProps) {
-  const entries = await loadBoardDirectoryEntries()
-  const categories = buildDirectoryCategoryOptions(entries.map((entry) => entry.branding.categories || []))
-  const totalRequests = entries.reduce((sum, entry) => sum + entry.feedbackCount, 0)
-  const totalReplies = entries.reduce((sum, entry) => sum + entry.publicReplyCount, 0)
+  const activeSort = ['trending', 'active', 'responsive', 'shipping', 'new'].includes(sort || '')
+    ? sort as BoardSortMode
+    : 'trending'
+  const activePage = Math.max(1, Number(page) || 1)
+  const directory = await loadBoardDirectoryPage({
+    sort: activeSort,
+    category: category?.trim().toLowerCase() || '',
+    query: query?.trim() || '',
+    page: activePage,
+  })
+  const categories = directory.categories.map((entry) => ({
+    ...entry,
+    label: getBoardCategoryLabel(entry.value),
+  }))
   const dashboard = variant === 'dashboard'
 
   return (
@@ -53,9 +65,9 @@ export async function BoardDirectorySurface({
 
           <div className="grid grid-cols-3 divide-x border-y lg:border-y-0">
             {[
-              ['Boards', entries.length],
-              ['Ideas and bugs', totalRequests],
-              ['Team replies', totalReplies],
+              ['Boards', directory.total],
+              ['Ideas and bugs', directory.totalRequests],
+              ['Team replies', directory.totalReplies],
             ].map(([label, value]) => (
               <div key={label} className="px-3 py-3 sm:px-5 sm:py-4">
                 <p className="text-[10px] font-semibold uppercase text-muted-foreground sm:text-[11px] sm:tracking-[0.18em]">
@@ -72,11 +84,13 @@ export async function BoardDirectorySurface({
       </section>
 
       <BoardDirectoryClient
-        entries={entries}
+        entries={directory.entries}
+        total={directory.total}
         categories={categories}
-        initialSort={(sort as BoardSortMode) || 'trending'}
+        initialSort={activeSort}
         initialCategory={category?.trim().toLowerCase() || ''}
-        initialPage={Number(page) || 1}
+        initialPage={activePage}
+        initialQuery={query?.trim() || ''}
         variant={variant}
       />
     </div>

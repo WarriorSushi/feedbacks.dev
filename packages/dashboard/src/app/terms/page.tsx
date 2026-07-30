@@ -15,7 +15,7 @@ export default function TermsPage() {
 
         <h1 className="text-3xl font-bold tracking-tight">Terms of Service</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Last updated: June 2026
+          Last updated: July 30, 2026
         </p>
 
         <div className="prose prose-zinc mt-8 max-w-none dark:prose-invert">
@@ -41,6 +41,11 @@ export default function TermsPage() {
           <p>
             You own your data. We store it to provide the service. You can export or delete
             your data at any time. See our Privacy Policy for details.
+          </p>
+          <p>
+            If you publish a feedback board, the board content you mark public can be viewed on the
+            internet. Draft and unlisted settings control publication and directory discovery separately.
+            You are responsible for having a lawful basis to collect feedback and contact information.
           </p>
 
           <h2>5. Acceptable Use</h2>

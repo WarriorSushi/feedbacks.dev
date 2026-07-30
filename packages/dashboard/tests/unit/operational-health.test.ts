@@ -15,5 +15,6 @@ test('cron health distinguishes current success from stale or failed jobs', asyn
 
   assert.equal(result.webhook_jobs.healthy, true)
   assert.equal(result.notification_digests.healthy, false)
+  assert.equal(result.e2e_cleanup.healthy, false)
+  assert.equal(result.account_deletions.healthy, false)
 })
-

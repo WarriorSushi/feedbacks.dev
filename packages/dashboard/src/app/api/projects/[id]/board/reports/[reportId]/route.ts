@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import type { BoardReport } from '@/lib/types'
+import { readJsonBody } from '@/lib/api-request'
 
 type RouteParams = { params: Promise<{ id: string; reportId: string }> }
 
@@ -35,7 +36,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if ('error' in result && !('project' in result)) return result.error
     const { admin } = result as Exclude<typeof result, { error: NextResponse }>
 
-    const body = await request.json().catch(() => ({}))
+    const bodyResult = await readJsonBody<{ status?: string }>(request, { maxBytes: 2_048 })
+    if (!bodyResult.ok) return bodyResult.response
+    const body = bodyResult.data
     const status = typeof body.status === 'string' ? body.status : ''
     if (!VALID_STATUSES.includes(status as BoardReport['status'])) {
       return NextResponse.json({ error: 'Invalid report status' }, { status: 400 })
@@ -53,7 +56,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       .single()
 
     if (error || !report) {
-      return NextResponse.json({ error: error?.message || 'Report not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 })
     }
 
     return NextResponse.json({ report })

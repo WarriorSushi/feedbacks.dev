@@ -31,7 +31,12 @@ export interface Project {
   domain: string | null
   webhooks: WebhookConfig
   settings: ProjectSettings
+  environment?: 'production' | 'preview' | 'development' | 'e2e'
+  test_namespace?: string | null
+  expires_at?: string | null
+  quarantined_at?: string | null
   created_at: string
+  creation_request_id?: string | null
   updated_at: string
 }
 
@@ -72,6 +77,8 @@ export interface WebhookEndpoint {
   rules?: WebhookRules
   format?: 'compact' | 'full'
   signingSecret?: string
+  secretStored?: boolean
+  destinationHint?: string
 }
 
 export interface GitHubEndpoint extends WebhookEndpoint {
@@ -107,6 +114,7 @@ export interface Feedback {
   status: FeedbackStatus
   tags: string[] | null
   screenshot_url: string | null
+  screenshot_path: string | null
   attachments: FeedbackAttachment[] | null
   metadata: Record<string, unknown> | null
   is_archived: boolean
@@ -124,7 +132,7 @@ export interface Feedback {
 }
 
 export interface FeedbackAttachment {
-  url: string
+  mediaId: string
   name: string
   type: string
   size: number
@@ -260,11 +268,16 @@ export interface BillingAccount {
   dodo_subscription_id: string | null
   dodo_product_id: string | null
   billing_email: string | null
+  recurring_amount: number | null
+  billing_currency: string | null
+  billing_interval: string | null
+  billing_interval_count: number | null
   current_period_start: string | null
   current_period_end: string | null
   cancel_at_period_end: boolean
   last_event_id: string | null
   last_event_type: string | null
+  last_event_at: string | null
   created_at: string
   updated_at: string
 }

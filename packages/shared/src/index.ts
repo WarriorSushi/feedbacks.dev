@@ -19,6 +19,7 @@ export interface FeedbackSubmission {
   screenshot?: string
   turnstileToken?: string
   hcaptchaToken?: string
+  submissionId?: string
 }
 
 export type FeedbackData = FeedbackSubmission

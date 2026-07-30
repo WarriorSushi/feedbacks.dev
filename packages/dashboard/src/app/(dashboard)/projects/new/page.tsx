@@ -12,28 +12,15 @@ import { cn } from '@/lib/utils'
 import { DEFAULT_PROJECT_ICON, PROJECT_ICONS } from '@/lib/project-icons'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
-const productChoices = [
-  { value: 'feedback', label: 'Feedback form', body: 'Let users send bugs and ideas.' },
-  { value: 'updates', label: 'Messages for users', body: 'Show users what you shipped.' },
-  { value: 'both', label: 'Both', body: 'Collect feedback and show fixes.' },
-] as const
-
 export default function NewProjectPage() {
   const [name, setName] = React.useState('')
   const [domain, setDomain] = React.useState('')
   const [icon, setIcon] = React.useState<string>(DEFAULT_PROJECT_ICON)
-  const [goal, setGoal] = React.useState<'updates' | 'feedback' | 'both'>('feedback')
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState('')
   const [limitMessage, setLimitMessage] = React.useState('')
+  const creationRequestId = React.useRef('')
   const router = useRouter()
-
-  React.useEffect(() => {
-    const requestedGoal = new URLSearchParams(window.location.search).get('goal')
-    if (requestedGoal === 'updates' || requestedGoal === 'feedback' || requestedGoal === 'both') {
-      setGoal(requestedGoal)
-    }
-  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,6 +28,9 @@ export default function NewProjectPage() {
     setLoading(true)
     setError('')
     setLimitMessage('')
+    if (!creationRequestId.current && typeof crypto.randomUUID === 'function') {
+      creationRequestId.current = crypto.randomUUID()
+    }
 
     try {
       const response = await fetch('/api/projects', {
@@ -52,6 +42,7 @@ export default function NewProjectPage() {
           name: name.trim(),
           domain: domain.trim() || null,
           icon,
+          creationRequestId: creationRequestId.current || undefined,
         }),
       })
 
@@ -67,24 +58,7 @@ export default function NewProjectPage() {
       if (payload.api_key) {
         rememberProjectApiKey(payload.id, payload.api_key)
       }
-      const modulesResponse = await fetch(`/api/projects/${payload.id}/modules`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          feedback: goal !== 'updates',
-          updates: goal !== 'feedback',
-        }),
-      })
-      if (!modulesResponse.ok) {
-        const modulePayload = await modulesResponse.json().catch(() => null)
-        throw new Error(modulePayload?.error || 'Project created, but the product choice could not be saved.')
-      }
-      const destination = goal === 'feedback'
-        ? `/projects/${payload.id}/install?created=1`
-        : goal === 'updates'
-          ? `/projects/${payload.id}/release-notes`
-          : `/projects/${payload.id}`
-      router.push(destination)
+      router.push(`/projects/${payload.id}/install?created=1`)
       router.refresh()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Failed to create project')
@@ -127,23 +101,6 @@ export default function NewProjectPage() {
                 Use the name your users know. You can change it later.
               </p>
             </div>
-
-            <details className="overflow-hidden rounded-lg border bg-[oklch(var(--surface-raised))] px-4">
-              <summary className="cursor-pointer py-3 text-sm font-medium text-muted-foreground hover:text-foreground">
-                Choose a different first goal <span className="font-normal">· {productChoices.find((choice) => choice.value === goal)?.label}</span>
-              </summary>
-              <fieldset className="space-y-2 border-t py-4">
-                <legend className="sr-only">First tool</legend>
-                <div className="grid gap-2 sm:grid-cols-3">
-                  {productChoices.map(({ value, label, body }) => (
-                    <button key={value} type="button" onClick={() => setGoal(value)} className={cn('min-h-20 rounded-lg border px-3 py-3 text-left transition-colors', goal === value ? 'border-primary bg-primary/[0.055]' : 'border-border hover:bg-muted/30')} aria-label={label} aria-pressed={goal === value}>
-                      <span className={cn('block text-sm font-semibold', goal === value && 'text-primary')}>{label}</span>
-                      <span className="mt-1 block text-xs leading-5 text-muted-foreground">{body}</span>
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
-            </details>
 
             <details className="overflow-hidden rounded-lg border bg-[oklch(var(--surface-raised))] px-4">
               <summary className="cursor-pointer py-3 text-sm font-medium text-muted-foreground hover:text-foreground">
@@ -214,7 +171,7 @@ export default function NewProjectPage() {
             )}
             <Button data-tour="project-create-submit" type="submit" size="lg" className="h-12 w-full gap-2" disabled={loading || !name.trim()}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {goal === 'updates' ? 'Create project and write an update' : goal === 'both' ? 'Create project' : 'Create project and get the snippet'}
+              Create project and get the snippet
               {!loading && <ArrowRight className="h-4 w-4" />}
             </Button>
             <p className="text-center text-xs leading-5 text-muted-foreground">Next: copy the snippet and verify one test.</p>

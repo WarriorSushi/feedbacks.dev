@@ -45,9 +45,24 @@ export default async function DashboardBoardsPage({
         .eq('is_public', true)
         .eq('is_archived', false)
     : { count: 0 }
+  const { count: openReportCount } = selectedProject
+    ? await supabase
+        .from('board_reports')
+        .select('id', { count: 'exact', head: true })
+        .eq('project_id', selectedProject.id)
+        .eq('status', 'open')
+    : { count: 0 }
 
   const published = Boolean(board?.enabled && board.slug && board.visibility !== 'private')
-  const state = published ? 'Published' : board ? 'Draft' : 'Not configured'
+  const state = (openReportCount || 0) > 0
+    ? 'Needs moderation'
+    : !board
+      ? 'Disabled'
+      : !published
+        ? 'Draft'
+        : board.directory_opt_in && board.visibility === 'public'
+          ? 'Published · listed'
+          : 'Published · unlisted'
 
   return (
     <div className="mx-auto max-w-6xl space-y-6" data-tour="owner-boards">
@@ -77,11 +92,11 @@ export default async function DashboardBoardsPage({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="truncate font-semibold">{selectedProject.name}</h2>
-                <Badge variant={published ? 'default' : 'secondary'}>{state}</Badge>
-                {board?.directory_opt_in && published && <Badge variant="outline">Listed</Badge>}
+                <Badge variant={(openReportCount || 0) > 0 ? 'destructive' : published ? 'default' : 'secondary'}>{state}</Badge>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">
                 {selectedProject.domain || 'No domain set'} · {publicRequestCount || 0} public requests
+                {(openReportCount || 0) > 0 && ` · ${openReportCount} open report${openReportCount === 1 ? '' : 's'}`}
               </p>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2">

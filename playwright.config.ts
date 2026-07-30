@@ -34,6 +34,9 @@ export default defineConfig({
     : [['line']],
   use: {
     baseURL: env.baseURL,
+    extraHTTPHeaders: env.testNamespace
+      ? { 'x-feedbacks-test-namespace': env.testNamespace }
+      : undefined,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

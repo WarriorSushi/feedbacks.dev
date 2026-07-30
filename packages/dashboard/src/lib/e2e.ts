@@ -1,3 +1,5 @@
+import { isSafeE2EEnvironment } from '@/lib/e2e-environment'
+
 const TEST_WEBHOOK_TARGET_PREFIX = '/api/test/webhook-target/'
 
 function stripTrailingSlash(value: string): string {
@@ -5,6 +7,7 @@ function stripTrailingSlash(value: string): string {
 }
 
 export function getE2EBypassSecret(): string | null {
+  if (!isSafeE2EEnvironment()) return null
   const secret = process.env.E2E_AUTH_BYPASS_SECRET?.trim()
   return secret ? secret : null
 }

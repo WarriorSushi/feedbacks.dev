@@ -1,6 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-export type CronJobName = 'webhook_jobs' | 'notification_digests'
+export type CronJobName =
+  | 'webhook_jobs'
+  | 'notification_digests'
+  | 'account_deletions'
+  | 'e2e_cleanup'
 export type CronRunStatus = 'succeeded' | 'failed'
 
 export async function startCronRun(admin: SupabaseClient, jobName: CronJobName) {

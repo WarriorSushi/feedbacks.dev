@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import type { Project } from '@/lib/types'
 import { getCurrentUserBillingSummary } from '@/lib/billing'
 import { ProjectTabs } from './project-tabs'
+import { toSafeWebhookConfig } from '@/lib/integration-secrets'
+import { normalizeWebhookConfig } from '@/lib/webhook-config'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Project Workspace' }
@@ -25,5 +27,10 @@ export default async function ProjectDetailPage({
 
   const billingSummary = await getCurrentUserBillingSummary()
 
-  return <ProjectTabs project={project as Project} billingSummary={billingSummary} />
+  const safeProject = {
+    ...project,
+    webhooks: toSafeWebhookConfig(normalizeWebhookConfig(project.webhooks)),
+  } as Project
+
+  return <ProjectTabs project={safeProject} billingSummary={billingSummary} />
 }

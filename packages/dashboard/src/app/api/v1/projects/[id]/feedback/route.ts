@@ -3,6 +3,8 @@ import { createAdminSupabase } from '@/lib/supabase-server'
 import { authenticateApiKey } from '@/lib/api-auth'
 import { assertFeatureAccess, getBillingSummaryForUser, getHistoryCutoff } from '@/lib/billing'
 import type { FeedbackType, FeedbackStatus, FeedbackPriority } from '@/lib/types'
+import { readJsonBody } from '@/lib/api-request'
+import { apiV1Error } from '@/lib/api-v1-response'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -19,7 +21,7 @@ function json(data: unknown, status = 200) {
 }
 
 function jsonError(message: string, status: number) {
-  return json({ error: message }, status)
+  return apiV1Error(message, status, CORS_HEADERS)
 }
 
 export async function OPTIONS() {
@@ -32,7 +34,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const auth = await authenticateApiKey(request)
+    const auth = await authenticateApiKey(request, 'feedback:read')
     if (!auth) return jsonError('Invalid or missing API key', 401)
     if (auth.project.id !== id) return jsonError('Forbidden', 403)
 
@@ -87,7 +89,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params
-    const auth = await authenticateApiKey(request)
+    const auth = await authenticateApiKey(request, 'feedback:write')
     if (!auth) return jsonError('Invalid or missing API key', 401)
     if (auth.project.id !== id) return jsonError('Forbidden', 403)
 
@@ -98,7 +100,13 @@ export async function PATCH(
     const feedbackId = searchParams.get('feedback_id')
     if (!feedbackId) return jsonError('feedback_id query param is required', 400)
 
-    const body = await request.json()
+    const bodyResult = await readJsonBody<{
+      status?: FeedbackStatus
+      priority?: FeedbackPriority
+      tags?: unknown[]
+    }>(request)
+    if (!bodyResult.ok) return bodyResult.response
+    const body = bodyResult.data
     const updates: Record<string, unknown> = {}
 
     if (body.status) {

@@ -18,10 +18,7 @@ import { PageHeader } from '@/components/ui/workspace-shell'
 
 interface CustomizeTabProps {
   project: Project
-  projectKey: string | null
-  apiKeyLastFour: string | null
-  rotatingApiKey: boolean
-  onRotateApiKey: () => Promise<void>
+  projectKey: string
 }
 
 const TRACKED_WIDGET_FIELDS: Array<[keyof WidgetConfig, string]> = [
@@ -42,13 +39,10 @@ const TRACKED_WIDGET_FIELDS: Array<[keyof WidgetConfig, string]> = [
 export function CustomizeTab({
   project,
   projectKey,
-  apiKeyLastFour,
-  rotatingApiKey,
-  onRotateApiKey,
 }: CustomizeTabProps) {
   const router = useRouter()
   const appOrigin = publicEnv.NEXT_PUBLIC_APP_ORIGIN
-  const previewProjectKey = projectKey || 'fb_preview_only'
+  const previewProjectKey = projectKey
   const [saving, setSaving] = React.useState(false)
   const [draftRestored, setDraftRestored] = React.useState(false)
   const [draftHydrated, setDraftHydrated] = React.useState(false)
@@ -185,7 +179,7 @@ export function CustomizeTab({
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          settings: { ...project.settings, widget_config: config },
+          settings: { widget_config: config },
         }),
       })
 
@@ -240,29 +234,6 @@ export function CustomizeTab({
           </div>
         }
       />
-
-      {!projectKey && (
-        <div className="flex flex-col gap-3 rounded-lg border border-primary/30 bg-primary/[0.04] p-3 text-sm md:flex-row md:items-center md:justify-between">
-          <div className="min-w-0 space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="secondary">Key hidden{apiKeyLastFour ? ` · ••••${apiKeyLastFour}` : ''}</Badge>
-              <span className="font-medium text-foreground">Preview still works.</span>
-            </div>
-            <p className="text-muted-foreground">
-              Generate a fresh key later when you are ready to install or verify live.
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            className="w-full md:w-auto"
-            onClick={() => void onRotateApiKey()}
-            disabled={rotatingApiKey}
-          >
-            {rotatingApiKey && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Generate key
-          </Button>
-        </div>
-      )}
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_420px]">
         <Card data-tour="widget-settings">
@@ -495,7 +466,7 @@ export function CustomizeTab({
           </CardContent>
         </Card>
 
-        <Card data-tour="widget-preview" className="xl:sticky xl:top-4 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto">
+        <Card data-tour="widget-preview" className="xl:sticky xl:top-4">
           <CardHeader>
             <CardTitle className="text-lg">Live form preview</CardTitle>
             <CardDescription>
@@ -516,7 +487,7 @@ export function CustomizeTab({
       </div>
 
       {hasUnsavedChanges && (
-        <div className="sticky bottom-4 z-20 rounded-lg border border-amber-300/80 bg-amber-50 p-3 shadow-lg dark:bg-amber-950">
+        <div className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-20 rounded-lg border border-amber-300/80 bg-amber-50 p-3 shadow-lg dark:bg-amber-950">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-foreground">Publish remote changes</p>

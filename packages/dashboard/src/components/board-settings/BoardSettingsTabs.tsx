@@ -17,6 +17,7 @@ import { BoardContentSection } from './BoardContentSection'
 import { BoardVisibilitySection } from './BoardVisibilitySection'
 import { BoardAdvancedSection } from './BoardAdvancedSection'
 import { PageHeader } from '@/components/ui/workspace-shell'
+import { getMarketingOrigin } from '@/lib/domain-routing'
 
 interface BoardSettingsState {
   id?: string
@@ -149,12 +150,13 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
     void load()
   }, [project])
 
-  const boardUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/p/${settings.slug}`
-    : `/p/${settings.slug}`
-  const isPrivate = (settings.branding.visibility || 'public') === 'private'
+  const boardOrigin = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
+    ? window.location.origin
+    : getMarketingOrigin()
+  const boardUrl = `${boardOrigin}/p/${settings.slug}`
+  const isLegacyPrivate = settings.branding.visibility === 'private'
   const isListed = (settings.branding.visibility || 'public') === 'public' && settings.branding.directoryOptIn !== false
-  const canOpenBoard = settings.enabled && !isPrivate
+  const canOpenBoard = settings.enabled && !isLegacyPrivate
   const updateSettings = (patch: Partial<BoardSettingsState>) => {
     setSettings((prev) => ({ ...prev, ...patch }))
   }
@@ -239,7 +241,7 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
       enabled: true,
       branding: {
         ...settings.branding,
-        visibility: isPrivate ? 'public' : settings.branding.visibility || 'public',
+        visibility: isListed ? ('public' as const) : ('unlisted' as const),
       },
     }
     setSettings(nextSettings)
@@ -334,16 +336,11 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
         meta={
           <div className="flex flex-wrap items-center gap-2">
                 <Badge variant={canOpenBoard ? 'secondary' : 'outline'}>
-                  {canOpenBoard ? 'Live public page' : settings.enabled ? 'Private draft' : 'Not published'}
+                  {canOpenBoard ? 'Published' : 'Draft'}
                 </Badge>
                 <Badge variant="outline">
-                  {(settings.branding.visibility || 'public') === 'public'
-                    ? 'Public'
-                    : (settings.branding.visibility || 'public') === 'unlisted'
-                      ? 'Unlisted'
-                      : 'Private'}
+                  {isListed ? 'Listed' : 'Unlisted'}
                 </Badge>
-                {isListed && <Badge variant="outline">Listed in directory</Badge>}
           </div>
         }
         action={
@@ -406,6 +403,8 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
       {/* Tab content */}
       {activeTab === 'identity' && (
         <BoardIdentitySection
+          projectId={project.id}
+          boardUrl={boardUrl}
           settings={settings}
           onSettingsChange={updateSettings}
           onBrandingChange={updateBranding}

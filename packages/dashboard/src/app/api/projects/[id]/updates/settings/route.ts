@@ -3,6 +3,7 @@ import { sanitizeProductUpdateSettings } from '@feedbacks/shared'
 import { getAuthedUserAndProject } from '@/lib/api-auth'
 import { getProductUpdateEntitlements } from '@/lib/product-update-entitlements'
 import { mapProductUpdateSettings } from '@/lib/product-update-service'
+import { readJsonBody } from '@/lib/api-request'
 
 const headers = { 'Cache-Control': 'no-store' }
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -13,7 +14,9 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 }
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params; const auth = await getAuthedUserAndProject(id); if ('error' in auth) return auth.error
-  let body: unknown; try { body = await request.json() } catch { return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400, headers }) }
+  const bodyResult = await readJsonBody(request)
+  if (!bodyResult.ok) return bodyResult.response
+  const body: unknown = bodyResult.data
   const parsed = sanitizeProductUpdateSettings(body); if (Object.keys(parsed.errors).length) return NextResponse.json({ errors: parsed.errors }, { status: 400, headers })
   const entitlements = await getProductUpdateEntitlements(auth.user.id)
   const { data: existing, error: existingError } = await auth.admin

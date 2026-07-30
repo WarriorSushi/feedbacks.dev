@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import { checkRateLimit } from '@/lib/rate-limit'
+import { readJsonBody } from '@/lib/api-request'
 import { isBoardPubliclyAccessible } from '@/lib/public-board'
 import { getPrivacySalt } from '@/lib/privacy-salts'
 
@@ -27,12 +28,22 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params
-  const { allowed } = await checkRateLimit(request, 'board-report', 10, 10)
+  const { allowed } = await checkRateLimit(request, 'board-report', 10, 10, slug)
   if (!allowed) {
-    return NextResponse.json({ error: 'Too many reports. Please wait a bit and try again.' }, { status: 429 })
+    return NextResponse.json(
+      { error: 'Too many reports. Try again later.' },
+      { status: 429, headers: { 'Retry-After': '600' } },
+    )
   }
 
-  const body = await request.json().catch(() => ({}))
+  const bodyResult = await readJsonBody<{
+    reason?: string
+    details?: string
+    feedback_id?: string
+    email?: string
+  }>(request)
+  if (!bodyResult.ok) return bodyResult.response
+  const body = bodyResult.data
   const reason = typeof body.reason === 'string' ? body.reason.trim() : ''
   const details = typeof body.details === 'string' ? body.details.trim() : ''
   const feedbackId = typeof body.feedback_id === 'string' ? body.feedback_id : null
@@ -119,7 +130,7 @@ export async function POST(
     .single()
 
   if (error || !report) {
-    return NextResponse.json({ error: error?.message || 'Failed to save report' }, { status: 500 })
+    return NextResponse.json({ code: 'report_save_failed', error: 'Could not save this report right now.' }, { status: 500 })
   }
 
   return NextResponse.json({ success: true, reportId: report.id }, { status: 201 })

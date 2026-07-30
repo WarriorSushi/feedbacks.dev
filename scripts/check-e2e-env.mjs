@@ -12,7 +12,12 @@ const required = [
   'NEXT_PUBLIC_SUPABASE_ANON_KEY',
   'SUPABASE_SERVICE_ROLE_KEY',
   'E2E_AUTH_BYPASS_SECRET',
+  'E2E_ENVIRONMENT',
+  'E2E_SUPABASE_PROJECT_REF',
+  'E2E_EXPECTED_HOSTNAME',
+  'E2E_TEST_NAMESPACE',
 ]
+const PRODUCTION_SUPABASE_PROJECT_REF = 'xiiaugllydxxmjbtzfux'
 
 function parseEnvValue(raw) {
   const trimmed = raw.trim()
@@ -63,6 +68,34 @@ if (missing.length > 0) {
   console.error('Cannot run required Playwright E2E acceptance tests.')
   console.error(`Missing env vars: ${missing.join(', ')}`)
   console.error('Use `pnpm test:e2e` when you intentionally want the suite to skip without a full local E2E environment.')
+  process.exit(1)
+}
+
+const supabaseHostname = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+const actualSupabaseRef = supabaseHostname.match(/^([a-z0-9]+)\.supabase\.co$/)?.[1]
+const baseUrl = process.env.PLAYWRIGHT_BASE_URL
+  || process.env.APP_BASE_URL
+  || process.env.NEXT_PUBLIC_APP_ORIGIN
+const actualHostname = new URL(baseUrl).hostname
+const failures = []
+
+if (process.env.E2E_ENVIRONMENT !== 'true') failures.push('E2E_ENVIRONMENT must equal true')
+if (!actualSupabaseRef || actualSupabaseRef !== process.env.E2E_SUPABASE_PROJECT_REF) {
+  failures.push('Supabase URL does not match E2E_SUPABASE_PROJECT_REF')
+}
+if (actualSupabaseRef === PRODUCTION_SUPABASE_PROJECT_REF) {
+  failures.push('Production Supabase is forbidden for E2E')
+}
+if (actualHostname !== process.env.E2E_EXPECTED_HOSTNAME) {
+  failures.push('Playwright hostname does not match E2E_EXPECTED_HOSTNAME')
+}
+if (!process.env.E2E_TEST_NAMESPACE.startsWith('e2e:')) {
+  failures.push('E2E_TEST_NAMESPACE must use the e2e: namespace')
+}
+
+if (failures.length > 0) {
+  console.error('Cannot run Playwright against this environment.')
+  failures.forEach((failure) => console.error(`- ${failure}`))
   process.exit(1)
 }
 

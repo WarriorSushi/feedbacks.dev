@@ -9,7 +9,10 @@ export interface E2EEnvironment {
   supabaseServiceRoleKey: string
   testEmail: string
   testPassword: string
+  testNamespace: string
 }
+
+const PRODUCTION_SUPABASE_PROJECT_REF = 'xiiaugllydxxmjbtzfux'
 
 function stripTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '')
@@ -43,6 +46,9 @@ export function getE2EEnvironment(): E2EEnvironment {
   const authBypassSecret = readEnv('E2E_AUTH_BYPASS_SECRET')
   const testEmail = readEnv('PLAYWRIGHT_TEST_EMAIL') || 'playwright@feedbacks.dev'
   const testPassword = readEnv('PLAYWRIGHT_TEST_PASSWORD') || 'Playwright!12345'
+  const testNamespace = readEnv('E2E_TEST_NAMESPACE') || ''
+  const expectedSupabaseRef = readEnv('E2E_SUPABASE_PROJECT_REF')
+  const expectedHostname = readEnv('E2E_EXPECTED_HOSTNAME')
 
   const missing: string[] = []
   if (!baseURL) missing.push('PLAYWRIGHT_BASE_URL or APP_BASE_URL')
@@ -50,6 +56,22 @@ export function getE2EEnvironment(): E2EEnvironment {
   if (!supabaseAnonKey) missing.push('NEXT_PUBLIC_SUPABASE_ANON_KEY')
   if (!supabaseServiceRoleKey) missing.push('SUPABASE_SERVICE_ROLE_KEY')
   if (!authBypassSecret) missing.push('E2E_AUTH_BYPASS_SECRET')
+  if (readEnv('E2E_ENVIRONMENT') !== 'true') missing.push('E2E_ENVIRONMENT=true')
+  if (!expectedSupabaseRef) missing.push('E2E_SUPABASE_PROJECT_REF')
+  if (!expectedHostname) missing.push('E2E_EXPECTED_HOSTNAME')
+  if (!testNamespace.startsWith('e2e:')) missing.push('E2E_TEST_NAMESPACE=e2e:*')
+
+  const actualRef = supabaseUrl
+    ? new URL(supabaseUrl).hostname.match(/^([a-z0-9]+)\.supabase\.co$/)?.[1]
+    : null
+  const actualHostname = baseURL ? new URL(baseURL).hostname : null
+  if (actualRef === PRODUCTION_SUPABASE_PROJECT_REF) missing.push('non-production Supabase project')
+  if (actualRef && expectedSupabaseRef && actualRef !== expectedSupabaseRef) {
+    missing.push('matching E2E Supabase project ref')
+  }
+  if (actualHostname && expectedHostname && actualHostname !== expectedHostname) {
+    missing.push('matching E2E hostname')
+  }
 
   const ready = missing.length === 0
 
@@ -66,6 +88,7 @@ export function getE2EEnvironment(): E2EEnvironment {
     supabaseServiceRoleKey: supabaseServiceRoleKey || '',
     testEmail,
     testPassword,
+    testNamespace,
   }
 }
 

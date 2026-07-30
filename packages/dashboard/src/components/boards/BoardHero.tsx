@@ -141,7 +141,14 @@ export function BoardHero({
             )}
           </div>
 
-          <div className="mt-7 flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center">
+          {board.allow_submissions && (
+            <div className="mt-6 rounded-lg border bg-[oklch(var(--surface-raised))] px-4 py-3 text-xs leading-5 text-muted-foreground">
+              Posts are public and moderated by {displayTitle}. Do not include passwords, private customer data, or security reports.{' '}
+              <Link href="/privacy" className="font-medium text-foreground underline-offset-4 hover:underline">How data is handled</Link>
+            </div>
+          )}
+
+          <div className="mt-5 flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center">
             {board.allow_submissions && (
               <Button onClick={onSubmitClick} className="gap-2 font-semibold">
                 Share an idea or bug

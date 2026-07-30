@@ -27,6 +27,17 @@ export default function SettingsPage() {
   const [billingFailureEmails, setBillingFailureEmails] = React.useState(true)
   const [deleting, setDeleting] = React.useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = React.useState('')
+  const [saveState, setSaveState] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const savedValues = React.useRef('')
+
+  const currentValues = JSON.stringify({
+    displayName: displayName.trim(),
+    emailNotifications,
+    dailyDigest,
+    webhookFailureEmails,
+    billingFailureEmails,
+  })
+  const hasUnsavedChanges = !loading && currentValues !== savedValues.current
 
   React.useEffect(() => {
     const load = async () => {
@@ -52,6 +63,13 @@ export default function SettingsPage() {
         setDailyDigest(notificationSettings?.dailyDigest === true)
         setWebhookFailureEmails(notificationSettings?.webhookFailures !== false)
         setBillingFailureEmails(notificationSettings?.billingFailures !== false)
+        savedValues.current = JSON.stringify({
+          displayName: (user.user_metadata?.full_name || '').trim(),
+          emailNotifications: notificationSettings?.email === true,
+          dailyDigest: notificationSettings?.dailyDigest === true,
+          webhookFailureEmails: notificationSettings?.webhookFailures !== false,
+          billingFailureEmails: notificationSettings?.billingFailures !== false,
+        })
       }
       setLoading(false)
     }
@@ -60,8 +78,9 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     setSaving(true)
+    setSaveState('saving')
     const { error } = await supabase.auth.updateUser({
-      data: { full_name: displayName },
+      data: { full_name: displayName.trim() },
     })
     const {
       data: { user },
@@ -88,8 +107,11 @@ export default function SettingsPage() {
         description: error?.message || settingsResult.error?.message || 'Please try again.',
         variant: 'destructive',
       })
+      setSaveState('error')
       return
     }
+    savedValues.current = currentValues
+    setSaveState('saved')
     toast({ title: 'Profile saved' })
   }
 
@@ -106,7 +128,8 @@ export default function SettingsPage() {
         throw new Error(payload.error || 'Failed to delete account')
       }
 
-      toast({ title: 'Account deleted' })
+      await supabase.auth.signOut()
+      toast({ title: payload.pending ? 'Account deletion queued' : 'Account deleted', description: payload.message })
       window.location.href = '/auth'
     } catch (error) {
       toast({
@@ -177,14 +200,30 @@ export default function SettingsPage() {
               <Input
                 id="settings-name"
                 value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
+                onChange={(e) => { setDisplayName(e.target.value); setSaveState('idle') }}
                 placeholder="Your name"
+                maxLength={80}
               />
             </div>
-            <Button onClick={handleSaveProfile} disabled={saving}>
+            <Button onClick={handleSaveProfile} disabled={saving || !hasUnsavedChanges}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save profile
+              Save account settings
             </Button>
+            <p
+              role={saveState === 'error' ? 'alert' : 'status'}
+              aria-live="polite"
+              className={saveState === 'error' ? 'text-sm text-destructive' : 'text-sm text-muted-foreground'}
+            >
+              {saveState === 'saving'
+                ? 'Saving changes…'
+                : saveState === 'saved'
+                  ? 'All changes saved.'
+                  : saveState === 'error'
+                    ? 'Changes were not saved. Review the error and retry.'
+                    : hasUnsavedChanges
+                      ? 'You have unsaved changes.'
+                      : 'No unsaved changes.'}
+            </p>
           </div>
         </section>
 
@@ -200,7 +239,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   className="mt-0.5 h-4 w-4 rounded border accent-primary"
                   checked={emailNotifications}
-                  onChange={(event) => setEmailNotifications(event.target.checked)}
+                  onChange={(event) => { setEmailNotifications(event.target.checked); setSaveState('idle') }}
                 />
                 <span>
                   <span className="block font-medium text-foreground">Email me when new feedback arrives</span>
@@ -214,7 +253,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   className="mt-0.5 h-4 w-4 rounded border accent-primary"
                   checked={dailyDigest}
-                  onChange={(event) => setDailyDigest(event.target.checked)}
+                  onChange={(event) => { setDailyDigest(event.target.checked); setSaveState('idle') }}
                 />
                 <span>
                   <span className="block font-medium text-foreground">Send a daily feedback digest</span>
@@ -228,7 +267,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   className="mt-0.5 h-4 w-4 rounded border accent-primary"
                   checked={webhookFailureEmails}
-                  onChange={(event) => setWebhookFailureEmails(event.target.checked)}
+                  onChange={(event) => { setWebhookFailureEmails(event.target.checked); setSaveState('idle') }}
                   disabled={!emailNotifications}
                 />
                 <span>
@@ -243,7 +282,7 @@ export default function SettingsPage() {
                   type="checkbox"
                   className="mt-0.5 h-4 w-4 rounded border accent-primary"
                   checked={billingFailureEmails}
-                  onChange={(event) => setBillingFailureEmails(event.target.checked)}
+                  onChange={(event) => { setBillingFailureEmails(event.target.checked); setSaveState('idle') }}
                 />
                 <span>
                   <span className="block font-medium text-foreground">Email me when billing needs attention</span>
@@ -298,9 +337,9 @@ export default function SettingsPage() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 h-4 w-4 text-destructive" />
               <div className="space-y-1">
-                <p className="font-medium text-foreground">This permanently deletes your projects, feedback, boards, and settings.</p>
+                <p className="font-medium text-foreground">This permanently deletes your projects, feedback, private media, public boards, integrations, API keys, updates, and account settings.</p>
                 <p className="text-muted-foreground">
-                  If you are on Pro, cancel or downgrade the paid plan from Billing before deleting this account.
+                  Queued delivery jobs are discarded, public links stop working, and this cannot be undone. Export anything you need first. If you are on Pro, cancel or downgrade from Billing before deletion.
                 </p>
               </div>
             </div>

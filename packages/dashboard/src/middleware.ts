@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { getAppOrigin, getCanonicalHostRedirect, isProtectedAppPath } from '@/lib/domain-routing'
 import { getLegacyProjectTabRedirect } from '@/lib/project-routes'
+import { isTrustedMutationOrigin, shouldEnforceCsrf } from '@/lib/csrf'
 
 function createNonce(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16))
@@ -36,6 +37,28 @@ function buildContentSecurityPolicy(nonce: string): string {
 }
 
 export async function middleware(request: NextRequest) {
+  if (
+    request.nextUrl.pathname.startsWith('/api/')
+    && shouldEnforceCsrf(request.nextUrl.pathname, request.method)
+    && !isTrustedMutationOrigin({
+      origin: request.headers.get('origin'),
+      requestOrigin: request.nextUrl.origin,
+      appOrigin: process.env.NEXT_PUBLIC_APP_ORIGIN,
+      marketingOrigin: process.env.NEXT_PUBLIC_MARKETING_ORIGIN || 'https://www.feedbacks.dev',
+    })
+  ) {
+    return NextResponse.json(
+      { code: 'invalid_origin', message: 'Request origin is not allowed' },
+      { status: 403 },
+    )
+  }
+
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-request-id', request.headers.get('x-request-id') || crypto.randomUUID())
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
+
   const earlyCanonicalRedirect = getCanonicalHostRedirect(request.nextUrl)
   if (earlyCanonicalRedirect && !(request.nextUrl.hostname === new URL(getAppOrigin()).hostname && request.nextUrl.pathname === '/')) {
     return NextResponse.redirect(earlyCanonicalRedirect)
@@ -118,6 +141,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/|cdn/|widget/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|cdn/|widget/).*)',
   ],
 }

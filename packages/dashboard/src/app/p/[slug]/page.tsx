@@ -4,19 +4,15 @@ import type { Metadata } from 'next'
 import { loadBoardDirectoryEntries, recommendBoards } from '@/lib/board-discovery'
 import { isBoardPubliclyAccessible, parseBoardBranding } from '@/lib/public-board'
 import { PublicBoard } from './public-board'
+import { sanitizeCustomBoardCss } from '@/lib/board-custom-css'
+import { SITE_ORIGIN } from '@/lib/site'
 
 interface PageProps {
   params: Promise<{ slug: string }>
+  searchParams?: Promise<{ page?: string }>
 }
 
-function sanitizeCss(css: string): string {
-  return css
-    .replace(/url\s*\(/gi, '/* blocked */( ')
-    .replace(/@import/gi, '/* blocked */')
-    .replace(/expression\s*\(/gi, '/* blocked */(')
-    .replace(/javascript\s*:/gi, '/* blocked */:')
-    .replace(/-moz-binding/gi, '/* blocked */')
-}
+const PUBLIC_FEEDBACK_PAGE_SIZE = 30
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
@@ -37,14 +33,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const branding = parseBoardBranding(board)
 
-    return {
-      title: branding.heroTitle || board?.title || 'Feature Board',
-      description: branding.heroDescription || board?.description || 'Vote on requests, add context, and follow the public layer of the team feedback workflow.',
-    }
+  const title = branding.heroTitle || board?.title || 'Feature Board'
+  const description = branding.heroDescription || board?.description || 'Vote on requests, add context, and follow the public layer of the team feedback workflow.'
+  return {
+    title,
+    description,
+    alternates: { canonical: `/p/${slug}` },
+    openGraph: {
+      type: 'website',
+      url: `${SITE_ORIGIN}/p/${slug}`,
+      title,
+      description,
+      siteName: 'feedbacks.dev',
+    },
   }
+}
 
-export default async function PublicBoardPage({ params }: PageProps) {
+export default async function PublicBoardPage({ params, searchParams }: PageProps) {
   const { slug } = await params
+  const query = await searchParams
+  const requestedPage = Math.max(1, Math.min(1000, Number(query?.page) || 1))
   const admin = await createAdminSupabase()
   const supabase = await createServerSupabase()
 
@@ -58,14 +66,19 @@ export default async function PublicBoardPage({ params }: PageProps) {
   if (!board || !isBoardPubliclyAccessible(board)) notFound()
   const branding = parseBoardBranding(board)
 
-  const { data: feedback } = await admin
+  const { data: feedback, count: feedbackCount } = await admin
     .from('feedback')
-    .select('id, message, type, status, vote_count, created_at')
+    .select('id, message, type, status, vote_count, created_at', { count: 'exact' })
     .eq('project_id', board.project_id)
     .eq('is_public', true)
     .eq('is_archived', false)
     .in('type', board.show_types || ['idea', 'bug'])
     .order('vote_count', { ascending: false })
+    .order('created_at', { ascending: false })
+    .range(
+      (requestedPage - 1) * PUBLIC_FEEDBACK_PAGE_SIZE,
+      requestedPage * PUBLIC_FEEDBACK_PAGE_SIZE - 1,
+    )
 
   // Fetch public admin comments
   const feedbackIds = (feedback || []).map((f) => f.id)
@@ -135,10 +148,21 @@ export default async function PublicBoardPage({ params }: PageProps) {
         allow_submissions: board.allow_submissions,
         show_types: board.show_types || ['idea', 'bug'],
         branding,
-        customCss: board.custom_css ? sanitizeCss(board.custom_css) : null,
+        customCss: (() => {
+          try {
+            return sanitizeCustomBoardCss(board.custom_css)
+          } catch {
+            return null
+          }
+        })(),
         displayName: board.display_name || null,
       }}
       initialFeedback={feedback || []}
+      totalFeedback={feedbackCount || 0}
+      pagination={{
+        currentPage: requestedPage,
+        pageCount: Math.max(1, Math.ceil((feedbackCount || 0) / PUBLIC_FEEDBACK_PAGE_SIZE)),
+      }}
       initialComments={comments}
       initialAnnouncements={(announcementsData || []).map((announcement) => ({
         id: announcement.id,

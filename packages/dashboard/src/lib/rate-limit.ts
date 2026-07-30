@@ -1,5 +1,6 @@
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { hasE2EBypass } from '@/lib/e2e'
+import { createHmac } from 'node:crypto'
 
 interface RateLimitRpcResult {
   allowed?: unknown
@@ -23,6 +24,7 @@ async function checkRateLimitLegacy(
   route: string,
   limit: number,
   windowMinutes: number,
+  scope?: string,
 ): Promise<{ allowed: boolean; remaining: number }> {
   // Prefer x-vercel-forwarded-for (harder to spoof on Vercel), then x-forwarded-for, then x-real-ip
   const ip =
@@ -35,6 +37,7 @@ async function checkRateLimitLegacy(
     return { allowed: false, remaining: 0 }
   }
 
+  const key = buildRateLimitKey(ip, scope)
   const admin = await createAdminSupabase()
   const now = new Date()
   const windowStart = new Date(now.getTime() - windowMinutes * 60 * 1000).toISOString()
@@ -42,14 +45,14 @@ async function checkRateLimitLegacy(
   await admin
     .from('rate_limits')
     .delete()
-    .eq('key', ip)
+    .eq('key', key)
     .eq('route', route)
     .lt('created_at', windowStart)
 
   const { count } = await admin
     .from('rate_limits')
     .select('*', { count: 'exact', head: true })
-    .eq('key', ip)
+    .eq('key', key)
     .eq('route', route)
     .gte('created_at', windowStart)
 
@@ -61,7 +64,7 @@ async function checkRateLimitLegacy(
 
   await admin.from('rate_limits').insert({
     id: crypto.randomUUID(),
-    key: ip,
+    key,
     route,
     created_at: now.toISOString(),
   })
@@ -73,7 +76,8 @@ export async function checkRateLimit(
   request: Request,
   route: string,
   limit: number = 10,
-  windowMinutes: number = 1
+  windowMinutes: number = 1,
+  scope?: string,
 ): Promise<{ allowed: boolean; remaining: number }> {
   if (hasE2EBypass(request)) {
     return { allowed: true, remaining: limit }
@@ -91,9 +95,10 @@ export async function checkRateLimit(
     return { allowed: false, remaining: 0 }
   }
 
+  const key = buildRateLimitKey(ip, scope)
   const admin = await createAdminSupabase()
   const { data, error } = await admin.rpc('check_rate_limit', {
-    p_key: ip,
+    p_key: key,
     p_route: route,
     p_limit: limit,
     p_window_seconds: Math.max(1, Math.round(windowMinutes * 60)),
@@ -102,5 +107,17 @@ export async function checkRateLimit(
   const parsed = parseRateLimitResult(data, limit)
   if (!error && parsed) return parsed
 
-  return checkRateLimitLegacy(request, route, limit, windowMinutes)
+  return checkRateLimitLegacy(request, route, limit, windowMinutes, scope)
+}
+
+function buildRateLimitKey(ip: string, scope?: string) {
+  const secret =
+    process.env.RATE_LIMIT_HMAC_SECRET ||
+    process.env.VOTE_HMAC_SECRET ||
+    process.env.BOARD_REPORT_SALT ||
+    process.env.CRON_SECRET
+  if (!secret) return `missing-secret:${scope || 'global'}`
+  return createHmac('sha256', secret)
+    .update(`${ip}\n${scope || 'global'}`)
+    .digest('hex')
 }

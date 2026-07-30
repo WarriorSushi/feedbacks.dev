@@ -28,11 +28,11 @@ export function DashboardRefresher() {
       <div className="flex min-w-0 items-center gap-2 text-sm">
         <CircleHelp className="h-4 w-4 shrink-0 text-muted-foreground" />
         <span className="font-medium">Need a refresher?</span>
-        <span className="hidden truncate text-muted-foreground md:inline">Use a focused tutorial without leaving your workspace.</span>
+        <span className="hidden truncate text-muted-foreground md:inline">Check the one activation path, then continue where you left off.</span>
       </div>
       <div className="flex items-center gap-1.5">
         <Button asChild size="sm" variant="ghost" className="h-8 px-2.5 text-xs">
-          <Link href="/tutorials">Open tutorials</Link>
+          <Link href="/tutorials">Setup checklist</Link>
         </Button>
         <Button asChild size="sm" variant="outline" className="h-8 px-2.5 text-xs">
           <Link href="/dashboard?tour=1">Navigation tour</Link>

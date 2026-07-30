@@ -40,6 +40,10 @@ export function isBillingEnabled() {
   )
 }
 
+export function isCustomerBillingLive() {
+  return isBillingEnabled() && env.DODO_PAYMENTS_ENVIRONMENT === 'live'
+}
+
 export function isEmailEnabled() {
   return Boolean(env.RESEND_API_KEY && env.RESEND_FROM_EMAIL)
 }

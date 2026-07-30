@@ -1,11 +1,10 @@
 'use client'
 
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { WorkspaceSection } from '@/components/ui/workspace-section'
 import { CURATED_BOARD_CATEGORIES, getBoardCategoryLabel, normalizeBoardCategories } from '@/lib/board-categories'
 import { cn } from '@/lib/utils'
-import type { BoardBranding, BoardVisibility } from '@/lib/public-board'
+import type { BoardBranding } from '@/lib/public-board'
 
 interface BoardVisibilitySettings {
   enabled: boolean
@@ -24,6 +23,7 @@ export function BoardVisibilitySection({
   onBrandingChange,
 }: BoardVisibilitySectionProps) {
   const visibility = settings.branding.visibility || 'public'
+  const listed = visibility === 'public' && settings.branding.directoryOptIn !== false
   const categories = settings.branding.categories || []
 
   const toggleCategory = (category: string) => {
@@ -34,7 +34,7 @@ export function BoardVisibilitySection({
   }
 
   return (
-    <WorkspaceSection title="Who can see it" description="Make the page public, share it by link, or keep it private.">
+    <WorkspaceSection title="Who can see it" description="Publish when ready, then choose whether people need the link or can discover it in the directory.">
         <label className="flex min-h-12 items-start gap-3 rounded-lg border bg-muted/10 px-3 py-3 text-sm">
           <input
             type="checkbox"
@@ -50,43 +50,40 @@ export function BoardVisibilitySection({
           </span>
         </label>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="board-visibility">Visibility</Label>
-            <select
-              id="board-visibility"
-              value={visibility}
-              onChange={(e) => onBrandingChange({ visibility: e.target.value as BoardVisibility })}
-              className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+        <div className="space-y-2">
+          <Label>Discovery</Label>
+          <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Public board discovery">
+            <button
+              type="button"
+              aria-pressed={!listed}
+              onClick={() => onBrandingChange({ visibility: 'unlisted', directoryOptIn: false })}
+              className={cn(
+                'rounded-lg border p-3 text-left transition-colors',
+                !listed ? 'border-primary bg-primary/[0.06]' : 'bg-background hover:bg-accent',
+              )}
             >
-              <option value="public">Public</option>
-              <option value="unlisted">Unlisted</option>
-              <option value="private">Private</option>
-            </select>
-            <p className="text-xs text-muted-foreground">
-              Public pages can appear in the directory. Unlisted pages only work with the link. Private pages stay closed.
-            </p>
+              <span className="block text-sm font-medium">Unlisted</span>
+              <span className="mt-1 block text-xs text-muted-foreground">Anyone with the link can visit.</span>
+            </button>
+            <button
+              type="button"
+              aria-pressed={listed}
+              onClick={() => onBrandingChange({ visibility: 'public', directoryOptIn: true })}
+              className={cn(
+                'rounded-lg border p-3 text-left transition-colors',
+                listed ? 'border-primary bg-primary/[0.06]' : 'bg-background hover:bg-accent',
+              )}
+            >
+              <span className="block text-sm font-medium">Listed</span>
+              <span className="mt-1 block text-xs text-muted-foreground">Eligible for the feedbacks.dev directory.</span>
+            </button>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="board-categories">Categories</Label>
-            <Input
-              id="board-categories"
-              value={categories.join(', ')}
-              onChange={(e) =>
-                onBrandingChange({
-                  categories: normalizeBoardCategories(e.target.value.split(',')) || [],
-                })
-              }
-              placeholder="saas, developer-tools, analytics"
-            />
-            <p className="text-xs text-muted-foreground">
-              Pick a few topics that help people find your page.
-            </p>
-          </div>
+          <p className="text-xs text-muted-foreground">
+            Publication controls whether the page is live. Discovery controls whether people can find it without the link.
+          </p>
         </div>
 
-        <div className="space-y-2">
+        {listed && <div className="space-y-2">
           <Label>Suggested categories</Label>
           <div className="flex flex-wrap gap-2">
             {CURATED_BOARD_CATEGORIES.map((category) => {
@@ -108,22 +105,10 @@ export function BoardVisibilitySection({
               )
             })}
           </div>
-        </div>
-
-        {visibility === 'public' && (
-          <label className="flex min-h-12 items-start gap-3 rounded-lg border bg-muted/10 px-3 py-3 text-sm">
-            <input
-              type="checkbox"
-              checked={settings.branding.directoryOptIn !== false}
-              onChange={(e) => onBrandingChange({ directoryOptIn: e.target.checked })}
-              className="mt-0.5 h-4 w-4 rounded border"
-            />
-            <span>
-              <span className="block font-medium text-foreground">List in the public directory</span>
-              <span className="text-muted-foreground">Make the board discoverable outside the direct URL.</span>
-            </span>
-          </label>
-        )}
+          <p className="text-xs text-muted-foreground">
+            Select a few categories so relevant visitors can find the page.
+          </p>
+        </div>}
     </WorkspaceSection>
   )
 }

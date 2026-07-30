@@ -8,10 +8,9 @@ import {
   getWidgetModeLabel,
   type SavedWidgetConfig,
 } from '@feedbacks/shared'
-import { readStoredProjectApiKey, rememberProjectApiKey } from '@/lib/project-api-keys'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, ExternalLink, RefreshCw } from 'lucide-react'
+import { CheckCircle2, Copy, ExternalLink, RefreshCw, TriangleAlert } from 'lucide-react'
 import { WidgetPreviewSurface } from './widget-preview-surface'
 import { SetupProgress } from './project-flow-nav'
 import { PageHeader } from '@/components/ui/workspace-shell'
@@ -19,8 +18,7 @@ import { PageHeader } from '@/components/ui/workspace-shell'
 interface ProjectVerifyClientProps {
   appOrigin: string
   projectId: string
-  projectKey: string | null
-  apiKeyLastFour: string | null
+  projectKey: string
   projectName: string
   savedConfig: SavedWidgetConfig
 }
@@ -29,27 +27,39 @@ export function ProjectVerifyClient({
   appOrigin,
   projectId,
   projectKey,
-  apiKeyLastFour,
   projectName,
   savedConfig,
 }: ProjectVerifyClientProps) {
   const [status, setStatus] = React.useState<'loading' | 'ready' | 'error'>('loading')
   const [error, setError] = React.useState<string | null>(null)
-  const [resolvedProjectKey, setResolvedProjectKey] = React.useState<string | null>(projectKey)
   const [verifiedFeedbackId, setVerifiedFeedbackId] = React.useState<string | null>(null)
+  const [embedStatus, setEmbedStatus] = React.useState<{
+    state: 'loading' | 'not_detected' | 'connected' | 'stale' | 'error'
+    lastSeenAt: string | null
+    runtimeVersion: string | null
+  }>({ state: 'loading', lastSeenAt: null, runtimeVersion: null })
+  const [diagnosticCopyState, setDiagnosticCopyState] = React.useState<'idle' | 'copied' | 'error'>('idle')
+
+  const checkEmbed = React.useCallback(async () => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/embed-status`, { cache: 'no-store' })
+      const payload = await response.json()
+      if (!response.ok) throw new Error('Status unavailable')
+      setEmbedStatus({
+        state: payload.state,
+        lastSeenAt: payload.lastSeenAt || null,
+        runtimeVersion: payload.runtimeVersion || null,
+      })
+    } catch {
+      setEmbedStatus((current) => ({ ...current, state: 'error' }))
+    }
+  }, [projectId])
 
   React.useEffect(() => {
-    if (projectKey) {
-      rememberProjectApiKey(projectId, projectKey)
-      setResolvedProjectKey(projectKey)
-      return
-    }
-
-    const storedKey = readStoredProjectApiKey(projectId)
-    if (storedKey) {
-      setResolvedProjectKey(storedKey)
-    }
-  }, [projectId, projectKey])
+    void checkEmbed()
+    const interval = window.setInterval(() => void checkEmbed(), 5000)
+    return () => window.clearInterval(interval)
+  }, [checkEmbed])
 
   React.useEffect(() => {
     const handleSubmission = (event: Event) => {
@@ -69,8 +79,8 @@ export function ProjectVerifyClient({
   }, [projectId])
 
   const runtimeConfig = React.useMemo(
-    () => buildRuntimeWidgetConfig(resolvedProjectKey || 'fb_verify_placeholder', savedConfig, { appOrigin }),
-    [appOrigin, resolvedProjectKey, savedConfig],
+    () => buildRuntimeWidgetConfig(projectKey, savedConfig, { appOrigin }),
+    [appOrigin, projectKey, savedConfig],
   )
   const modeLabel = getWidgetModeLabel(runtimeConfig)
   const runtimeExpectation = getWidgetExpectation(runtimeConfig)
@@ -79,6 +89,26 @@ export function ProjectVerifyClient({
     : runtimeConfig.embedMode === 'trigger'
       ? 'Click the test button in the box below. Fill out the form and send one test.'
       : `Click the "${runtimeConfig.buttonText || 'Feedback'}" button in the bottom-right corner. Fill out the form and send one test.`
+
+  const copyDiagnostics = async () => {
+    const packet = [
+      'feedbacks.dev install diagnostic',
+      `Project: ${projectId}`,
+      `Publishable key: ${projectKey}`,
+      `Embed state: ${embedStatus.state}`,
+      `Last seen: ${embedStatus.lastSeenAt || 'never'}`,
+      `Runtime: ${embedStatus.runtimeVersion || 'unknown'}`,
+      `Hosted preview: ${status}`,
+      `Mode: ${runtimeConfig.embedMode}`,
+      `App origin: ${appOrigin}`,
+    ].join('\n')
+    try {
+      await navigator.clipboard.writeText(packet)
+      setDiagnosticCopyState('copied')
+    } catch {
+      setDiagnosticCopyState('error')
+    }
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6" data-tour="verify-surface">
@@ -130,11 +160,37 @@ export function ProjectVerifyClient({
               <span className="font-medium text-foreground">3</span><span>Send it, then open the verified inbox item.</span>
             </li>
           </ol>
+            <div className="mt-5 rounded-md border bg-surface-inset/55 p-3 text-sm">
+              <div className="flex items-start gap-2">
+                {embedStatus.state === 'connected'
+                  ? <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
+                  : <TriangleAlert className="mt-0.5 h-4 w-4 text-amber-500" />}
+                <div>
+                  <p className="font-medium text-foreground">
+                    {embedStatus.state === 'connected'
+                      ? 'Your website embed was detected'
+                      : embedStatus.state === 'stale'
+                        ? 'The last website connection is stale'
+                        : embedStatus.state === 'loading'
+                          ? 'Checking your website connection…'
+                          : 'Your website embed has not been detected'}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {embedStatus.lastSeenAt
+                      ? `Last seen ${new Date(embedStatus.lastSeenAt).toLocaleString()}${embedStatus.runtimeVersion ? ` · runtime ${embedStatus.runtimeVersion}` : ''}.`
+                      : 'Load a page on your site after pasting the snippet, then check again.'}
+                  </p>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" className="mt-3" onClick={() => void checkEmbed()}>
+                <RefreshCw className="mr-2 h-3.5 w-3.5" />
+                Check again
+              </Button>
+            </div>
             <div className="mt-5 text-sm leading-6 text-muted-foreground">
-              {!resolvedProjectKey && 'A fresh project key is required before this hosted page can submit live test feedback.'}
-              {resolvedProjectKey && status === 'loading' && 'Loading the live widget runtime…'}
-              {resolvedProjectKey && status === 'ready' && `Ready. ${runtimeExpectation}`}
-              {resolvedProjectKey && status === 'error' && `The widget could not be loaded: ${error}`}
+              {status === 'loading' && 'Loading the live widget runtime…'}
+              {status === 'ready' && `Ready. ${runtimeExpectation}`}
+              {status === 'error' && `The widget could not be loaded: ${error}`}
             </div>
         </aside>
 
@@ -148,43 +204,24 @@ export function ProjectVerifyClient({
                 </p>
               </div>
 
-              {resolvedProjectKey ? (
-                <div className="mt-8 min-h-56 border border-dashed border-foreground/15 bg-background p-6">
-                  <WidgetPreviewSurface
-                    appOrigin={appOrigin}
-                    projectKey={resolvedProjectKey}
-                    config={savedConfig}
-                    onStatusChange={(nextStatus, nextError) => {
-                      setStatus(nextStatus)
-                      setError(nextError || null)
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="mt-8 min-h-56 border border-dashed border-foreground/15 bg-background p-6">
-                  <div className="text-sm text-muted-foreground">
-                    <p className="font-medium text-foreground">This key is hidden now.</p>
-                    <p className="mt-1">
-                      feedbacks.dev only reveals project keys once. Generate a fresh key from the install tab to run hosted verification again{apiKeyLastFour ? ` for the key ending in ${apiKeyLastFour}` : ''}.
-                    </p>
-                    <div className="mt-3">
-                      <Link href={`/projects/${projectId}/install`}>
-                        <Button variant="outline" size="sm">
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          Open install and rotate key
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <div className="mt-8 min-h-56 border border-dashed border-foreground/15 bg-background p-6">
+                <WidgetPreviewSurface
+                  appOrigin={appOrigin}
+                  projectKey={projectKey}
+                  config={savedConfig}
+                  onStatusChange={(nextStatus, nextError) => {
+                    setStatus(nextStatus)
+                    setError(nextError || null)
+                  }}
+                />
+              </div>
 
               <div className="mt-5 border-t border-foreground/10 pt-4 text-sm text-muted-foreground">
                 If this page works but your website does not, the saved form is fine. Check where the install code was pasted on your site.
               </div>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 border-t bg-surface-inset/45 p-5">
               <Link href={`/feedback?projectId=${projectId}`}>
                 <Button>
                   Open project inbox
@@ -197,6 +234,31 @@ export function ProjectVerifyClient({
             </div>
         </section>
       </div>
+
+      <details className="rounded-lg border bg-card">
+        <summary className="cursor-pointer list-none px-5 py-4 font-semibold">Website troubleshooting and safe diagnostics</summary>
+        <div className="space-y-4 border-t p-5 text-sm leading-6 text-muted-foreground">
+          <ul className="list-disc space-y-2 pl-5">
+            <li><strong className="text-foreground">Wrong key:</strong> copy the current `fb_pub_…` snippet from Install &amp; verify.</li>
+            <li><strong className="text-foreground">CSP or ad blocker:</strong> allow the feedbacks.dev script and API host, then test in a clean browser profile.</li>
+            <li><strong className="text-foreground">Cached deployment:</strong> publish the changed app shell and hard-refresh the target page.</li>
+            <li><strong className="text-foreground">SPA route transition:</strong> install the embed once in the persistent app shell, not inside a page component.</li>
+            <li><strong className="text-foreground">Origin restriction:</strong> leave it off during setup, then add the exact production origin after verification.</li>
+            <li><strong className="text-foreground">Duplicate script:</strong> keep one host element and one script load.</li>
+          </ul>
+          <Button variant="outline" onClick={() => void copyDiagnostics()}>
+            <Copy className="mr-2 h-4 w-4" />
+            Copy diagnostic packet
+          </Button>
+          <p role="status" aria-live="polite">
+            {diagnosticCopyState === 'copied'
+              ? 'Diagnostic packet copied. It contains the public project key but no private API key.'
+              : diagnosticCopyState === 'error'
+                ? 'Clipboard access was denied. Copy the visible status details manually.'
+                : 'The packet contains connection status and public install information only—never private credentials.'}
+          </p>
+        </div>
+      </details>
     </div>
   )
 }

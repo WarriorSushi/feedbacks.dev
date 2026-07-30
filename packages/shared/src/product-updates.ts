@@ -28,6 +28,7 @@ export const PRODUCT_UPDATE_LIMITS = {
   highlight: 160,
   ctaLabel: 40,
   ctaUrl: 2048,
+  imageAltText: 160,
   paths: 10,
   path: 120,
   displayDelayMin: 0,
@@ -44,6 +45,7 @@ export interface ProductUpdateContent {
   summary: string
   highlights: string[]
   imageUrl?: string
+  imageAltText?: string
   ctaLabel?: string
   ctaUrl?: string
   publishedAt: string
@@ -181,6 +183,7 @@ export interface ProductUpdateInput {
   highlights?: string[]
   ctaLabel?: string
   ctaUrl?: string
+  imageAltText?: string
   publishedAt?: string
   expiresAt?: string
 }
@@ -241,10 +244,14 @@ export function sanitizeProductUpdateInput(
   const versionLabel = optionalText(source.versionLabel, PRODUCT_UPDATE_LIMITS.versionLabel)
   const title = optionalText(source.title, PRODUCT_UPDATE_LIMITS.title)
   const summary = optionalText(source.summary, PRODUCT_UPDATE_LIMITS.summary)
+  const imageAltText = optionalText(source.imageAltText, PRODUCT_UPDATE_LIMITS.imageAltText)
 
   if (typeof source.versionLabel === 'string' && source.versionLabel.trim() && !versionLabel) errors.versionLabel = 'Version label must be 1–32 characters.'
   if ((options.requirePublishFields || source.title !== undefined) && !title) errors.title = 'Title must be 1–120 characters.'
   if ((options.requirePublishFields || source.summary !== undefined) && !summary) errors.summary = 'Summary must be 1–280 characters.'
+  if (typeof source.imageAltText === 'string' && source.imageAltText.trim() && !imageAltText) {
+    errors.imageAltText = `Image description must be ${PRODUCT_UPDATE_LIMITS.imageAltText} characters or fewer.`
+  }
 
   const rawHighlights = source.highlights
   const highlights = Array.isArray(rawHighlights)
@@ -275,6 +282,7 @@ export function sanitizeProductUpdateInput(
       ...(summary ? { summary } : {}),
       highlights: errors.highlights ? [] : highlights,
       ...(ctaLabel && ctaUrl ? { ctaLabel, ctaUrl } : {}),
+      ...(imageAltText ? { imageAltText } : {}),
       ...(publishedAt ? { publishedAt } : {}),
       ...(expiresAt ? { expiresAt } : {}),
     },

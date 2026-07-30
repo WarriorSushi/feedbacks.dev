@@ -1,6 +1,6 @@
 # Operations Hardening Checklist
 
-Last updated: 2026-06-24
+Last updated: 2026-07-30
 
 Use this before staging or production signoff. It complements `pnpm supabase:check`, which verifies required tables, columns, and storage buckets through the Supabase Data API.
 
@@ -47,6 +47,20 @@ Confirm Vercel cron schedules are present and monitored:
 
 - `/api/cron/webhook-jobs`
 - `/api/cron/notification-digests`
+- `/api/cron/e2e-cleanup`
+- `/api/cron/account-deletions`
+
+Query the authenticated `/api/internal/health` endpoint and require:
+
+- every required cron fresh and successful
+- webhook backlog under 100 and fewer than 20 failures in 24 hours
+- zero failed or stale billing events
+- zero failed or blocked account-deletion jobs
+- production-only activation counts (E2E is excluded by environment)
+
+Vercel Web Analytics and Speed Insights are mounted in the root layout. Review page acquisition and p75
+Core Web Vitals by route and device. Runtime events use structured JSON with request IDs. See
+`docs/operations-runbook.md` for containment and recovery procedures.
 
 GitHub Actions also calls:
 
@@ -92,7 +106,9 @@ Latest smoke result from 2026-06-23:
 
 ## Storage Retention
 
-Screenshots and attachments currently use public Supabase Storage URLs for operational simplicity.
+Screenshots and image attachments use private Supabase Storage buckets. Owners retrieve clean media
+through the authenticated `/api/feedback/[id]/media/[kind]` route; anonymous access and cross-project
+access are rejected. Project and account deletion remove registered media paths idempotently.
 The retention decision for the current launch surface is owner-scoped retention: media is retained
 with the feedback record and removed when the owning project or account is deleted. There is no
 automatic time-based purge for launch.

@@ -42,6 +42,7 @@ import {
   ClipboardList,
   EyeOff,
   SlidersHorizontal,
+  ArrowUpDown,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -98,7 +99,8 @@ function FeedbackInboxInner() {
   const [bulkLoading, setBulkLoading] = React.useState(false)
   const [activeRowId, setActiveRowId] = React.useState<string | null>(null)
 
-  const page = Number(searchParams.get('page') || '1')
+  const requestedPage = Number(searchParams.get('page') || '1')
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
   const status = searchParams.get('status') || ''
   const type = searchParams.get('type') || ''
   const search = searchParams.get('q') || ''
@@ -112,6 +114,9 @@ function FeedbackInboxInner() {
   const projectId = showingAllProjects ? '' : requestedProjectId || defaultProjectId
   const tag = searchParams.get('tag') || ''
   const read = parseFeedbackReadStateFilter(searchParams.get('read'))
+  const sort = ['newest', 'oldest', 'recently_updated'].includes(searchParams.get('sort') || '')
+    ? (searchParams.get('sort') as 'newest' | 'oldest' | 'recently_updated')
+    : 'newest'
   const [searchInput, setSearchInput] = React.useState(search)
   const [tagInput, setTagInput] = React.useState(tag)
   const [bulkTagInput, setBulkTagInput] = React.useState('')
@@ -211,7 +216,6 @@ function FeedbackInboxInner() {
       .from('feedback')
       .select('*, projects(id, name)', { count: 'exact' })
       .eq('is_archived', false)
-      .order('created_at', { ascending: false })
       .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1)
 
     if (status) query = query.eq('status', status)
@@ -226,20 +230,27 @@ function FeedbackInboxInner() {
     if (read === 'unread') query = query.is('read_at', null)
     const historyCutoff = billingSummary ? getHistoryWindowStart(billingSummary.entitlements) : null
     if (historyCutoff) query = query.gte('created_at', historyCutoff)
+    if (sort === 'oldest') query = query.order('created_at', { ascending: true })
+    else if (sort === 'recently_updated') query = query.order('updated_at', { ascending: false })
+    else query = query.order('created_at', { ascending: false })
     if (signal) query = query.abortSignal(signal)
 
     const { data, count, error } = await query
     if (signal?.aborted) return
     if (error) {
       setLoading(false)
-      toast({ title: 'Could not load feedback', description: error.message, variant: 'destructive' })
+      toast({
+        title: 'Could not load feedback',
+        description: 'The list may be out of date. Check your connection and retry.',
+        variant: 'destructive',
+      })
       return
     }
     setFeedbacks((data as Feedback[]) || [])
     setTotal(count || 0)
     setSelected(new Set())
     setLoading(false)
-  }, [supabase, page, projectId, projectsLoaded, status, tag, type, search, agent, publicOnly, priority, read, billingSummary])
+  }, [supabase, page, projectId, projectsLoaded, status, tag, type, search, agent, publicOnly, priority, read, sort, billingSummary])
 
   React.useEffect(() => {
     const controller = new AbortController()
@@ -413,7 +424,8 @@ function FeedbackInboxInner() {
             </div>
           </form>
 
-          <div data-tour="inbox-filters" className="scroll-fade-x -mx-4 flex snap-x items-center gap-1.5 overflow-x-auto px-4 pb-1 scrollbar-thin md:mx-0 md:px-0">
+          <div className="flex min-w-0 items-center gap-2">
+          <div data-tour="inbox-filters" className="scroll-fade-x -mx-4 flex min-w-0 snap-x items-center gap-1.5 overflow-x-auto px-4 pb-1 scrollbar-thin md:mx-0 md:px-0">
           <FilterPill
             active={!status && read === 'all'}
             onClick={() => updateParams({ status: '', read: '' })}
@@ -455,6 +467,21 @@ function FeedbackInboxInner() {
               Clear
             </button>
           )}
+          </div>
+          <label className="relative flex shrink-0 items-center">
+            <ArrowUpDown aria-hidden="true" className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-muted-foreground" />
+            <span className="sr-only">Sort feedback</span>
+            <select
+              aria-label="Sort feedback"
+              value={sort}
+              onChange={(event) => updateParams({ sort: event.target.value })}
+              className="h-10 rounded-md border bg-background pl-8 pr-7 text-xs md:h-8"
+            >
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="recently_updated">Recently updated</option>
+            </select>
+          </label>
           </div>
         </div>
 
@@ -572,13 +599,10 @@ function FeedbackInboxInner() {
       )}
 
       {/* ─── Floating Bulk Action Bar ────────────────────── */}
-      <div
-        className={cn(
-          'fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 w-[calc(100vw-1.5rem)] max-w-3xl -translate-x-1/2 transition-all duration-300 md:bottom-6 md:w-auto',
-          selected.size > 0
-            ? 'translate-y-0 opacity-100'
-            : 'translate-y-4 opacity-0 pointer-events-none'
-        )}
+      {selected.size > 0 && <div
+        role="region"
+        aria-label="Bulk feedback actions"
+        className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 w-[calc(100vw-1.5rem)] max-w-3xl -translate-x-1/2 md:bottom-6 md:w-auto"
       >
         <div className="flex items-center gap-1.5 overflow-x-auto rounded-lg border bg-background px-3 py-2 shadow-xl ring-1 ring-black/5 scrollbar-thin dark:ring-white/5 md:rounded-full">
           <span className="shrink-0 pl-1 pr-2 text-xs font-semibold">
@@ -663,7 +687,7 @@ function FeedbackInboxInner() {
             <Loader2 className="ml-1 h-3.5 w-3.5 animate-spin text-muted-foreground" />
           )}
         </div>
-      </div>
+      </div>}
     </div>
   )
 }

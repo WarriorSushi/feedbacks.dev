@@ -30,9 +30,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ url: portalUrl })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create customer portal session' },
+      { code: 'portal_unavailable', error: 'The billing portal could not be opened right now.' },
       { status: 500 },
     )
   }

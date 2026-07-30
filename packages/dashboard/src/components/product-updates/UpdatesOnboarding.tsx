@@ -27,7 +27,7 @@ export function UpdatesOnboarding({
   onRefresh,
 }: {
   projectId: string;
-  projectKey: string | null;
+  projectKey: string;
   modules: ModuleState;
   embedState: EmbedState;
   onRefresh: () => Promise<void>;
@@ -164,9 +164,9 @@ export function UpdatesOnboarding({
         <p className="text-xs font-semibold text-primary">
           Updates for your users
         </p>
-        <h2 className="text-2xl font-semibold tracking-[-0.035em]">
+        <h1 className="text-2xl font-semibold tracking-[-0.035em]">
           Show what changed inside your product
-        </h2>
+        </h1>
         <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
           Publish a focused “What’s new” popup for your users. This is where you
           announce improvements to your product, not changes to the
@@ -208,13 +208,14 @@ export function UpdatesOnboarding({
       {modules.updates && (
         <section className="space-y-5 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
           <Step title="Install the shared embed" />
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Installation method">
             {(["AI assistant", "Script tag", "React", "Vue"] as Method[]).map(
               (item) => (
                 <Button
                   key={item}
                   variant={method === item ? "secondary" : "outline"}
                   size="sm"
+                  aria-pressed={method === item}
                   onClick={() => {
                     setMethod(item);
                     record("updates_install_method_selected");
@@ -228,21 +229,11 @@ export function UpdatesOnboarding({
               ),
             )}
           </div>
-          {projectKey ? (
-            <InstallInstructions
-              method={method}
-              projectKey={projectKey}
-              choice={choice}
-            />
-          ) : (
-            <p className="rounded-md bg-muted/60 p-3 text-sm text-muted-foreground">
-              Your browser-safe project key is hidden. Generate a fresh key in{" "}
-              <a className="underline" href={`/projects/${projectId}/install`}>
-                Embed installation
-              </a>
-              , then return here to copy the exact instructions.
-            </p>
-          )}
+          <InstallInstructions
+            method={method}
+            projectKey={projectKey}
+            choice={choice}
+          />
           <div className="border-t pt-5">
             <Step title="Verify the connection" />
             <p className="mt-2 text-sm text-muted-foreground">
@@ -314,6 +305,7 @@ function ChoiceButton({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={`min-h-28 rounded-lg border p-4 text-left transition-colors ${active ? "border-primary bg-primary/[0.06]" : "border-border bg-[oklch(var(--surface-raised))] hover:bg-muted/30"}`}
     >
       <span className="block font-medium">{title}</span>
@@ -364,8 +356,16 @@ function InstallInstructions({
 
 function CodeSample({ title, content }: { title: string; content: string }) {
   const copy = async () => {
-    await navigator.clipboard.writeText(content);
-    toast({ title: "Copied to clipboard" });
+    try {
+      await navigator.clipboard.writeText(content);
+      toast({ title: "Copied to clipboard" });
+    } catch {
+      toast({
+        title: "Clipboard access was blocked",
+        description: "Select the text in the code block and copy it manually.",
+        variant: "destructive",
+      });
+    }
   };
   return (
     <div className="rounded-md border">

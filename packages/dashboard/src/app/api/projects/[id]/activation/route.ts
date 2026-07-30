@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
 import { recordActivationMilestone, type ActivationMilestone } from '@/lib/activation-milestones'
+import { readJsonBody } from '@/lib/api-request'
 
 const CLIENT_MILESTONES = new Set<ActivationMilestone>([
   'install_code_copied',
@@ -23,7 +24,9 @@ export async function POST(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json().catch(() => null)
+  const bodyResult = await readJsonBody<{ event?: string }>(request, { maxBytes: 2_048 })
+  if (!bodyResult.ok) return bodyResult.response
+  const body = bodyResult.data
   const eventName = body?.event as ActivationMilestone | undefined
   if (!eventName || !CLIENT_MILESTONES.has(eventName)) {
     return NextResponse.json({ error: 'Unsupported activation milestone' }, { status: 400 })

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sanitizeCustomBoardCss } from '@/lib/board-custom-css'
+import { readJsonBody } from '@/lib/api-request'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import {
   boardBrandingToColumns,
@@ -168,11 +170,29 @@ function isTypedBoardColumnError(message: string | undefined) {
   return Boolean(message && TYPED_BOARD_COLUMN_ERROR.test(message))
 }
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
     const result = await getAuthedProject(id)
     if ('error' in result && !('project' in result)) return result.error
+    const requestedSlug = request.nextUrl.searchParams.get('checkSlug')
+    if (requestedSlug !== null) {
+      const slug = sanitizeSlug(requestedSlug)
+      if (!slug) {
+        return NextResponse.json({ available: false, normalized: '', reason: 'invalid' })
+      }
+      const { admin } = result as Exclude<typeof result, { error: NextResponse }>
+      const { data: collision, error } = await admin
+        .from('public_board_settings')
+        .select('project_id')
+        .eq('slug', slug)
+        .neq('project_id', id)
+        .maybeSingle()
+      if (error) {
+        return NextResponse.json({ error: 'Slug availability could not be checked.' }, { status: 500 })
+      }
+      return NextResponse.json({ available: !collision, normalized: slug })
+    }
 
     const payload = await loadBoardSettings(id)
     return NextResponse.json(payload)
@@ -188,17 +208,31 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if ('error' in result && !('project' in result)) return result.error
     const { admin, user } = result as Exclude<typeof result, { error: NextResponse }>
 
-    const body = await request.json()
+    const bodyResult = await readJsonBody(request)
+    if (!bodyResult.ok) return bodyResult.response
+    const body = bodyResult.data
     const slug = sanitizeSlug(body.slug)
     if (!slug) {
       return NextResponse.json({ error: 'A board slug is required' }, { status: 400 })
     }
 
-    const customCss = typeof body.custom_css === 'string'
-      ? body.custom_css.trim().slice(0, 6000) || null
-      : null
+    let customCss: string | null
+    try {
+      customCss = sanitizeCustomBoardCss(body.custom_css)
+    } catch (error) {
+      return NextResponse.json(
+        {
+          code: 'invalid_custom_css',
+          error: error instanceof Error ? error.message : 'Custom CSS is invalid.',
+          fieldErrors: { custom_css: ['Review the CSS syntax and remove unsupported rules.'] },
+        },
+        { status: 400 },
+      )
+    }
     const showTypes = sanitizeShowTypes(body.show_types)
-    const profile = sanitizeBoardBranding(body.branding)
+    const profile = sanitizeBoardBranding(
+      body.branding as Parameters<typeof sanitizeBoardBranding>[0],
+    )
     const announcements = sanitizeBoardAnnouncements(body.announcements)
     const existing = await admin
       .from('public_board_settings')

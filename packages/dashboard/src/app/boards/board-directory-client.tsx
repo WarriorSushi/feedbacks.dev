@@ -2,11 +2,12 @@
 
 import * as React from 'react'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import { ArrowLeft, ArrowRight, ArrowUpRight, FolderOpen, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { normalizeBoardCategory, type BoardCategoryOption } from '@/lib/board-categories'
 import type { BoardBranding } from '@/lib/public-board'
-import { BOARD_DIRECTORY_PAGE_SIZE, paginateBoardDirectoryEntries } from '@/lib/board-directory-pagination'
+import { BOARD_DIRECTORY_PAGE_SIZE } from '@/lib/board-directory-pagination'
 
 type BoardSortMode = 'trending' | 'active' | 'responsive' | 'shipping' | 'new'
 
@@ -30,17 +31,6 @@ interface BoardDirectoryEntry {
   updatedAt: string
 }
 
-function sortEntries(entries: BoardDirectoryEntry[], sort: BoardSortMode): BoardDirectoryEntry[] {
-  return [...entries].sort((a, b) => {
-    const diff = b.scores[sort] - a.scores[sort]
-    if (diff !== 0) return diff
-    return (
-      new Date(b.recentActivityAt || b.updatedAt).getTime() -
-      new Date(a.recentActivityAt || a.updatedAt).getTime()
-    )
-  })
-}
-
 const SORT_OPTIONS: Array<{ value: BoardSortMode; label: string; description: string }> = [
   { value: 'trending', label: 'Trending', description: 'Recent public activity and momentum.' },
   { value: 'active', label: 'Active', description: 'Boards with consistent feedback and replies.' },
@@ -51,10 +41,12 @@ const SORT_OPTIONS: Array<{ value: BoardSortMode; label: string; description: st
 
 interface BoardDirectoryClientProps {
   entries: BoardDirectoryEntry[]
+  total: number
   categories: BoardCategoryOption[]
   initialSort: BoardSortMode
   initialCategory: string
   initialPage: number
+  initialQuery: string
   variant?: 'public' | 'dashboard'
 }
 
@@ -80,67 +72,66 @@ function getBoardHealthLabel(entry: BoardDirectoryEntry) {
 
 export function BoardDirectoryClient({
   entries,
+  total,
   categories,
   initialSort,
   initialCategory,
   initialPage,
+  initialQuery,
   variant = 'public',
 }: BoardDirectoryClientProps) {
-  const [sort, setSort] = React.useState<BoardSortMode>(initialSort)
-  const [category, setCategory] = React.useState(normalizeBoardCategory(initialCategory) || '')
-  const [search, setSearch] = React.useState('')
-  const [page, setPage] = React.useState(Math.max(1, Math.floor(initialPage)))
+  const router = useRouter()
+  const pathname = usePathname()
+  const [search, setSearch] = React.useState(initialQuery)
+  const [isPending, startTransition] = React.useTransition()
   const [ready, setReady] = React.useState(false)
-  const previousFilters = React.useRef({ category, search, sort })
-
+  const sort = initialSort
+  const category = normalizeBoardCategory(initialCategory) || ''
+  const currentPage = Math.max(1, Math.floor(initialPage))
   const activeSort = SORT_OPTIONS.find((option) => option.value === sort) || SORT_OPTIONS[0]
 
   React.useEffect(() => {
     setReady(true)
   }, [])
 
-  const sorted = React.useMemo(() => {
-    let filtered = entries
-    if (category) {
-      filtered = filtered.filter((entry) => entry.branding.categories?.includes(category))
-    }
-    if (search.trim()) {
-      const query = search.toLowerCase()
-      filtered = filtered.filter(
-        (entry) =>
-          (entry.displayName || entry.title).toLowerCase().includes(query) ||
-          entry.description.toLowerCase().includes(query) ||
-          entry.projectName.toLowerCase().includes(query),
-      )
-    }
-    return sortEntries(filtered, sort)
-  }, [entries, category, search, sort])
-  const hasNoBoards = entries.length === 0
+  const hasNoBoards = total === 0 && !category && !initialQuery
   const dashboard = variant === 'dashboard'
   const pageSize = BOARD_DIRECTORY_PAGE_SIZE
-  const pageCount = Math.max(1, Math.ceil(sorted.length / pageSize))
-  const currentPage = Math.min(page, pageCount)
-  const visibleEntries = paginateBoardDirectoryEntries(sorted, currentPage, pageSize)
+  const pageCount = Math.max(1, Math.ceil(total / pageSize))
+  const visibleEntries = entries
+
+  const updateUrl = React.useCallback((changes: Record<string, string | null>) => {
+    const params = new URLSearchParams(window.location.search)
+    for (const [key, value] of Object.entries(changes)) {
+      if (!value) params.delete(key)
+      else params.set(key, value)
+    }
+    startTransition(() => {
+      router.replace(`${pathname}${params.size ? `?${params.toString()}` : ''}`, { scroll: false })
+    })
+  }, [pathname, router])
 
   React.useEffect(() => {
-    const previous = previousFilters.current
-    if (previous.category === category && previous.search === search && previous.sort === sort) return
-    previousFilters.current = { category, search, sort }
-    setPage(1)
-    const url = new URL(window.location.href)
-    url.searchParams.delete('page')
-    window.history.replaceState(null, '', url)
-  }, [category, search, sort])
+    setSearch(initialQuery)
+  }, [initialQuery])
+
+  React.useEffect(() => {
+    if (search.trim() === initialQuery) return
+    const timer = window.setTimeout(() => {
+      updateUrl({ q: search.trim() || null, page: null })
+    }, 350)
+    return () => window.clearTimeout(timer)
+  }, [initialQuery, search, updateUrl])
 
   const changePage = (nextPage: number) => {
     const safePage = Math.min(pageCount, Math.max(1, nextPage))
-    setPage(safePage)
-    const url = new URL(window.location.href)
-    if (safePage === 1) url.searchParams.delete('page')
-    else url.searchParams.set('page', String(safePage))
-    window.history.replaceState(null, '', url)
+    updateUrl({ page: safePage === 1 ? null : String(safePage) })
     window.requestAnimationFrame(() => {
-      document.querySelector('[data-board-directory-controls]')?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      document.querySelector('[data-board-directory-controls]')?.scrollIntoView({
+        block: 'start',
+        behavior: reduceMotion ? 'auto' : 'smooth',
+      })
     })
   }
 
@@ -157,7 +148,9 @@ export function BoardDirectoryClient({
                 {SORT_OPTIONS.map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => setSort(option.value)}
+                    type="button"
+                    aria-pressed={sort === option.value}
+                    onClick={() => updateUrl({ sort: option.value === 'trending' ? null : option.value, page: null })}
                     className={cn(
                       'min-h-11 shrink-0 snap-start rounded-full px-3 py-2 text-sm font-medium transition-colors sm:min-h-10',
                       sort === option.value
@@ -192,7 +185,9 @@ export function BoardDirectoryClient({
           {categories.length > 0 && (
             <div className="scroll-fade-x -mx-3 mt-4 flex snap-x gap-2 overflow-x-auto px-3 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
               <button
-                onClick={() => setCategory('')}
+                type="button"
+                aria-pressed={!category}
+                onClick={() => updateUrl({ category: null, page: null })}
                 className={cn(
                   'min-h-11 shrink-0 snap-start rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:min-h-9',
                   !category
@@ -205,7 +200,9 @@ export function BoardDirectoryClient({
               {categories.map((entry) => (
                 <button
                   key={entry.value}
-                  onClick={() => setCategory(category === entry.value ? '' : entry.value)}
+                  type="button"
+                  aria-pressed={category === entry.value}
+                  onClick={() => updateUrl({ category: category === entry.value ? null : entry.value, page: null })}
                   className={cn(
                     'min-h-11 shrink-0 snap-start rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:min-h-9',
                     category === entry.value
@@ -221,12 +218,16 @@ export function BoardDirectoryClient({
           )}
         </div>
 
-        <div className="flex items-center justify-between px-3 py-3 text-sm text-muted-foreground sm:px-5">
+        <div aria-live="polite" className="flex items-center justify-between px-3 py-3 text-sm text-muted-foreground sm:px-5">
           <span>
-            Showing <span className="font-medium text-foreground">{sorted.length}</span> of{' '}
-            <span className="font-medium text-foreground">{entries.length}</span> boards
+            {total === 0 ? 'No boards found' : (
+              <>
+                Showing <span className="font-medium text-foreground">{((currentPage - 1) * pageSize) + 1}–{Math.min(total, ((currentPage - 1) * pageSize) + entries.length)}</span> of{' '}
+                <span className="font-medium text-foreground">{total}</span> boards
+              </>
+            )}
           </span>
-          <span className="hidden sm:inline">{activeSort.label} first</span>
+          <span className="hidden sm:inline">{isPending ? 'Updating…' : `${activeSort.label} first`}</span>
         </div>
       </section>
 
@@ -297,7 +298,7 @@ export function BoardDirectoryClient({
         ))}
       </section>
 
-      {sorted.length > pageSize && (
+      {total > pageSize && (
         <nav className="mt-6 flex items-center justify-between gap-4 border-t pt-5" aria-label="Board directory pages">
           <button
             type="button"
@@ -323,7 +324,7 @@ export function BoardDirectoryClient({
         </nav>
       )}
 
-      {sorted.length === 0 && (
+      {total === 0 && (
         <div className="mt-6 rounded-2xl border border-dashed border-border/80 bg-card px-6 py-12 text-center shadow-sm">
           <FolderOpen className="mx-auto h-9 w-9 text-muted-foreground/45" />
           <h2 className="mt-4 text-xl font-semibold text-foreground">
@@ -342,6 +343,18 @@ export function BoardDirectoryClient({
                 ? `No results for "${search}". Try a different search.`
                 : 'Try a different category or switch back to all boards.'}
           </p>
+          {!hasNoBoards && (
+            <button
+              type="button"
+              className="mt-5 inline-flex min-h-10 items-center justify-center rounded-md border bg-background px-4 text-sm font-semibold hover:bg-accent"
+              onClick={() => {
+                setSearch('')
+                updateUrl({ q: null, category: null, page: null })
+              }}
+            >
+              Clear filters
+            </button>
+          )}
           {hasNoBoards && dashboard && (
             <Link
               href="/projects"
