@@ -1,5 +1,10 @@
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { parseBoardBranding, type BoardBranding } from '@/lib/public-board'
+import {
+  decodeBoardDirectoryCursor,
+  encodeBoardDirectoryCursor,
+  type BoardDirectoryCursor,
+} from '@/lib/board-directory-cursor'
 
 export type BoardSortMode = 'trending' | 'active' | 'responsive' | 'shipping' | 'new'
 
@@ -33,6 +38,8 @@ export interface BoardDirectoryPage {
   categories: Array<{ value: string; count: number }>
   totalRequests: number
   totalReplies: number
+  nextCursor: string | null
+  hasMore: boolean
 }
 
 export function sortBoardDirectoryEntries(entries: BoardDirectoryEntry[], sort: BoardSortMode): BoardDirectoryEntry[] {
@@ -128,24 +135,28 @@ export async function loadBoardDirectoryPage({
   sort = 'trending',
   category = '',
   query = '',
-  page = 1,
+  cursor: cursorValue,
   limit = 24,
 }: {
   sort?: BoardSortMode
   category?: string
   query?: string
-  page?: number
+  cursor?: string | null
   limit?: number
 } = {}): Promise<BoardDirectoryPage> {
   const admin = await createAdminSupabase()
   const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)))
-  const safePage = Math.max(1, Math.min(1000, Math.floor(page)))
-  const { data, error } = await admin.rpc('get_public_board_directory', {
+  const cursor = cursorValue ? decodeBoardDirectoryCursor(cursorValue) : null
+  if (cursorValue && !cursor) throw new Error('Invalid board directory cursor')
+  const { data, error } = await admin.rpc('get_public_board_directory_cursor', {
     p_sort: ['trending', 'active', 'responsive', 'shipping', 'new'].includes(sort) ? sort : 'trending',
     p_category: category || null,
     p_query: query || null,
     p_limit: safeLimit,
-    p_offset: (safePage - 1) * safeLimit,
+    p_after_score: cursor?.score ?? null,
+    p_after_activity: cursor?.activityAt ?? null,
+    p_after_id: cursor?.id ?? null,
+    p_snapshot_at: cursor?.snapshotAt ?? null,
   })
   if (error) throw new Error(error.message)
 
@@ -162,6 +173,22 @@ export async function loadBoardDirectoryPage({
         }
       }).filter((entry) => entry.value)
     : []
+  const nextPayload = asRecord(payload.next)
+  const nextCandidate: BoardDirectoryCursor | null = (
+    typeof nextPayload.score === 'number'
+    && Number.isFinite(nextPayload.score)
+    && typeof nextPayload.activityAt === 'string'
+    && typeof nextPayload.snapshotAt === 'string'
+    && typeof nextPayload.id === 'string'
+  ) ? {
+      score: nextPayload.score,
+      activityAt: nextPayload.activityAt,
+      snapshotAt: nextPayload.snapshotAt,
+      id: nextPayload.id,
+    } : null
+  const nextCursor = nextCandidate
+    ? encodeBoardDirectoryCursor(nextCandidate)
+    : null
 
   return {
     entries,
@@ -169,6 +196,8 @@ export async function loadBoardDirectoryPage({
     total: asNumber(payload.total),
     totalRequests: asNumber(payload.totalRequests),
     totalReplies: asNumber(payload.totalReplies),
+    nextCursor,
+    hasMore: payload.hasMore === true && Boolean(nextCursor),
   }
 }
 

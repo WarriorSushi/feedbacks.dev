@@ -2,116 +2,40 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import {
-  Archive,
-  CalendarClock,
-  Eye,
-  Pencil,
-  Plus,
-  RotateCcw,
-  Settings2,
-  Trash2,
-  X,
-} from "lucide-react";
+import { CalendarClock, Eye, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { UpdatesOnboarding } from "./UpdatesOnboarding";
-import { PageHeader } from "@/components/ui/workspace-shell";
+import { formatVersionEtag } from "@/lib/optimistic-concurrency";
+import { ProductUpdatesOverview } from "./ProductUpdatesOverview";
+import { ProductUpdatesSettings } from "./ProductUpdatesSettings";
+import {
+  ProductUpdateField,
+  ProductUpdateMetric,
+  ProductUpdatePreview,
+  ProductUpdatePrivateTestDialog,
+} from "./ProductUpdatePresentation";
+import {
+  blankProductUpdateForm,
+  localDateTime,
+  toProductUpdateForm,
+  type ProductEmbedStatus,
+  type ProductModules,
+  type ProductUpdate,
+  type ProductUpdateEntitlements,
+  type ProductUpdateForm,
+  type ProductUpdateSettings,
+} from "./product-update-model";
 
-type Update = {
-  id: string;
-  status: "draft" | "published" | "archived";
-  version_label: string | null;
-  title: string;
-  summary: string;
-  highlights: string[];
-  cta_label: string | null;
-  cta_url: string | null;
-  imageUrl?: string;
-  image_alt_text: string | null;
-  published_at: string | null;
-  expires_at: string | null;
-  metrics: { impressions: number; dismissals: number; ctaClicks: number };
-};
-
-type Settings = {
-  enabled: boolean;
-  autoShow: boolean;
-  displayDelayMs: number;
-  theme: "auto" | "light" | "dark";
-  accentColor: string;
-  includePaths: string[];
-  excludePaths: string[];
-  showPoweredBy: boolean;
-};
-
-type Entitlements = {
-  scheduling: boolean;
-  analyticsDays: number;
-  activeLimit: number | null;
-  customBranding: boolean;
-};
-
-type FormValues = {
-  versionLabel: string;
-  title: string;
-  summary: string;
-  highlights: string;
-  ctaLabel: string;
-  ctaUrl: string;
-  expiresAt: string;
-  imageAltText: string;
-};
-
-const blankForm: FormValues = {
-  versionLabel: "",
-  title: "",
-  summary: "",
-  highlights: "",
-  ctaLabel: "",
-  ctaUrl: "",
-  expiresAt: "",
-  imageAltText: "",
-};
-
-function toForm(update: Update): FormValues {
-  return {
-    versionLabel: update.version_label || "",
-    title: update.title,
-    summary: update.summary,
-    highlights: update.highlights.join("\n"),
-    ctaLabel: update.cta_label || "",
-    ctaUrl: update.cta_url || "",
-    expiresAt: localDateTime(update.expires_at),
-    imageAltText: update.image_alt_text || "",
-  };
-}
-
-function localDateTime(iso: string | null) {
-  if (!iso) return "";
-  const date = new Date(iso);
-  const offset = date.getTimezoneOffset() * 60_000;
-  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
-}
-
-function stateLabel(update: Update) {
-  if (update.status === "archived") return "Archived";
-  if (update.status === "draft") return "Draft";
-  if (update.expires_at && new Date(update.expires_at) <= new Date())
-    return "Expired";
-  if (update.published_at && new Date(update.published_at) > new Date())
-    return "Scheduled";
-  return "Live";
-}
-
-type Modules = { feedback: boolean; updates: boolean };
-type EmbedStatus = {
-  state: "not_detected" | "connected" | "stale";
-  lastSeenAt: string | null;
-};
+type Update = ProductUpdate;
+type Settings = ProductUpdateSettings;
+type Entitlements = ProductUpdateEntitlements;
+type FormValues = ProductUpdateForm;
+type Modules = ProductModules;
+type EmbedStatus = ProductEmbedStatus;
 
 export function ProductUpdatesTab({
   projectId,
@@ -127,10 +51,13 @@ export function ProductUpdatesTab({
   const router = useRouter();
   const [updates, setUpdates] = React.useState<Update[]>([]);
   const [settings, setSettings] = React.useState<Settings | null>(null);
+  const [settingsVersion, setSettingsVersion] = React.useState<string | null>(
+    null,
+  );
   const [entitlements, setEntitlements] = React.useState<Entitlements | null>(
     null,
   );
-  const [form, setForm] = React.useState<FormValues>(blankForm);
+  const [form, setForm] = React.useState<FormValues>(blankProductUpdateForm);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [publishAt, setPublishAt] = React.useState("");
   const [previewMobile, setPreviewMobile] = React.useState(false);
@@ -168,6 +95,7 @@ export function ProductUpdatesTab({
         throw new Error(moduleData.error || "Unable to load product settings.");
       setUpdates(data.updates || []);
       setSettings(data.settings);
+      setSettingsVersion(data.settingsVersion || null);
       setEntitlements(data.entitlements);
       setModules(moduleData);
       setEmbedStatus(
@@ -212,7 +140,7 @@ export function ProductUpdatesTab({
 
   function edit(update: Update) {
     setSelectedId(update.id);
-    setForm(toForm(update));
+    setForm(toProductUpdateForm(update));
     setPublishAt(localDateTime(update.published_at));
   }
 
@@ -250,7 +178,10 @@ export function ProductUpdatesTab({
       const data = selected
         ? await request(`/api/projects/${projectId}/updates/${selected.id}`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              "If-Match": formatVersionEtag(selected.updated_at),
+            },
             body,
           })
         : await request(`/api/projects/${projectId}/updates`, {
@@ -291,7 +222,10 @@ export function ProductUpdatesTab({
         `/api/projects/${projectId}/updates/${selected.id}/publish`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "If-Match": formatVersionEtag(selected.updated_at),
+          },
           body: JSON.stringify({
             publishedAt: scheduled
               ? new Date(publishAt).toISOString()
@@ -325,7 +259,10 @@ export function ProductUpdatesTab({
     try {
       await request(`/api/projects/${projectId}/updates/${selected.id}/image`, {
         method: "POST",
-        headers: { "Content-Type": file.type },
+        headers: {
+          "Content-Type": file.type,
+          "If-Match": formatVersionEtag(selected.updated_at),
+        },
         body: file,
       });
       toast({ title: "Image uploaded" });
@@ -351,11 +288,17 @@ export function ProductUpdatesTab({
         `/api/projects/${projectId}/updates/settings`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(settingsVersion
+              ? { "If-Match": formatVersionEtag(settingsVersion) }
+              : {}),
+          },
           body: JSON.stringify(next),
         },
       );
-      setSettings(result);
+      setSettings(result.settings);
+      setSettingsVersion(result.settingsVersion);
     } catch (error) {
       toast({
         title: "Could not save settings",
@@ -427,7 +370,7 @@ export function ProductUpdatesTab({
   }
   if (view === "settings") {
     return (
-      <UpdatesSettings
+      <ProductUpdatesSettings
         settings={settings}
         entitlements={entitlements}
         onSave={saveSettings}
@@ -437,7 +380,7 @@ export function ProductUpdatesTab({
   }
   if (view === "overview") {
     return (
-      <UpdatesOverview
+      <ProductUpdatesOverview
         updates={updates}
         onNew={() => router.push(`/projects/${projectId}/release-notes/new`)}
         onEdit={(id) =>
@@ -458,6 +401,9 @@ export function ProductUpdatesTab({
               `/api/projects/${projectId}/updates/${update.id}${action === "archive" || action === "restore" ? `/${action}` : ""}`,
               {
                 method: action === "delete" ? "DELETE" : "POST",
+                headers: {
+                  "If-Match": formatVersionEtag(update.updated_at),
+                },
               },
             );
             toast({
@@ -476,6 +422,7 @@ export function ProductUpdatesTab({
                 error instanceof Error ? error.message : "Try again.",
               variant: "destructive",
             });
+            await load();
           } finally {
             setSaving(false);
           }
@@ -532,7 +479,7 @@ export function ProductUpdatesTab({
           </div>
         </div>
         {privateTestOpen && (
-          <PrivateTestDialog
+          <ProductUpdatePrivateTestDialog
             form={form}
             settings={settings}
             onClose={() => setPrivateTestOpen(false)}
@@ -588,16 +535,16 @@ export function ProductUpdatesTab({
               </div>
             </div>
             <div>
-              <Field label="Title">
+              <ProductUpdateField label="Title">
                 <Input
                   value={form.title}
                   maxLength={120}
                   onChange={(event) => updateForm("title", event.target.value)}
                 />
-              </Field>
+              </ProductUpdateField>
             </div>
             <div className="mt-4">
-              <Field label="Summary">
+              <ProductUpdateField label="Summary">
                 <Textarea
                   value={form.summary}
                   maxLength={280}
@@ -606,7 +553,7 @@ export function ProductUpdatesTab({
                     updateForm("summary", event.target.value)
                   }
                 />
-              </Field>
+              </ProductUpdateField>
             </div>
             <div className="mt-4">
               <Label htmlFor="update-image" className="text-sm">
@@ -635,7 +582,7 @@ export function ProductUpdatesTab({
               </div>
               {selected?.imageUrl && (
                 <div className="mt-3">
-                  <Field label="Image description">
+                  <ProductUpdateField label="Image description">
                     <Input
                       value={form.imageAltText}
                       maxLength={160}
@@ -644,7 +591,7 @@ export function ProductUpdatesTab({
                         updateForm("imageAltText", event.target.value)
                       }
                     />
-                  </Field>
+                  </ProductUpdateField>
                   <p className="mt-1 text-xs text-muted-foreground">
                     Used by screen readers. Leave blank only when the image adds no information.
                   </p>
@@ -652,7 +599,7 @@ export function ProductUpdatesTab({
               )}
             </div>
             <div className="mt-4">
-              <Field label="Highlights, one per line">
+              <ProductUpdateField label="Highlights, one per line">
                 <Textarea
                   value={form.highlights}
                   rows={5}
@@ -660,14 +607,14 @@ export function ProductUpdatesTab({
                     updateForm("highlights", event.target.value)
                   }
                 />
-              </Field>
+              </ProductUpdateField>
             </div>
             <details className="mt-5 rounded-md border p-4">
               <summary className="cursor-pointer text-sm font-medium">
                 Advanced details
               </summary>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Field label="Version label">
+                <ProductUpdateField label="Version label">
                   <Input
                     value={form.versionLabel}
                     maxLength={32}
@@ -676,8 +623,8 @@ export function ProductUpdatesTab({
                       updateForm("versionLabel", event.target.value)
                     }
                   />
-                </Field>
-                <Field label="Expires">
+                </ProductUpdateField>
+                <ProductUpdateField label="Expires">
                   <Input
                     type="datetime-local"
                     value={form.expiresAt}
@@ -685,8 +632,8 @@ export function ProductUpdatesTab({
                       updateForm("expiresAt", event.target.value)
                     }
                   />
-                </Field>
-                <Field label="CTA label">
+                </ProductUpdateField>
+                <ProductUpdateField label="CTA label">
                   <Input
                     value={form.ctaLabel}
                     maxLength={40}
@@ -694,8 +641,8 @@ export function ProductUpdatesTab({
                       updateForm("ctaLabel", event.target.value)
                     }
                   />
-                </Field>
-                <Field label="CTA URL">
+                </ProductUpdateField>
+                <ProductUpdateField label="CTA URL">
                   <Input
                     value={form.ctaUrl}
                     maxLength={2048}
@@ -704,7 +651,7 @@ export function ProductUpdatesTab({
                       updateForm("ctaUrl", event.target.value)
                     }
                   />
-                </Field>
+                </ProductUpdateField>
               </div>
             </details>
             <div className="mt-5 flex flex-wrap gap-2">
@@ -736,14 +683,17 @@ export function ProductUpdatesTab({
             </div>
             {selected?.status === "draft" && (
               <div className="mt-4 flex flex-wrap items-end gap-2 rounded-md bg-muted/40 p-3">
-                <Field label="Publish later" className="min-w-[220px]">
+                <ProductUpdateField
+                  label="Publish later"
+                  className="min-w-[220px]"
+                >
                   <Input
                     type="datetime-local"
                     value={publishAt}
                     disabled={!entitlements?.scheduling}
                     onChange={(event) => setPublishAt(event.target.value)}
                   />
-                </Field>
+                </ProductUpdateField>
                 <Button
                   variant="outline"
                   disabled={saving || !entitlements?.scheduling}
@@ -798,7 +748,7 @@ export function ProductUpdatesTab({
                 {previewDark ? "Light" : "Dark"}
               </Button>
             </div>
-            <UpdatePreview
+            <ProductUpdatePreview
               form={form}
               dark={previewDark}
               mobile={previewMobile}
@@ -819,9 +769,12 @@ export function ProductUpdatesTab({
                 Last {entitlements?.analyticsDays || 7} days, aggregate only.
               </p>
               <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
-                <Metric label="Views" value={impressions} />
-                <Metric label="CTR" value={`${ctaRate}%`} />
-                <Metric label="Dismissed" value={`${dismissalRate}%`} />
+                <ProductUpdateMetric label="Views" value={impressions} />
+                <ProductUpdateMetric label="CTR" value={`${ctaRate}%`} />
+                <ProductUpdateMetric
+                  label="Dismissed"
+                  value={`${dismissalRate}%`}
+                />
               </dl>
             </section>
           )}
@@ -838,482 +791,11 @@ export function ProductUpdatesTab({
         </aside>
       </div>
       {privateTestOpen && (
-        <PrivateTestDialog
+        <ProductUpdatePrivateTestDialog
           form={form}
           settings={settings}
           onClose={() => setPrivateTestOpen(false)}
         />
-      )}
-    </div>
-  );
-}
-
-function UpdatesOverview({
-  updates,
-  onNew,
-  onEdit,
-  onSettings,
-  onAction,
-  busy,
-}: {
-  updates: Update[];
-  onNew: () => void;
-  onEdit: (id: string) => void;
-  onSettings: () => void;
-  onAction: (
-    update: Update,
-    action: "archive" | "restore" | "delete",
-  ) => Promise<void>;
-  busy: boolean;
-}) {
-  if (!updates.length) {
-    return (
-      <div className="mx-auto max-w-3xl space-y-5">
-        <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
-          <p className="text-xs font-semibold text-primary">
-            Updates for your users
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.035em]">
-            Tell users what just improved
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Publish a “What’s new” popup inside your product. Your shared embed
-            is already connected, so publishing here requires no code change.
-          </p>
-        </section>
-        <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
-          <h3 className="text-lg font-semibold">
-            Create the first product update
-          </h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Start with a title and summary. Add an image or delivery rules only
-            if they help.
-          </p>
-          <Button className="mt-5" onClick={onNew}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create first update
-          </Button>
-        </section>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-5">
-      <PageHeader
-        eyebrow="Inside your product"
-        title="Updates for your users"
-        description="Publish concise “What’s new” messages through the connected embed."
-        action={
-          <div className="flex gap-2">
-          <Button variant="outline" onClick={onSettings}>
-            <Settings2 className="mr-2 h-4 w-4" />
-            Settings
-          </Button>
-          <Button onClick={onNew}>
-            <Plus className="mr-2 h-4 w-4" />
-            New product update
-          </Button>
-          </div>
-        }
-      />
-      <div className="divide-y overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]">
-        {updates.map((update) => (
-          <div
-            key={update.id}
-            className="flex min-h-20 items-center gap-2 p-2 sm:p-3"
-          >
-            <button
-              className="min-w-0 flex-1 rounded-md p-2 text-left hover:bg-muted/40"
-              onClick={() => onEdit(update.id)}
-            >
-              <span className="flex items-center gap-2">
-                <span className="truncate font-medium">
-                  {update.version_label ? `${update.version_label} · ` : ""}
-                  {update.title}
-                </span>
-                <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              </span>
-              <span className="mt-1 block text-xs text-muted-foreground">
-                {stateLabel(update)} ·{" "}
-                {update.published_at
-                  ? new Date(update.published_at).toLocaleDateString()
-                  : "Not published"}{" "}
-                · {update.metrics.impressions} views ·{" "}
-                {update.metrics.ctaClicks} CTA clicks ·{" "}
-                {update.metrics.dismissals} dismissals
-              </span>
-            </button>
-            <div className="flex shrink-0 gap-1">
-              {update.status === "archived" ? (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={busy}
-                  aria-label={`Restore ${update.title}`}
-                  onClick={() => void onAction(update, "restore")}
-                >
-                  <RotateCcw className="h-4 w-4" />
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  disabled={busy}
-                  aria-label={`Archive ${update.title}`}
-                  onClick={() => void onAction(update, "archive")}
-                >
-                  <Archive className="h-4 w-4" />
-                </Button>
-              )}
-              <Button
-                size="sm"
-                variant="ghost"
-                disabled={busy}
-                aria-label={`Delete ${update.title}`}
-                onClick={() => void onAction(update, "delete")}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function UpdatesSettings({
-  settings,
-  entitlements,
-  onSave,
-  onBack,
-}: {
-  settings: Settings;
-  entitlements: Entitlements | null;
-  onSave: (settings: Settings) => Promise<void>;
-  onBack: () => void;
-}) {
-  const [draft, setDraft] = React.useState(settings);
-  const delaySeconds = draft.displayDelayMs / 1000;
-  const hasCustomDelay = ![0, 3, 5].includes(delaySeconds);
-  return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <section className="flex flex-wrap items-start justify-between gap-4 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
-        <div>
-          <p className="text-xs font-semibold text-primary">
-            Updates for your users
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.035em]">
-            Display settings
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Control how “What’s new” announcements appear inside your product.
-          </p>
-        </div>
-        <Button variant="outline" onClick={onBack}>
-          Back to updates
-        </Button>
-      </section>
-      <div className="space-y-5 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
-        <Check
-          label="Show product updates to users"
-          value={draft.enabled}
-          onChange={(enabled) => setDraft({ ...draft, enabled })}
-        />
-        <Check
-          label="Auto-show the newest unseen update"
-          value={draft.autoShow}
-          onChange={(autoShow) => setDraft({ ...draft, autoShow })}
-        />
-        <Field label="Appearance">
-          <select
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            value={draft.theme}
-            onChange={(event) =>
-              setDraft({
-                ...draft,
-                theme: event.target.value as Settings["theme"],
-              })
-            }
-          >
-            <option value="auto">Match visitor device</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-          </select>
-        </Field>
-        <Field label="Show after">
-          <select
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            value={delaySeconds}
-            onChange={(event) =>
-              setDraft({
-                ...draft,
-                displayDelayMs: Number(event.target.value) * 1000,
-              })
-            }
-          >
-            {hasCustomDelay && (
-              <option value={delaySeconds}>
-                {delaySeconds} seconds (current)
-              </option>
-            )}
-            <option value="0">Immediately</option>
-            <option value="3">3 seconds</option>
-            <option value="5">5 seconds</option>
-          </select>
-        </Field>
-        <Field label="Accent color">
-          <Input
-            value={draft.accentColor}
-            onChange={(event) =>
-              setDraft({ ...draft, accentColor: event.target.value })
-            }
-          />
-        </Field>
-        <details className="rounded-md border p-4">
-          <summary className="cursor-pointer text-sm font-medium">
-            Page targeting
-          </summary>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            Use pathname prefixes such as /dashboard or /settings. Leave both
-            lists empty to show updates everywhere.
-          </p>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <Field label="Show on specific pages">
-              <Textarea
-                rows={4}
-                placeholder={"/dashboard\n/changelog"}
-                value={draft.includePaths.join("\n")}
-                onChange={(event) =>
-                  setDraft({
-                    ...draft,
-                    includePaths: event.target.value
-                      .split("\n")
-                      .map((item) => item.trim())
-                      .filter(Boolean),
-                  })
-                }
-              />
-            </Field>
-            <Field label="Hide on specific pages">
-              <Textarea
-                rows={4}
-                placeholder={"/checkout\n/admin"}
-                value={draft.excludePaths.join("\n")}
-                onChange={(event) =>
-                  setDraft({
-                    ...draft,
-                    excludePaths: event.target.value
-                      .split("\n")
-                      .map((item) => item.trim())
-                      .filter(Boolean),
-                  })
-                }
-              />
-            </Field>
-          </div>
-        </details>
-        <Check
-          label="Show feedbacks.dev branding"
-          value={draft.showPoweredBy}
-          disabled={!entitlements?.customBranding}
-          onChange={(showPoweredBy) => setDraft({ ...draft, showPoweredBy })}
-        />
-        <Button onClick={() => void onSave(draft)}>Save settings</Button>
-      </div>
-    </div>
-  );
-}
-
-function PrivateTestDialog({
-  form,
-  settings,
-  onClose,
-}: {
-  form: FormValues;
-  settings: Settings;
-  onClose: () => void;
-}) {
-  const dialogRef = React.useRef<HTMLDivElement>(null);
-  const closeRef = React.useRef<HTMLButtonElement>(null);
-  const previousFocus = React.useRef<HTMLElement | null>(null);
-
-  React.useEffect(() => {
-    previousFocus.current =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-    closeRef.current?.focus();
-    return () => previousFocus.current?.focus();
-  }, []);
-
-  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onClose();
-      return;
-    }
-    if (event.key !== "Tab") return;
-    const focusable = Array.from(
-      dialogRef.current?.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      ) || [],
-    ).filter((element) => !element.hasAttribute("disabled"));
-    if (!focusable.length) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
-
-  return (
-    <div
-      ref={dialogRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Private release note test"
-      onKeyDown={handleKeyDown}
-    >
-      <div className="w-full max-w-lg rounded-lg border bg-background p-5 shadow-xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
-              Private test
-            </p>
-            <h3 className="mt-1 font-semibold">Visitor preview</h3>
-          </div>
-          <Button
-            ref={closeRef}
-            size="sm"
-            variant="ghost"
-            aria-label="Close private test"
-            onClick={onClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-        <UpdatePreview
-          form={form}
-          dark={settings.theme === "dark"}
-          mobile={false}
-          accent={settings.accentColor}
-        />
-        <p className="mt-4 text-xs text-muted-foreground">
-          Only you can see this preview. Nothing has been published by opening
-          it.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  children,
-  className,
-}: {
-  label: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <label className={`block space-y-1.5 ${className || ""}`}>
-      <span className="text-sm font-medium">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-function Check({
-  label,
-  value,
-  onChange,
-  disabled,
-}: {
-  label: string;
-  value: boolean;
-  onChange: (value: boolean) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <label
-      className={`flex items-center gap-2 text-sm ${disabled ? "text-muted-foreground" : ""}`}
-    >
-      <input
-        type="checkbox"
-        checked={value}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.checked)}
-      />
-      {label}
-    </label>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div>
-      <dt className="text-[11px] uppercase tracking-wide text-muted-foreground">
-        {label}
-      </dt>
-      <dd className="mt-1 text-base font-semibold">{value}</dd>
-    </div>
-  );
-}
-
-function UpdatePreview({
-  form,
-  dark,
-  mobile,
-  accent,
-}: {
-  form: FormValues;
-  dark: boolean;
-  mobile: boolean;
-  accent: string;
-}) {
-  return (
-    <div
-      className={`mx-auto mt-4 rounded-lg border p-5 shadow-sm ${mobile ? "max-w-[280px]" : ""} ${dark ? "border-slate-700 bg-slate-950 text-slate-100" : "bg-white text-slate-900"}`}
-    >
-      <p
-        className="text-xs font-semibold uppercase tracking-[0.12em]"
-        style={{ color: accent }}
-      >
-        {form.versionLabel || "What’s New"}
-      </p>
-      <h4 className="mt-2 text-lg font-semibold">
-        {form.title || "Your release note title"}
-      </h4>
-      <p
-        className={`mt-2 text-sm leading-6 ${dark ? "text-slate-300" : "text-slate-600"}`}
-      >
-        {form.summary || "A concise summary of the release appears here."}
-      </p>
-      {form.highlights && (
-        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
-          {form.highlights
-            .split("\n")
-            .filter(Boolean)
-            .map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-        </ul>
-      )}
-      {form.ctaLabel && (
-        <span
-          className="mt-4 inline-flex rounded-md px-3 py-2 text-sm font-semibold text-white"
-          style={{ backgroundColor: accent }}
-        >
-          {form.ctaLabel}
-        </span>
       )}
     </div>
   );

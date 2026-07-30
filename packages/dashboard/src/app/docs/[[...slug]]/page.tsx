@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight, BookOpen, ExternalLink, Menu, TriangleAlert, Inf
 import { BrandWordmark } from '@/components/brand-wordmark'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { DOCS_CATEGORIES, DOCS_PAGES, getDocsPage, type DocsBlock } from '@/lib/docs-content'
+import { DOCS_CATEGORIES, DOCS_PAGES, DOCS_REVISION, getDocsPage, type DocsBlock } from '@/lib/docs-content'
 import { publicEnv } from '@/lib/public-env'
 import { DocsCodeBlock, DocsSearch } from '../docs-client'
 
@@ -51,7 +51,7 @@ function DocsNavigation({ activeSlug, mobile = false }: { activeSlug: string; mo
 function renderBlock(block: DocsBlock, index: number) {
   if (block.type === 'paragraph') return <p key={index} className="my-4 max-w-[72ch] text-[15px] leading-7 text-foreground/78">{block.text}</p>
   if (block.type === 'heading') return <h2 key={block.id} id={block.id} className="scroll-mt-24 border-t pt-8 text-xl font-semibold tracking-tight first:border-0 first:pt-0">{block.title}</h2>
-  if (block.type === 'code') return <DocsCodeBlock key={index} {...block} />
+  if (block.type === 'code') return <DocsCodeBlock key={index} {...block} label={`${block.label} · docs ${DOCS_REVISION}`} />
   if (block.type === 'list') return (
     <ul key={index} className="my-4 max-w-[72ch] space-y-2 text-[15px] leading-7 text-foreground/78">
       {block.items.map((item) => <li key={item} className="flex gap-3"><span className="mt-[11px] h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />{item}</li>)}
@@ -127,6 +127,7 @@ export default async function DocsPage({ params }: { params: Promise<{ slug?: st
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{page.category}</p>
             <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{page.title}</h1>
             <p className="mt-4 max-w-[68ch] text-base leading-7 text-muted-foreground">{page.description}</p>
+            <p className="mt-3 text-xs text-muted-foreground">Documentation revision {DOCS_REVISION}</p>
             <div className="mt-10 space-y-6">{page.blocks.map(renderBlock)}</div>
 
             <nav aria-label="Adjacent documentation" className="mt-12 grid gap-3 border-t pt-6 sm:grid-cols-2">

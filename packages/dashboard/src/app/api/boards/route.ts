@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { loadBoardDirectoryEntries, sortBoardDirectoryEntries, type BoardSortMode } from '@/lib/board-discovery'
+import { loadBoardDirectoryPage, type BoardSortMode } from '@/lib/board-discovery'
 
 const VALID_SORTS = new Set<BoardSortMode>(['trending', 'active', 'responsive', 'shipping', 'new'])
 
@@ -11,27 +11,21 @@ export async function GET(request: NextRequest) {
       ? (sortParam as BoardSortMode)
       : 'trending'
     const category = searchParams.get('category')?.trim().toLowerCase() || ''
-    const search = searchParams.get('q')?.trim().toLowerCase() || ''
+    const search = searchParams.get('q')?.trim() || ''
+    const cursor = searchParams.get('cursor')
+    const directory = await loadBoardDirectoryPage({ sort, category, query: search, cursor })
 
-    const entries = await loadBoardDirectoryEntries()
-
-    let filtered = entries
-    if (category) {
-      filtered = filtered.filter((entry) => entry.branding.categories?.includes(category))
-    }
-    if (search) {
-      filtered = filtered.filter(
-        (entry) =>
-          (entry.displayName || entry.title).toLowerCase().includes(search) ||
-          entry.description.toLowerCase().includes(search) ||
-          entry.projectName.toLowerCase().includes(search),
-      )
-    }
-
-    const sorted = sortBoardDirectoryEntries(filtered, sort)
-
-    return NextResponse.json({ boards: sorted })
-  } catch {
-    return NextResponse.json({ error: 'Failed to load boards' }, { status: 500 })
+    return NextResponse.json({
+      boards: directory.entries,
+      total: directory.total,
+      nextCursor: directory.nextCursor,
+      hasMore: directory.hasMore,
+    }, { headers: { 'Cache-Control': 'public, max-age=30, stale-while-revalidate=120' } })
+  } catch (error) {
+    const invalidCursor = error instanceof Error && error.message === 'Invalid board directory cursor'
+    return NextResponse.json(
+      { error: invalidCursor ? 'Invalid pagination cursor' : 'Failed to load boards' },
+      { status: invalidCursor ? 400 : 500 },
+    )
   }
 }

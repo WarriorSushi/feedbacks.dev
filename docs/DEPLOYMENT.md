@@ -53,8 +53,30 @@ For a new internal staging, recovery, or disposable verification project, run th
 29. `sql/029_project_embed_installations.sql` — privacy-preserving current-embed heartbeat and module detection
 30. `sql/030_product_update_activation_events.sql` — aggregate Updates activation milestones
 31. `sql/031_atomic_project_modules.sql` — atomically saves Feedback and Updates module choices through a service-only RPC
+32. `sql/032_plan_foreign_key_indexes.sql` — indexes plan and entitlement relationship lookups
+33. `sql/033_split_publishable_and_private_project_keys.sql` — separates browser-safe publishable keys from hashed private credentials
+34. `sql/034_encrypt_integration_secrets.sql` — encrypts integration credentials at rest
+35. `sql/035_redact_integration_operational_data.sql` — removes credentials from browser, queue, and delivery-log surfaces
+36. `sql/036_project_environment_isolation.sql` — separates production, test, and expiring verification projects
+37. `sql/037_quarantine_legacy_production_e2e_data.sql` — quarantines historical production test fixtures
+38. `sql/038_activation_environment_partition.sql` — excludes test environments from activation metrics
+39. `sql/039_private_feedback_media.sql` — stores feedback media privately with explicit scan state
+40. `sql/040_atomic_billing_event_processing.sql` — makes billing webhook processing safely claimable and retryable
+41. `sql/041_audit_integration_secret_changes.sql` — records integration secret lifecycle events
+42. `sql/042_billing_customer_summary.sql` — exposes a bounded customer billing summary
+43. `sql/043_durable_account_deletion_jobs.sql` — creates resumable, auditable account-deletion work
+44. `sql/044_public_board_directory_migration_marker.sql` — records the hosted directory migration boundary
+45. `sql/045_bounded_public_board_directory.sql` — moves public directory ranking and totals into a bounded service-only aggregate
+46. `sql/046_feedback_activity_and_update_accessibility.sql` — records feedback history and update accessibility metadata
+47. `sql/047_api_idempotency_keys.sql` — prevents duplicate API mutations on retries
+48. `sql/048_idempotency_request_fingerprint.sql` — rejects idempotency-key reuse with a different request
+49. `sql/049_idempotent_project_creation.sql` — makes project creation retry-safe and uniquely keyed
+50. `sql/050_cursor_public_board_directory.sql` — adds snapshot-stable keyset pagination to public-board discovery
+51. `sql/051_advisor_security_hardening.sql` — removes remaining callable trigger internals, makes service-only RLS intent explicit, and fixes advisor indexes
+52. `sql/052_resend_delivery_events.sql` — records signed Resend delivery events and suppresses bounced or complained recipients without storing plaintext email addresses
+53. `sql/053_versioned_product_update_publish.sql` — rejects stale Product Update publication requests inside the database lock
 
-Hosted schema note, 19 July 2026: migrations `020` through `031` are applied and verified on the live project. Product Updates tables and storage exist with RLS enabled, embed heartbeats are service-managed, module choices are atomic, generated types are current, and `pnpm supabase:check` passes.
+Hosted schema note, 30 July 2026: migrations through `053` are applied and verified on the live project. Product Updates tables and storage exist with RLS enabled, embed heartbeats are service-managed, module choices are atomic, public-directory pagination is snapshot-stable, stale writes and publications are rejected atomically, email bounces and complaints are replay-safe and suppress future sends, advisor-owned security and performance warnings are cleared, generated types are current, and `pnpm supabase:check` passes.
 
 **How for internal/staging use:** apply the files through the Supabase CLI or copy-paste the contents of each file into the SQL Editor and click "Run".
 
@@ -157,6 +179,23 @@ AGENT_SETUP_TOKEN_SECRET
 ```
 
 Add billing, captcha, and email variables only when those surfaces are enabled in production.
+
+When email notifications are enabled, configure all three server-only values:
+
+```text
+RESEND_API_KEY
+RESEND_FROM_EMAIL
+RESEND_WEBHOOK_SECRET
+```
+
+In Resend, create a webhook for
+`https://app.feedbacks.dev/api/webhooks/resend`, subscribe to `email.bounced`,
+`email.complained`, `email.suppressed`, `email.failed`,
+`email.delivery_delayed`, `email.sent`, and `email.delivered`, then copy its
+`whsec_…` signing secret into `RESEND_WEBHOOK_SECRET`. The route verifies the
+raw-body Svix signature and timestamp, deduplicates on `svix-id`, stores only
+hashed recipients, and prevents future sends to bounced, suppressed, or
+complaining recipients.
 
 ### Cron plan note
 

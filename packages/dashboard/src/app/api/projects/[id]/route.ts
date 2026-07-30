@@ -5,6 +5,11 @@ import { cleanupFeedbackStorageForProjectIds } from '@/lib/feedback-storage-clea
 import { sanitizeSavedWidgetConfig } from '@feedbacks/shared'
 import { readJsonBody } from '@/lib/api-request'
 import { normalizeProjectDomain } from '@/lib/project-input'
+import {
+  editConflictResponse,
+  formatVersionEtag,
+  parseIfMatchVersion,
+} from '@/lib/optimistic-concurrency'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -31,14 +36,17 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const { data: avgData } = await admin
       .rpc('avg_rating_for_project', { p_project_id: id })
 
-    return NextResponse.json({
-      ...project,
-      stats: {
-        totalFeedback: totalFeedback ?? 0,
-        newFeedback: newFeedback ?? 0,
-        avgRating: avgData ?? null,
+    return NextResponse.json(
+      {
+        ...project,
+        stats: {
+          totalFeedback: totalFeedback ?? 0,
+          newFeedback: newFeedback ?? 0,
+          avgRating: avgData ?? null,
+        },
       },
-    })
+      { headers: { ETag: formatVersionEtag(project.updated_at) } },
+    )
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
@@ -51,6 +59,22 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if ('error' in result) return result.error
 
     const { admin, project } = result as Exclude<typeof result, { error: NextResponse }>
+    const expectedVersion = parseIfMatchVersion(request.headers.get('if-match'))
+    if (!expectedVersion) {
+      return NextResponse.json(
+        {
+          code: 'PRECONDITION_REQUIRED',
+          error: 'Reload this project before saving so newer changes are not overwritten.',
+        },
+        { status: 428, headers: { ETag: formatVersionEtag(project.updated_at) } },
+      )
+    }
+    if (expectedVersion !== project.updated_at) {
+      return NextResponse.json(editConflictResponse(project.updated_at), {
+        status: 409,
+        headers: { ETag: formatVersionEtag(project.updated_at) },
+      })
+    }
     const bodyResult = await readJsonBody<{
       name?: string
       domain?: string | null
@@ -100,10 +124,30 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'No supported project changes were provided.' }, { status: 400 })
     }
 
-    const { data, error } = await admin.from('projects').update(updates).eq('id', id).select().single()
+    const { data, error } = await admin
+      .from('projects')
+      .update(updates)
+      .eq('id', id)
+      .eq('updated_at', expectedVersion)
+      .select()
+      .maybeSingle()
     if (error) return NextResponse.json({ error: 'Failed to update project' }, { status: 500 })
+    if (!data) {
+      const { data: latest } = await admin
+        .from('projects')
+        .select('updated_at')
+        .eq('id', id)
+        .maybeSingle()
+      const currentVersion = latest?.updated_at || project.updated_at
+      return NextResponse.json(editConflictResponse(currentVersion), {
+        status: 409,
+        headers: { ETag: formatVersionEtag(currentVersion) },
+      })
+    }
 
-    return NextResponse.json(data)
+    return NextResponse.json(data, {
+      headers: { ETag: formatVersionEtag(data.updated_at) },
+    })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

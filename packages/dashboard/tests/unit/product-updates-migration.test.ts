@@ -3,6 +3,10 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
 const migration = new URL('../../../../sql/028_product_updates.sql', import.meta.url)
+const versionedPublishMigration = new URL(
+  '../../../../sql/053_versioned_product_update_publish.sql',
+  import.meta.url,
+)
 
 test('product update migration preserves RLS, service-only RPCs, and atomic publish limits', async () => {
   const sql = await readFile(migration, 'utf8')
@@ -16,4 +20,17 @@ test('product update migration preserves RLS, service-only RPCs, and atomic publ
   assert.match(sql, /grant execute on function public\.publish_product_update[\s\S]+to service_role/i)
   assert.match(sql, /product_update_images/)
   assert.match(sql, /target\.published_at <= now\(\)/)
+})
+
+test('product update publication rejects a stale editor inside the database lock', async () => {
+  const sql = await readFile(versionedPublishMigration, 'utf8')
+
+  assert.match(sql, /p_expected_updated_at timestamptz/i)
+  assert.match(sql, /for update/i)
+  assert.match(sql, /target\.updated_at <> p_expected_updated_at/i)
+  assert.match(sql, /product update version conflict/i)
+  assert.match(
+    sql,
+    /revoke all on function public\.publish_product_update\([\s\S]+service_role/i,
+  )
 })

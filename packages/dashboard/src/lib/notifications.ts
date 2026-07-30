@@ -3,6 +3,7 @@ import { createAdminSupabase } from '@/lib/supabase-server'
 export { escapeEmailHtml } from './notification-html'
 import { escapeEmailHtml } from './notification-html'
 import type { Feedback, NotificationSettings, Project } from '@/lib/types'
+import { hashEmailRecipient } from './resend-webhooks'
 import {
   buildPublicBoardReplyEmail,
   buildPublicBoardStatusEmail,
@@ -20,6 +21,16 @@ interface EmailPayload {
 
 async function sendResendEmail(payload: EmailPayload) {
   if (!isEmailEnabled()) return false
+  const admin = await createAdminSupabase()
+  const { data: suppression, error: suppressionError } = await admin
+    .from('email_suppressions')
+    .select('recipient_hash')
+    .eq('recipient_hash', hashEmailRecipient(payload.to))
+    .maybeSingle()
+  if (suppressionError) {
+    throw new Error(`Could not check email suppression: ${suppressionError.message}`)
+  }
+  if (suppression) return false
 
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',

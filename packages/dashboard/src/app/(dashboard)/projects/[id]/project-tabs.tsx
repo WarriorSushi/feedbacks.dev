@@ -22,6 +22,7 @@ import { InstallTab } from './install-tab'
 import { SetupProgress } from './project-flow-nav'
 import { ProjectHome } from './project-home'
 import { PageHeader } from '@/components/ui/workspace-shell'
+import { formatVersionEtag } from '@/lib/optimistic-concurrency'
 
 function SectionLoading() {
   return <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">Loading this workspace…</div>
@@ -184,6 +185,7 @@ function SettingsTab({ project }: { project: Project }) {
   const [deleting, setDeleting] = React.useState(false)
   const [confirmDelete, setConfirmDelete] = React.useState(false)
   const [deleteInput, setDeleteInput] = React.useState('')
+  const [projectVersion, setProjectVersion] = React.useState(project.updated_at)
 
   const handleSave = async () => {
     setSaving(true)
@@ -201,7 +203,10 @@ function SettingsTab({ project }: { project: Project }) {
 
     const response = await fetch(`/api/projects/${project.id}`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'If-Match': formatVersionEtag(projectVersion),
+      },
       body: JSON.stringify({
         name: name.trim(),
         domain: domain.trim() || null,
@@ -223,6 +228,7 @@ function SettingsTab({ project }: { project: Project }) {
       })
       return
     }
+    setProjectVersion(payload.updated_at)
     toast({ title: 'Project settings saved' })
     router.refresh()
   }

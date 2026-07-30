@@ -536,6 +536,66 @@ export type Database = {
         }
         Relationships: []
       }
+      email_delivery_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          occurred_at: string
+          provider_email_id: string | null
+          provider_event_id: string
+          reason: string | null
+          recipient_hashes: string[]
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          occurred_at: string
+          provider_email_id?: string | null
+          provider_event_id: string
+          reason?: string | null
+          recipient_hashes?: string[]
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          occurred_at?: string
+          provider_email_id?: string | null
+          provider_event_id?: string
+          reason?: string | null
+          recipient_hashes?: string[]
+        }
+        Relationships: []
+      }
+      email_suppressions: {
+        Row: {
+          created_at: string
+          last_event_at: string
+          provider_event_id: string
+          reason: string
+          recipient_hash: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          last_event_at: string
+          provider_event_id: string
+          reason: string
+          recipient_hash: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          last_event_at?: string
+          provider_event_id?: string
+          reason?: string
+          recipient_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           agent_name: string | null
@@ -1935,6 +1995,19 @@ export type Database = {
         }
         Returns: Json
       }
+      get_public_board_directory_cursor: {
+        Args: {
+          p_after_activity?: string | null
+          p_after_id?: string | null
+          p_after_score?: number | null
+          p_category?: string | null
+          p_limit?: number
+          p_query?: string | null
+          p_snapshot_at?: string | null
+          p_sort?: string
+        }
+        Returns: Json
+      }
       fail_claimed_billing_event: {
         Args: {
           p_claim_token: string
@@ -1968,6 +2041,7 @@ export type Database = {
           p_expires_at: string
           p_project_id: string
           p_published_at: string
+          p_expected_updated_at: string
           p_update_id: string
         }
         Returns: {

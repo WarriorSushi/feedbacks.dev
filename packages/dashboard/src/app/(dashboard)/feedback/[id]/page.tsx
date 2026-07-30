@@ -314,6 +314,7 @@ export default async function FeedbackDetailPage({
                 currentPriority={fb.priority}
                 currentTags={fb.tags}
                 suggestedTags={suggestedTags}
+                currentVersion={fb.updated_at}
               />
             </CardContent>
           </Card>

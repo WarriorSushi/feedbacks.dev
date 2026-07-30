@@ -3,6 +3,11 @@ import { sanitizeProductUpdateInput } from '@feedbacks/shared'
 import { getAuthedUserAndProject } from '@/lib/api-auth'
 import { publicImageUrl } from '@/lib/product-update-service'
 import { readJsonBody } from '@/lib/api-request'
+import {
+  editConflictResponse,
+  formatVersionEtag,
+  parseIfMatchVersion,
+} from '@/lib/optimistic-concurrency'
 
 const headers = { 'Cache-Control': 'no-store' }
 async function resolve(params: Promise<{ id: string; updateId: string }>) {
@@ -13,7 +18,10 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   const { id, updateId, auth } = await resolve(params); if ('error' in auth) return auth.error
   const { data, error } = await auth.admin.from('product_updates').select('*').eq('project_id', id).eq('id', updateId).maybeSingle()
   if (error || !data) return NextResponse.json({ error: 'Update not found.' }, { status: 404, headers })
-  return NextResponse.json({ update: { ...data, imageUrl: publicImageUrl(auth.admin, data.image_path) } }, { headers })
+  return NextResponse.json(
+    { update: { ...data, imageUrl: publicImageUrl(auth.admin, data.image_path) } },
+    { headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } },
+  )
 }
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string; updateId: string }> }) {
   const { id, updateId, auth } = await resolve(params); if ('error' in auth) return auth.error
@@ -23,6 +31,22 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!body || typeof body !== 'object' || ['status', 'projectId', 'project_id', 'publishedAt', 'published_at', 'expiresAt', 'expires_at'].some((key) => key in body)) return NextResponse.json({ error: 'Lifecycle fields require their explicit action.' }, { status: 400, headers })
   const { data: existing, error: existingError } = await auth.admin.from('product_updates').select('*').eq('project_id', id).eq('id', updateId).maybeSingle()
   if (existingError || !existing) return NextResponse.json({ error: 'Update not found.' }, { status: 404, headers })
+  const expectedVersion = parseIfMatchVersion(request.headers.get('if-match'))
+  if (!expectedVersion) {
+    return NextResponse.json(
+      {
+        code: 'PRECONDITION_REQUIRED',
+        error: 'Reload this update before saving so newer edits are not overwritten.',
+      },
+      { status: 428, headers: { ...headers, ETag: formatVersionEtag(existing.updated_at) } },
+    )
+  }
+  if (expectedVersion !== existing.updated_at) {
+    return NextResponse.json(editConflictResponse(existing.updated_at), {
+      status: 409,
+      headers: { ...headers, ETag: formatVersionEtag(existing.updated_at) },
+    })
+  }
   const parsed = sanitizeProductUpdateInput({
     versionLabel: existing.version_label,
     title: existing.title,
@@ -39,19 +63,35 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     version_label: parsed.data.versionLabel || null, title: parsed.data.title, summary: parsed.data.summary,
     highlights: parsed.data.highlights, cta_label: parsed.data.ctaLabel || null, cta_url: parsed.data.ctaUrl || null,
     image_alt_text: parsed.data.imageAltText || null,
-  }).eq('project_id', id).eq('id', updateId).select('*').maybeSingle()
-  if (error || !data) return NextResponse.json({ error: 'Unable to save update.' }, { status: 500, headers })
-  return NextResponse.json({ update: data }, { headers })
-}
-export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string; updateId: string }> }) {
-  const { id, updateId, auth } = await resolve(params); if ('error' in auth) return auth.error
-  const { data } = await auth.admin.from('product_updates').select('image_path').eq('project_id', id).eq('id', updateId).maybeSingle()
-  if (!data) return NextResponse.json({ error: 'Update not found.' }, { status: 404, headers })
-  if (data.image_path) {
-    const { error: storageError } = await auth.admin.storage.from('product_update_images').remove([data.image_path])
-    if (storageError) return NextResponse.json({ error: 'Unable to remove update media. Try again.' }, { status: 500, headers })
+    updated_at: new Date().toISOString(),
+  }).eq('project_id', id).eq('id', updateId).eq('updated_at', expectedVersion).select('*').maybeSingle()
+  if (error) return NextResponse.json({ error: 'Unable to save update.' }, { status: 500, headers })
+  if (!data) {
+    const { data: latest } = await auth.admin.from('product_updates').select('updated_at').eq('project_id', id).eq('id', updateId).maybeSingle()
+    const currentVersion = latest?.updated_at || existing.updated_at
+    return NextResponse.json(editConflictResponse(currentVersion), {
+      status: 409,
+      headers: { ...headers, ETag: formatVersionEtag(currentVersion) },
+    })
   }
-  const { error } = await auth.admin.from('product_updates').delete().eq('project_id', id).eq('id', updateId)
+  return NextResponse.json(
+    { update: data },
+    { headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } },
+  )
+}
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string; updateId: string }> }) {
+  const { id, updateId, auth } = await resolve(params); if ('error' in auth) return auth.error
+  const { data } = await auth.admin.from('product_updates').select('image_path,updated_at').eq('project_id', id).eq('id', updateId).maybeSingle()
+  if (!data) return NextResponse.json({ error: 'Update not found.' }, { status: 404, headers })
+  const expectedVersion = parseIfMatchVersion(request.headers.get('if-match'))
+  if (!expectedVersion) return NextResponse.json({ code: 'PRECONDITION_REQUIRED', error: 'Reload this update before deleting it.' }, { status: 428, headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } })
+  if (expectedVersion !== data.updated_at) return NextResponse.json(editConflictResponse(data.updated_at), { status: 409, headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } })
+  const { data: deleted, error } = await auth.admin.from('product_updates').delete().eq('project_id', id).eq('id', updateId).eq('updated_at', expectedVersion).select('image_path').maybeSingle()
   if (error) return NextResponse.json({ error: 'Unable to delete update.' }, { status: 500, headers })
+  if (!deleted) return NextResponse.json(editConflictResponse(data.updated_at), { status: 409, headers })
+  if (deleted.image_path) {
+    const { error: storageError } = await auth.admin.storage.from('product_update_images').remove([deleted.image_path])
+    if (storageError) console.error('Unable to remove deleted product update media', storageError)
+  }
   return new NextResponse(null, { status: 204, headers })
 }

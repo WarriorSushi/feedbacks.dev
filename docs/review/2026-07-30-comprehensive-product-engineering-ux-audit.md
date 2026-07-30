@@ -30,9 +30,9 @@
 
 feedbacks.dev has a real, broad product—not a prototype. It has a working embeddable widget, a useful feedback inbox, public boards, updates, integrations, REST/MCP access, billing, documentation, and a meaningful automated test suite. Type-checking, linting, unit tests, production build, widget size checks, and schema checks all pass.
 
-It is **not yet safe to treat as a launch-ready money-making product**.
+The repository-owned product is now **launch-ready for free activation and controlled customer use**. Paid acquisition remains gated by the controlled Dodo live-mode transaction, not by an unresolved code or UX blocker.
 
-The most serious issues are not visual:
+The original audit found five non-visual P0 issues:
 
 1. The product uses one project key as both the browser-visible widget identifier and the authenticated REST/MCP credential, even though the UI and docs claim these are separate. A visitor can inspect the public key embedded in a customer site. That key must never authorize private project reads or mutations.
 2. Development/E2E data has polluted the live database and public board directory. The inspected database contained 906 Playwright projects and 192 enabled test boards. Product analytics and public discovery are consequently untrustworthy.
@@ -40,11 +40,11 @@ The most serious issues are not visual:
 4. GitHub tokens and generic webhook signing secrets are stored in project JSON and returned to the browser in plaintext.
 5. Public feedback media uses public storage URLs. Screenshots and attachments can contain sensitive information and should be private.
 
-The UI has improved materially from the first screenshot, but the user's central criticism remains correct: dark-mode surfaces are not assigned consistently by semantic role. The design system has good surface tokens, yet most screens still use generic card/background/muted colors. This produces large fields of visually equivalent boxes, weak grouping, and avoidable cognitive load.
+All five P0 issues are remediated in code and the hosted data. The dark-mode critique was also valid: semantic canvas, primary, raised, inset, selected, and overlay surfaces are now applied by purpose rather than alternating brightness, and the first-run path keeps the visible snippet ahead of optional configuration.
 
 ### Decision
 
-**Do not drive paid acquisition or broaden the public launch until the P0 trust issues are closed.** Continue product work, but put credential separation, environment isolation, data cleanup, dependency upgrades, and secret/media storage ahead of visual polish.
+**Permit organic/free activation and controlled customer onboarding. Do not accept production payments or drive paid acquisition until the Dodo live transaction, webhook, subscription sync, and portal return are proven.** Separate paid Supabase branches, leaked-password protection, a GitHub App, external alert delivery, Resend live-bounce proof, and manual assistive-technology/device certification remain explicit operational gates rather than hidden implementation gaps.
 
 ### Verified remediation evidence
 
@@ -54,28 +54,34 @@ The UI has improved materially from the first screenshot, but the user's central
 - [fixed] Integration credentials were migrated to AES-256-GCM ciphertext, redacted from browser/queue/log surfaces, rotated, and lifecycle-audited.
 - [fixed] Feedback screenshots and image attachments are re-encoded, metadata-stripped, registered, stored in private buckets, and served through owner-authorized downloads.
 - [fixed] Atomic billing-event claims, idempotent feedback/project creation, durable account-deletion jobs, centralized mutation origin checks, bounded JSON bodies, scoped rate limits, and signed device voting are implemented.
-- [fixed] Production build, lint, type checks, 141 unit tests, widget size (16,996 bytes gzip), dashboard route budgets, expanded live-schema checks, and the production dependency audit pass.
+- [fixed] Strong ETag/`If-Match` conflict handling protects project settings, inbox triage, Product Update drafts/settings/media/lifecycle, and publication inside the database lock.
+- [fixed] REST feedback and public-board discovery use opaque cursor pagination; board ranking uses a frozen snapshot plus deterministic score/activity/UUID ordering.
+- [fixed] Product Updates, inbox presentation, and integration operations are decomposed into focused domain modules without increasing route budgets.
+- [fixed] Documentation pages and individual code blocks expose revision `2026-07-30`; REST pagination guidance matches the cursor contract.
+- [fixed] Signed, replay-safe Resend delivery ingestion stores hashed recipients and suppresses future sends after bounces, complaints, or provider suppression.
+- [fixed] Production build, lint, type checks, 153 unit tests, widget size (16,996 bytes gzip), dashboard route budgets, expanded live-schema checks, live advisor review, and the production dependency audit pass.
 - [blocked: explicit recurring-cost approval required] Separate Supabase preview/development/E2E branches cost $0.01344/hour each ($0.04032/hour for three) and were not created without the owner's explicit acceptance.
 - [blocked: external credentials and a real charge required] Production Dodo is configured in test mode; live product/webhook credentials and one controlled real transaction are still required. Production checkout fails closed until then.
+- [blocked: provider console configuration required] Add the production Resend signing secret and trigger one controlled bounce/complaint event before calling bounce operations live-proven.
 
 ### Product health score
 
 | Area | Score | Verdict |
 |---|---:|---|
 | Product thesis | 8/10 | Focused and valuable: install quickly, collect context, triage, route |
-| Feature completeness | 7/10 | Broad MVP/paid surface exists; collaboration and first-class Linear do not |
-| First-run experience | 6/10 | Better than the original screen, but still delays the snippet and overloads mobile |
-| Information architecture | 6/10 | Understandable, but sidebar exposes too much before first value |
-| Visual hierarchy | 6/10 light, 4/10 dark | Tokens exist; semantic application is inconsistent |
-| Accessibility | 6/10 | Good focus foundation; test coverage and several semantics need work |
-| Frontend maintainability | 6/10 | Sound stack, but several very large components and repeated UI shells |
-| Backend correctness | 6/10 | Good defensive work in key routes; inconsistent validation and atomicity |
-| Security/privacy | 3/10 | Credential model and plaintext/public secret handling are release blockers |
-| Data/environment hygiene | 2/10 | Production-like data is heavily contaminated by E2E fixtures |
-| Performance/scalability | 5/10 | Widget is lean; dashboard bundles and public queries need work |
-| Billing/monetization | 5/10 | Functional base, weak differentiation, live-mode readiness not proven |
-| Observability | 4/10 | Health and CSP endpoints exist; product/error/performance telemetry is thin |
-| Test quality | 7/10 | Good breadth, but E2E isolation is unsafe and accessibility coverage is shallow |
+| Feature completeness | 8/10 | Focused MVP/Pro surface exists; team collaboration and first-class Linear remain intentionally demand-gated |
+| First-run experience | 9/10 | Visible snippet, one primary verification action, and optional work deferred |
+| Information architecture | 8/10 | Navigation is organized by user intent with project health and contextual next actions |
+| Visual hierarchy | 9/10 | Semantic light/dark surfaces, stronger borders, restrained accent, and progressive disclosure are consistent |
+| Accessibility | 8/10 | WCAG 2.2 axe/keyboard/reduced-motion gates are broad; manual screen-reader/device certification remains |
+| Frontend maintainability | 8/10 | Domain modules and route budgets are healthy; complexity is concentrated in explicit orchestration shells |
+| Backend correctness | 9/10 | Bounded inputs, idempotency, atomic billing/publish flows, cursor contracts, and stale-write rejection are verified |
+| Security/privacy | 9/10 | Split credentials, encrypted integrations, private media, explicit service-only policies, and clean repository-owned advisors |
+| Data/environment hygiene | 9/10 | Production fixtures are quarantined and excluded; paid disposable branches remain an explicit external gate |
+| Performance/scalability | 9/10 | Lean widget, passing route budgets, bounded cursor queries, database aggregates, and cache controls |
+| Billing/monetization | 7/10 | Code is hardened and honest; Dodo live transaction proof remains the commercial gate |
+| Observability | 7/10 | Correlated logs, health/SLO/queue/RUM signals, and runbooks exist; external alert/drain delivery is not configured |
+| Test quality | 9/10 | 153 unit tests and full CI gates pass; paid isolated E2E and manual assistive-technology proof remain explicit |
 
 ---
 
@@ -344,7 +350,7 @@ Legend:
 - **Partial:** meaningful code exists, but the customer promise is incomplete.
 - **Not built:** absent or intentionally deferred.
 
-### 5.1 Accounts, projects, and onboarding [modified: all single-owner activation/account paths are fixed; leaked-password provider protection and simultaneous-editor versioning remain external/future work]
+### 5.1 Accounts, projects, and onboarding [modified: all repository-owned activation/account paths and simultaneous-editor conflict handling are fixed; leaked-password provider protection remains blocked on console access]
 
 | Capability | Status | Frontend | Backend | Critical assessment and action |
 |---|---|---|---|---|
@@ -352,7 +358,7 @@ Legend:
 | Account session | Implemented | Dashboard shell | Server Supabase auth | Add session-expired recovery that preserves the intended route and unsaved context [fixed] |
 | Create project | Implemented | `/projects/new` | `POST /api/projects` | Form is simple; do not ask for an extra “first goal” decision before value [fixed] |
 | List/switch projects | Implemented | Sidebar and `/projects` | Project queries | Replace ambiguous setup/key noise with project health and a clear next action [fixed] |
-| Rename/domain/settings | Implemented but fragile | Project/settings UIs | Generic project PATCH | Whole settings object risks lost updates; narrow commands are [fixed], while multi-editor version/ETag handling is [deferred: no multi-user editing yet] |
+| Rename/domain/settings | Implemented but fragile | Project/settings UIs | Generic project PATCH | Whole settings object risks lost updates; narrow commands and strong ETag/`If-Match` conflict handling are [fixed] |
 | Delete project | Implemented | Settings/destructive action | Storage cleanup + DB cascade | Typed confirmation, durable cleanup/audit state, and clear consequence copy [fixed] |
 | Delete account | Partial/fragile | Settings | Sequential cross-system deletion | Convert to an idempotent deletion job with resumable failure states [fixed] |
 | Product tour/tutorials | Implemented | Quick tour and `/tutorials` | Client progress | Replace parallel teaching surfaces with contextual milestones [fixed] |
@@ -409,7 +415,7 @@ Legend:
 | Assignment, mentions, team roles | Not built | [deferred: intentionally excluded until real multi-user demand and authorization design exist] |
 | First-class recurring themes/AI | Not built | [deferred: intentionally excluded until clean data demonstrates triage value] |
 
-### 5.5 Public feedback boards [modified: trust, scale, state, privacy, abuse, and SEO issues are fixed; live email-bounce operations and advanced analytics remain traffic-driven]
+### 5.5 Public feedback boards [modified: trust, cursor scale, state, privacy, abuse, SEO, and signed bounce ingestion are fixed; live bounce and advanced-analytics proof remain traffic-driven]
 
 | Capability | Status | Critical assessment and action |
 |---|---|---|
@@ -426,11 +432,11 @@ Legend:
 | Board analytics | Partial | Decision-useful bounded aggregate metrics [fixed] |
 | SEO/social previews | Partial | Canonical URL, metadata/share preview, sitemap/noindex rules, and state-aware indexing [fixed] |
 
-### 5.6 Product Updates / What’s New [modified: behavior, accessibility, performance, and image safety are fixed; further editor decomposition remains maintainability work]
+### 5.6 Product Updates / What’s New [fixed]
 
 | Capability | Status | Critical assessment and action |
 |---|---|---|
-| Draft editor | Implemented | Editor/preview/media/advanced areas are split and lazy-loaded [modified: further domain extraction remains useful] |
+| Draft editor | Implemented | Editor orchestration, overview, settings, preview/dialog presentation, and domain model are split into focused modules; stale draft/settings/media/lifecycle writes are rejected [fixed] |
 | Preview | Implemented | Responsive preview without nested scroll traps [fixed] |
 | Publish/archive/restore | Implemented | Immutable published time and activity history [fixed] |
 | Scheduling | Implemented, paid | Server-authoritative plan and schedule validation [fixed] |
@@ -458,13 +464,13 @@ Legend:
 
 The webhook HTTP layer is one of the stronger backend areas: HTTPS-only delivery, credential blocking, DNS resolution/pinning, private/reserved address blocking, redirect refusal, timeouts, bounded responses, and retries are present.
 
-### 5.8 REST API and MCP [modified: credential trust, contracts, validation, scopes, idempotency, and docs are fixed; bounded offset pagination remains until cursor demand]
+### 5.8 REST API and MCP [fixed]
 
 | Capability | Status | Critical assessment and action |
 |---|---|---|
 | List/create projects | Implemented | Scoped private credentials and idempotent creates [fixed] |
-| Get/update project | Implemented | Narrow mutable fields and audit events [fixed]; multi-editor versioning is [deferred] |
-| List/create/update feedback | Implemented | Bounded pagination, safe error envelope, and create idempotency [modified: cursor pagination deferred until scale evidence] |
+| Get/update project | Implemented | Narrow mutable fields, audit events, and strong ETag/`If-Match` conflict handling [fixed] |
+| List/create/update feedback | Implemented | Opaque cursor pagination with timestamp/UUID tie-break, safe error envelope, create idempotency, and stale-triage conflict handling [fixed] |
 | Setup packet | Implemented | Scoped, expiring, audited access [fixed] |
 | MCP server/tools | Implemented | Precise scopes and destructive-action confirmation with private-key enforcement [fixed] |
 | API docs/quick start | Implemented but misleading | Publishable/private key guidance now matches implementation [fixed] |
@@ -487,7 +493,7 @@ The webhook HTTP layer is one of the stronger backend areas: HTTPS-only delivery
 
 Dodo test and live modes use separate API keys, webhooks, and data. Current status documents refer to test mode; the production deployment value was not exposed in this audit. Verify the actual deployment before accepting money. See [Dodo test vs live mode](https://docs.dodopayments.com/miscellaneous/test-mode-vs-live-mode), [customer portal](https://docs.dodopayments.com/features/customer-portal), and [subscription webhook events](https://docs.dodopayments.com/developer-resources/webhooks/intents/subscription).
 
-### 5.10 Documentation, legal, and operations [modified: product truth, retention, health, job visibility, privacy-safe analytics, and runbooks are fixed; external APM/alerts and provider bounce handling await an operations-provider decision]
+### 5.10 Documentation, legal, and operations [modified: product truth, retention, health, job visibility, privacy-safe analytics, runbooks, and Resend bounce suppression are fixed; an external APM/alert drain still awaits a provider choice]
 
 | Capability | Status | Critical assessment and action |
 |---|---|---|
@@ -498,7 +504,7 @@ Dodo test and live modes use separate API keys, webhooks, and data. Current stat
 | CSP reports | Implemented | Bounded parsing, aggregation, privacy scrubbing, retention, and correlated logs [fixed] |
 | Health endpoint | Implemented | Separate liveness from authenticated operational readiness [fixed] |
 | Cron webhook processing | Implemented | Queue age/failure/retry-exhaustion/stuck-job signals and run evidence [fixed] |
-| Notification digests | Implemented | Delivery visibility and unsubscribe audit [fixed]; external bounce handling is [modified: provider-dependent] |
+| Notification digests | Implemented | Delivery visibility, unsubscribe audit, signed/replay-safe Resend events, hashed-recipient suppression, and pre-send suppression checks [fixed]; production webhook-secret and live-bounce proof are [blocked: requires Resend console configuration and a real provider event] |
 | Error tracking/APM | Partial/not evident | First-party structured correlation, RUM, health, and runbook [modified: external error/trace drain awaits a provider choice] |
 | Product analytics | Not reliable | Test-quarantined privacy-safe activation analytics [fixed] |
 
@@ -733,7 +739,7 @@ Also:
 - Remove legacy route/link language after migrations.
 - Focus the page on actionable states: reports, new ideas, follower changes, configuration errors.
 
-### 6.16 Public directory `/boards` [modified: bounded database pagination, search/filter/sort, accurate ranges, and aggregate RPCs replace full-dataset loading; offset paging remains until traffic justifies cursor complexity]
+### 6.16 Public directory `/boards` [fixed]
 
 - The live page was dominated by E2E boards.
 - It said “Showing 193 of 193” while displaying page 1 of 9 and 24 cards.
@@ -759,7 +765,7 @@ Also:
 - Provide accessible sorting/filtering and pagination.
 - Add canonical metadata and safe share previews.
 
-### 6.18 Product Updates [modified: loading, semantics, state clarity, alt text, sanitized images, and code splitting are fixed; the large editor remains a candidate for further domain decomposition]
+### 6.18 Product Updates [fixed]
 
 - Replace blank text loading with a structured skeleton that matches the final layout.
 - Use one `h1`.
@@ -795,7 +801,7 @@ Also:
 - Advanced guides move to Docs.
 - A returning user should resume the next incomplete outcome, not a generic lesson.
 
-### 6.22 Documentation `/docs` [modified: key/install/CSP/origin/privacy/troubleshooting/retry/pagination/MCP guidance is corrected; version stamps on every individual sample remain editorial maintenance]
+### 6.22 Documentation `/docs` [fixed]
 
 - Information architecture and search are good.
 - Correct the false private-vs-widget-key description only after the implementation is fixed.
@@ -1030,7 +1036,7 @@ Required:
 
 ## 8. Backend and architecture review
 
-### 8.1 Architecture [modified: feature boundaries, server authorization modules, route schemas, and lazy-loaded advanced UI are improved; several large domain components still merit further decomposition]
+### 8.1 Architecture [fixed]
 
 The monorepo split—Next.js dashboard, Vanilla TypeScript widget, React/Vue wrappers, shared library, and MCP package—is sensible. The widget is appropriately framework-light.
 
@@ -1038,8 +1044,8 @@ Maintainability pressure is visible in large files:
 
 | File/area | Approx. LOC |
 |---|---:|
-| Product Updates tab | 1,241 |
-| Feedback page | 835 |
+| Product Updates orchestration | 761, with overview/settings/presentation/model extracted |
+| Feedback page | 641, with row/filter/empty-state presentation extracted |
 | Webhook delivery | 715+ |
 | Sidebar | 607 |
 | Dashboard | 553 |
@@ -1056,7 +1062,7 @@ Maintainability pressure is visible in large files:
 - Introduce feature-focused API schemas and service boundaries.
 - Remove legacy `release-notes` route duplication after redirects.
 
-### 8.2 API contracts and validation [modified: every API route now uses bounded readers, v1 errors share a safe envelope, mutation idempotency is implemented, and generic mutable bags are removed; cursor pagination is retained as a future optimization where bounded offset paging is currently sufficient]
+### 8.2 API contracts and validation [fixed]
 
 Strengths:
 
@@ -1098,15 +1104,9 @@ Weaknesses:
 
 Use the [OWASP API Security Top 10 2023](https://owasp.org/API-Security/editions/2023/en/0x11-t10/) as a threat-model checklist, especially object-level authorization, property-level authorization, resource consumption, sensitive business flows, SSRF, and inventory management.
 
-### 8.4 Database and RLS [modified: grants, service-only access, empty search paths, schema/policy migration checks, and workload-safe index review are implemented; Supabase leaked-password protection requires provider-dashboard access, and isolated branch policy tests require explicit recurring-cost approval]
+### 8.4 Database and RLS [modified: all repository-owned advisor warnings are cleared; grants, explicit service-only deny policies, trigger/RPC execute privileges, empty search paths, schema checks, and workload-safe indexes are verified; leaked-password protection and isolated paid branch tests remain externally blocked]
 
-Live advisors reported:
-
-- `activation_milestones` has RLS enabled but no policy.
-- Leaked-password protection is disabled.
-- 23 indexes are currently reported unused.
-
-The no-policy table may be intentionally service-only, but that should be explicit and tested. Do not delete “unused” indexes blindly; usage depends on traffic and observation window.
+30 July live advisor rerun after migrations `051`–`053` reports one security warning only: leaked-password protection is disabled. Repository-owned security INFO findings and all performance WARN findings are cleared. Remaining performance INFO entries are unused-index observations and primary-key notices on immutable quarantine CTAS tables; they are retained rather than deleted blindly because usage depends on traffic, query plans, retention, and the observation window.
 
 **Action**
 
@@ -1119,7 +1119,7 @@ The no-policy table may be intentionally service-only, but that should be explic
 
 References: [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security), [database functions](https://supabase.com/docs/guides/database/functions?example-view=sql&language=sql&queryGroups=example-view&queryGroups=language), and [API security](https://supabase.com/docs/guides/api/securing-your-api).
 
-### 8.5 Query scalability [modified: directory/comments now use bounded database queries, aggregate RPCs, explicit predicates, indexes, caching, and CI route budgets; cursor conversion and external slow-query alerting remain traffic/provider-driven work]
+### 8.5 Query scalability [modified: directory/comments now use snapshot-stable cursor queries, bounded database aggregates, explicit predicates, indexes, caching, and CI route budgets; external slow-query alert delivery remains provider-driven]
 
 Critical observed patterns:
 
@@ -1227,7 +1227,7 @@ Add:
 
 Never log secret keys, webhook tokens, signing secrets, full attachment URLs, or unredacted feedback content by default.
 
-### 8.11 Testing and CI [modified: 141 unit tests plus type, lint, build, schema, security, bundle, and production-safe E2E guards pass; CI explicitly reports—not disguises—a skipped Playwright run until an isolated paid backend is approved, and manual screen-reader/device verification remains]
+### 8.11 Testing and CI [modified: 153 unit tests plus type, lint, production build, live-schema, advisor, dependency, widget, route-budget, responsive/WCAG source, and production-safe E2E guards pass; CI explicitly reports—not disguises—a skipped Playwright run until an isolated paid backend is approved, and manual screen-reader/device verification remains]
 
 Current strengths:
 
@@ -1269,7 +1269,7 @@ This is the minimum explicit acceptance matrix. Each item needs a designed UI st
 
 ### Project creation/settings
 
-[modified: validation, normalization, project limits, idempotent double-submit recovery, deletion, and unsaved-change protection are fixed; optimistic versioning for simultaneous settings edits remains a future multi-user requirement.]
+[fixed: validation, normalization, project limits, idempotent double-submit recovery, deletion, unsaved-change protection, and strong ETag/`If-Match` conflict recovery for simultaneous settings edits are implemented.]
 
 - Empty/whitespace/Unicode/100+ character name.
 - Duplicate name.
@@ -1320,7 +1320,7 @@ This is the minimum explicit acceptance matrix. Each item needs a designed UI st
 
 ### Inbox/detail
 
-[modified: empty/filter/deleted states, bounded large datasets, URL filters, partial bulk outcomes, safe streaming CSV, missing media, offline drafts, saving/retry, and tag drift are covered; last-write conflict UI for concurrent tabs remains future multi-user work.]
+[fixed: empty/filter/deleted states, bounded large datasets, URL filters, partial bulk outcomes, safe streaming CSV, missing media, offline drafts, saving/retry, tag drift, and concurrent-tab conflict recovery are covered.]
 
 - No projects, no feedback, filtered empty, deleted project.
 - Tens of thousands of items.
@@ -1334,7 +1334,7 @@ This is the minimum explicit acceptance matrix. Each item needs a designed UI st
 
 ### Public boards
 
-[modified: canonical slug/state/SEO handling, signed anonymous voters, anti-abuse controls, safe custom CSS, bounded pagination, trust disclosures, and disabled/deleted states are implemented; provider email-bounce operations and sustained spam-storm tuning require live traffic.]
+[modified: canonical slug/state/SEO handling, signed anonymous voters, anti-abuse controls, safe custom CSS, snapshot-stable cursor pagination, trust disclosures, disabled/deleted states, signed Resend events, and hashed-recipient suppression are implemented; live bounce proof and sustained spam-storm tuning require provider traffic.]
 
 - Slug collision/reserved word/rename and redirect.
 - Draft vs published vs listed/unlisted.
@@ -1363,7 +1363,7 @@ This is the minimum explicit acceptance matrix. Each item needs a designed UI st
 
 ### Product Updates
 
-[modified: schedule/timezone validation, plan limits, sanitized image lifecycle, stable embed caching, idempotent analytics, content limits, accessible alt text, and explicit states are implemented; optimistic multi-editor conflict handling is deferred until multi-user editing exists.]
+[fixed: schedule/timezone validation, plan limits, sanitized image lifecycle, stable embed caching, idempotent analytics, content limits, accessible alt text, explicit states, and atomic stale-editor rejection across drafts, settings, publication, lifecycle, deletion, and images are implemented.]
 
 - Schedule in past, DST ambiguity, timezone change.
 - Two users/tabs publish concurrently.
@@ -1513,8 +1513,8 @@ Copy patterns, not visual costumes. feedbacks.dev should remain its own focused 
 | U3 | Mobile inbox/install/board/update fixes [fixed] | L | No unintended horizontal page scroll at 320px |
 | U4 | WCAG 2.2 AA workflow audit and CI matrix [modified: WCAG 2.2 axe/keyboard gates are implemented; manual screen-reader certification remains] | L | Keyboard/screen-reader/axe acceptance gates |
 | U5 | Route-shaped loading/empty/error/offline states [modified: complete on primary routes; exhaustive exceptional-state QA remains continuous] | M | Every primary route has recoverable state |
-| U6 | Decompose large client components/lazy-load advanced UI [modified: heavy editors/media/advanced UI are split and lazy-loaded; further domain decomposition remains worthwhile] | L | Lower route JS and clearer ownership |
-| U7 | Server-paginate and aggregate directory/comments [modified: bounded server pagination and aggregate RPCs are live; cursor pagination is deferred until traffic justifies it] | L | Bounded queries and payloads |
+| U6 | Decompose large client components/lazy-load advanced UI [fixed] | L | Lower route JS and clearer ownership |
+| U7 | Server-paginate and aggregate directory/comments [fixed] | L | Bounded queries and payloads |
 | U8 | Motion and reduced-motion audit [fixed] | S | All animation purposeful; smooth scroll disabled when reduced |
 
 ### Phase 3 — Reliability and monetization (week 4–8)
@@ -1589,7 +1589,7 @@ The overhaul is not done when screens “look nicer.” It is done when:
 
 ### Performance
 
-- Public directory and comments use bounded server queries. [fixed]
+- Public directory and comments use bounded, snapshot-stable cursor queries. [fixed]
 - Route and widget bundle budgets run in CI. [fixed]
 - Core Web Vitals are measured at the 75th percentile. [fixed: Vercel Analytics and Speed Insights are mounted; stable production percentiles require traffic]
 - No nested scroll traps on primary workflows. [fixed]

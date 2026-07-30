@@ -3,11 +3,10 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { ArrowLeft, ArrowRight, ArrowUpRight, FolderOpen, Search } from 'lucide-react'
+import { ArrowDown, ArrowUpRight, FolderOpen, Loader2, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { normalizeBoardCategory, type BoardCategoryOption } from '@/lib/board-categories'
 import type { BoardBranding } from '@/lib/public-board'
-import { BOARD_DIRECTORY_PAGE_SIZE } from '@/lib/board-directory-pagination'
 
 type BoardSortMode = 'trending' | 'active' | 'responsive' | 'shipping' | 'new'
 
@@ -45,8 +44,9 @@ interface BoardDirectoryClientProps {
   categories: BoardCategoryOption[]
   initialSort: BoardSortMode
   initialCategory: string
-  initialPage: number
   initialQuery: string
+  initialNextCursor: string | null
+  initialHasMore: boolean
   variant?: 'public' | 'dashboard'
 }
 
@@ -76,8 +76,9 @@ export function BoardDirectoryClient({
   categories,
   initialSort,
   initialCategory,
-  initialPage,
   initialQuery,
+  initialNextCursor,
+  initialHasMore,
   variant = 'public',
 }: BoardDirectoryClientProps) {
   const router = useRouter()
@@ -85,9 +86,13 @@ export function BoardDirectoryClient({
   const [search, setSearch] = React.useState(initialQuery)
   const [isPending, startTransition] = React.useTransition()
   const [ready, setReady] = React.useState(false)
+  const [visibleEntries, setVisibleEntries] = React.useState(entries)
+  const [nextCursor, setNextCursor] = React.useState(initialNextCursor)
+  const [hasMore, setHasMore] = React.useState(initialHasMore)
+  const [loadingMore, setLoadingMore] = React.useState(false)
+  const [loadMoreError, setLoadMoreError] = React.useState('')
   const sort = initialSort
   const category = normalizeBoardCategory(initialCategory) || ''
-  const currentPage = Math.max(1, Math.floor(initialPage))
   const activeSort = SORT_OPTIONS.find((option) => option.value === sort) || SORT_OPTIONS[0]
 
   React.useEffect(() => {
@@ -96,9 +101,6 @@ export function BoardDirectoryClient({
 
   const hasNoBoards = total === 0 && !category && !initialQuery
   const dashboard = variant === 'dashboard'
-  const pageSize = BOARD_DIRECTORY_PAGE_SIZE
-  const pageCount = Math.max(1, Math.ceil(total / pageSize))
-  const visibleEntries = entries
 
   const updateUrl = React.useCallback((changes: Record<string, string | null>) => {
     const params = new URLSearchParams(window.location.search)
@@ -116,23 +118,45 @@ export function BoardDirectoryClient({
   }, [initialQuery])
 
   React.useEffect(() => {
+    setVisibleEntries(entries)
+    setNextCursor(initialNextCursor)
+    setHasMore(initialHasMore)
+    setLoadMoreError('')
+  }, [entries, initialHasMore, initialNextCursor])
+
+  React.useEffect(() => {
     if (search.trim() === initialQuery) return
     const timer = window.setTimeout(() => {
-      updateUrl({ q: search.trim() || null, page: null })
+      updateUrl({ q: search.trim() || null })
     }, 350)
     return () => window.clearTimeout(timer)
   }, [initialQuery, search, updateUrl])
 
-  const changePage = (nextPage: number) => {
-    const safePage = Math.min(pageCount, Math.max(1, nextPage))
-    updateUrl({ page: safePage === 1 ? null : String(safePage) })
-    window.requestAnimationFrame(() => {
-      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      document.querySelector('[data-board-directory-controls]')?.scrollIntoView({
-        block: 'start',
-        behavior: reduceMotion ? 'auto' : 'smooth',
+  const loadMore = async () => {
+    if (!nextCursor || loadingMore) return
+    setLoadingMore(true)
+    setLoadMoreError('')
+    try {
+      const params = new URLSearchParams({ cursor: nextCursor })
+      if (sort !== 'trending') params.set('sort', sort)
+      if (category) params.set('category', category)
+      if (initialQuery) params.set('q', initialQuery)
+      const response = await fetch(`/api/boards?${params.toString()}`)
+      const payload = await response.json().catch(() => null)
+      if (!response.ok || !Array.isArray(payload?.boards)) {
+        throw new Error(payload?.error || 'Could not load more boards.')
+      }
+      setVisibleEntries((current) => {
+        const seen = new Set(current.map((entry) => entry.id))
+        return [...current, ...payload.boards.filter((entry: BoardDirectoryEntry) => !seen.has(entry.id))]
       })
-    })
+      setNextCursor(typeof payload.nextCursor === 'string' ? payload.nextCursor : null)
+      setHasMore(payload.hasMore === true)
+    } catch (error) {
+      setLoadMoreError(error instanceof Error ? error.message : 'Could not load more boards.')
+    } finally {
+      setLoadingMore(false)
+    }
   }
 
   return (
@@ -150,7 +174,7 @@ export function BoardDirectoryClient({
                     key={option.value}
                     type="button"
                     aria-pressed={sort === option.value}
-                    onClick={() => updateUrl({ sort: option.value === 'trending' ? null : option.value, page: null })}
+                    onClick={() => updateUrl({ sort: option.value === 'trending' ? null : option.value })}
                     className={cn(
                       'min-h-11 shrink-0 snap-start rounded-full px-3 py-2 text-sm font-medium transition-colors sm:min-h-10',
                       sort === option.value
@@ -187,7 +211,7 @@ export function BoardDirectoryClient({
               <button
                 type="button"
                 aria-pressed={!category}
-                onClick={() => updateUrl({ category: null, page: null })}
+                onClick={() => updateUrl({ category: null })}
                 className={cn(
                   'min-h-11 shrink-0 snap-start rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:min-h-9',
                   !category
@@ -202,7 +226,7 @@ export function BoardDirectoryClient({
                   key={entry.value}
                   type="button"
                   aria-pressed={category === entry.value}
-                  onClick={() => updateUrl({ category: category === entry.value ? null : entry.value, page: null })}
+                  onClick={() => updateUrl({ category: category === entry.value ? null : entry.value })}
                   className={cn(
                     'min-h-11 shrink-0 snap-start rounded-full px-3 py-1.5 text-xs font-medium transition-colors sm:min-h-9',
                     category === entry.value
@@ -222,7 +246,7 @@ export function BoardDirectoryClient({
           <span>
             {total === 0 ? 'No boards found' : (
               <>
-                Showing <span className="font-medium text-foreground">{((currentPage - 1) * pageSize) + 1}–{Math.min(total, ((currentPage - 1) * pageSize) + entries.length)}</span> of{' '}
+                Showing <span className="font-medium text-foreground">1–{Math.min(total, visibleEntries.length)}</span> of{' '}
                 <span className="font-medium text-foreground">{total}</span> boards
               </>
             )}
@@ -298,30 +322,23 @@ export function BoardDirectoryClient({
         ))}
       </section>
 
-      {total > pageSize && (
-        <nav className="mt-6 flex items-center justify-between gap-4 border-t pt-5" aria-label="Board directory pages">
+      {hasMore && nextCursor && (
+        <div className="mt-6 border-t pt-5 text-center">
           <button
             type="button"
-            onClick={() => changePage(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="inline-flex min-h-11 items-center gap-2 rounded-md border bg-background px-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-10"
+            onClick={() => void loadMore()}
+            disabled={loadingMore}
+            className="inline-flex min-h-11 items-center gap-2 rounded-md border bg-background px-4 text-sm font-semibold transition-colors hover:bg-accent disabled:cursor-wait disabled:opacity-60"
           >
-            <ArrowLeft className="h-4 w-4" />
-            Previous
+            {loadingMore ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowDown className="h-4 w-4" />}
+            {loadingMore ? 'Loading more boards…' : `Show more boards (${Math.max(0, total - visibleEntries.length)} remaining)`}
           </button>
-          <p className="text-sm text-muted-foreground">
-            Page <span className="font-semibold text-foreground">{currentPage}</span> of {pageCount}
-          </p>
-          <button
-            type="button"
-            onClick={() => changePage(currentPage + 1)}
-            disabled={currentPage === pageCount}
-            className="inline-flex min-h-11 items-center gap-2 rounded-md border bg-background px-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-45 sm:min-h-10"
-          >
-            Next
-            <ArrowRight className="h-4 w-4" />
-          </button>
-        </nav>
+          {loadMoreError && (
+            <p role="alert" className="mt-3 text-sm text-destructive">
+              {loadMoreError} Your current results are still available.
+            </p>
+          )}
+        </div>
       )}
 
       {total === 0 && (
@@ -349,7 +366,7 @@ export function BoardDirectoryClient({
               className="mt-5 inline-flex min-h-10 items-center justify-center rounded-md border bg-background px-4 text-sm font-semibold hover:bg-accent"
               onClick={() => {
                 setSearch('')
-                updateUrl({ q: null, category: null, page: null })
+                updateUrl({ q: null, category: null })
               }}
             >
               Clear filters
