@@ -48,6 +48,26 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   assert.doesNotMatch(source, /userbase|Collecting user feedbacks/)
 })
 
+test('marketing routes expose a crawlable acquisition foundation without indexing private workspaces', () => {
+  const layout = read('../../src/app/layout.tsx')
+  const landing = read('../../src/app/page.tsx')
+  const robots = read('../../src/app/robots.ts')
+  const sitemap = read('../../src/app/sitemap.ts')
+  const openGraph = read('../../src/app/opengraph-image.tsx')
+
+  assert.match(layout, /metadataBase: new URL\('https:\/\/feedbacks\.dev'\)/)
+  assert.match(landing, /SoftwareApplication/)
+  assert.match(landing, /summary_large_image/)
+  assert.match(landing, /alternates: \{ canonical: '\/' \}/)
+  assert.match(robots, /sitemap: 'https:\/\/feedbacks\.dev\/sitemap\.xml'/)
+  assert.match(robots, /'\/dashboard'/)
+  assert.match(robots, /'\/api\/'/)
+  assert.match(sitemap, /DOCS_PAGES/)
+  assert.match(sitemap, /`\$\{ORIGIN\}\/boards`/)
+  assert.match(openGraph, /ImageResponse/)
+  assert.match(openGraph, /Find what users need\./)
+})
+
 test('first-run and public feedback screens keep optional work out of the main path', () => {
   const newProject = read('../../src/app/(dashboard)/projects/new/page.tsx')
   const inbox = read('../../src/app/(dashboard)/feedback/page.tsx')

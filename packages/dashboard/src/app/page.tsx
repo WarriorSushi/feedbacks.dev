@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import { BrandWordmark } from '@/components/brand-wordmark'
 import { PLAN_MATRIX, generateInstallSnippets } from '@feedbacks/shared'
@@ -32,9 +33,63 @@ const installSnippet = generateInstallSnippets({
 const freePlan = PLAN_MATRIX.free
 const proPlan = PLAN_MATRIX.pro
 
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    url: 'https://feedbacks.dev',
+    siteName: 'feedbacks.dev',
+    title: 'feedbacks.dev | Feedback forms and product updates',
+    description: 'Collect useful in-product feedback, triage it quickly, and show users what shipped with one lightweight embed.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'feedbacks.dev | Feedback forms and product updates',
+    description: 'Collect useful in-product feedback, triage it quickly, and show users what shipped with one lightweight embed.',
+  },
+}
+
+const softwareApplicationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'feedbacks.dev',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'Web',
+  url: 'https://feedbacks.dev',
+  description: 'Collect in-product feedback and publish product updates with one lightweight embed.',
+  offers: [
+    {
+      '@type': 'Offer',
+      name: 'Free',
+      price: freePlan.monthlyPrice,
+      priceCurrency: 'USD',
+    },
+    {
+      '@type': 'Offer',
+      name: 'Pro',
+      price: proPlan.monthlyPrice,
+      priceCurrency: 'USD',
+    },
+  ],
+  featureList: [
+    'In-product feedback form',
+    'Feedback inbox and triage',
+    'Product updates',
+    'Public feedback boards',
+    'Slack, Discord, GitHub, and webhook integrations',
+    'REST API and MCP server',
+  ],
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(softwareApplicationJsonLd).replace(/</g, '\\u003c'),
+        }}
+      />
       <AuthenticatedRedirect appOrigin={appOrigin} />
       <LandingScrollHeader>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-6">
