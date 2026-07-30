@@ -126,7 +126,32 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: node scripts/check-e2e-env.mjs
-      - run: pnpm exec playwright test packages/dashboard/tests/e2e --project=chromium
+      - name: Detect isolated E2E backend
+        id: isolated-e2e
+        shell: bash
+        run: |
+          if [[ -n "$NEXT_PUBLIC_SUPABASE_URL" \
+            && -n "$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            && -n "$SUPABASE_SERVICE_ROLE_KEY" \
+            && -n "$E2E_AUTH_BYPASS_SECRET" \
+            && -n "$E2E_SUPABASE_PROJECT_REF" ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Playwright E2E not executed"
+              echo
+              echo "The suite requires a separately billed, isolated Supabase backend."
+              echo "It will never fall back to the production project."
+              echo "Configure the E2E secrets after the branch cost is explicitly approved."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - if: steps.isolated-e2e.outputs.available == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.isolated-e2e.outputs.available == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+      - if: steps.isolated-e2e.outputs.available == 'true'
+        run: node scripts/check-e2e-env.mjs
+      - if: steps.isolated-e2e.outputs.available == 'true'
+        run: pnpm exec playwright test packages/dashboard/tests/e2e --project=chromium

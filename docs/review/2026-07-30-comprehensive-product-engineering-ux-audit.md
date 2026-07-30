@@ -1227,7 +1227,7 @@ Add:
 
 Never log secret keys, webhook tokens, signing secrets, full attachment URLs, or unredacted feedback content by default.
 
-### 8.11 Testing and CI [modified: 141 unit tests plus type, lint, build, schema, security, accessibility, bundle, and production-safe E2E gates pass; paid disposable database branches and manual screen-reader/device verification remain external/manual gates]
+### 8.11 Testing and CI [modified: 141 unit tests plus type, lint, build, schema, security, bundle, and production-safe E2E guards pass; CI explicitly reports—not disguises—a skipped Playwright run until an isolated paid backend is approved, and manual screen-reader/device verification remains]
 
 Current strengths:
 
