@@ -30,7 +30,7 @@ export function WorkspaceSection({
     >
       <header
         className={cn(
-          'flex flex-col gap-3 border-b bg-surface-raised/55 px-5 py-4 sm:flex-row sm:items-start sm:justify-between',
+          'flex flex-col gap-3 border-b bg-surface-raised/70 px-5 py-4 sm:flex-row sm:items-start sm:justify-between',
           tone === 'danger' && 'border-destructive/25 bg-destructive/[0.045]',
         )}
       >

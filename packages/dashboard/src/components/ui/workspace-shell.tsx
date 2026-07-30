@@ -61,7 +61,7 @@ export function SectionPanel({
   return (
     <section data-tour={dataTour} className={cn('overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]', className)}>
       {(title || description || action) && (
-        <header className="flex flex-col gap-3 border-b bg-surface-raised/55 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
+        <header className="flex flex-col gap-3 border-b bg-surface-raised/70 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             {title && <h2 className="text-sm font-semibold text-foreground">{title}</h2>}
             {description && <p className="mt-1 max-w-[68ch] text-sm leading-5 text-muted-foreground">{description}</p>}

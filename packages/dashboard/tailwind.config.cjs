@@ -22,6 +22,8 @@ module.exports = {
         surface: {
           sidebar: 'oklch(var(--surface-sidebar) / <alpha-value>)',
           raised: 'oklch(var(--surface-raised) / <alpha-value>)',
+          soft: 'oklch(var(--surface-soft) / <alpha-value>)',
+          inset: 'oklch(var(--surface-inset) / <alpha-value>)',
           overlay: 'oklch(var(--surface-overlay) / <alpha-value>)',
           selected: 'oklch(var(--surface-selected) / <alpha-value>)',
           code: 'oklch(var(--surface-code) / <alpha-value>)',
