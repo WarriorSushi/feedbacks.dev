@@ -9,6 +9,7 @@ import { LandingInstallStory } from '@/components/landing-install-story'
 import { LandingConnectionsStory } from '@/components/landing-connections-story'
 import { LandingScrollHeader } from '@/components/landing-scroll-header'
 import { publicEnv } from '@/lib/public-env'
+import { SITE_ORIGIN } from '@/lib/site'
 import {
   ArrowRight,
   Bot,
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
-    url: 'https://feedbacks.dev',
+    url: SITE_ORIGIN,
     siteName: 'feedbacks.dev',
     title: 'feedbacks.dev | Feedback forms and product updates',
     description: 'Collect useful in-product feedback, triage it quickly, and show users what shipped with one lightweight embed.',
@@ -55,7 +56,7 @@ const softwareApplicationJsonLd = {
   name: 'feedbacks.dev',
   applicationCategory: 'DeveloperApplication',
   operatingSystem: 'Web',
-  url: 'https://feedbacks.dev',
+  url: SITE_ORIGIN,
   description: 'Collect in-product feedback and publish product updates with one lightweight embed.',
   offers: [
     {

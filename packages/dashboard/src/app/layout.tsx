@@ -5,11 +5,12 @@ import { headers } from 'next/headers'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/toaster'
+import { SITE_ORIGIN } from '@/lib/site'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://feedbacks.dev'),
+  metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: 'feedbacks.dev | Feedback forms and product updates',
     template: '%s | feedbacks.dev',
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
     'product updates',
     'feedback API',
   ],
-  authors: [{ name: 'feedbacks.dev', url: 'https://feedbacks.dev' }],
+  authors: [{ name: 'feedbacks.dev', url: SITE_ORIGIN }],
   creator: 'feedbacks.dev',
   publisher: 'feedbacks.dev',
   icons: {

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { SITE_ORIGIN } from '@/lib/site'
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -18,7 +19,7 @@ export default function robots(): MetadataRoute.Robots {
         '/updates',
       ],
     },
-    sitemap: 'https://feedbacks.dev/sitemap.xml',
-    host: 'https://feedbacks.dev',
+    sitemap: `${SITE_ORIGIN}/sitemap.xml`,
+    host: SITE_ORIGIN,
   }
 }
