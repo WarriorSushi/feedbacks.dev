@@ -188,6 +188,8 @@ test('integrations UI shows saved endpoints', async ({ page }) => {
 
   // The slack section should show the saved endpoint with a "Send test" button
   const slackSection = page.locator('[data-webhook-kind="slack"]')
+  await expect(slackSection.getByText('1 configured')).toBeVisible()
+  await slackSection.locator('summary').click()
   await expect(slackSection.getByRole('button', { name: 'Send test' })).toBeVisible()
 })
 
