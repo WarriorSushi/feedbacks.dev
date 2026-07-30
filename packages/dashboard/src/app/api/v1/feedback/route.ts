@@ -7,24 +7,57 @@ import { checkRateLimit } from '@/lib/rate-limit'
 import { enqueueWebhookJobs, processWebhookJobs } from '@/lib/webhook-delivery'
 import { normalizeFeedbackMetadata } from '@/lib/feedback-submissions'
 import type { FeedbackType, FeedbackPriority, FeedbackStatus, StructuredFeedbackData } from '@/lib/types'
+import { readJsonBody } from '@/lib/api-request'
+import { apiV1Error } from '@/lib/api-v1-response'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, X-API-Key',
+  'Access-Control-Allow-Headers': 'Content-Type, X-API-Key, Idempotency-Key',
+  'Access-Control-Expose-Headers': 'Idempotency-Replayed, Retry-After',
 }
 
 const VALID_TYPES: FeedbackType[] = ['bug', 'idea', 'praise', 'question']
 const VALID_PRIORITIES: FeedbackPriority[] = ['low', 'medium', 'high', 'critical']
+
+type CreateFeedbackBody = {
+  message?: string
+  type?: string
+  priority?: string
+  email?: string
+  url?: string
+  rating?: number
+  tags?: unknown[]
+  agent_name?: string
+  agent_session_id?: string
+  user_agent?: string
+  structured_data?: StructuredFeedbackData | null
+  metadata?: unknown
+}
 const VALID_STATUSES: FeedbackStatus[] = ['new', 'reviewed', 'planned', 'in_progress', 'closed']
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-function json(data: unknown, status = 200) {
-  return NextResponse.json(data, { status, headers: CORS_HEADERS })
+function json(data: unknown, status = 200, additionalHeaders: Record<string, string> = {}) {
+  return NextResponse.json(data, { status, headers: { ...CORS_HEADERS, ...additionalHeaders } })
 }
 
 function jsonError(message: string, status: number) {
-  return json({ error: message }, status)
+  return apiV1Error(message, status, CORS_HEADERS)
+}
+
+function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize)
+  if (!value || typeof value !== 'object') return value
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, item]) => [key, canonicalize(item)]),
+  )
+}
+
+async function sha256(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 export async function OPTIONS() {
@@ -34,12 +67,16 @@ export async function OPTIONS() {
 export async function POST(request: NextRequest) {
   try {
     const { allowed } = await checkRateLimit(request, 'v1-feedback', 30, 1)
-    if (!allowed) return jsonError('Too many requests', 429)
+    if (!allowed) return apiV1Error('Too many requests. Try again in a minute.', 429, { ...CORS_HEADERS, 'Retry-After': '60' })
 
-    const auth = await authenticateApiKey(request)
+    const auth = await authenticateApiKey(request, 'feedback:write')
     if (!auth) return jsonError('Invalid or missing API key', 401)
+    const scopedRate = await checkRateLimit(request, 'v1-feedback-project', 60, 1, auth.project.id)
+    if (!scopedRate.allowed) return apiV1Error('Project request limit reached. Try again in a minute.', 429, { ...CORS_HEADERS, 'Retry-After': '60' })
 
-    const body = await request.json()
+    const bodyResult = await readJsonBody<CreateFeedbackBody>(request)
+    if (!bodyResult.ok) return bodyResult.response
+    const body = bodyResult.data
     const { project } = auth
     const feature = await assertFeatureAccess(project.owner_user_id, 'apiAccess')
     if (!feature.allowed) return jsonError(feature.message, 403)
@@ -107,6 +144,52 @@ export async function POST(request: NextRequest) {
     }
 
     const admin = await createAdminSupabase()
+    const idempotencyKey = request.headers.get('idempotency-key')?.trim() || null
+    let idempotencyKeyHash: string | null = null
+    const requestHash = await sha256(JSON.stringify(canonicalize(body)))
+    if (idempotencyKey) {
+      if (!/^[A-Za-z0-9._:-]{8,128}$/.test(idempotencyKey)) {
+        return jsonError('Idempotency-Key must be 8–128 URL-safe characters', 400)
+      }
+      idempotencyKeyHash = await sha256(idempotencyKey)
+      await admin
+        .from('api_idempotency_keys')
+        .delete()
+        .eq('project_id', project.id)
+        .eq('route', 'POST /api/v1/feedback')
+        .lt('expires_at', new Date().toISOString())
+      const { error: claimError } = await admin.from('api_idempotency_keys').insert({
+        project_id: project.id,
+        route: 'POST /api/v1/feedback',
+        key_hash: idempotencyKeyHash,
+        request_hash: requestHash,
+        status: 'processing',
+      })
+      if (claimError) {
+        if (claimError.code !== '23505') {
+          return jsonError('The idempotent request could not be reserved. Try again.', 503)
+        }
+        const { data: existing } = await admin
+          .from('api_idempotency_keys')
+          .select('request_hash,status,response_status,response_body')
+          .eq('project_id', project.id)
+          .eq('route', 'POST /api/v1/feedback')
+          .eq('key_hash', idempotencyKeyHash)
+          .maybeSingle()
+        if (!existing) return jsonError('The prior request state could not be loaded. Try again.', 503)
+        if (existing.request_hash !== requestHash) {
+          return jsonError('This Idempotency-Key was already used with a different request body', 409)
+        }
+        if (existing.status === 'completed' && existing.response_status && existing.response_body) {
+          return json(existing.response_body, existing.response_status, { 'Idempotency-Replayed': 'true' })
+        }
+        return apiV1Error(
+          'A request with this Idempotency-Key is still processing',
+          409,
+          { ...CORS_HEADERS, 'Retry-After': '2' },
+        )
+      }
+    }
     const feedbackId = crypto.randomUUID()
     const now = new Date().toISOString()
 
@@ -137,6 +220,14 @@ export async function POST(request: NextRequest) {
     const { error: insertErr } = await admin.from('feedback').insert(feedbackRow)
     if (insertErr) {
       console.error('Feedback insert error:', insertErr)
+      if (idempotencyKeyHash) {
+        await admin
+          .from('api_idempotency_keys')
+          .delete()
+          .eq('project_id', project.id)
+          .eq('route', 'POST /api/v1/feedback')
+          .eq('key_hash', idempotencyKeyHash)
+      }
       return jsonError('Failed to save feedback', 500)
     }
 
@@ -169,7 +260,16 @@ export async function POST(request: NextRequest) {
       },
     )
 
-    return json({ success: true, id: feedbackId }, 201)
+    const responseBody = { success: true, id: feedbackId }
+    if (idempotencyKeyHash) {
+      await admin
+        .from('api_idempotency_keys')
+        .update({ status: 'completed', response_status: 201, response_body: responseBody })
+        .eq('project_id', project.id)
+        .eq('route', 'POST /api/v1/feedback')
+        .eq('key_hash', idempotencyKeyHash)
+    }
+    return json(responseBody, 201, { 'Idempotency-Replayed': 'false' })
   } catch (err) {
     console.error('v1 feedback POST error:', err)
     return jsonError('Internal server error', 500)
@@ -178,7 +278,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const auth = await authenticateApiKey(request)
+    const auth = await authenticateApiKey(request, 'feedback:read')
     if (!auth) return jsonError('Invalid or missing API key', 401)
 
     const { project } = auth

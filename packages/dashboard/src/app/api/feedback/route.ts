@@ -4,18 +4,24 @@ import { assertCanReceiveFeedback, incrementFeedbackUsage } from '@/lib/billing'
 import { hasE2EBypass } from '@/lib/e2e'
 import { notifyProjectOwnerOfNewFeedback } from '@/lib/notifications'
 import { isWidgetRequestOriginAllowed } from '@/lib/origin-allowlist'
-import { hashProjectApiKey } from '@/lib/project-api-keys'
+import { getPublicProjectLookup } from '@/lib/project-api-keys'
 import { publicEnv } from '@/lib/public-env'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { enqueueWebhookJobs, processWebhookJobs } from '@/lib/webhook-delivery'
 import type { FeedbackType, FeedbackPriority, Project } from '@/lib/types'
 import { readRequestBodyWithLimit, RequestBodyTooLargeError } from '@/lib/request-body-limit'
 import { recordActivationMilestone } from '@/lib/activation-milestones'
+import {
+  MAX_ATTACHMENT_SIZE,
+  MAX_SCREENSHOT_SIZE,
+  validateAndSanitizeFeedbackImage,
+} from '@/lib/feedback-media-validation'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Expose-Headers': 'Idempotency-Replayed, Retry-After',
 }
 
 export async function OPTIONS() {
@@ -25,12 +31,11 @@ export async function OPTIONS() {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const VALID_TYPES: FeedbackType[] = ['bug', 'idea', 'praise', 'question']
 const VALID_PRIORITIES: FeedbackPriority[] = ['low', 'medium', 'high', 'critical']
-const MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024
-const MAX_SCREENSHOT_SIZE = 3 * 1024 * 1024
 const MAX_SCREENSHOT_DATA_URL_LENGTH = 4_200_000
 const MAX_REQUEST_BODY_SIZE = 10 * 1024 * 1024
-const ALLOWED_ATTACHMENT_TYPES = ['image/png', 'image/jpeg', 'application/pdf']
+const ALLOWED_ATTACHMENT_TYPES = ['image/png', 'image/jpeg']
 const ALLOWED_SCREENSHOT_TYPES = ['image/png', 'image/jpeg']
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status, headers: CORS_HEADERS })
@@ -90,7 +95,10 @@ export async function POST(request: NextRequest) {
     // Rate limiting
     const { allowed, remaining } = await checkRateLimit(request, 'feedback', 10, 1)
     if (!allowed) {
-      return jsonError('Too many requests. Please try again later.', 429)
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again in a minute.' },
+        { status: 429, headers: { ...CORS_HEADERS, 'Retry-After': '60' } },
+      )
     }
 
     // Bound the stream before JSON or multipart parsing, including chunked requests.
@@ -149,14 +157,22 @@ export async function POST(request: NextRequest) {
 
     const admin = await createAdminSupabase()
 
-    const keyHash = await hashProjectApiKey(apiKey)
+    const lookup = await getPublicProjectLookup(apiKey)
+    if (!lookup) return jsonError('Invalid project key', 401)
     const { data: project } = await admin
       .from('projects')
       .select('id, name, webhooks, settings, owner_user_id')
-      .eq('api_key_hash', keyHash)
+      .eq(lookup.column, lookup.value)
       .single()
 
-    if (!project) return jsonError('Invalid API key', 401)
+    if (!project) return jsonError('Invalid project key', 401)
+    const projectRate = await checkRateLimit(request, 'feedback-project', 30, 1, project.id)
+    if (!projectRate.allowed) {
+      return NextResponse.json(
+        { error: 'This project is receiving too many submissions. Try again in a minute.' },
+        { status: 429, headers: { ...CORS_HEADERS, 'Retry-After': '60' } },
+      )
+    }
 
     const originAllowed = isWidgetRequestOriginAllowed(
       request,
@@ -236,21 +252,56 @@ export async function POST(request: NextRequest) {
       if (!valid) return jsonError('Captcha verification failed', 400)
     }
 
-    // Upload screenshot
-    let screenshotUrl: string | null = null
+    const submittedId = fields.submissionId?.trim() || null
+    if (submittedId && !UUID_RE.test(submittedId)) {
+      return jsonError('Invalid submission identifier', 400)
+    }
+    const feedbackId = submittedId || crypto.randomUUID()
+    const uploadedObjects: Array<{ bucket: string; path: string }> = []
+    const mediaRows: Array<Record<string, unknown>> = []
+    const cleanupUploadedObjects = () => Promise.all(
+      uploadedObjects.map((object) => admin.storage.from(object.bucket).remove([object.path])),
+    )
+    let screenshotPath: string | null = null
+
+    // Screenshots and attachments are validated, metadata-stripped, and stored privately.
     if (screenshotFile) {
       if (screenshotFile.size > MAX_SCREENSHOT_SIZE) return jsonError('Screenshot too large (max 3MB)', 400)
       if (!ALLOWED_SCREENSHOT_TYPES.includes(screenshotFile.type)) return jsonError('Screenshot type not allowed (png or jpeg only)', 400)
 
-      const ext = screenshotFile.type === 'image/png' ? 'png' : 'jpeg'
-      const path = `${project.id}/${crypto.randomUUID()}.${ext}`
       const buffer = Buffer.from(await screenshotFile.arrayBuffer())
+      let validated
+      try {
+        validated = await validateAndSanitizeFeedbackImage({
+          buffer,
+          claimedMimeType: screenshotFile.type,
+          originalFilename: screenshotFile.name || 'feedback-screenshot',
+          maxBytes: MAX_SCREENSHOT_SIZE,
+        })
+      } catch (error) {
+        return jsonError(error instanceof Error ? error.message : 'Screenshot is invalid', 400)
+      }
+      const path = `${project.id}/${feedbackId}/${crypto.randomUUID()}.${validated.extension}`
       const { error: uploadErr } = await admin.storage
         .from('feedback_screenshots')
-        .upload(path, buffer, { contentType: screenshotFile.type })
+        .upload(path, validated.buffer, { contentType: validated.mimeType, upsert: false })
       if (!uploadErr) {
-        const { data: urlData } = admin.storage.from('feedback_screenshots').getPublicUrl(path)
-        screenshotUrl = urlData.publicUrl
+        screenshotPath = path
+        uploadedObjects.push({ bucket: 'feedback_screenshots', path })
+        mediaRows.push({
+          feedback_id: feedbackId,
+          project_id: project.id,
+          kind: 'screenshot',
+          bucket: 'feedback_screenshots',
+          storage_path: path,
+          original_filename: screenshotFile.name || validated.safeFilename,
+          safe_filename: validated.safeFilename,
+          mime_type: validated.mimeType,
+          size_bytes: validated.size,
+          sha256: validated.sha256,
+          scan_status: 'clean',
+          scanned_at: new Date().toISOString(),
+        })
       } else {
         return jsonError('Failed to upload screenshot', 500)
       }
@@ -261,16 +312,40 @@ export async function POST(request: NextRequest) {
       }
       const match = fields.screenshot.match(/^data:image\/(png|jpeg);base64,(.+)$/)
       if (match) {
-        const ext = match[1]
         const buffer = Buffer.from(match[2], 'base64')
         if (buffer.length > MAX_SCREENSHOT_SIZE) return jsonError('Screenshot too large (max 3MB)', 400)
-        const path = `${project.id}/${crypto.randomUUID()}.${ext}`
+        let validated
+        try {
+          validated = await validateAndSanitizeFeedbackImage({
+            buffer,
+            claimedMimeType: `image/${match[1]}`,
+            originalFilename: `feedback-screenshot.${match[1]}`,
+            maxBytes: MAX_SCREENSHOT_SIZE,
+          })
+        } catch (error) {
+          return jsonError(error instanceof Error ? error.message : 'Screenshot is invalid', 400)
+        }
+        const path = `${project.id}/${feedbackId}/${crypto.randomUUID()}.${validated.extension}`
         const { error: uploadErr } = await admin.storage
           .from('feedback_screenshots')
-          .upload(path, buffer, { contentType: `image/${ext}` })
+          .upload(path, validated.buffer, { contentType: validated.mimeType, upsert: false })
         if (!uploadErr) {
-          const { data: urlData } = admin.storage.from('feedback_screenshots').getPublicUrl(path)
-          screenshotUrl = urlData.publicUrl
+          screenshotPath = path
+          uploadedObjects.push({ bucket: 'feedback_screenshots', path })
+          mediaRows.push({
+            feedback_id: feedbackId,
+            project_id: project.id,
+            kind: 'screenshot',
+            bucket: 'feedback_screenshots',
+            storage_path: path,
+            original_filename: validated.safeFilename,
+            safe_filename: validated.safeFilename,
+            mime_type: validated.mimeType,
+            size_bytes: validated.size,
+            sha256: validated.sha256,
+            scan_status: 'clean',
+            scanned_at: new Date().toISOString(),
+          })
         } else {
           return jsonError('Failed to upload screenshot', 500)
         }
@@ -278,31 +353,66 @@ export async function POST(request: NextRequest) {
     }
 
     // Upload attachment
-    let attachments: { url: string; name: string; type: string; size: number }[] | null = null
+    let attachments: { mediaId: string; name: string; type: string; size: number }[] | null = null
     if (attachmentFile) {
-      if (attachmentFile.size > MAX_ATTACHMENT_SIZE) return jsonError('Attachment too large (max 5MB)', 400)
-      if (!ALLOWED_ATTACHMENT_TYPES.includes(attachmentFile.type)) return jsonError('Attachment type not allowed (png, jpeg, pdf only)', 400)
+      if (attachmentFile.size > MAX_ATTACHMENT_SIZE) {
+        await cleanupUploadedObjects()
+        return jsonError('Attachment too large (max 5MB)', 400)
+      }
+      if (!ALLOWED_ATTACHMENT_TYPES.includes(attachmentFile.type)) {
+        await cleanupUploadedObjects()
+        return jsonError('Attachment type not allowed. PNG and JPEG are supported; PDF is disabled until malware scanning is configured.', 400)
+      }
 
       const safeName = sanitizeFilename(attachmentFile.name)
-      const ext = safeName.split('.').pop() ?? 'bin'
-      const path = `${project.id}/${crypto.randomUUID()}.${ext}`
       const buffer = Buffer.from(await attachmentFile.arrayBuffer())
+      let validated
+      try {
+        validated = await validateAndSanitizeFeedbackImage({
+          buffer,
+          claimedMimeType: attachmentFile.type,
+          originalFilename: safeName,
+          maxBytes: MAX_ATTACHMENT_SIZE,
+        })
+      } catch (error) {
+        await cleanupUploadedObjects()
+        return jsonError(error instanceof Error ? error.message : 'Attachment is invalid', 400)
+      }
+      const mediaId = crypto.randomUUID()
+      const path = `${project.id}/${feedbackId}/${mediaId}.${validated.extension}`
       const { error: uploadErr } = await admin.storage
         .from('feedback_attachments')
-        .upload(path, buffer, { contentType: attachmentFile.type })
+        .upload(path, validated.buffer, { contentType: validated.mimeType, upsert: false })
       if (!uploadErr) {
-        const { data: urlData } = admin.storage.from('feedback_attachments').getPublicUrl(path)
+        uploadedObjects.push({ bucket: 'feedback_attachments', path })
         attachments = [{
-          url: urlData.publicUrl,
-          name: safeName,
-          type: attachmentFile.type,
-          size: attachmentFile.size,
+          mediaId,
+          name: validated.safeFilename,
+          type: validated.mimeType,
+          size: validated.size,
         }]
+        mediaRows.push({
+          id: mediaId,
+          feedback_id: feedbackId,
+          project_id: project.id,
+          kind: 'attachment',
+          bucket: 'feedback_attachments',
+          storage_path: path,
+          original_filename: safeName,
+          safe_filename: validated.safeFilename,
+          mime_type: validated.mimeType,
+          size_bytes: validated.size,
+          sha256: validated.sha256,
+          scan_status: 'clean',
+          scanned_at: new Date().toISOString(),
+        })
+      } else {
+        await cleanupUploadedObjects()
+        return jsonError('Failed to upload attachment', 500)
       }
     }
 
     // Insert feedback
-    const feedbackId = crypto.randomUUID()
     const now = new Date().toISOString()
     const feedbackRow = {
       id: feedbackId,
@@ -316,7 +426,8 @@ export async function POST(request: NextRequest) {
       priority: priority || 'low',
       status: 'new' as const,
       tags: tags || [],
-      screenshot_url: screenshotUrl,
+      screenshot_url: null,
+      screenshot_path: screenshotPath,
       attachments,
       metadata: {},
       is_archived: false,
@@ -327,8 +438,32 @@ export async function POST(request: NextRequest) {
 
     const { error: insertErr } = await admin.from('feedback').insert(feedbackRow)
     if (insertErr) {
+      await cleanupUploadedObjects()
+      if (submittedId && insertErr.code === '23505') {
+        const { data: existing } = await admin
+          .from('feedback')
+          .select('id')
+          .eq('id', feedbackId)
+          .eq('project_id', project.id)
+          .maybeSingle()
+        if (existing) {
+          return NextResponse.json(
+            { success: true, id: existing.id, replayed: true },
+            { headers: { ...CORS_HEADERS, 'Idempotency-Replayed': 'true' } },
+          )
+        }
+      }
       console.error('Feedback insert error:', insertErr)
       return jsonError('Failed to save feedback', 500)
+    }
+
+    if (mediaRows.length > 0) {
+      const { error: mediaError } = await admin.from('feedback_media').insert(mediaRows)
+      if (mediaError) {
+        await cleanupUploadedObjects()
+        await admin.from('feedback').delete().eq('id', feedbackId)
+        return jsonError('Failed to secure uploaded media', 500)
+      }
     }
 
     await incrementFeedbackUsage(project.owner_user_id)

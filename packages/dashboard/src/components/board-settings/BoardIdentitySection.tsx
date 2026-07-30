@@ -1,6 +1,6 @@
 'use client'
 
-import type React from 'react'
+import * as React from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { WorkspaceSection } from '@/components/ui/workspace-section'
@@ -12,6 +12,8 @@ interface BoardSettingsSlice {
 }
 
 interface BoardIdentitySectionProps {
+  projectId: string
+  boardUrl: string
   settings: BoardSettingsSlice & { branding: BoardBranding }
   onSettingsChange: (patch: Partial<BoardSettingsSlice>) => void
   onBrandingChange: (patch: Partial<BoardBranding>) => void
@@ -26,11 +28,14 @@ function slugify(text: string): string {
 }
 
 export function BoardIdentitySection({
+  projectId,
+  boardUrl,
   settings,
   onSettingsChange,
   onBrandingChange,
   slugManuallyEdited,
 }: BoardIdentitySectionProps) {
+  const [slugStatus, setSlugStatus] = React.useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle')
   const handleDisplayNameChange = (value: string) => {
     const clamped = value.slice(0, 60)
     onSettingsChange({ display_name: clamped })
@@ -44,6 +49,32 @@ export function BoardIdentitySection({
     slugManuallyEdited.current = true
     onSettingsChange({ slug: slugify(value) })
   }
+
+  React.useEffect(() => {
+    if (!settings.slug) {
+      setSlugStatus('idle')
+      return
+    }
+    const controller = new AbortController()
+    setSlugStatus('checking')
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `/api/projects/${projectId}/board?checkSlug=${encodeURIComponent(settings.slug)}`,
+          { cache: 'no-store', signal: controller.signal },
+        )
+        const payload = await response.json().catch(() => null)
+        if (!response.ok) throw new Error('check failed')
+        setSlugStatus(payload?.available ? 'available' : 'taken')
+      } catch {
+        if (!controller.signal.aborted) setSlugStatus('error')
+      }
+    }, 350)
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [projectId, settings.slug])
 
   return (
     <WorkspaceSection title="Name and look" description="Set the name, link, mark, and color users will see.">
@@ -72,8 +103,20 @@ export function BoardIdentitySection({
               value={settings.slug}
               onChange={(e) => handleSlugChange(e.target.value)}
               placeholder="my-product"
+              aria-describedby="board-slug-status"
             />
           </div>
+          <p
+            id="board-slug-status"
+            role="status"
+            aria-live="polite"
+            className={slugStatus === 'taken' ? 'text-xs text-destructive' : 'text-xs text-muted-foreground'}
+          >
+            {slugStatus === 'checking' && 'Checking availability…'}
+            {slugStatus === 'available' && 'This public link is available.'}
+            {slugStatus === 'taken' && 'That link is already in use. Choose another slug.'}
+            {slugStatus === 'error' && 'Availability could not be checked. It will be checked again when you save.'}
+          </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -114,6 +157,22 @@ export function BoardIdentitySection({
             onChange={(e) => onBrandingChange({ websiteUrl: e.target.value })}
             placeholder="https://example.com"
           />
+        </div>
+
+        <div className="space-y-2 border-t pt-5">
+          <p className="text-sm font-medium">Search and share preview</p>
+          <div className="rounded-lg border bg-[oklch(var(--surface-inset))] p-4">
+            <p className="truncate text-xs text-muted-foreground">{boardUrl}</p>
+            <p className="mt-1 text-base font-semibold text-foreground">
+              {settings.display_name || 'Your product'} feedback
+            </p>
+            <p className="mt-1 text-sm leading-5 text-muted-foreground">
+              Share ideas, vote on requests, and follow what ships.
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Published pages include a canonical URL and safe social sharing metadata.
+          </p>
         </div>
     </WorkspaceSection>
   )

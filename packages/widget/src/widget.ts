@@ -1,5 +1,6 @@
 import styles from './styles.css';
 import type { WidgetConfig, FeedbackData, FeedbackResponse, CategoryType } from './types';
+import { sanitizeFeedbackPageUrl } from './privacy';
 import {
   isWidgetBootstrapResponse,
   readCachedFeedbackEnabled,
@@ -212,6 +213,14 @@ class FeedbacksWidget {
   private getLocalStorage(): Storage | null {
     try {
       return window.localStorage;
+    } catch {
+      return null;
+    }
+  }
+
+  private getSessionStorage(): Storage | null {
+    try {
+      return window.sessionStorage;
     } catch {
       return null;
     }
@@ -478,8 +487,8 @@ class FeedbacksWidget {
           ${t.enableAttachment ? `
           <div class="fb-field">
             <label for="fb-file-${id}" class="fb-label">Attachment (optional)</label>
-            <input id="fb-file-${id}" type="file" class="fb-file-input" accept="image/png,image/jpeg,application/pdf" />
-            <span class="fb-help">Max ${t.attachmentMaxMB || 5} MB</span>
+            <input id="fb-file-${id}" type="file" class="fb-file-input" accept="image/png,image/jpeg" />
+            <span class="fb-help">PNG or JPG, max ${t.attachmentMaxMB || 5} MB</span>
           </div>` : ''}
 
           <input type="text" name="fb_hp" class="fb-hp" autocomplete="off" tabindex="-1" aria-hidden="true" />
@@ -510,21 +519,55 @@ class FeedbacksWidget {
     const captureBtn = container.querySelector('.fb-capture-btn') as HTMLButtonElement | null;
     const screenshotBadge = container.querySelector('.fb-screenshot-badge') as HTMLElement | null;
     const fileInput = container.querySelector(`#fb-file-${id}`) as HTMLInputElement | null;
+    const draftStorage = this.getSessionStorage();
+    const draftKey = `feedbacks:draft:${this.cfg.projectKey}`;
+    let restoredDraft: { message?: string; email?: string; category?: CategoryType; rating?: number } = {};
+    try {
+      restoredDraft = JSON.parse(draftStorage?.getItem(draftKey) || '{}');
+    } catch {
+      restoredDraft = {};
+    }
+    if (typeof restoredDraft.message === 'string') textarea.value = restoredDraft.message.slice(0, 2000);
+    if (emailInput && typeof restoredDraft.email === 'string') emailInput.value = restoredDraft.email.slice(0, 320);
+    const persistDraft = () => {
+      try {
+        draftStorage?.setItem(draftKey, JSON.stringify({
+          message: textarea.value,
+          email: emailInput?.value || '',
+          category: this.selectedCategory || undefined,
+          rating: this.selectedRating || undefined,
+        }));
+      } catch {
+        // Storage may be disabled; the live form remains usable.
+      }
+    };
 
     // Close / cancel
     closeBtn?.addEventListener('click', () => this.close());
     cancelBtn?.addEventListener('click', () => this.close());
 
     // Char count
-    textarea?.addEventListener('input', () => {
+    const updateCharacterCount = () => {
       const len = textarea.value.length;
       charCount.textContent = `${len.toLocaleString()} / 2,000`;
       charCount.className = 'fb-char-count' + (len > 1950 ? ' fb-char-danger' : len > 1800 ? ' fb-char-warn' : '');
+    };
+    updateCharacterCount();
+    textarea?.addEventListener('input', () => {
+      updateCharacterCount();
+      persistDraft();
     });
+    emailInput?.addEventListener('input', persistDraft);
 
     // Category buttons
-    this.selectedCategory = '';
+    const validCategories: CategoryType[] = ['bug', 'idea', 'praise', 'question'];
+    this.selectedCategory = validCategories.some((category) => category === restoredDraft.category)
+      ? restoredDraft.category as CategoryType
+      : '';
     container.querySelectorAll<HTMLElement>('.fb-cat-btn').forEach(btn => {
+      const active = btn.dataset.cat === this.selectedCategory;
+      btn.classList.toggle('fb-active', active);
+      btn.setAttribute('aria-checked', String(active));
       btn.addEventListener('click', () => {
         const cat = btn.dataset.cat as CategoryType;
         this.selectedCategory = this.selectedCategory === cat ? '' : cat;
@@ -533,11 +576,16 @@ class FeedbacksWidget {
           b.classList.toggle('fb-active', active);
           b.setAttribute('aria-checked', String(active));
         });
+        persistDraft();
       });
     });
 
     // Star rating
-    this.selectedRating = 0;
+    this.selectedRating = Number.isInteger(restoredDraft.rating)
+      && Number(restoredDraft.rating) >= 1
+      && Number(restoredDraft.rating) <= 5
+      ? Number(restoredDraft.rating)
+      : 0;
     this.hoverRating = 0;
     const starLabel = container.querySelector('.fb-star-label') as HTMLElement | null;
     const updateStars = () => {
@@ -561,6 +609,7 @@ class FeedbacksWidget {
         this.selectedRating = this.selectedRating === val ? 0 : val;
         this.hoverRating = 0;
         updateStars();
+        persistDraft();
       });
       s.addEventListener('mouseenter', () => { this.hoverRating = parseInt(s.dataset.val || '0'); updateStars(); });
       s.addEventListener('mouseleave', () => { this.hoverRating = 0; updateStars(); });
@@ -599,6 +648,10 @@ class FeedbacksWidget {
       if (this.cfg.requireEmail && !email) { this.showError(container, 'Email is required.'); return; }
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.showError(container, 'Please enter a valid email.'); return; }
       if (!this.cfg.projectKey) { this.showError(container, 'Widget is missing a project key.'); return; }
+      if (navigator.onLine === false) {
+        this.showError(container, 'You appear to be offline. Your draft is saved in this tab—reconnect and try again.');
+        return;
+      }
 
       // Captcha check
       if (this.cfg.requireCaptcha) {
@@ -610,23 +663,26 @@ class FeedbacksWidget {
       const file = fileInput?.files?.[0];
       if (file) {
         const maxMB = this.cfg.attachmentMaxMB || 5;
-        const allowed = this.cfg.allowedAttachmentMimes || ['image/png','image/jpeg','application/pdf'];
-        if (!allowed.includes(file.type)) { this.showError(container, 'Unsupported file type.'); return; }
+        const allowed = (this.cfg.allowedAttachmentMimes || ['image/png','image/jpeg'])
+          .filter((type): type is 'image/png' | 'image/jpeg' => type === 'image/png' || type === 'image/jpeg');
+        if (!allowed.some(type => type === file.type)) { this.showError(container, 'Unsupported file type.'); return; }
         if (file.size > maxMB * 1024 * 1024) { this.showError(container, `File too large (max ${maxMB} MB).`); return; }
       }
 
       this.setLoading(submitBtn, true);
 
       try {
+        const submissionId = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : undefined;
         const captchaToken = container.querySelector<HTMLInputElement>(`#fb-captcha-token-${id}`)?.value || '';
         let response: FeedbackResponse;
 
         if (file) {
           const fd = new FormData();
           fd.append('apiKey', this.cfg.projectKey);
+          if (submissionId) fd.append('submissionId', submissionId);
           fd.append('message', message);
           if (email) fd.append('email', email);
-          fd.append('url', window.location.href);
+          fd.append('url', sanitizeFeedbackPageUrl(window.location.href));
           fd.append('userAgent', navigator.userAgent);
           if (this.selectedCategory) fd.append('type', this.selectedCategory);
           if (this.selectedRating) fd.append('rating', String(this.selectedRating));
@@ -637,9 +693,10 @@ class FeedbacksWidget {
         } else {
           const data: FeedbackData = {
             apiKey: this.cfg.projectKey,
+            submissionId,
             message,
             email: email || undefined,
-            url: window.location.href,
+            url: sanitizeFeedbackPageUrl(window.location.href),
             userAgent: navigator.userAgent,
             type: this.selectedCategory || undefined,
             rating: this.selectedRating || undefined,
@@ -653,6 +710,7 @@ class FeedbacksWidget {
         window.dispatchEvent(new CustomEvent('feedbacks:submitted', {
           detail: { id: response.id },
         }));
+        draftStorage?.removeItem(draftKey);
         this.showSuccess(container, isModal);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to send feedback. Please try again.';
@@ -679,11 +737,18 @@ class FeedbacksWidget {
       });
       clearTimeout(timeout);
       const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error((json?.error || json?.message) || `HTTP ${res.status}`);
+      if (!res.ok) {
+        const error = new Error((json?.error || json?.message) || `HTTP ${res.status}`) as Error & { retriable?: boolean };
+        error.retriable = res.status === 408 || res.status === 429 || res.status >= 500;
+        throw error;
+      }
       return json as FeedbackResponse;
     } catch (err) {
       clearTimeout(timeout);
-      if (attempt < this.maxRetries) {
+      const retryable = (err as Error & { retriable?: boolean })?.retriable
+        || err instanceof TypeError
+        || (err instanceof DOMException && err.name === 'AbortError');
+      if (attempt < this.maxRetries && retryable) {
         this.log(`Attempt ${attempt} failed, retrying...`);
         await new Promise(r => setTimeout(r, 500 * attempt));
         return this.submitData(data, attempt + 1);
@@ -810,7 +875,7 @@ class FeedbacksWidget {
   private setLoading(btn: HTMLButtonElement, loading: boolean): void {
     btn.disabled = loading;
     if (loading) {
-      btn.innerHTML = `<span class="fb-spinner"></span> Sending...`;
+      btn.innerHTML = `<span class="fb-spinner"></span> Sending…`;
     } else {
       btn.textContent = this.cfg.submitButtonText || 'Send Feedback';
     }
@@ -822,9 +887,9 @@ class FeedbacksWidget {
     if (!body) return;
     const div = document.createElement('div');
     div.className = 'fb-error';
+    div.setAttribute('role', 'alert');
     div.textContent = message;
     body.insertBefore(div, body.firstChild);
-    setTimeout(() => div.remove(), 5000);
   }
 
   private showSuccess(container: HTMLElement, isModal: boolean): void {

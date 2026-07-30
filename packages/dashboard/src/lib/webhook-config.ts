@@ -13,6 +13,7 @@ export type EndpointHealthStatus = 'healthy' | 'attention' | 'failing' | 'disabl
 
 export interface WebhookDeliveryLog {
   id: string
+  endpoint_id?: string | null
   event: string
   kind: WebhookKind
   url: string
@@ -113,15 +114,18 @@ function sanitizeBaseEndpoint(
   if (!endpoint || typeof endpoint !== 'object' || Array.isArray(endpoint)) return undefined
   const source = endpoint as Record<string, unknown>
   const url = sanitizeUrl(source.url)
-  if (!url) return undefined
+  const secretStored = source.secretStored === true
+  if (!url && !secretStored) return undefined
 
   const sanitized: WebhookEndpoint = {
     id: sanitizeString(source.id, 120) || makeEndpointId(kind),
-    url,
+    url: url || '',
     enabled: source.enabled !== false,
     delivery: source.delivery === 'digest' ? 'digest' : 'immediate',
     format: WEBHOOK_FORMATS.has(String(source.format)) ? (source.format as 'compact' | 'full') : 'full',
     rules: sanitizeRules(source.rules),
+    secretStored,
+    destinationHint: sanitizeString(source.destinationHint, 200),
   }
 
   if (kind === 'generic') {
@@ -137,7 +141,8 @@ function sanitizeGitHubEndpoint(endpoint: unknown): GitHubEndpoint | undefined {
   const source = endpoint as Record<string, unknown>
   const repo = sanitizeRepo(source.repo)
   const token = sanitizeString(source.token, 300)
-  if (!repo || !token) return undefined
+  const secretStored = source.secretStored === true
+  if (!repo || (!token && !secretStored)) return undefined
 
   const base = sanitizeBaseEndpoint('github', {
     ...source,
@@ -149,7 +154,7 @@ function sanitizeGitHubEndpoint(endpoint: unknown): GitHubEndpoint | undefined {
   return {
     ...base,
     repo,
-    token,
+    token: token || '',
     labels: sanitizeString(source.labels, 300),
   }
 }
@@ -264,7 +269,10 @@ export function listWebhookEndpointStates(
 
     endpoints.forEach((endpoint) => {
       const matchingDeliveries = deliveries
-        .filter((delivery) => delivery.kind === kind && delivery.url === endpoint.url)
+        .filter((delivery) =>
+          delivery.kind === kind
+          && (delivery.endpoint_id ? delivery.endpoint_id === endpoint.id : delivery.url === endpoint.url),
+        )
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
       const recentFailures = matchingDeliveries

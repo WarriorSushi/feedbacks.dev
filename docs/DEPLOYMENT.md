@@ -96,7 +96,7 @@ Use staging app origins for staging projects. Do not point production Auth redir
 ## Step 3: Supabase Storage (for screenshots)
 
 1. Go to **Storage** → **New Bucket**
-2. Create bucket: `feedback_screenshots` → Public ✅
+2. Create bucket: `feedback_screenshots` → Private
 3. Create bucket: `feedback_attachments` → Public ✅
 4. Recommended bucket limits:
    - `feedback_screenshots`: `image/png`, `image/jpeg`, max `3 MB`
@@ -104,7 +104,9 @@ Use staging app origins for staging projects. Do not point production Auth redir
 
 `sql/028_product_updates.sql` also creates the public `product_update_images` bucket. It accepts JPEG, PNG, and WebP only, with a 2 MB limit. Do not create browser upload policies for this bucket: dashboard owner routes upload and remove files through the server-side admin client.
 
-The widget API enforces the same screenshot MIME policy and 3 MB screenshot limit. Attachments are capped at 5 MB by the API.
+The widget API validates PNG/JPEG magic bytes, re-encodes images to strip metadata, and enforces the
+3 MB screenshot limit. Image attachments are private and capped at 5 MB. PDF attachments remain
+disabled until a production malware scanner and quarantine workflow are configured.
 
 ---
 
@@ -317,7 +319,7 @@ Receivers should recompute the HMAC with the endpoint secret, compare it using a
 
 | Issue | Fix |
 |-------|-----|
-| "Invalid API key" on widget | Check the project's API key in dashboard |
+| "Invalid project key" on widget | Check the browser-safe `fb_pub_…` project key in Install & verify |
 | OAuth redirect fails | Verify callback URLs in Supabase + GitHub |
 | No feedback appearing | Check RLS policies, ensure feedback table has data |
 | Widget not loading | Check browser console, verify script URL |

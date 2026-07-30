@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import { getBillingSummaryForUser } from '@/lib/billing'
-import { cleanupFeedbackStorageForUserProjects } from '@/lib/feedback-storage-cleanup'
+import { processAccountDeletionJobs } from '@/lib/account-deletion'
+import { readJsonBody } from '@/lib/api-request'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json().catch(() => ({}))
+    const bodyResult = await readJsonBody<{ confirmation?: string }>(request, { maxBytes: 2_048 })
+    if (!bodyResult.ok) return bodyResult.response
+    const body = bodyResult.data
     const confirmation = typeof body.confirmation === 'string' ? body.confirmation.trim() : ''
     if (confirmation !== user.email) {
       return NextResponse.json({ error: 'Type your email address to confirm account deletion.' }, { status: 400 })
@@ -30,17 +33,36 @@ export async function POST(request: NextRequest) {
 
     const admin = await createAdminSupabase()
 
-    await cleanupFeedbackStorageForUserProjects(admin, user.id)
-    await admin.from('billing_accounts').delete().eq('user_id', user.id)
-    await admin.from('user_settings').delete().eq('user_id', user.id)
-    await admin.from('projects').delete().eq('owner_user_id', user.id)
+    const { error: queueError } = await admin
+      .from('account_deletion_jobs')
+      .upsert({
+        user_id: user.id,
+        user_email: user.email,
+        status: 'pending',
+        next_attempt_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+    if (queueError) throw queueError
 
-    const { error } = await admin.auth.admin.deleteUser(user.id)
-    if (error) {
-      return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 })
+    const results = await processAccountDeletionJobs(admin, { limit: 1, userId: user.id })
+    const result = results[0]
+    if (result?.status === 'blocked') {
+      return NextResponse.json(
+        { error: 'Cancel the active subscription from Billing before deleting this account.' },
+        { status: 409 },
+      )
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json(
+      {
+        success: result?.status === 'completed',
+        pending: result?.status !== 'completed',
+        message: result?.status === 'completed'
+          ? 'Account deleted'
+          : 'Account deletion is queued and will retry automatically.',
+      },
+      { status: result?.status === 'completed' ? 200 : 202 },
+    )
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

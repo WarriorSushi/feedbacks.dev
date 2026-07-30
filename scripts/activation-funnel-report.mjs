@@ -38,25 +38,13 @@ const client = createClient(url, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
 })
 
-const excludedEmails = new Set([
-  (process.env.PLAYWRIGHT_TEST_EMAIL || 'playwright@feedbacks.dev').toLowerCase(),
-  'test@test.com',
-])
-const { data: userPage, error: userError } = await client.auth.admin.listUsers({ page: 1, perPage: 1000 })
-if (userError) throw userError
-const excludedUserIds = userPage.users
-  .filter((user) => user.email && excludedEmails.has(user.email.toLowerCase()))
-  .map((user) => user.id)
-
 async function loadCounts(since) {
   const results = await Promise.all(events.map(async ([eventName, label]) => {
     let query = client
       .from('activation_milestones')
       .select('project_id', { count: 'exact', head: true })
       .eq('event_name', eventName)
-    if (excludedUserIds.length > 0) {
-      query = query.not('user_id', 'in', `(${excludedUserIds.join(',')})`)
-    }
+      .eq('environment', 'production')
     if (since) query = query.gte('first_seen_at', since)
     const { count, error } = await query
     if (error) throw error

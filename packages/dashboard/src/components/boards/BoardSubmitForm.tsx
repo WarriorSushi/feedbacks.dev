@@ -15,6 +15,8 @@ interface BoardSubmitFormProps {
 }
 
 export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: BoardSubmitFormProps) {
+  const dialogRef = React.useRef<HTMLDivElement>(null)
+  const draftKey = `feedbacks:board-draft:${slug}`
   const [title, setTitle] = React.useState('')
   const [details, setDetails] = React.useState('')
   const [type, setType] = React.useState(showTypes[0] || 'idea')
@@ -25,6 +27,68 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
   const [suggestions, setSuggestions] = React.useState<BoardSuggestion[]>([])
   const message = [title.trim(), details.trim()].filter(Boolean).join('\n')
   const deferredMessage = React.useDeferredValue(message)
+
+  React.useEffect(() => {
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem(draftKey) || 'null') as {
+        title?: string
+        details?: string
+        type?: string
+        email?: string
+      } | null
+      if (!saved) return
+      if (typeof saved.title === 'string') setTitle(saved.title)
+      if (typeof saved.details === 'string') setDetails(saved.details)
+      if (typeof saved.type === 'string' && showTypes.includes(saved.type)) setType(saved.type)
+      if (typeof saved.email === 'string') setEmail(saved.email)
+    } catch {
+      // A corrupt browser draft is ignored without blocking submission.
+    }
+  }, [draftKey, showTypes])
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      try {
+        window.sessionStorage.setItem(draftKey, JSON.stringify({ title, details, type, email }))
+      } catch {
+        // Storage can be disabled; the in-memory draft remains available.
+      }
+    }, 150)
+    return () => window.clearTimeout(timer)
+  }, [details, draftKey, email, title, type])
+
+  React.useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    const previous = document.activeElement as HTMLElement | null
+    dialog.querySelector<HTMLElement>('input, textarea, button')?.focus()
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onClose()
+        return
+      }
+      if (event.key !== 'Tab') return
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href]'),
+      ).filter((element) => element.offsetParent !== null)
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      previous?.focus()
+    }
+  }, [onClose])
 
   React.useEffect(() => {
     const query = deferredMessage.trim()
@@ -70,6 +134,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
         if (Array.isArray(data.suggestions)) setSuggestions(data.suggestions)
         throw new Error(data.error || 'Failed to submit')
       }
+      window.sessionStorage.removeItem(draftKey)
       onSubmitted()
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Something went wrong')
@@ -82,6 +147,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-slate-950/55 backdrop-blur-sm" onClick={onClose} />
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="board-submit-modal-title"
@@ -106,7 +172,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5 p-5">
+        <form onSubmit={handleSubmit} aria-busy={submitting} className="space-y-5 p-5">
           <div>
             <p className="text-sm font-medium text-foreground">Is this an idea or a bug?</p>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -115,6 +181,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
                   key={entry}
                   type="button"
                   onClick={() => setType(entry)}
+                  aria-pressed={type === entry}
                   className={cn(
                     'rounded-md border px-3 py-2 text-sm font-medium transition-colors',
                     type === entry
@@ -195,7 +262,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
             </div>
           )}
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
           <div className="flex flex-wrap items-center gap-3">
             <Button
@@ -203,7 +270,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
               disabled={submitting || title.trim().length < 5}
               className="px-4 font-semibold"
             >
-              {submitting ? 'Posting...' : 'Post to board'}
+              {submitting ? 'Posting…' : 'Post to board'}
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel

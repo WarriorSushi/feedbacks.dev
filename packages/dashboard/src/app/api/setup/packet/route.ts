@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { buildAgentSetupPacket, verifyAgentSetupToken } from '@/lib/agent-setup'
 import { createAdminSupabase } from '@/lib/supabase-server'
-import { hashProjectApiKey } from '@/lib/project-api-keys'
+import { getProjectPublishableKey } from '@/lib/project-api-keys'
 import type { Project } from '@/lib/types'
 
 export async function GET(request: NextRequest) {
@@ -44,9 +44,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
-    const projectWithHash = project as Project & { api_key_hash?: string | null }
-    const tokenKeyHash = await hashProjectApiKey(payload.projectKey)
-    if (projectWithHash.api_key_hash && tokenKeyHash !== projectWithHash.api_key_hash) {
+    if (payload.projectKey !== getProjectPublishableKey(project.id)) {
       return NextResponse.json(
         { error: 'Setup token no longer matches the active project key.' },
         { status: 401 },

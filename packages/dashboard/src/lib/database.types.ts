@@ -14,8 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_idempotency_keys: {
+        Row: {
+          created_at: string
+          expires_at: string
+          key_hash: string
+          project_id: string
+          request_hash: string
+          response_body: Json | null
+          response_status: number | null
+          route: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          key_hash: string
+          project_id: string
+          request_hash: string
+          response_body?: Json | null
+          response_status?: number | null
+          route: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          key_hash?: string
+          project_id?: string
+          request_hash?: string
+          response_body?: Json | null
+          response_status?: number | null
+          route?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_idempotency_keys_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activation_milestones: {
         Row: {
+          environment: string
           event_name: string
           first_seen_at: string
           metadata: Json
@@ -23,6 +71,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          environment?: string
           event_name: string
           first_seen_at?: string
           metadata?: Json
@@ -30,6 +79,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          environment?: string
           event_name?: string
           first_seen_at?: string
           metadata?: Json
@@ -45,6 +95,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      account_deletion_jobs: {
+        Row: {
+          attempt_count: number
+          claim_token: string | null
+          created_at: string
+          id: string
+          last_error: string | null
+          locked_at: string | null
+          next_attempt_at: string
+          status: string
+          updated_at: string
+          user_email: string
+          user_id: string
+        }
+        Insert: {
+          attempt_count?: number
+          claim_token?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          locked_at?: string | null
+          next_attempt_at?: string
+          status?: string
+          updated_at?: string
+          user_email: string
+          user_id: string
+        }
+        Update: {
+          attempt_count?: number
+          claim_token?: string | null
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          locked_at?: string | null
+          next_attempt_at?: string
+          status?: string
+          updated_at?: string
+          user_email?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       agent_setup_audit: {
         Row: {
@@ -128,6 +220,9 @@ export type Database = {
       billing_accounts: {
         Row: {
           billing_email: string | null
+          billing_currency: string | null
+          billing_interval: string | null
+          billing_interval_count: number | null
           billing_status: string
           cancel_at_period_end: boolean
           created_at: string
@@ -136,14 +231,19 @@ export type Database = {
           dodo_customer_id: string | null
           dodo_product_id: string | null
           dodo_subscription_id: string | null
+          last_event_at: string | null
           last_event_id: string | null
           last_event_type: string | null
           plan_tier: string
+          recurring_amount: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           billing_email?: string | null
+          billing_currency?: string | null
+          billing_interval?: string | null
+          billing_interval_count?: number | null
           billing_status?: string
           cancel_at_period_end?: boolean
           created_at?: string
@@ -152,14 +252,19 @@ export type Database = {
           dodo_customer_id?: string | null
           dodo_product_id?: string | null
           dodo_subscription_id?: string | null
+          last_event_at?: string | null
           last_event_id?: string | null
           last_event_type?: string | null
           plan_tier?: string
+          recurring_amount?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           billing_email?: string | null
+          billing_currency?: string | null
+          billing_interval?: string | null
+          billing_interval_count?: number | null
           billing_status?: string
           cancel_at_period_end?: boolean
           created_at?: string
@@ -168,9 +273,11 @@ export type Database = {
           dodo_customer_id?: string | null
           dodo_product_id?: string | null
           dodo_subscription_id?: string | null
+          last_event_at?: string | null
           last_event_id?: string | null
           last_event_type?: string | null
           plan_tier?: string
+          recurring_amount?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -178,33 +285,51 @@ export type Database = {
       }
       billing_events: {
         Row: {
+          attempt_count: number
+          claim_token: string | null
           created_at: string
           dodo_customer_id: string | null
           dodo_subscription_id: string | null
           event_type: string
           id: string
+          locked_at: string | null
+          occurred_at: string | null
           payload: Json
+          processing_error: string | null
           processed_at: string | null
+          status: string
           user_id: string | null
         }
         Insert: {
+          attempt_count?: number
+          claim_token?: string | null
           created_at?: string
           dodo_customer_id?: string | null
           dodo_subscription_id?: string | null
           event_type: string
           id: string
+          locked_at?: string | null
+          occurred_at?: string | null
           payload: Json
+          processing_error?: string | null
           processed_at?: string | null
+          status?: string
           user_id?: string | null
         }
         Update: {
+          attempt_count?: number
+          claim_token?: string | null
           created_at?: string
           dodo_customer_id?: string | null
           dodo_subscription_id?: string | null
           event_type?: string
           id?: string
+          locked_at?: string | null
+          occurred_at?: string | null
           payload?: Json
+          processing_error?: string | null
           processed_at?: string | null
+          status?: string
           user_id?: string | null
         }
         Relationships: []
@@ -428,6 +553,7 @@ export type Database = {
           rating: number | null
           read_at: string | null
           resolved_at: string | null
+          screenshot_path: string | null
           screenshot_url: string | null
           status: string
           structured_data: Json | null
@@ -454,6 +580,7 @@ export type Database = {
           rating?: number | null
           read_at?: string | null
           resolved_at?: string | null
+          screenshot_path?: string | null
           screenshot_url?: string | null
           status?: string
           structured_data?: Json | null
@@ -480,6 +607,7 @@ export type Database = {
           rating?: number | null
           read_at?: string | null
           resolved_at?: string | null
+          screenshot_path?: string | null
           screenshot_url?: string | null
           status?: string
           structured_data?: Json | null
@@ -493,6 +621,126 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "feedback_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_activity: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event_type: string
+          feedback_id: string
+          from_value: Json | null
+          id: string
+          metadata: Json
+          project_id: string
+          to_value: Json | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event_type: string
+          feedback_id: string
+          from_value?: Json | null
+          id?: string
+          metadata?: Json
+          project_id: string
+          to_value?: Json | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event_type?: string
+          feedback_id?: string
+          from_value?: Json | null
+          id?: string
+          metadata?: Json
+          project_id?: string
+          to_value?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_activity_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_activity_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_media: {
+        Row: {
+          bucket: string
+          created_at: string
+          deleted_at: string | null
+          feedback_id: string
+          id: string
+          kind: string
+          mime_type: string
+          original_filename: string
+          project_id: string
+          safe_filename: string
+          scan_status: string
+          scanned_at: string | null
+          sha256: string | null
+          size_bytes: number
+          storage_path: string
+        }
+        Insert: {
+          bucket: string
+          created_at?: string
+          deleted_at?: string | null
+          feedback_id: string
+          id?: string
+          kind: string
+          mime_type: string
+          original_filename: string
+          project_id: string
+          safe_filename: string
+          scan_status?: string
+          scanned_at?: string | null
+          sha256?: string | null
+          size_bytes: number
+          storage_path: string
+        }
+        Update: {
+          bucket?: string
+          created_at?: string
+          deleted_at?: string | null
+          feedback_id?: string
+          id?: string
+          kind?: string
+          mime_type?: string
+          original_filename?: string
+          project_id?: string
+          safe_filename?: string
+          scan_status?: string
+          scanned_at?: string | null
+          sha256?: string | null
+          size_bytes?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_media_feedback_id_fkey"
+            columns: ["feedback_id"]
+            isOneToOne: false
+            referencedRelation: "feedback"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_media_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -725,6 +973,7 @@ export type Database = {
           highlights: string[]
           id: string
           image_path: string | null
+          image_alt_text: string | null
           project_id: string
           published_at: string | null
           status: string
@@ -742,6 +991,7 @@ export type Database = {
           highlights?: string[]
           id?: string
           image_path?: string | null
+          image_alt_text?: string | null
           project_id: string
           published_at?: string | null
           status?: string
@@ -759,6 +1009,7 @@ export type Database = {
           highlights?: string[]
           id?: string
           image_path?: string | null
+          image_alt_text?: string | null
           project_id?: string
           published_at?: string | null
           status?: string
@@ -770,6 +1021,186 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "product_updates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_api_key_events: {
+        Row: {
+          actor_user_id: string | null
+          api_key_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json
+          project_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          api_key_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata?: Json
+          project_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          api_key_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_api_key_events_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "project_api_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_api_key_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_api_keys: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          key_hash: string
+          key_last_four: string
+          last_used_at: string | null
+          name: string
+          project_id: string
+          revoked_at: string | null
+          scopes: string[]
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          key_hash: string
+          key_last_four: string
+          last_used_at?: string | null
+          name?: string
+          project_id: string
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          key_hash?: string
+          key_last_four?: string
+          last_used_at?: string | null
+          name?: string
+          project_id?: string
+          revoked_at?: string | null
+          scopes?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_api_keys_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_integration_secrets: {
+        Row: {
+          auth_tag: string
+          ciphertext: string
+          created_at: string
+          destination_hint: string
+          endpoint_id: string
+          id: string
+          initialization_vector: string
+          key_version: number
+          kind: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          auth_tag: string
+          ciphertext: string
+          created_at?: string
+          destination_hint: string
+          endpoint_id: string
+          id?: string
+          initialization_vector: string
+          key_version?: number
+          kind: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          auth_tag?: string
+          ciphertext?: string
+          created_at?: string
+          destination_hint?: string
+          endpoint_id?: string
+          id?: string
+          initialization_vector?: string
+          key_version?: number
+          kind?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_integration_secrets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_integration_secret_events: {
+        Row: {
+          created_at: string
+          destination_hint: string
+          endpoint_id: string
+          event_type: string
+          id: string
+          kind: string
+          project_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination_hint: string
+          endpoint_id: string
+          event_type: string
+          id?: string
+          kind: string
+          project_id: string
+        }
+        Update: {
+          created_at?: string
+          destination_hint?: string
+          endpoint_id?: string
+          event_type?: string
+          id?: string
+          kind?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_integration_secret_events_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -821,11 +1252,16 @@ export type Database = {
           api_key_hash: string | null
           api_key_last_four: string | null
           created_at: string
+          creation_request_id: string | null
           domain: string | null
+          environment: string
+          expires_at: string | null
           id: string
           name: string
           owner_user_id: string
+          quarantined_at: string | null
           settings: Json
+          test_namespace: string | null
           updated_at: string
           webhooks: Json
         }
@@ -834,11 +1270,16 @@ export type Database = {
           api_key_hash?: string | null
           api_key_last_four?: string | null
           created_at?: string
+          creation_request_id?: string | null
           domain?: string | null
+          environment?: string
+          expires_at?: string | null
           id?: string
           name: string
           owner_user_id: string
+          quarantined_at?: string | null
           settings?: Json
+          test_namespace?: string | null
           updated_at?: string
           webhooks?: Json
         }
@@ -847,11 +1288,16 @@ export type Database = {
           api_key_hash?: string | null
           api_key_last_four?: string | null
           created_at?: string
+          creation_request_id?: string | null
           domain?: string | null
+          environment?: string
+          expires_at?: string | null
           id?: string
           name?: string
           owner_user_id?: string
+          quarantined_at?: string | null
           settings?: Json
+          test_namespace?: string | null
           updated_at?: string
           webhooks?: Json
         }
@@ -1380,6 +1826,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_claimed_billing_event: {
+        Args: {
+          p_billing_email: string | null
+          p_billing_interval: string | null
+          p_billing_interval_count: number | null
+          p_billing_status: string | null
+          p_cancel_at_period_end: boolean
+          p_claim_token: string
+          p_currency: string | null
+          p_customer_id: string | null
+          p_event_id: string
+          p_occurred_at: string
+          p_period_end: string | null
+          p_period_start: string | null
+          p_plan_tier: string
+          p_product_id: string | null
+          p_recurring_amount: number | null
+          p_subscription_id: string | null
+          p_user_id: string | null
+        }
+        Returns: boolean
+      }
       avg_rating_for_project: {
         Args: { p_project_id: string }
         Returns: number
@@ -1393,6 +1861,37 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_billing_event: {
+        Args: {
+          p_customer_id: string | null
+          p_event_id: string
+          p_event_type: string
+          p_occurred_at: string
+          p_payload: Json
+          p_subscription_id: string | null
+          p_user_id: string | null
+        }
+        Returns: string | null
+      }
+      claim_account_deletion_jobs: {
+        Args: {
+          p_limit?: number
+          p_user_id?: string | null
+        }
+        Returns: {
+          attempt_count: number
+          claim_token: string | null
+          created_at: string
+          id: string
+          last_error: string | null
+          locked_at: string | null
+          next_attempt_at: string
+          status: string
+          updated_at: string
+          user_email: string
+          user_id: string
+        }[]
+      }
       count_by_column: {
         Args: {
           column_name: string
@@ -1400,6 +1899,21 @@ export type Database = {
           table_name: string
         }
         Returns: Json
+      }
+      get_owner_project_health: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          board_enabled: boolean
+          board_listed: boolean
+          board_visibility: string | null
+          embed_last_seen_at: string | null
+          failed_delivery_count: number
+          feedback_count: number
+          latest_feedback_at: string | null
+          project_id: string
+          unread_count: number
+          updates_enabled: boolean
+        }[]
       }
       dashboard_stats: {
         Args: {
@@ -1411,6 +1925,24 @@ export type Database = {
         Returns: Json
       }
       generate_api_key: { Args: never; Returns: string }
+      get_public_board_directory: {
+        Args: {
+          p_category?: string | null
+          p_limit?: number
+          p_offset?: number
+          p_query?: string | null
+          p_sort?: string
+        }
+        Returns: Json
+      }
+      fail_claimed_billing_event: {
+        Args: {
+          p_claim_token: string
+          p_error: string
+          p_event_id: string
+        }
+        Returns: undefined
+      }
       increment_product_update_metric: {
         Args: {
           p_event_type: string
@@ -1461,6 +1993,15 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      rotate_project_api_key: {
+        Args: {
+          p_actor_user_id: string
+          p_key_hash: string
+          p_key_last_four: string
+          p_project_id: string
+        }
+        Returns: string
       }
       set_project_modules: {
         Args: { p_feedback: boolean; p_project_id: string; p_updates: boolean }

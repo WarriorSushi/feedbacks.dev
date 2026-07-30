@@ -31,6 +31,7 @@ type Update = {
   cta_label: string | null;
   cta_url: string | null;
   imageUrl?: string;
+  image_alt_text: string | null;
   published_at: string | null;
   expires_at: string | null;
   metrics: { impressions: number; dismissals: number; ctaClicks: number };
@@ -62,6 +63,7 @@ type FormValues = {
   ctaLabel: string;
   ctaUrl: string;
   expiresAt: string;
+  imageAltText: string;
 };
 
 const blankForm: FormValues = {
@@ -72,6 +74,7 @@ const blankForm: FormValues = {
   ctaLabel: "",
   ctaUrl: "",
   expiresAt: "",
+  imageAltText: "",
 };
 
 function toForm(update: Update): FormValues {
@@ -83,6 +86,7 @@ function toForm(update: Update): FormValues {
     ctaLabel: update.cta_label || "",
     ctaUrl: update.cta_url || "",
     expiresAt: localDateTime(update.expires_at),
+    imageAltText: update.image_alt_text || "",
   };
 }
 
@@ -116,7 +120,7 @@ export function ProductUpdatesTab({
   updateId,
 }: {
   projectId: string;
-  projectKey: string | null;
+  projectKey: string;
   view?: "overview" | "composer" | "settings";
   updateId?: string;
 }) {
@@ -235,6 +239,7 @@ export function ProductUpdatesTab({
         .filter(Boolean),
       ctaLabel: form.ctaLabel,
       ctaUrl: form.ctaUrl,
+      imageAltText: form.imageAltText,
     };
   }
 
@@ -331,7 +336,7 @@ export function ProductUpdatesTab({
         description:
           error instanceof Error
             ? error.message
-            : "Use JPEG, PNG, or WebP under 2 MB.",
+            : "Use JPEG or PNG under 2 MB.",
         variant: "destructive",
       });
     } finally {
@@ -372,8 +377,25 @@ export function ProductUpdatesTab({
 
   if (loading)
     return (
-      <div className="py-8 text-sm text-muted-foreground">
-        Loading updates for users…
+      <div
+        aria-busy="true"
+        aria-label="Loading product updates"
+        className="space-y-5"
+      >
+        <span className="sr-only">Loading updates for users…</span>
+        <div className="rounded-lg border bg-card p-6">
+          <div className="h-3 w-32 animate-pulse rounded bg-muted" />
+          <div className="mt-4 h-7 w-64 max-w-full animate-pulse rounded bg-muted" />
+          <div className="mt-3 h-4 w-full max-w-xl animate-pulse rounded bg-muted/70" />
+        </div>
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="space-y-3 rounded-lg border bg-card p-6">
+            <div className="h-5 w-40 animate-pulse rounded bg-muted" />
+            <div className="h-10 w-full animate-pulse rounded bg-muted/70" />
+            <div className="h-24 w-full animate-pulse rounded bg-muted/70" />
+          </div>
+          <div className="h-72 animate-pulse rounded-lg border bg-card" />
+        </div>
       </div>
     );
   if (loadError)
@@ -599,7 +621,7 @@ export function ProductUpdatesTab({
                 <Input
                   id="update-image"
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/jpeg,image/png"
                   disabled={saving || !selected}
                   onChange={(event) =>
                     void uploadImage(event.currentTarget.files?.[0])
@@ -611,6 +633,23 @@ export function ProductUpdatesTab({
                     : "Save the draft before adding an image"}
                 </span>
               </div>
+              {selected?.imageUrl && (
+                <div className="mt-3">
+                  <Field label="Image description">
+                    <Input
+                      value={form.imageAltText}
+                      maxLength={160}
+                      placeholder="Describe the image, or leave blank if it is decorative"
+                      onChange={(event) =>
+                        updateForm("imageAltText", event.target.value)
+                      }
+                    />
+                  </Field>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Used by screen readers. Leave blank only when the image adds no information.
+                  </p>
+                </div>
+              )}
             </div>
             <div className="mt-4">
               <Field label="Highlights, one per line">

@@ -2,7 +2,12 @@
 
 import * as React from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { readStoredProjectApiKey, rememberProjectApiKey } from '@/lib/project-api-keys'
+import dynamic from 'next/dynamic'
+import {
+  getProjectPublishableKey,
+  readStoredProjectApiKey,
+  rememberProjectApiKey,
+} from '@/lib/project-api-keys'
 import type { BillingSummary, Project } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,17 +16,37 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Textarea } from '@/components/ui/textarea'
 import { parseAllowedOrigins } from '@/lib/origin-allowlist'
 import { Loader2, Trash2 } from 'lucide-react'
-import { BoardSettingsTab } from './board-settings'
-import { ApiDocs } from './api-docs'
 import { toast } from '@/hooks/use-toast'
 import { Suspense } from 'react'
 import { InstallTab } from './install-tab'
-import { CustomizeTab } from './customize-tab'
-import { IntegrationsTab } from './integrations-tab'
 import { SetupProgress } from './project-flow-nav'
-import { ProductUpdatesTab } from '@/components/product-updates/ProductUpdatesTab'
 import { ProjectHome } from './project-home'
 import { PageHeader } from '@/components/ui/workspace-shell'
+
+function SectionLoading() {
+  return <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">Loading this workspace…</div>
+}
+
+const CustomizeTab = dynamic(
+  () => import('./customize-tab').then((module) => module.CustomizeTab),
+  { loading: SectionLoading },
+)
+const IntegrationsTab = dynamic(
+  () => import('./integrations-tab').then((module) => module.IntegrationsTab),
+  { loading: SectionLoading },
+)
+const BoardSettingsTab = dynamic(
+  () => import('./board-settings').then((module) => module.BoardSettingsTab),
+  { loading: SectionLoading },
+)
+const ApiDocs = dynamic(
+  () => import('./api-docs').then((module) => module.ApiDocs),
+  { loading: SectionLoading },
+)
+const ProductUpdatesTab = dynamic(
+  () => import('@/components/product-updates/ProductUpdatesTab').then((module) => module.ProductUpdatesTab),
+  { loading: SectionLoading },
+)
 
 interface ProjectTabsProps {
   project: Project
@@ -56,6 +81,7 @@ function ProjectTabsInner({ project, billingSummary, initialTab, updatesView, up
   const [isInteractive, setIsInteractive] = React.useState(false)
   const [apiKey, setApiKey] = React.useState<string | null>(project.api_key)
   const [rotatingApiKey, setRotatingApiKey] = React.useState(false)
+  const publishableKey = React.useMemo(() => getProjectPublishableKey(project.id), [project.id])
   const tabParam = searchParams.get('tab') as TabId | null
   const activeTab = initialTab || (tabs.includes(tabParam as TabId) ? tabParam! : 'home')
   const apiKeyLastFour = React.useMemo(
@@ -118,24 +144,18 @@ function ProjectTabsInner({ project, billingSummary, initialTab, updatesView, up
       {activeTab === 'install' && (
         <InstallTab
           project={project}
-          projectKey={apiKey}
-          apiKeyLastFour={apiKeyLastFour}
-          rotatingApiKey={rotatingApiKey}
-          onRotateApiKey={handleRotateApiKey}
+          projectKey={publishableKey}
         />
       )}
       {activeTab === 'customize' && (
         <CustomizeTab
           project={project}
-          projectKey={apiKey}
-          apiKeyLastFour={apiKeyLastFour}
-          rotatingApiKey={rotatingApiKey}
-          onRotateApiKey={handleRotateApiKey}
+          projectKey={publishableKey}
         />
       )}
       {activeTab === 'integrations' && <IntegrationsTab project={project} initialBillingSummary={billingSummary} />}
       {activeTab === 'board' && <BoardSettingsTab project={project} />}
-      {activeTab === 'updates' && <ProductUpdatesTab projectId={project.id} projectKey={apiKey} view={updatesView} updateId={updateId} />}
+      {activeTab === 'updates' && <ProductUpdatesTab projectId={project.id} projectKey={publishableKey} view={updatesView} updateId={updateId} />}
       {activeTab === 'api' && (
         <ApiDocs
           project={project}
@@ -186,7 +206,6 @@ function SettingsTab({ project }: { project: Project }) {
         name: name.trim(),
         domain: domain.trim() || null,
         settings: {
-          ...project.settings,
           widget_origin_restriction: {
             enabled: restrictOrigins,
             origins,

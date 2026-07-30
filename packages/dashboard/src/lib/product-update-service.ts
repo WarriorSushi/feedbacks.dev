@@ -17,6 +17,7 @@ export function mapProductUpdate(row: Record<string, unknown>, imageUrl?: string
     title: String(row.title), summary: String(row.summary),
     highlights: Array.isArray(row.highlights) ? row.highlights.filter((value): value is string => typeof value === 'string') : [],
     ...(imageUrl ? { imageUrl } : {}),
+    ...(typeof row.image_alt_text === 'string' && row.image_alt_text ? { imageAltText: row.image_alt_text } : {}),
     ...(typeof row.cta_label === 'string' ? { ctaLabel: row.cta_label } : {}),
     ...(typeof row.cta_url === 'string' ? { ctaUrl: row.cta_url } : {}),
     publishedAt: String(row.published_at),
@@ -38,7 +39,7 @@ export function mapProductUpdateSettings(row?: Record<string, unknown> | null): 
 }
 
 export function isValidProductUpdateImage(file: File): boolean {
-  return file.size <= 2 * 1024 * 1024 && ['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+  return file.size <= 2 * 1024 * 1024 && ['image/jpeg', 'image/png'].includes(file.type)
 }
 
 export function publicImageUrl(admin: { storage: { from(bucket: string): { getPublicUrl(path: string): { data: { publicUrl: string } } } } }, imagePath: unknown): string | undefined {

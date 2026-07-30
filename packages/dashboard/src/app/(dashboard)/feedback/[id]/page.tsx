@@ -46,9 +46,41 @@ const typeIcons = {
   other: MessageSquare,
 }
 
+type FeedbackActivity = {
+  id: string
+  event_type: string
+  from_value: unknown
+  to_value: unknown
+  created_at: string
+}
+
 function TypeIcon({ type, className }: { type?: string | null; className?: string }) {
   const Icon = typeIcons[(type || 'other') as keyof typeof typeIcons] || MessageSquare
   return <Icon className={cn('h-4 w-4', className)} />
+}
+
+function activityValue(value: unknown): string {
+  if (Array.isArray(value)) return value.length ? value.join(', ') : 'none'
+  if (typeof value === 'string') return value.replaceAll('_', ' ')
+  if (typeof value === 'boolean') return value ? 'public' : 'private'
+  if (value === null || value === undefined) return 'none'
+  return String(value)
+}
+
+function activityLabel(event: FeedbackActivity): string {
+  const from = activityValue(event.from_value)
+  const to = activityValue(event.to_value)
+  switch (event.event_type) {
+    case 'status_changed': return `Status changed from ${from} to ${to}`
+    case 'priority_changed': return `Priority changed from ${from} to ${to}`
+    case 'tags_changed': return `Tags changed from ${from} to ${to}`
+    case 'archived': return 'Archived'
+    case 'restored': return 'Restored'
+    case 'visibility_changed': return `Visibility changed from ${from} to ${to}`
+    case 'note_added': return 'Internal note added'
+    case 'public_reply_added': return 'Public reply added'
+    default: return 'Feedback updated'
+  }
 }
 
 export default async function FeedbackDetailPage({
@@ -61,8 +93,7 @@ export default async function FeedbackDetailPage({
   const billingSummary = await getCurrentUserBillingSummary()
   const historyCutoff = billingSummary ? getHistoryCutoff(billingSummary) : null
 
-  const [{ data: feedback }, { data: notes }] = await Promise.all([
-    (historyCutoff
+  const { data: feedback } = await (historyCutoff
       ? supabase
         .from('feedback')
         .select('*, projects(id, name)')
@@ -73,17 +104,38 @@ export default async function FeedbackDetailPage({
         .from('feedback')
         .select('*, projects(id, name)')
         .eq('id', id)
-        .single()),
+        .single())
+
+  if (!feedback) notFound()
+
+  const fb = feedback as Feedback
+  const [{ data: notes }, { data: activity }, { data: recentProjectFeedback }] = await Promise.all([
     supabase
       .from('feedback_notes')
       .select('*')
       .eq('feedback_id', id)
       .order('created_at', { ascending: true }),
+    supabase
+      .from('feedback_activity')
+      .select('id,event_type,from_value,to_value,created_at')
+      .eq('feedback_id', id)
+      .neq('event_type', 'created')
+      .order('created_at', { ascending: true })
+      .limit(50),
+    supabase
+      .from('feedback')
+      .select('tags')
+      .eq('project_id', fb.project_id)
+      .order('created_at', { ascending: false })
+      .limit(200),
   ])
-
-  if (!feedback) notFound()
-
-  const fb = feedback as Feedback
+  const suggestedTags = [
+    ...new Set(
+      (recentProjectFeedback || [])
+        .flatMap((item) => item.tags || [])
+        .filter((tag): tag is string => typeof tag === 'string' && Boolean(tag)),
+    ),
+  ].slice(0, 20)
   const readAtUpdate = getFeedbackReadAtUpdate(fb)
   if (readAtUpdate) {
     const { error } = await supabase
@@ -183,7 +235,7 @@ export default async function FeedbackDetailPage({
           </div>
 
           {/* Screenshot */}
-          {fb.screenshot_url && (
+          {(fb.screenshot_path || fb.screenshot_url) && (
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-sm">
@@ -192,7 +244,7 @@ export default async function FeedbackDetailPage({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <FeedbackScreenshot src={fb.screenshot_url} />
+                <FeedbackScreenshot src={`/api/feedback/${fb.id}/media/screenshot`} />
               </CardContent>
             </Card>
           )}
@@ -211,9 +263,8 @@ export default async function FeedbackDetailPage({
                   {fb.attachments.map((att, i) => (
                     <a
                       key={i}
-                      href={att.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={`/api/feedback/${fb.id}/media/attachment?mediaId=${encodeURIComponent(att.mediaId)}`}
+                      download={att.name}
                       className="flex items-center gap-3 rounded-lg border p-3 text-sm transition-colors hover:bg-accent"
                     >
                       <Paperclip className="h-4 w-4 text-muted-foreground" />
@@ -260,7 +311,9 @@ export default async function FeedbackDetailPage({
                 feedbackId={fb.id}
                 projectId={fb.project_id}
                 currentStatus={fb.status}
+                currentPriority={fb.priority}
                 currentTags={fb.tags}
+                suggestedTags={suggestedTags}
               />
             </CardContent>
           </Card>
@@ -377,24 +430,15 @@ export default async function FeedbackDetailPage({
                     {formatDate(fb.created_at)}
                   </p>
                 </div>
-                {fb.updated_at !== fb.created_at && (
-                  <div className="relative">
-                    <Circle className="absolute -left-4 top-0.5 h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
-                    <p className="text-xs font-medium">Updated</p>
+                {(activity as FeedbackActivity[] | null)?.map((event) => (
+                  <div key={event.id} className="relative">
+                    <Circle className="absolute -left-4 top-0.5 h-3.5 w-3.5 fill-primary text-primary" />
+                    <p className="text-xs font-medium">{activityLabel(event)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDate(fb.updated_at)}
+                      {formatDate(event.created_at)}
                     </p>
                   </div>
-                )}
-                {fb.resolved_at && (
-                  <div className="relative">
-                    <Circle className="absolute -left-4 top-0.5 h-3.5 w-3.5 fill-emerald-500 text-emerald-500" />
-                    <p className="text-xs font-medium">Resolved</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDate(fb.resolved_at)}
-                    </p>
-                  </div>
-                )}
+                ))}
               </div>
             </CardContent>
           </Card>

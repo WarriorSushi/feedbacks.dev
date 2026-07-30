@@ -4,6 +4,7 @@ import { assertFeatureAccess } from '@/lib/billing'
 import { hasE2EBypass } from '@/lib/e2e'
 import { listWebhookEndpointStates, normalizeWebhookConfig } from '@/lib/webhook-config'
 import { getWebhookDeliveryLogQueryLimit } from '@/lib/webhook-delivery-limits'
+import { redactWebhookDestination, toSafeWebhookConfig } from '@/lib/integration-secrets'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -40,20 +41,24 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     if ('error' in result && !('admin' in result)) return result.error
 
     const { project, admin, summary } = result as Exclude<typeof result, { error: NextResponse }>
-    const normalized = normalizeWebhookConfig(project.webhooks)
+    const normalized = toSafeWebhookConfig(normalizeWebhookConfig(project.webhooks))
     const logLimit = getWebhookDeliveryLogQueryLimit(summary?.entitlements)
     const { data: deliveries, error } = await admin
       .from('webhook_deliveries')
-      .select('id, event, kind, url, status, status_code, response_body, attempt, payload, created_at')
+      .select('id, endpoint_id, event, kind, url, status, status_code, response_body, attempt, created_at')
       .eq('project_id', id)
       .order('created_at', { ascending: false })
       .limit(logLimit)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ code: 'delivery_history_failed', error: 'Delivery history could not be loaded.' }, { status: 500 })
     }
 
-    const recentDeliveries = deliveries || []
+    const recentDeliveries = (deliveries || []).map((delivery) => ({
+      ...delivery,
+      url: redactWebhookDestination(delivery.url),
+      payload: null,
+    }))
     const health = listWebhookEndpointStates(normalized, recentDeliveries)
 
     return NextResponse.json({

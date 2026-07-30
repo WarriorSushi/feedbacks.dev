@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createDodoCheckoutSession } from '@/lib/dodo'
-import { env, isBillingEnabled } from '@/lib/env'
+import { env, isBillingEnabled, isCustomerBillingLive } from '@/lib/env'
 import { getCurrentUserBillingSummary, getOrCreateBillingAccount } from '@/lib/billing'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
 import { buildBillingReturnUrl } from '@/lib/billing-return-url'
+import { readJsonBody } from '@/lib/api-request'
 
 export async function POST(request: NextRequest) {
   try {
     if (!isBillingEnabled()) {
       return NextResponse.json({ error: 'Billing is not configured yet' }, { status: 503 })
+    }
+    if (process.env.VERCEL_ENV === 'production' && !isCustomerBillingLive()) {
+      return NextResponse.json(
+        {
+          code: 'billing_not_live',
+          error: 'Pro checkout is temporarily unavailable while live billing is being verified.',
+        },
+        { status: 503 },
+      )
     }
 
     const supabase = await createServerSupabase()
@@ -20,7 +30,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'You must be signed in to manage billing' }, { status: 401 })
     }
 
-    const body = await request.json().catch(() => ({}))
+    const bodyResult = await readJsonBody<{ billingPeriod?: string }>(request, { maxBytes: 2_048 })
+    if (!bodyResult.ok) return bodyResult.response
+    const body = bodyResult.data
     const billingPeriod = body?.billingPeriod === 'yearly' ? 'yearly' : 'monthly'
     const productId = billingPeriod === 'yearly'
       ? env.DODO_PAYMENTS_PRO_YEARLY_PRODUCT_ID || env.DODO_PAYMENTS_PRO_MONTHLY_PRODUCT_ID
@@ -76,9 +88,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ url: checkoutUrl })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create checkout session' },
+      { code: 'checkout_unavailable', error: 'Checkout could not be started right now.' },
       { status: 500 },
     )
   }

@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
+import { isSafeE2EEnvironment } from '@/lib/e2e-environment'
+import { readJsonBody } from '@/lib/api-request'
 
 function isEnabled(secret: string | undefined, provided: unknown) {
   return Boolean(secret) && typeof provided === 'string' && provided === secret
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json().catch(() => ({}))
+  if (!isSafeE2EEnvironment()) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+  const bodyResult = await readJsonBody<{ secret?: string; email?: string; password?: string }>(request, { maxBytes: 8_192 })
+  if (!bodyResult.ok) return bodyResult.response
+  const body = bodyResult.data
   const secret = process.env.E2E_AUTH_BYPASS_SECRET
 
   if (!isEnabled(secret, body.secret)) {

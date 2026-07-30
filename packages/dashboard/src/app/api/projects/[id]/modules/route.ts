@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthedUserAndProject } from '@/lib/api-auth'
+import { readJsonBody } from '@/lib/api-request'
 
 const headers = { 'Cache-Control': 'no-store' }
 
@@ -20,7 +21,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const { id } = await params
   const auth = await getAuthedUserAndProject(id)
   if ('error' in auth) return auth.error
-  const body = await request.json().catch(() => null)
+  const bodyResult = await readJsonBody<{ feedback?: boolean; updates?: boolean }>(request, { maxBytes: 2_048 })
+  if (!bodyResult.ok) return bodyResult.response
+  const body = bodyResult.data
   if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length === 0 || Object.keys(body).some((key) => key !== 'feedback' && key !== 'updates') || Object.values(body).some((value) => typeof value !== 'boolean')) return NextResponse.json({ error: 'Send at least one feedback or updates boolean.' }, { status: 400, headers })
   const values = body as { feedback?: boolean; updates?: boolean }
   const current = await moduleResponseData(auth, id)

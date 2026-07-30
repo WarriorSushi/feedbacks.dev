@@ -42,6 +42,11 @@ const supabase = createClient(url, serviceRoleKey, {
 })
 
 const requiredColumns = {
+  projects: ['id', 'owner_user_id', 'api_key_hash', 'api_key_last_four', 'environment', 'test_namespace', 'expires_at', 'quarantined_at', 'creation_request_id'],
+  project_api_keys: ['id', 'project_id', 'key_hash', 'key_last_four', 'scopes', 'expires_at', 'revoked_at', 'last_used_at'],
+  project_api_key_events: ['id', 'project_id', 'api_key_id', 'event_type', 'metadata', 'created_at'],
+  project_integration_secrets: ['id', 'project_id', 'endpoint_id', 'kind', 'ciphertext', 'initialization_vector', 'auth_tag', 'key_version', 'destination_hint'],
+  project_integration_secret_events: ['id', 'project_id', 'endpoint_id', 'kind', 'event_type', 'destination_hint', 'created_at'],
   activation_milestones: ['project_id', 'event_name', 'user_id', 'first_seen_at', 'metadata'],
   feedback: [
     'id',
@@ -54,7 +59,10 @@ const requiredColumns = {
     'read_at',
     'agent_name',
     'structured_data',
+    'screenshot_path',
   ],
+  feedback_media: ['id', 'feedback_id', 'project_id', 'kind', 'bucket', 'storage_path', 'safe_filename', 'mime_type', 'size_bytes', 'sha256', 'scan_status'],
+  feedback_activity: ['id', 'feedback_id', 'project_id', 'actor_id', 'event_type', 'from_value', 'to_value', 'metadata', 'created_at'],
   public_board_settings: [
     'id',
     'project_id',
@@ -69,19 +77,26 @@ const requiredColumns = {
   ],
   board_follows: ['id', 'board_id', 'project_id', 'user_id', 'created_at'],
   feedback_watches: ['id', 'board_id', 'project_id', 'feedback_id', 'user_id', 'created_at'],
-  billing_accounts: ['user_id', 'plan_tier', 'billing_status', 'dodo_customer_id', 'updated_at'],
+  billing_accounts: ['user_id', 'plan_tier', 'billing_status', 'dodo_customer_id', 'last_event_at', 'recurring_amount', 'billing_currency', 'billing_interval', 'billing_interval_count', 'updated_at'],
+  billing_events: ['id', 'event_type', 'status', 'claim_token', 'locked_at', 'attempt_count', 'processing_error', 'occurred_at', 'processed_at'],
+  account_deletion_jobs: ['id', 'user_id', 'user_email', 'status', 'claim_token', 'attempt_count', 'next_attempt_at', 'locked_at', 'last_error', 'updated_at'],
+  api_idempotency_keys: ['project_id', 'route', 'key_hash', 'request_hash', 'status', 'response_status', 'response_body', 'expires_at'],
   notification_digests: ['user_id', 'digest_type', 'digest_date', 'sent_at', 'item_count'],
   cron_runs: ['id', 'job_name', 'status', 'started_at', 'finished_at', 'processed_count', 'sent_count'],
   webhook_digest_items: ['id', 'project_id', 'kind', 'endpoint_url', 'payload', 'digest_date', 'status', 'next_attempt_at'],
   webhook_jobs: ['id', 'project_id', 'kind', 'endpoint_url', 'payload', 'status', 'next_attempt_at'],
   webhook_deliveries: ['id', 'project_id', 'event', 'kind', 'url', 'status', 'payload', 'created_at'],
   product_update_settings: ['project_id', 'enabled', 'auto_show', 'display_delay_ms', 'theme', 'accent_color', 'include_paths', 'exclude_paths', 'show_powered_by'],
-  product_updates: ['id', 'project_id', 'created_by', 'status', 'title', 'summary', 'highlights', 'image_path', 'cta_label', 'cta_url', 'published_at', 'expires_at'],
+  product_updates: ['id', 'project_id', 'created_by', 'status', 'title', 'summary', 'highlights', 'image_path', 'image_alt_text', 'cta_label', 'cta_url', 'published_at', 'expires_at'],
   product_update_metrics: ['project_id', 'update_id', 'metric_date', 'event_type', 'count'],
   project_embed_installations: ['project_id', 'last_seen_at', 'runtime_version', 'feedback_enabled', 'updates_enabled'],
 }
 
-const requiredBuckets = ['feedback_screenshots', 'feedback_attachments', 'product_update_images']
+const requiredBuckets = {
+  feedback_screenshots: { public: false },
+  feedback_attachments: { public: false },
+  product_update_images: { public: true },
+}
 const probeProjectId = '00000000-0000-0000-0000-000000000000'
 const requiredReadOnlyFunctions = [
   {
@@ -100,6 +115,14 @@ const requiredReadOnlyFunctions = [
       p_history_cutoff: null,
       p_trend_start: new Date(0).toISOString(),
     },
+  },
+  {
+    name: 'get_public_board_directory',
+    args: { p_sort: 'new', p_category: null, p_query: null, p_limit: 1, p_offset: 0 },
+  },
+  {
+    name: 'get_owner_project_health',
+    args: {},
   },
 ]
 
@@ -140,12 +163,20 @@ async function main() {
   if (bucketError) {
     fail(`Could not inspect storage buckets: ${bucketError.message}`, failures)
   } else {
-    const bucketIds = new Set((buckets || []).map((bucket) => bucket.id))
-    const missing = requiredBuckets.filter((bucket) => !bucketIds.has(bucket))
+    const bucketMap = new Map((buckets || []).map((bucket) => [bucket.id, bucket]))
+    const missing = Object.keys(requiredBuckets).filter((bucket) => !bucketMap.has(bucket))
     if (missing.length > 0) {
       fail(`Missing storage buckets: ${missing.join(', ')}`, failures)
     } else {
       pass('storage buckets present')
+    }
+    for (const [bucketId, expectation] of Object.entries(requiredBuckets)) {
+      const bucket = bucketMap.get(bucketId)
+      if (bucket && bucket.public !== expectation.public) {
+        fail(`${bucketId} public=${bucket.public}; expected public=${expectation.public}`, failures)
+      } else if (bucket) {
+        pass(`${bucketId} visibility is correct`)
+      }
     }
   }
 

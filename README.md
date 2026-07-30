@@ -7,9 +7,9 @@
 Embeddable widget + triage dashboard + public voting boards + AI agent API — a full-surface feedback product for teams that want fast setup without giving up operational depth.
 
 [![FSL-1.1-MIT](https://img.shields.io/badge/license-FSL--1.1--MIT-blue?style=flat-square)](LICENSE)
-[![CI](https://img.shields.io/github/actions/workflow/status/WarriorSushi/feedbacks.dev-2026/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/WarriorSushi/feedbacks.dev-2026/actions)
-[![GitHub Stars](https://img.shields.io/github/stars/WarriorSushi/feedbacks.dev-2026?style=flat-square&color=yellow)](https://github.com/WarriorSushi/feedbacks.dev-2026/stargazers)
-[![GitHub Issues](https://img.shields.io/github/issues/WarriorSushi/feedbacks.dev-2026?style=flat-square)](https://github.com/WarriorSushi/feedbacks.dev-2026/issues)
+[![CI](https://img.shields.io/github/actions/workflow/status/WarriorSushi/Feedbacks.dev/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/WarriorSushi/Feedbacks.dev/actions)
+[![GitHub Stars](https://img.shields.io/github/stars/WarriorSushi/Feedbacks.dev?style=flat-square&color=yellow)](https://github.com/WarriorSushi/Feedbacks.dev/stargazers)
+[![GitHub Issues](https://img.shields.io/github/issues/WarriorSushi/Feedbacks.dev?style=flat-square)](https://github.com/WarriorSushi/Feedbacks.dev/issues)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
 [![Built with Next.js](https://img.shields.io/badge/Next.js%2015-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![Powered by Supabase](https://img.shields.io/badge/Supabase-3ecf8e?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
@@ -32,7 +32,7 @@ Most feedback tools are either too heavy for small teams or too simple to be use
 ## Features
 
 ### Drop-In Widget
-Install with one line. Collects feedback with full context (URL, browser, screenshots). Under 20KB gzipped. Works with any framework.
+Install with one snippet. Collect feedback with page and browser context plus an optional user-triggered screenshot. Under 20KB gzipped. Works with any framework.
 
 ```bash
 pnpm add @feedbacks/widget
@@ -117,7 +117,7 @@ For local development:
 
 ```bash
 # Clone
-git clone https://github.com/WarriorSushi/feedbacks.dev-2026.git
+git clone https://github.com/WarriorSushi/Feedbacks.dev.git
 cd feedbacks.dev-2026
 
 # Install

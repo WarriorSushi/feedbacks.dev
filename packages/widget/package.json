@@ -2,6 +2,7 @@
   "name": "@feedbacks/widget",
   "version": "2.0.0",
   "description": "Embeddable feedback widget for feedbacks.dev",
+  "type": "module",
   "main": "dist/widget.js",
   "types": "dist/types.d.ts",
   "files": ["dist"],

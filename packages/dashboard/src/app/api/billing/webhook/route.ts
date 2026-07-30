@@ -5,85 +5,77 @@ import { extractBillingEventContext } from '@/lib/billing-webhooks'
 import { notifyUserOfBillingFailure } from '@/lib/notifications'
 
 export async function POST(request: Request) {
+  let verified: Awaited<ReturnType<typeof verifyDodoWebhook>>
   try {
-    const verified = await verifyDodoWebhook(request)
-    const admin = await createAdminSupabase()
-    const context = extractBillingEventContext(verified.event as DodoEventPayload)
-    console.info('[billing:webhook] verified', {
-      webhookId: verified.webhookId,
-      eventType: context.eventType,
-      hasUserId: Boolean(context.userId),
-      hasCustomerId: Boolean(context.dodoCustomerId),
-      hasSubscriptionId: Boolean(context.dodoSubscriptionId),
-    })
+    verified = await verifyDodoWebhook(request)
+  } catch {
+    return NextResponse.json(
+      { code: 'invalid_webhook', message: 'Webhook verification failed' },
+      { status: 400 },
+    )
+  }
 
-    const { data: existing } = await admin
-      .from('billing_events')
-      .select('id')
-      .eq('id', verified.webhookId)
-      .maybeSingle()
+  const admin = await createAdminSupabase()
+  const context = extractBillingEventContext(verified.event as DodoEventPayload)
+  let claimToken: string | null = null
 
-    if (existing) {
-      return NextResponse.json({ received: true, duplicate: true })
-    }
-
+  try {
     let userId = context.userId
-
     if (!userId && context.dodoCustomerId) {
-      const { data: accountByCustomer } = await admin
+      const { data } = await admin
         .from('billing_accounts')
         .select('user_id')
         .eq('dodo_customer_id', context.dodoCustomerId)
         .maybeSingle()
-      userId = accountByCustomer?.user_id || null
+      userId = data?.user_id || null
     }
-
     if (!userId && context.dodoSubscriptionId) {
-      const { data: accountBySubscription } = await admin
+      const { data } = await admin
         .from('billing_accounts')
         .select('user_id')
         .eq('dodo_subscription_id', context.dodoSubscriptionId)
         .maybeSingle()
-      userId = accountBySubscription?.user_id || null
+      userId = data?.user_id || null
     }
 
-    await admin.from('billing_events').insert({
-      id: verified.webhookId,
-      event_type: context.eventType,
-      user_id: userId,
-      dodo_customer_id: context.dodoCustomerId,
-      dodo_subscription_id: context.dodoSubscriptionId,
-      payload: JSON.parse(verified.payload),
-      processed_at: new Date().toISOString(),
+    const occurredAt = context.occurredAt || verified.timestamp
+    const { data: claimed, error: claimError } = await admin.rpc('claim_billing_event', {
+      p_event_id: verified.webhookId,
+      p_event_type: context.eventType,
+      p_user_id: userId,
+      p_customer_id: context.dodoCustomerId,
+      p_subscription_id: context.dodoSubscriptionId,
+      p_payload: JSON.parse(verified.payload),
+      p_occurred_at: occurredAt,
     })
-
-    if (!userId || !context.billingStatus) {
-      console.info('[billing:webhook] stored without account update', {
-        webhookId: verified.webhookId,
-        eventType: context.eventType,
-        hasUserId: Boolean(userId),
-        hasBillingStatus: Boolean(context.billingStatus),
-      })
-      return NextResponse.json({ received: true })
+    if (claimError) throw claimError
+    claimToken = claimed
+    if (!claimToken) {
+      return NextResponse.json({ received: true, duplicate: true })
     }
 
-    await admin.from('billing_accounts').upsert({
-      user_id: userId,
-      plan_tier: context.planTier,
-      billing_status: context.billingStatus,
-      dodo_customer_id: context.dodoCustomerId,
-      dodo_subscription_id: context.dodoSubscriptionId,
-      dodo_product_id: context.dodoProductId,
-      billing_email: context.billingEmail,
-      current_period_start: context.currentPeriodStart,
-      current_period_end: context.currentPeriodEnd,
-      cancel_at_period_end: context.cancelAtPeriodEnd,
-      last_event_id: verified.webhookId,
-      last_event_type: context.eventType,
-      updated_at: new Date().toISOString(),
+    const { data: applied, error: applyError } = await admin.rpc('apply_claimed_billing_event', {
+      p_event_id: verified.webhookId,
+      p_claim_token: claimToken,
+      p_user_id: userId,
+      p_plan_tier: context.planTier,
+      p_billing_status: context.billingStatus,
+      p_customer_id: context.dodoCustomerId,
+      p_subscription_id: context.dodoSubscriptionId,
+      p_product_id: context.dodoProductId,
+      p_billing_email: context.billingEmail,
+      p_period_start: context.currentPeriodStart,
+      p_period_end: context.currentPeriodEnd,
+      p_cancel_at_period_end: context.cancelAtPeriodEnd,
+      p_occurred_at: occurredAt,
+      p_recurring_amount: context.recurringAmount,
+      p_currency: context.currency,
+      p_billing_interval: context.billingInterval,
+      p_billing_interval_count: context.billingIntervalCount,
     })
+    if (applyError || !applied) throw applyError || new Error('Billing event claim was lost')
 
-    if (context.billingStatus === 'past_due') {
+    if (userId && context.billingStatus === 'past_due') {
       void notifyUserOfBillingFailure({
         userId,
         billingEmail: context.billingEmail,
@@ -93,12 +85,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    console.warn('[billing:webhook] rejected', {
-      reason: error instanceof Error ? error.message : 'Invalid webhook',
-    })
+    if (claimToken) {
+      await admin.rpc('fail_claimed_billing_event', {
+        p_event_id: verified.webhookId,
+        p_claim_token: claimToken,
+        p_error: error instanceof Error ? error.message : 'Billing event processing failed',
+      })
+    }
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Invalid webhook' },
-      { status: 400 },
+      { code: 'billing_processing_failed', message: 'Webhook was verified but could not be processed' },
+      { status: 500 },
     )
   }
 }

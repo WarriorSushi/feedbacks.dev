@@ -3,11 +3,14 @@ import { sanitizeProductUpdateInput } from '@feedbacks/shared'
 import { getAuthedUserAndProject } from '@/lib/api-auth'
 import { getProductUpdateEntitlements } from '@/lib/product-update-entitlements'
 import { recordActivationMilestone } from '@/lib/activation-milestones'
+import { readJsonBody } from '@/lib/api-request'
 
 const headers = { 'Cache-Control': 'no-store' }
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string; updateId: string }> }) {
   const { id, updateId } = await params; const auth = await getAuthedUserAndProject(id); if ('error' in auth) return auth.error
-  let body: unknown = {}; try { body = await request.json() } catch { return NextResponse.json({ error: 'Invalid JSON.' }, { status: 400, headers }) }
+  const bodyResult = await readJsonBody(request, { allowEmpty: true })
+  if (!bodyResult.ok) return bodyResult.response
+  const body: unknown = bodyResult.data
   const { data: update } = await auth.admin.from('product_updates').select('*').eq('project_id', id).eq('id', updateId).maybeSingle()
   if (!update) return NextResponse.json({ error: 'Update not found.' }, { status: 404, headers })
   const validation = sanitizeProductUpdateInput({ ...update, ...(body && typeof body === 'object' ? body : {}) }, { requirePublishFields: true })

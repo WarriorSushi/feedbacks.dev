@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUserBillingSummary } from '@/lib/billing'
 import { BillingClient } from './billing-client'
 import { PageHeader } from '@/components/ui/workspace-shell'
+import { isCustomerBillingLive } from '@/lib/env'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Billing' }
@@ -20,7 +21,7 @@ export default async function BillingPage() {
         description="Review plan usage, upgrade, or manage the active subscription."
       />
 
-      <BillingClient initialSummary={summary} />
+      <BillingClient initialSummary={summary} customerBillingLive={isCustomerBillingLive()} />
     </div>
   )
 }

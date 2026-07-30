@@ -7,6 +7,22 @@ on:
     branches: [main]
 
 jobs:
+  dependency-audit:
+    name: Production Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --prod --audit-level high
+
   typecheck:
     name: Type Check
     runs-on: ubuntu-latest
@@ -60,12 +76,13 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: [typecheck, lint, unit]
+    needs: [dependency-audit, typecheck, lint, unit]
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
       SUPABASE_SERVICE_ROLE_KEY: placeholder
       NEXT_PUBLIC_APP_ORIGIN: https://feedbacks.dev
+      INTEGRATION_SECRET_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
     steps:
       - uses: actions/checkout@v6
 
@@ -79,6 +96,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm widget:check-size
+      - run: pnpm dashboard:check-budgets
 
   e2e:
     name: Playwright E2E
@@ -92,6 +110,10 @@ jobs:
       NEXT_PUBLIC_APP_ORIGIN: http://127.0.0.1:3000
       PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
       E2E_AUTH_BYPASS_SECRET: ${{ secrets.E2E_AUTH_BYPASS_SECRET }}
+      E2E_ENVIRONMENT: "true"
+      E2E_SUPABASE_PROJECT_REF: ${{ secrets.E2E_SUPABASE_PROJECT_REF }}
+      E2E_EXPECTED_HOSTNAME: 127.0.0.1
+      E2E_TEST_NAMESPACE: e2e:github-actions
       PLAYWRIGHT_TEST_EMAIL: playwright@feedbacks.dev
       PLAYWRIGHT_TEST_PASSWORD: Playwright!12345
     steps:

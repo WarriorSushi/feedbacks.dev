@@ -3,6 +3,8 @@ import { createAdminSupabase } from '@/lib/supabase-server'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { isBoardPubliclyAccessible } from '@/lib/public-board'
 import { getPrivacySalt } from '@/lib/privacy-salts'
+import { readJsonBody } from '@/lib/api-request'
+import { getOrCreateVoterDevice, getVoterIdentifier, VOTER_COOKIE } from '@/lib/voter-device'
 
 export async function POST(
   req: NextRequest,
@@ -12,17 +14,13 @@ export async function POST(
   const admin = await createAdminSupabase()
 
   // Rate limit votes: 30 per minute
-  const { allowed } = await checkRateLimit(req, 'vote', 30, 1)
+  const { allowed } = await checkRateLimit(req, 'vote', 30, 1, slug)
   if (!allowed) {
-    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
+    return NextResponse.json(
+      { error: 'Too many requests. Try again in a minute.' },
+      { status: 429, headers: { 'Retry-After': '60' } },
+    )
   }
-
-  // Hash the IP for privacy. Production must provide a private salt.
-  const ip =
-    req.headers.get('x-vercel-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    req.headers.get('x-real-ip') ||
-    'anonymous'
 
   let salt: string
   try {
@@ -30,12 +28,8 @@ export async function POST(
   } catch {
     return NextResponse.json({ error: 'Vote hashing is not configured' }, { status: 500 })
   }
-  const encoder = new TextEncoder()
-  const data = encoder.encode(ip + salt)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  const voterIdentifier = Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
+  const voterDevice = await getOrCreateVoterDevice(req, salt)
+  const voterIdentifier = await getVoterIdentifier(voterDevice.id, slug, salt)
 
   // Validate board exists
   const { data: board } = await admin
@@ -49,7 +43,9 @@ export async function POST(
     return NextResponse.json({ error: 'Board not found' }, { status: 404 })
   }
 
-  const body = await req.json()
+  const bodyResult = await readJsonBody<{ feedback_id?: string }>(req)
+  if (!bodyResult.ok) return bodyResult.response
+  const body = bodyResult.data
   const { feedback_id } = body
 
   if (!feedback_id) {
@@ -80,7 +76,17 @@ export async function POST(
   if (existingVote) {
     // Remove vote (toggle off)
     await admin.from('votes').delete().eq('id', existingVote.id)
-    return NextResponse.json({ voted: false })
+    const response = NextResponse.json({ voted: false })
+    if (voterDevice.isNew) {
+      response.cookies.set(VOTER_COOKIE.name, voterDevice.cookieValue, {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+        maxAge: VOTER_COOKIE.maxAge,
+      })
+    }
+    return response
   }
 
   // Insert upvote
@@ -94,5 +100,15 @@ export async function POST(
     return NextResponse.json({ error: 'Failed to vote' }, { status: 500 })
   }
 
-  return NextResponse.json({ voted: true })
+  const response = NextResponse.json({ voted: true })
+  if (voterDevice.isNew) {
+    response.cookies.set(VOTER_COOKIE.name, voterDevice.cookieValue, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: VOTER_COOKIE.maxAge,
+    })
+  }
+  return response
 }

@@ -106,6 +106,7 @@ function parseWebhookTimestamp(timestamp: string) {
   if (deltaMs > WEBHOOK_TIMESTAMP_TOLERANCE_MS) {
     throw new Error('Dodo webhook timestamp is outside the allowed tolerance')
   }
+  return timestampMs
 }
 
 function signatureMatches(signatureHeader: string, expectedDigest: Buffer) {
@@ -170,7 +171,7 @@ export async function verifyDodoWebhook(request: Request) {
     throw new Error('Missing Dodo webhook headers')
   }
 
-  parseWebhookTimestamp(timestamp)
+  const timestampMs = parseWebhookTimestamp(timestamp)
 
   const signedContent = `${webhookId}.${timestamp}.${payload}`
   const expectedDigests = expectedWebhookDigests(env.DODO_PAYMENTS_WEBHOOK_SECRET, signedContent)
@@ -181,6 +182,7 @@ export async function verifyDodoWebhook(request: Request) {
 
   return {
     webhookId,
+    timestamp: new Date(timestampMs).toISOString(),
     payload,
     event: JSON.parse(payload) as DodoEventPayload,
   }

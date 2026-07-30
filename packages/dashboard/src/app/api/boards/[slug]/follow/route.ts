@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import { isBoardPubliclyAccessible } from '@/lib/public-board'
+import { readJsonBody } from '@/lib/api-request'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(
   request: NextRequest,
@@ -12,6 +14,13 @@ export async function POST(
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const rate = await checkRateLimit(request, 'board-follow', 10, 10, `${slug}:${user.id}`)
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: 'Too many follow changes. Try again later.' },
+      { status: 429, headers: { 'Retry-After': '600' } },
+    )
   }
 
   const admin = await createAdminSupabase()
@@ -26,7 +35,9 @@ export async function POST(
     return NextResponse.json({ error: 'Board not found' }, { status: 404 })
   }
 
-  const body = await request.json().catch(() => ({}))
+  const bodyResult = await readJsonBody<{ following?: boolean }>(request)
+  if (!bodyResult.ok) return bodyResult.response
+  const body = bodyResult.data
   const following = body?.following !== false
 
   if (following) {
@@ -42,7 +53,7 @@ export async function POST(
       )
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ code: 'follow_update_failed', error: 'Could not update this board follow right now.' }, { status: 500 })
     }
   } else {
     const { error } = await admin
@@ -52,7 +63,7 @@ export async function POST(
       .eq('user_id', user.id)
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      return NextResponse.json({ code: 'follow_update_failed', error: 'Could not update this board follow right now.' }, { status: 500 })
     }
   }
 

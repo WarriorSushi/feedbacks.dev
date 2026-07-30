@@ -155,7 +155,7 @@ export class ProductUpdatesController {
       const image = document.createElement('img')
       image.className = 'fb-update-image'
       image.src = update.imageUrl
-      image.alt = ''
+      image.alt = update.imageAltText || ''
       image.loading = 'lazy'
       image.onerror = () => image.remove()
       modal.append(image)

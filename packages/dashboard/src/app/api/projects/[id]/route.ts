@@ -3,6 +3,8 @@ import { getAuthedUserAndProject } from '@/lib/api-auth'
 import { sanitizeWidgetOriginRestriction } from '@/lib/origin-allowlist'
 import { cleanupFeedbackStorageForProjectIds } from '@/lib/feedback-storage-cleanup'
 import { sanitizeSavedWidgetConfig } from '@feedbacks/shared'
+import { readJsonBody } from '@/lib/api-request'
+import { normalizeProjectDomain } from '@/lib/project-input'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -48,46 +50,54 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const result = await getAuthedUserAndProject(id)
     if ('error' in result) return result.error
 
-    const { admin } = result as Exclude<typeof result, { error: NextResponse }>
-
-    // Limit request body size
-    const rawBody = await request.text()
-    if (rawBody.length > 50_000) {
-      return NextResponse.json({ error: 'Request body too large' }, { status: 400 })
+    const { admin, project } = result as Exclude<typeof result, { error: NextResponse }>
+    const bodyResult = await readJsonBody<{
+      name?: string
+      domain?: string | null
+      settings?: Record<string, unknown>
+      webhooks?: unknown
+    }>(request)
+    if (!bodyResult.ok) return bodyResult.response
+    const body = bodyResult.data
+    const allowedTopLevel = new Set(['name', 'domain', 'settings'])
+    if (Object.keys(body).some((key) => !allowedTopLevel.has(key))) {
+      return NextResponse.json({ error: 'Use the dedicated endpoint for this project setting.' }, { status: 400 })
     }
-    const body = JSON.parse(rawBody)
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (body.name !== undefined) {
       const name = body.name?.trim()
-      if (!name || name.length > 100) return NextResponse.json({ error: 'Invalid name' }, { status: 400 })
+      if (!name || name.length > 80) return NextResponse.json({ error: 'Project name must be 1–80 characters.' }, { status: 400 })
       updates.name = name
     }
-    if (body.domain !== undefined) updates.domain = body.domain?.trim() || null
+    if (body.domain !== undefined) {
+      const domain = normalizeProjectDomain(body.domain)
+      if (domain === undefined) return NextResponse.json({ error: 'Enter a valid website domain or URL.' }, { status: 400 })
+      updates.domain = domain
+    }
 
-    // Validate settings is a plain object
     if (body.settings !== undefined) {
       if (typeof body.settings !== 'object' || body.settings === null || Array.isArray(body.settings)) {
         return NextResponse.json({ error: 'settings must be a plain object' }, { status: 400 })
       }
-      const settings = { ...(body.settings as Record<string, unknown>) }
-      if ('widget_config' in settings) {
+      const allowedSettings = new Set(['widget_config', 'widget_origin_restriction'])
+      if (Object.keys(body.settings).some((key) => !allowedSettings.has(key))) {
+        return NextResponse.json({ error: 'Only widget configuration and allowed origins can be changed here.' }, { status: 400 })
+      }
+      const settings = { ...(project.settings || {}) } as Record<string, unknown>
+      if ('widget_config' in body.settings) {
         settings.widget_config = sanitizeSavedWidgetConfig(
-          settings.widget_config as Parameters<typeof sanitizeSavedWidgetConfig>[0],
+          body.settings.widget_config as Parameters<typeof sanitizeSavedWidgetConfig>[0],
         )
       }
-      if ('widget_origin_restriction' in settings) {
-        settings.widget_origin_restriction = sanitizeWidgetOriginRestriction(settings.widget_origin_restriction)
+      if ('widget_origin_restriction' in body.settings) {
+        settings.widget_origin_restriction = sanitizeWidgetOriginRestriction(body.settings.widget_origin_restriction)
       }
       updates.settings = settings
     }
 
-    // Validate webhooks is a plain object
-    if (body.webhooks !== undefined) {
-      if (typeof body.webhooks !== 'object' || body.webhooks === null || Array.isArray(body.webhooks)) {
-        return NextResponse.json({ error: 'webhooks must be a plain object' }, { status: 400 })
-      }
-      updates.webhooks = body.webhooks
+    if (Object.keys(updates).length === 1) {
+      return NextResponse.json({ error: 'No supported project changes were provided.' }, { status: 400 })
     }
 
     const { data, error } = await admin.from('projects').update(updates).eq('id', id).select().single()

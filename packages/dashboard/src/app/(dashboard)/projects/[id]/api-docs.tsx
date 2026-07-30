@@ -74,7 +74,7 @@ export function ApiDocs({
 }) {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://app.feedbacks.dev'
   const mcpPackageUrl = `${baseUrl}/mcp/feedbacks-mcp-server-1.0.0.tgz`
-  const exampleApiKey = projectKey || 'YOUR_PROJECT_KEY'
+  const exampleApiKey = projectKey || 'fb_live_YOUR_PRIVATE_KEY'
   const endpoints = [
     {
       method: 'GET' as const,
@@ -86,10 +86,11 @@ export function ApiDocs({
     {
       method: 'POST' as const,
       path: '/api/v1/feedback',
-      description: 'Submit feedback with optional structured data from an app, script, or agent.',
+      description: 'Submit feedback with optional structured data. Reusing the same Idempotency-Key safely returns the original 201 response.',
       code: `curl -X POST ${baseUrl}/api/v1/feedback \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: ${exampleApiKey}" \\
+  -H "Idempotency-Key: feedback-REQUEST_UUID" \\
   -d '{
     "message": "Button click throws TypeError",
     "type": "bug",
@@ -100,7 +101,11 @@ export function ApiDocs({
       "error_code": "ERR_NULL_REF",
       "component": "LoginForm"
     }
-  }'`,
+  }'
+
+# 201 {"success":true,"id":"..."}
+# 401 {"error":"Invalid or missing API key"}
+# 409 when a key is reused with a different body`,
     },
     {
       method: 'GET' as const,
@@ -132,7 +137,7 @@ export function ApiDocs({
       <PageHeader
         eyebrow={project.name}
         title="API and MCP"
-        description="Use the project key from a backend, script, or trusted agent. Never expose it in public browser code."
+        description="Use a private API key from a backend, script, or trusted agent. The browser embed uses a different publishable key."
       />
 
       <details className="group rounded-lg border bg-card shadow-[var(--shadow-card)]">
@@ -149,6 +154,10 @@ export function ApiDocs({
             ['Project scope', 'Each API key can access only its attached project.'],
             ['Plan limits', 'Free access follows the shared Free plan quotas and history window; Pro removes the short history limit.'],
             ['Rate limits', 'Public submission paths are rate limited and return friendly errors instead of exposing internals.'],
+            ['Pagination', 'List endpoints accept page and limit (maximum 100) and return total/page/limit metadata.'],
+            ['Idempotency', 'Send a unique Idempotency-Key on feedback creation. Safe retries replay the original response; a different body with the same key returns 409.'],
+            ['Key rotation', 'Generate a replacement private key here, update trusted clients, then revoke the old key. Publishable widget keys are unaffected.'],
+            ['Permissions', 'Private keys are scoped to one project and explicit capabilities such as feedback:read and feedback:write.'],
             ['Webhook payloads', 'Generic webhooks include a version field. Current payload version: 2026-06-22.'],
             ['Linear', 'Use a signed generic webhook recipe when routing feedback into Linear.'],
           ].map(([label, body]) => (
@@ -164,7 +173,7 @@ export function ApiDocs({
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Connection details</CardTitle>
           <CardDescription>
-            Use the project key as the `X-API-Key` header for REST and MCP. Generate a fresh key if the real value is hidden.
+            Private keys begin with `fb_live_`, are revealed once, and never belong in browser code.
           </CardDescription>
         </CardHeader>
         <CardContent className="divide-y rounded-b-lg border-t p-0">
@@ -176,14 +185,14 @@ export function ApiDocs({
               </code>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Hidden{apiKeyLastFour ? `, ending in ${apiKeyLastFour}` : ''}. Generate a fresh key to copy REST or MCP credentials.
+                Hidden{apiKeyLastFour ? `, ending in ${apiKeyLastFour}` : ''}. Generate a new private key to copy REST or MCP credentials.
               </p>
             )}
             {projectKey ? (
               <CopyButton value={projectKey} variant="outline" size="sm" />
             ) : (
               <Button variant="outline" size="sm" onClick={() => void onRotateApiKey()} disabled={rotatingApiKey}>
-                {rotatingApiKey ? 'Generating' : 'Generate key'}
+                {rotatingApiKey ? 'Generating' : 'Generate private key'}
               </Button>
             )}
           </div>
@@ -199,7 +208,7 @@ export function ApiDocs({
         <CardHeader>
           <CardTitle className="text-base">Quick start: submit feedback</CardTitle>
           <CardDescription>
-            Use this from a backend, script, or trusted agent. {projectKey ? 'Do not expose this key in public browser code.' : 'Generate a fresh key before copying a real command.'}
+            Use this from a backend, script, or trusted agent. {projectKey ? 'Do not expose this private key in public browser code.' : 'Generate a private key before copying a real command.'}
           </CardDescription>
         </CardHeader>
         <CardContent>

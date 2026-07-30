@@ -34,6 +34,8 @@ export function PublicBoard({
   initialFollowed = false,
   initialWatchedIds = [],
   recommendations = [],
+  totalFeedback,
+  pagination,
 }: {
   board: BoardInfo
   initialFeedback: FeedbackItem[]
@@ -44,6 +46,8 @@ export function PublicBoard({
   initialFollowed?: boolean
   initialWatchedIds?: string[]
   recommendations?: BoardRecommendation[]
+  totalFeedback: number
+  pagination: { currentPage: number; pageCount: number }
 }) {
   const [feedback, setFeedback] = React.useState(initialFeedback)
   const [comments, setComments] = React.useState(initialComments)
@@ -288,6 +292,7 @@ export function PublicBoard({
 
   return (
     <div
+      data-public-board
       data-public-board-ready={ready ? 'true' : 'false'}
       className="min-h-screen bg-background"
     >
@@ -323,7 +328,7 @@ export function PublicBoard({
       )}
       <BoardHero
         board={board}
-        feedbackCount={feedback.length}
+        feedbackCount={totalFeedback}
         totalVotes={totalVotes}
         canModerate={canModerate}
         followed={followed}
@@ -344,7 +349,7 @@ export function PublicBoard({
         <div className="space-y-6">
           <BoardAnnouncements announcements={initialAnnouncements} />
 
-          <main aria-label="Public feedback requests" className="border-y py-4 sm:py-5">
+          <section aria-label="Public feedback requests" className="border-y py-4 sm:py-5">
             <BoardFilters
               showTypes={board.show_types}
               filter={filter}
@@ -400,7 +405,31 @@ export function PublicBoard({
                 />
               ))}
             </BoardFeedbackList>
-          </main>
+
+            {pagination.pageCount > 1 && (
+              <nav className="mt-5 flex items-center justify-between gap-3 border-t pt-4" aria-label="Feedback pages">
+                {pagination.currentPage > 1 ? (
+                  <Link
+                    href={`/p/${board.slug}${pagination.currentPage === 2 ? '' : `?page=${pagination.currentPage - 1}`}`}
+                    className="inline-flex min-h-10 items-center rounded-md border bg-background px-3 text-sm font-semibold hover:bg-accent"
+                  >
+                    Previous
+                  </Link>
+                ) : <span />}
+                <p className="text-sm text-muted-foreground">
+                  Page <span className="font-semibold text-foreground">{pagination.currentPage}</span> of {pagination.pageCount}
+                </p>
+                {pagination.currentPage < pagination.pageCount ? (
+                  <Link
+                    href={`/p/${board.slug}?page=${pagination.currentPage + 1}`}
+                    className="inline-flex min-h-10 items-center rounded-md border bg-background px-3 text-sm font-semibold hover:bg-accent"
+                  >
+                    Next
+                  </Link>
+                ) : <span />}
+              </nav>
+            )}
+          </section>
 
           <section className="border-t pt-6">
             <div className="flex flex-wrap items-center justify-between gap-3">

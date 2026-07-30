@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import { isBoardPubliclyAccessible } from '@/lib/public-board'
 import { notifyPublicBoardSubscribersOfTeamReply } from '@/lib/notifications'
+import { readJsonBody } from '@/lib/api-request'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(
   request: NextRequest,
@@ -14,6 +16,13 @@ export async function POST(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  const rate = await checkRateLimit(request, 'board-comment', 20, 5, `${slug}:${user.id}`)
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: 'Too many replies. Try again in a few minutes.' },
+      { status: 429, headers: { 'Retry-After': '300' } },
+    )
   }
 
   const admin = await createAdminSupabase()
@@ -42,7 +51,9 @@ export async function POST(
     return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
   }
 
-  const body = await request.json()
+  const bodyResult = await readJsonBody<{ feedback_id?: string; content?: string }>(request)
+  if (!bodyResult.ok) return bodyResult.response
+  const body = bodyResult.data
   const { feedback_id, content } = body
 
   if (!feedback_id || !content?.trim() || content.trim().length < 1) {

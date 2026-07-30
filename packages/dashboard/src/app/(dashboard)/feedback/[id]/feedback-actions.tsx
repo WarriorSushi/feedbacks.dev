@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import type { FeedbackStatus } from '@/lib/types'
+import type { FeedbackPriority, FeedbackStatus } from '@/lib/types'
 import { useRouter } from 'next/navigation'
-import { Loader2, Archive, X } from 'lucide-react'
+import { AlertCircle, Archive, CheckCircle2, Loader2, RotateCcw, X } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
 const statuses: FeedbackStatus[] = ['new', 'reviewed', 'planned', 'in_progress', 'closed']
@@ -18,21 +18,35 @@ interface FeedbackActionsProps {
   feedbackId: string
   projectId: string
   currentStatus: FeedbackStatus
+  currentPriority: FeedbackPriority | null
   currentTags: string[] | null
+  suggestedTags: string[]
 }
 
 function normalizeTag(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, '-')
 }
 
-export function FeedbackActions({ feedbackId, projectId, currentStatus, currentTags }: FeedbackActionsProps) {
+export function FeedbackActions({
+  feedbackId,
+  projectId,
+  currentStatus,
+  currentPriority,
+  currentTags,
+  suggestedTags,
+}: FeedbackActionsProps) {
   const [status, setStatus] = React.useState(currentStatus)
+  const [priority, setPriority] = React.useState<FeedbackPriority>(currentPriority || 'low')
   const [note, setNote] = React.useState('')
   const [tags, setTags] = React.useState<string[]>(currentTags || [])
   const [tagInput, setTagInput] = React.useState('')
   const [saving, setSaving] = React.useState(false)
   const [tagSaving, setTagSaving] = React.useState(false)
   const [archiving, setArchiving] = React.useState(false)
+  const [archived, setArchived] = React.useState(false)
+  const [saveState, setSaveState] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [saveError, setSaveError] = React.useState('')
+  const [lastRetry, setLastRetry] = React.useState<null | (() => Promise<void>)>(null)
   const router = useRouter()
   const supabase = React.useMemo(() => createClient(), [])
 
@@ -40,8 +54,26 @@ export function FeedbackActions({ feedbackId, projectId, currentStatus, currentT
     setTags(currentTags || [])
   }, [currentTags])
 
+  const markSaving = () => {
+    setSaveState('saving')
+    setSaveError('')
+  }
+
+  const markSaved = () => {
+    setSaveState('saved')
+    setLastRetry(null)
+  }
+
+  const markError = (message: string, retry: () => Promise<void>) => {
+    setSaveState('error')
+    setSaveError(message)
+    setLastRetry(() => retry)
+  }
+
   const handleStatusChange = async (newStatus: FeedbackStatus) => {
+    const previousStatus = status
     setStatus(newStatus)
+    markSaving()
     const { error } = await supabase
       .from('feedback')
       .update({
@@ -51,11 +83,13 @@ export function FeedbackActions({ feedbackId, projectId, currentStatus, currentT
       })
       .eq('id', feedbackId)
     if (error) {
-      toast({ title: 'Failed to update status', description: error.message, variant: 'destructive' })
-      setStatus(currentStatus)
+      const message = 'The status was not saved. Check your connection and try again.'
+      toast({ title: 'Could not update status', description: message, variant: 'destructive' })
+      setStatus(previousStatus)
+      markError(message, () => handleStatusChange(newStatus))
       return
     }
-    toast({ title: 'Status updated' })
+    markSaved()
     if (newStatus !== 'new') {
       void fetch(`/api/projects/${projectId}/activation`, {
         method: 'POST',
@@ -66,10 +100,48 @@ export function FeedbackActions({ feedbackId, projectId, currentStatus, currentT
     router.refresh()
   }
 
+  const handlePriorityChange = async (newPriority: FeedbackPriority) => {
+    const previousPriority = priority
+    setPriority(newPriority)
+    markSaving()
+    const { error } = await supabase
+      .from('feedback')
+      .update({ priority: newPriority, updated_at: new Date().toISOString() })
+      .eq('id', feedbackId)
+    if (error) {
+      const message = 'The priority was not saved. Check your connection and try again.'
+      setPriority(previousPriority)
+      markError(message, () => handlePriorityChange(newPriority))
+      return
+    }
+    markSaved()
+    router.refresh()
+  }
+
+  React.useEffect(() => {
+    const handleKeyboardAction = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      if (
+        event.metaKey ||
+        event.ctrlKey ||
+        event.altKey ||
+        target?.matches('input, textarea, select, button, [contenteditable="true"]')
+      ) return
+      const statusIndex = Number(event.key) - 1
+      if (statusIndex >= 0 && statusIndex < statuses.length) {
+        event.preventDefault()
+        void handleStatusChange(statuses[statusIndex])
+      }
+    }
+    window.addEventListener('keydown', handleKeyboardAction)
+    return () => window.removeEventListener('keydown', handleKeyboardAction)
+  })
+
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!note.trim()) return
     setSaving(true)
+    markSaving()
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -80,9 +152,15 @@ export function FeedbackActions({ feedbackId, projectId, currentStatus, currentT
     })
     setSaving(false)
     if (error) {
-      toast({ title: 'Failed to add note', description: error.message, variant: 'destructive' })
+      const message = 'The note was not added. Your draft is still here—try again.'
+      toast({ title: 'Could not add note', description: message, variant: 'destructive' })
+      markError(message, async () => {
+        const form = document.querySelector<HTMLFormElement>('[data-note-form]')
+        form?.requestSubmit()
+      })
       return
     }
+    markSaved()
     toast({ title: 'Note added' })
     setNote('')
     router.refresh()
@@ -90,6 +168,7 @@ export function FeedbackActions({ feedbackId, projectId, currentStatus, currentT
 
   const updateTags = async (nextTags: string[], title: string) => {
     setTagSaving(true)
+    markSaving()
     const { error } = await supabase
       .from('feedback')
       .update({
@@ -99,10 +178,13 @@ export function FeedbackActions({ feedbackId, projectId, currentStatus, currentT
       .eq('id', feedbackId)
     setTagSaving(false)
     if (error) {
-      toast({ title: 'Failed to update tags', description: error.message, variant: 'destructive' })
+      const message = 'The tag change was not saved. Try again.'
+      toast({ title: 'Could not update tags', description: message, variant: 'destructive' })
+      markError(message, () => updateTags(nextTags, title))
       return
     }
     setTags(nextTags)
+    markSaved()
     toast({ title })
     router.refresh()
   }
@@ -125,24 +207,68 @@ export function FeedbackActions({ feedbackId, projectId, currentStatus, currentT
 
   return (
     <div className="space-y-4">
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex min-h-8 items-center justify-between gap-3 rounded-md bg-surface-raised px-3 py-2 text-xs"
+      >
+        <span className="flex items-center gap-2 text-muted-foreground">
+          {saveState === 'saving' && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          {saveState === 'saved' && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
+          {saveState === 'error' && <AlertCircle className="h-3.5 w-3.5 text-destructive" />}
+          {saveState === 'saving'
+            ? 'Saving…'
+            : saveState === 'saved'
+              ? 'Saved'
+              : saveState === 'error'
+                ? saveError
+                : 'Changes save when you choose an option.'}
+        </span>
+        {saveState === 'error' && lastRetry && (
+          <Button type="button" variant="ghost" size="sm" onClick={() => void lastRetry()}>
+            Retry
+          </Button>
+        )}
+      </div>
+
       {/* Status changer */}
-      <div>
-        <Label htmlFor="status-select" className="mb-2 block text-xs font-medium text-muted-foreground">
-          Change Status
-        </Label>
-        <select
-          id="status-select"
-          aria-label="Change feedback status"
-          className="h-9 w-full rounded-md border bg-background px-3 text-sm"
-          value={status}
-          onChange={(e) => handleStatusChange(e.target.value as FeedbackStatus)}
-        >
-          {statuses.map((s) => (
-            <option key={s} value={s}>
-              {s.replace('_', ' ')}
-            </option>
-          ))}
-        </select>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label htmlFor="status-select" className="mb-2 block text-xs font-medium text-muted-foreground">
+            Status <span className="font-normal">(keys 1–5)</span>
+          </Label>
+          <select
+            id="status-select"
+            aria-label="Change feedback status"
+            className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+            value={status}
+            disabled={saveState === 'saving'}
+            onChange={(e) => void handleStatusChange(e.target.value as FeedbackStatus)}
+          >
+            {statuses.map((s) => (
+              <option key={s} value={s}>
+                {s.replace('_', ' ')}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <Label htmlFor="priority-select" className="mb-2 block text-xs font-medium text-muted-foreground">
+            Priority
+          </Label>
+          <select
+            id="priority-select"
+            aria-label="Change feedback priority"
+            className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+            value={priority}
+            disabled={saveState === 'saving'}
+            onChange={(e) => void handlePriorityChange(e.target.value as FeedbackPriority)}
+          >
+            {(['low', 'medium', 'high', 'critical'] as FeedbackPriority[]).map((value) => (
+              <option key={value} value={value}>{value}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Tags */}
@@ -188,10 +314,26 @@ export function FeedbackActions({ feedbackId, projectId, currentStatus, currentT
             Add tag
           </Button>
         </form>
+        {suggestedTags.filter((tag) => !tags.includes(tag)).length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">Suggested:</span>
+            {suggestedTags.filter((tag) => !tags.includes(tag)).slice(0, 8).map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                disabled={tagSaving}
+                onClick={() => void updateTags([...tags, tag], 'Tag added')}
+                className="rounded-full border bg-background px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                + {tag}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Add note */}
-      <form onSubmit={handleAddNote} className="space-y-2">
+      <form data-note-form onSubmit={handleAddNote} className="space-y-2">
         <Textarea
           placeholder="Add an internal note..."
           value={note}
@@ -206,29 +348,62 @@ export function FeedbackActions({ feedbackId, projectId, currentStatus, currentT
 
       {/* Archive */}
       <div className="border-t pt-4">
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5 text-muted-foreground hover:text-destructive"
-          disabled={archiving}
-          onClick={async () => {
-            setArchiving(true)
-            const { error } = await supabase
-              .from('feedback')
-              .update({ is_archived: true, updated_at: new Date().toISOString() })
-              .eq('id', feedbackId)
-            setArchiving(false)
-            if (error) {
-              toast({ title: 'Failed to archive', description: error.message, variant: 'destructive' })
-              return
-            }
-            toast({ title: 'Feedback archived' })
-            router.push('/feedback')
-          }}
-        >
-          {archiving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
-          Archive
-        </Button>
+        {archived ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-surface-raised p-3">
+            <p className="text-sm">Feedback archived.</p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={archiving}
+                onClick={async () => {
+                  setArchiving(true)
+                  const { error } = await supabase
+                    .from('feedback')
+                    .update({ is_archived: false, updated_at: new Date().toISOString() })
+                    .eq('id', feedbackId)
+                  setArchiving(false)
+                  if (error) {
+                    markError('The archive could not be undone. Try again.', async () => undefined)
+                    return
+                  }
+                  setArchived(false)
+                  markSaved()
+                  router.refresh()
+                }}
+              >
+                <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                Undo
+              </Button>
+              <Button size="sm" onClick={() => router.push('/feedback')}>Back to inbox</Button>
+            </div>
+          </div>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-muted-foreground hover:text-destructive"
+            disabled={archiving}
+            onClick={async () => {
+              setArchiving(true)
+              markSaving()
+              const { error } = await supabase
+                .from('feedback')
+                .update({ is_archived: true, updated_at: new Date().toISOString() })
+                .eq('id', feedbackId)
+              setArchiving(false)
+              if (error) {
+                markError('The feedback was not archived. Try again.', async () => undefined)
+                return
+              }
+              setArchived(true)
+              markSaved()
+            }}
+          >
+            {archiving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
+            Archive
+          </Button>
+        )}
       </div>
     </div>
   )

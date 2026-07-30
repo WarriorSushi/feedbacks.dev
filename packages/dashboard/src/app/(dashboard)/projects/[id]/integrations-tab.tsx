@@ -98,7 +98,7 @@ const SECTION_META: Array<{
 ]
 
 function endpointKey(kind: WebhookKind, endpoint: WebhookEndpoint | GitHubEndpoint) {
-  return `${kind}:${endpoint.url || endpoint.id}`
+  return `${kind}:${endpoint.id}`
 }
 
 function formatTimestamp(value: string | null) {
@@ -320,7 +320,9 @@ function DeliveryLogList({
 }
 
 export function IntegrationsTab({ project, initialBillingSummary }: IntegrationsTabProps) {
-  const [config, setConfig] = React.useState<WebhookConfig>(() => normalizeWebhookConfig(project.webhooks))
+  const initialConfig = React.useMemo(() => normalizeWebhookConfig(project.webhooks), [project.webhooks])
+  const [config, setConfig] = React.useState<WebhookConfig>(initialConfig)
+  const [savedConfig, setSavedConfig] = React.useState<WebhookConfig>(initialConfig)
   const [deliveries, setDeliveries] = React.useState<WebhookDeliveryLog[]>([])
   const [health, setHealth] = React.useState<WebhookEndpointState[]>(() =>
     listWebhookEndpointStates(normalizeWebhookConfig(project.webhooks)),
@@ -335,6 +337,10 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
   const endpointLimit = billingSummary?.entitlements.webhookEndpointLimit ?? null
   const activeEndpointCount = React.useMemo(() => countActiveWebhookEndpoints(config), [config])
   const endpointLimitReached = endpointLimit !== null && activeEndpointCount >= endpointLimit
+  const isDirty = React.useMemo(
+    () => JSON.stringify(config) !== JSON.stringify(savedConfig),
+    [config, savedConfig],
+  )
 
   React.useEffect(() => {
     if (billingSummary) return
@@ -408,6 +414,22 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
     void loadOperations()
   }, [billingSummary, loadOperations])
 
+  React.useEffect(() => {
+    if (featureLocked) return
+    const loadConfig = async () => {
+      try {
+        const response = await fetch(`/api/projects/${project.id}/webhooks`, { cache: 'no-store' })
+        if (!response.ok) return
+        const next = normalizeWebhookConfig(await response.json())
+        setConfig(next)
+        setSavedConfig(next)
+      } catch {
+        // The initial server-rendered safe config remains usable when refresh fails.
+      }
+    }
+    void loadConfig()
+  }, [featureLocked, project.id])
+
   const endpointHealth = React.useMemo(() => {
     return new Map(health.map((state) => [endpointKey(state.kind, state.endpoint), state]))
   }, [health])
@@ -463,6 +485,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
       const next = normalizeWebhookConfig(await response.json())
       setFeatureLocked(false)
       setConfig(next)
+      setSavedConfig(next)
       toast({ title: 'Integrations saved' })
       await loadOperations()
     } catch (error) {
@@ -477,6 +500,25 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
   }
 
   const handleTest = async (kind: WebhookKind, endpoint: WebhookEndpoint | GitHubEndpoint) => {
+    if (isDirty) {
+      toast({
+        title: 'Save changes before testing',
+        description: 'The test uses the encrypted configuration currently stored on the server.',
+      })
+      return
+    }
+    const hasUnsavedCredential = !endpoint.secretStored
+      || (kind === 'github' && Boolean((endpoint as GitHubEndpoint).token))
+      || (kind !== 'github' && Boolean(endpoint.url))
+      || (kind === 'generic' && Boolean(endpoint.signingSecret))
+    if (hasUnsavedCredential) {
+      toast({
+        title: 'Save this endpoint first',
+        description: 'Credentials are encrypted when you save. You can send a test immediately after.',
+      })
+      return
+    }
+
     const key = endpointKey(kind, endpoint)
     setTestingKey(key)
 
@@ -484,7 +526,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
       const response = await fetch(`/api/projects/${project.id}/webhooks`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: kind, endpoint }),
+        body: JSON.stringify({ type: kind, endpointId: endpoint.id }),
       })
 
       if (!response.ok) {
@@ -642,9 +684,9 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge variant="outline">Endpoint {index + 1}</Badge>
                           <Badge
-                            variant={state?.health === 'healthy' ? 'secondary' : state?.health === 'idle' ? 'outline' : 'destructive'}
+                            variant={!endpoint.enabled || state?.health === 'idle' ? 'outline' : state?.health === 'healthy' ? 'secondary' : 'destructive'}
                           >
-                            {HEALTH_LABELS[state?.health || 'idle']}
+                            {!endpoint.enabled ? 'Disabled' : HEALTH_LABELS[state?.health || 'idle']}
                           </Badge>
                           <span className="text-xs text-muted-foreground">
                             {formatTimestamp(state?.lastDeliveryAt || null)}
@@ -683,7 +725,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                             <label className="text-xs font-medium text-muted-foreground">Token</label>
                             <Input
                               type="password"
-                              placeholder="github_pat_..."
+                              placeholder={(endpoint as GitHubEndpoint).secretStored ? 'Stored securely ••••••••' : 'github_pat_...'}
                               value={(endpoint as GitHubEndpoint).token}
                               onChange={(e) =>
                                 updateEndpoint(section.kind, index, {
@@ -725,6 +767,11 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                                 })
                               }
                             />
+                            {endpoint.secretStored && !endpoint.url && (
+                              <p className="text-xs text-muted-foreground">
+                                Stored securely for {endpoint.destinationHint || section.title}. Enter a new URL only to replace it.
+                              </p>
+                            )}
                           </div>
 
                           {section.kind === 'generic' && (
@@ -740,7 +787,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                                 </div>
                                 <Input
                                   type="password"
-                                  placeholder="whsec_..."
+                                  placeholder={endpoint.secretStored ? 'Stored securely (optional)' : 'whsec_...'}
                                   value={endpoint.signingSecret || ''}
                                   onChange={(e) =>
                                     updateEndpoint(section.kind, index, {
@@ -818,10 +865,24 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
             </CardContent>
           </Card>
 
-          <Button onClick={handleSave} disabled={saving}>
-            {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save integrations
-          </Button>
+          {isDirty && (
+            <div className="sticky bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-20 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-background/95 p-3 shadow-xl backdrop-blur">
+              <p className="text-sm text-muted-foreground">You have unsaved integration changes.</p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  disabled={saving}
+                  onClick={() => setConfig(savedConfig)}
+                >
+                  Discard
+                </Button>
+                <Button onClick={handleSave} disabled={saving}>
+                  {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save integrations
+                </Button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

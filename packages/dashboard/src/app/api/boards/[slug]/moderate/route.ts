@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import { isBoardPubliclyAccessible } from '@/lib/public-board'
 import { notifyPublicBoardSubscribersOfStatusChange } from '@/lib/notifications'
+import { readJsonBody } from '@/lib/api-request'
 
 const ALLOWED_STATUSES = new Set(['new', 'reviewed', 'planned', 'in_progress', 'closed'])
 
@@ -39,7 +40,9 @@ export async function POST(
     return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
   }
 
-  const body = await request.json()
+  const bodyResult = await readJsonBody(request)
+  if (!bodyResult.ok) return bodyResult.response
+  const body = bodyResult.data
   const { feedback_id, action, value } = body as {
     feedback_id?: string
     action?: 'status' | 'hide'

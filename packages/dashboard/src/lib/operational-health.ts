@@ -12,6 +12,8 @@ export function evaluateCronHealth(
   const thresholds: Record<string, number> = {
     webhook_jobs: 30 * 60 * 1000,
     notification_digests: 26 * 60 * 60 * 1000,
+    e2e_cleanup: 26 * 60 * 60 * 1000,
+    account_deletions: 26 * 60 * 60 * 1000,
   }
 
   return Object.fromEntries(
@@ -27,4 +29,3 @@ export function evaluateCronHealth(
     }),
   )
 }
-

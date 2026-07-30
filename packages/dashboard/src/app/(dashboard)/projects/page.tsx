@@ -6,12 +6,42 @@ import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
 import type { Project } from '@/lib/types'
 import Link from 'next/link'
-import { ArrowRight, Code2, FolderOpen, Inbox, Key, Plus } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CheckCircle2, Code2, FolderOpen, Inbox, Plus } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { CURRENT_PROJECT_COOKIE, getSelectedProject } from '@/lib/project-selection'
 import { PageHeader } from '@/components/ui/workspace-shell'
 
 export const metadata = { title: 'Projects' }
+
+type ProjectHealth = {
+  project_id: string
+  feedback_count: number
+  unread_count: number
+  latest_feedback_at: string | null
+  embed_last_seen_at: string | null
+  failed_delivery_count: number
+  board_enabled: boolean
+  board_visibility: string | null
+  board_listed: boolean
+  updates_enabled: boolean
+}
+
+function nextProjectAction(project: Project, health?: ProjectHealth) {
+  if (!health?.embed_last_seen_at) {
+    return { label: 'Install', href: `/projects/${project.id}/install`, tone: 'primary' as const }
+  }
+  if (!health.feedback_count) {
+    return { label: 'Verify', href: `/projects/${project.id}/verify`, tone: 'primary' as const }
+  }
+  if (health.failed_delivery_count > 0) {
+    return { label: 'Fix delivery', href: `/projects/${project.id}?tab=integrations`, tone: 'danger' as const }
+  }
+  return {
+    label: health.unread_count > 0 ? `Review ${health.unread_count} unread` : 'Open inbox',
+    href: `/feedback?projectId=${project.id}`,
+    tone: health.unread_count > 0 ? 'attention' as const : 'default' as const,
+  }
+}
 
 export default async function ProjectsPage() {
   const cookieStore = await cookies()
@@ -27,16 +57,10 @@ export default async function ProjectsPage() {
     .eq('owner_user_id', user!.id)
     .order('created_at', { ascending: false })
 
-  // Get feedback counts per project
-  const { data: counts } = await supabase
-    .from('feedback')
-    .select('project_id')
-    .eq('is_archived', false)
-
-  const countMap = new Map<string, number>()
-  counts?.forEach((c) => {
-    countMap.set(c.project_id, (countMap.get(c.project_id) || 0) + 1)
-  })
+  const { data: projectHealth } = await supabase.rpc('get_owner_project_health')
+  const healthMap = new Map(
+    ((projectHealth || []) as ProjectHealth[]).map((health) => [health.project_id, health]),
+  )
   const currentProjectId = getSelectedProject((projects as Project[] | null) || [], cookieStore.get(CURRENT_PROJECT_COOKIE)?.value)?.id
 
   return (
@@ -96,10 +120,13 @@ export default async function ProjectsPage() {
         </Card>
       ) : (
         <div className="overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]">
-          {(projects as Project[]).map((project) => (
+          {(projects as Project[]).map((project) => {
+            const health = healthMap.get(project.id)
+            const next = nextProjectAction(project, health)
+            return (
             <Link
               key={project.id}
-              href={`/projects/${project.id}`}
+              href={next.href}
               className="group grid gap-3 border-b px-4 py-4 transition-colors last:border-b-0 hover:bg-accent/40 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
             >
               <div className="min-w-0">
@@ -114,25 +141,32 @@ export default async function ProjectsPage() {
                   <span>Created {formatDate(project.created_at)}</span>
                   <span className="hidden h-1 w-1 rounded-full bg-border sm:inline-block" />
                   <span className="inline-flex items-center gap-1">
-                    <Key className="h-3 w-3" />
-                    {project.api_key_last_four ? `••••${project.api_key_last_four}` : 'Key hidden'}
+                    {health?.embed_last_seen_at
+                      ? <><CheckCircle2 className="h-3 w-3 text-emerald-500" /> Embed seen {formatDate(health.embed_last_seen_at)}</>
+                      : <><Code2 className="h-3 w-3" /> Embed not detected</>}
                   </span>
+                  {health?.board_enabled && (
+                    <span>{health.board_listed ? 'Board listed' : 'Board unlisted'}</span>
+                  )}
+                  {health?.updates_enabled && <span>Updates active</span>}
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2 md:justify-end">
                 <Badge variant="secondary">
                   <Inbox className="mr-1 h-3 w-3" />
-                  {countMap.get(project.id) || 0} feedback
+                  {health?.feedback_count || 0} feedback
                 </Badge>
-                <Badge variant="outline">
-                  <Code2 className="mr-1 h-3 w-3" />
-                  Setup
+                <Badge
+                  variant={next.tone === 'danger' ? 'destructive' : next.tone === 'primary' ? 'secondary' : 'outline'}
+                >
+                  {next.tone === 'danger' && <AlertTriangle className="mr-1 h-3 w-3" />}
+                  {next.label}
                 </Badge>
                 <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
               </div>
             </Link>
-          ))}
+          )})}
         </div>
       )}
     </div>

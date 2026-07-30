@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react'
 
 interface BillingClientProps {
   initialSummary: BillingSummary
+  customerBillingLive: boolean
 }
 
 function formatPeriodEnd(value: string | null) {
@@ -21,7 +22,25 @@ function formatPeriodEnd(value: string | null) {
   })
 }
 
-export function BillingClient({ initialSummary }: BillingClientProps) {
+function formatMoney(amount: number | null, currency: string | null) {
+  if (amount === null || !currency) return 'Not available yet'
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency,
+    }).format(amount / 100)
+  } catch {
+    return `${amount / 100} ${currency}`
+  }
+}
+
+function formatBillingInterval(interval: string | null, count: number | null) {
+  if (!interval) return 'Not available yet'
+  const amount = count || 1
+  return amount === 1 ? `Every ${interval}` : `Every ${amount} ${interval}s`
+}
+
+export function BillingClient({ initialSummary, customerBillingLive }: BillingClientProps) {
   const [summary, setSummary] = React.useState(initialSummary)
   const [checkoutLoading, setCheckoutLoading] = React.useState(false)
   const [portalLoading, setPortalLoading] = React.useState(false)
@@ -129,12 +148,17 @@ export function BillingClient({ initialSummary }: BillingClientProps) {
               {summary.entitlements.label}
             </Badge>
             <Badge variant="outline">{summary.account.billing_status}</Badge>
-            {!summary.billingEnabled && <Badge variant="outline">Billing offline</Badge>}
+            {!customerBillingLive && <Badge variant="outline">Live checkout unavailable</Badge>}
           </div>
           <h2 className="mt-3 text-lg font-semibold">Billing and plan</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             See your plan, usage, limits, and renewal date in one place.
           </p>
+          {!customerBillingLive && summary.account.plan_tier !== 'pro' && (
+            <p className="mt-3 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-foreground">
+              Pro checkout is paused while the live payment configuration is being verified. Your Free plan remains fully available and no test checkout will be shown in production.
+            </p>
+          )}
         </header>
         <div className="space-y-4 p-5 sm:p-6">
           <div className="divide-y border-y bg-surface-raised/60">
@@ -149,11 +173,26 @@ export function BillingClient({ initialSummary }: BillingClientProps) {
                 value: feedbackLimitText,
                 hint: summary.entitlements.feedbackMonthlyLimit ? 'Monthly quota' : 'Unlimited on Pro',
               },
-              {
-                label: 'Current period end',
-                value: formatPeriodEnd(summary.account.current_period_end),
-                hint: summary.entitlements.historyDays ? `${summary.entitlements.historyDays}-day history on Free` : 'Unlimited history on Pro',
-              },
+              ...(summary.account.plan_tier === 'pro'
+                ? [
+                    {
+                      label: summary.account.cancel_at_period_end ? 'Access until' : 'Next charge',
+                      value: formatPeriodEnd(summary.account.current_period_end),
+                      hint: summary.account.cancel_at_period_end ? 'Cancels after this period' : 'Subscription renewal date',
+                    },
+                    {
+                      label: 'Recurring amount',
+                      value: formatMoney(summary.account.recurring_amount, summary.account.billing_currency),
+                      hint: formatBillingInterval(summary.account.billing_interval, summary.account.billing_interval_count),
+                    },
+                  ]
+                : [
+                    {
+                      label: 'History window',
+                      value: `${summary.entitlements.historyDays || 30} days`,
+                      hint: 'Older data remains stored and returns after upgrade',
+                    },
+                  ]),
             ].map((item) => (
               <div key={item.label} className="grid gap-1 px-4 py-3 sm:grid-cols-[180px_minmax(0,1fr)_220px] sm:items-center">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{item.label}</p>
@@ -170,7 +209,7 @@ export function BillingClient({ initialSummary }: BillingClientProps) {
                 Manage billing
               </Button>
             ) : (
-              <Button onClick={startCheckout} disabled={checkoutLoading || !summary.billingEnabled}>
+              <Button onClick={startCheckout} disabled={checkoutLoading || !customerBillingLive}>
                 {checkoutLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Upgrade to Pro
               </Button>
@@ -203,11 +242,11 @@ export function BillingClient({ initialSummary }: BillingClientProps) {
             </ul>
           </div>
           <div className="border-t pt-4 text-sm md:border-t-0 md:pl-6 md:pt-0">
-            <p className="font-medium">Operational notes</p>
+            <p className="font-medium">Subscription help</p>
             <ul className="mt-2 space-y-1 text-muted-foreground">
-              <li>Checkout returns here, but plan changes only after verified webhook processing.</li>
-              <li>Downgrades preserve data; Free just gates older history and higher quotas.</li>
-              <li>If billing looks stale after checkout, use Refresh status after a minute.</li>
+              <li>Manage payment method, invoices, and cancellation from the billing portal.</li>
+              <li>Downgrades preserve data; Free limits visible history and higher quotas.</li>
+              <li>If a recent payment is missing, refresh status or contact support.</li>
             </ul>
           </div>
         </div>
