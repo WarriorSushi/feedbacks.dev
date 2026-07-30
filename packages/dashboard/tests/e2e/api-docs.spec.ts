@@ -9,10 +9,11 @@ test('API docs are visible on Free and start with quick submit guidance', async 
   await signInWithTestSession(page)
   const project = await createProjectViaApi(page, { name: `Playwright API ${Date.now().toString(36)}` })
 
-  await page.goto(`/projects/${project.id}?tab=api`, { waitUntil: 'domcontentloaded' })
+  await page.goto(`/projects/${project.id}/api`, { waitUntil: 'domcontentloaded' })
   await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
+  await expect(page).toHaveURL(`/projects/${project.id}/api`)
 
-  await expect(page.getByText('Available on Free')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'API and MCP' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Connection details' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Quick start: submit feedback' })).toBeVisible()
   await expect(page.getByText(/Do not expose this key in public browser code/i)).toBeVisible()

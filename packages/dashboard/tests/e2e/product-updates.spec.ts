@@ -32,7 +32,7 @@ test('new Updates-only user verifies the embed, tests a draft, and publishes', a
 
   await page.goto('/projects/new?goal=updates')
   await page.getByLabel('App or website name').fill(`Playwright Updates ${Date.now().toString(36)}`)
-  await page.getByRole('button', { name: 'Create project and write a user message' }).click()
+  await page.getByRole('button', { name: 'Create project and write an update' }).click()
   await expect(page).toHaveURL(/\/projects\/([^/]+)\/release-notes$/, { timeout: 30_000 })
 
   const projectId = page.url().match(/\/projects\/([^/]+)\/release-notes$/)?.[1]
