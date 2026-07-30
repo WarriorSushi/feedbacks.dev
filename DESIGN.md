@@ -25,6 +25,7 @@ A developer is adding feedback collection during a normal build session, switchi
 ## Visual System
 
 - Theme: light-first by default. Both themes use visibly distinct canvas, sidebar, panel, raised, selected, popover, and code roles.
+- Dark hierarchy: keep the canvas, sidebar, inset rails, and code areas deep. Use lighter cards for primary work, a soft neutral for supporting rows and footers, and the brightest neutral only for headers, menus, and overlays. Do not alternate shades decoratively; assign them by function.
 - Typography: system sans or the existing app font stack. Fixed sizes, no viewport-scaled product text.
 - Accent: controlled green/primary accent for primary actions, active state, success, and focus. Do not use accent as decoration.
 - Structure: crisp 1px borders, neutral panels, compact spacing, and clear section separation. Prefer page headers, rows, tables, and disclosures over card stacks.

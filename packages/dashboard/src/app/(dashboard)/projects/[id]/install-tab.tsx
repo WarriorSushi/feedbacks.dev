@@ -322,7 +322,7 @@ export function FeedbacksWidgetScript() {
         dataTour="install-snippet"
         contentClassName="space-y-4"
       >
-        <div data-tour="install-platforms" className="flex flex-wrap gap-1 rounded-md border bg-surface-raised p-1" role="group" aria-label="Install platform">
+        <div data-tour="install-platforms" className="flex flex-wrap gap-1 rounded-md border bg-surface-inset p-1" role="group" aria-label="Install platform">
           {primaryTargets.map((target) => (
             <button
               key={target.id}
@@ -331,8 +331,8 @@ export function FeedbacksWidgetScript() {
               onClick={() => setActivePlatform(target.id)}
               className={`min-h-10 rounded px-3 text-sm font-medium transition-colors ${
                 activePlatform === target.id
-                  ? 'bg-card text-foreground shadow-sm ring-1 ring-border'
-                  : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
+                  ? 'bg-surface-soft text-foreground shadow-sm ring-1 ring-border'
+                  : 'text-muted-foreground hover:bg-surface-soft/70 hover:text-foreground'
               }`}
             >
               {target.label}
@@ -342,8 +342,8 @@ export function FeedbacksWidgetScript() {
           <details className="group relative">
             <summary className={`flex min-h-10 cursor-pointer list-none items-center rounded px-3 text-sm font-medium transition-colors ${
               secondaryTargets.some((target) => target.id === activePlatform)
-                ? 'bg-card text-foreground shadow-sm ring-1 ring-border'
-                : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
+                ? 'bg-surface-soft text-foreground shadow-sm ring-1 ring-border'
+                : 'text-muted-foreground hover:bg-surface-soft/70 hover:text-foreground'
             }`}>
               Other
             </summary>
@@ -391,7 +391,7 @@ export function FeedbacksWidgetScript() {
             </div>
           )
         ) : (
-          <div className="rounded-md border border-primary/30 bg-primary/[0.045] p-4">
+          <div className="rounded-md border border-primary/30 bg-surface-selected/35 p-4 dark:bg-surface-selected/55">
             <p className="text-sm font-medium text-foreground">Generate a fresh key to reveal the snippet.</p>
             <p className="mt-1 text-sm text-muted-foreground">Existing deployed clients keep working with the previous key.</p>
             <Button size="sm" variant="outline" className="mt-3" onClick={() => void onRotateApiKey()} disabled={rotatingApiKey}>
@@ -401,7 +401,7 @@ export function FeedbacksWidgetScript() {
           </div>
         )}
 
-        <div className="divide-y rounded-md border bg-surface-raised/55">
+        <div className="divide-y rounded-md border bg-surface-soft/65">
           <div className="grid gap-1 px-4 py-3 md:grid-cols-[140px_minmax(0,1fr)]">
             <p className="text-sm font-medium text-foreground">Paste it here</p>
             <p className="text-sm leading-6 text-muted-foreground">{selectedTarget.placement}</p>
@@ -434,7 +434,7 @@ export function FeedbacksWidgetScript() {
           </span>
           <span className="text-xs text-muted-foreground">{modeLabel}</span>
         </summary>
-        <div className="grid gap-5 border-t bg-surface-raised/35 p-5 sm:grid-cols-2">
+        <div className="grid gap-5 border-t bg-surface-inset/60 p-5 sm:grid-cols-2">
           <div className="min-w-0">
             <p className="text-xs font-medium text-muted-foreground">Project key</p>
             {projectKey ? (
