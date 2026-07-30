@@ -11,6 +11,7 @@ import type { FeedbackPriority, FeedbackStatus } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 import { AlertCircle, Archive, CheckCircle2, Loader2, RotateCcw, X } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
+import { formatVersionEtag } from '@/lib/optimistic-concurrency'
 
 const statuses: FeedbackStatus[] = ['new', 'reviewed', 'planned', 'in_progress', 'closed']
 
@@ -21,6 +22,7 @@ interface FeedbackActionsProps {
   currentPriority: FeedbackPriority | null
   currentTags: string[] | null
   suggestedTags: string[]
+  currentVersion: string
 }
 
 function normalizeTag(value: string): string {
@@ -34,6 +36,7 @@ export function FeedbackActions({
   currentPriority,
   currentTags,
   suggestedTags,
+  currentVersion,
 }: FeedbackActionsProps) {
   const [status, setStatus] = React.useState(currentStatus)
   const [priority, setPriority] = React.useState<FeedbackPriority>(currentPriority || 'low')
@@ -47,12 +50,41 @@ export function FeedbackActions({
   const [saveState, setSaveState] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [saveError, setSaveError] = React.useState('')
   const [lastRetry, setLastRetry] = React.useState<null | (() => Promise<void>)>(null)
+  const [feedbackVersion, setFeedbackVersion] = React.useState(currentVersion)
   const router = useRouter()
   const supabase = React.useMemo(() => createClient(), [])
 
   React.useEffect(() => {
     setTags(currentTags || [])
   }, [currentTags])
+
+  React.useEffect(() => {
+    setFeedbackVersion(currentVersion)
+  }, [currentVersion])
+
+  const patchFeedback = React.useCallback(async (changes: {
+    status?: FeedbackStatus
+    priority?: FeedbackPriority
+    tags?: string[]
+    isArchived?: boolean
+  }) => {
+    const response = await fetch(`/api/feedback/${feedbackId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'If-Match': formatVersionEtag(feedbackVersion),
+      },
+      body: JSON.stringify(changes),
+    })
+    const payload = await response.json().catch(() => null)
+    if (!response.ok) {
+      const error = new Error(payload?.error || 'The feedback change was not saved.')
+      ;(error as Error & { code?: string }).code = payload?.code
+      throw error
+    }
+    setFeedbackVersion(payload.updated_at)
+    return payload
+  }, [feedbackId, feedbackVersion])
 
   const markSaving = () => {
     setSaveState('saving')
@@ -74,19 +106,16 @@ export function FeedbackActions({
     const previousStatus = status
     setStatus(newStatus)
     markSaving()
-    const { error } = await supabase
-      .from('feedback')
-      .update({
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-        ...(newStatus === 'closed' ? { resolved_at: new Date().toISOString() } : {}),
-      })
-      .eq('id', feedbackId)
-    if (error) {
-      const message = 'The status was not saved. Check your connection and try again.'
+    try {
+      await patchFeedback({ status: newStatus })
+    } catch (error) {
+      const conflict = (error as Error & { code?: string }).code === 'EDIT_CONFLICT'
+      const message = conflict
+        ? error instanceof Error ? error.message : 'This feedback changed in another tab.'
+        : 'The status was not saved. Check your connection and try again.'
       toast({ title: 'Could not update status', description: message, variant: 'destructive' })
       setStatus(previousStatus)
-      markError(message, () => handleStatusChange(newStatus))
+      markError(message, conflict ? async () => router.refresh() : () => handleStatusChange(newStatus))
       return
     }
     markSaved()
@@ -104,14 +133,15 @@ export function FeedbackActions({
     const previousPriority = priority
     setPriority(newPriority)
     markSaving()
-    const { error } = await supabase
-      .from('feedback')
-      .update({ priority: newPriority, updated_at: new Date().toISOString() })
-      .eq('id', feedbackId)
-    if (error) {
-      const message = 'The priority was not saved. Check your connection and try again.'
+    try {
+      await patchFeedback({ priority: newPriority })
+    } catch (error) {
+      const conflict = (error as Error & { code?: string }).code === 'EDIT_CONFLICT'
+      const message = conflict
+        ? error instanceof Error ? error.message : 'This feedback changed in another tab.'
+        : 'The priority was not saved. Check your connection and try again.'
       setPriority(previousPriority)
-      markError(message, () => handlePriorityChange(newPriority))
+      markError(message, conflict ? async () => router.refresh() : () => handlePriorityChange(newPriority))
       return
     }
     markSaved()
@@ -169,18 +199,20 @@ export function FeedbackActions({
   const updateTags = async (nextTags: string[], title: string) => {
     setTagSaving(true)
     markSaving()
-    const { error } = await supabase
-      .from('feedback')
-      .update({
-        tags: nextTags,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', feedbackId)
+    let updateError: unknown = null
+    try {
+      await patchFeedback({ tags: nextTags })
+    } catch (error) {
+      updateError = error
+    }
     setTagSaving(false)
-    if (error) {
-      const message = 'The tag change was not saved. Try again.'
+    if (updateError) {
+      const conflict = (updateError as Error & { code?: string }).code === 'EDIT_CONFLICT'
+      const message = conflict && updateError instanceof Error
+        ? updateError.message
+        : 'The tag change was not saved. Try again.'
       toast({ title: 'Could not update tags', description: message, variant: 'destructive' })
-      markError(message, () => updateTags(nextTags, title))
+      markError(message, conflict ? async () => router.refresh() : () => updateTags(nextTags, title))
       return
     }
     setTags(nextTags)
@@ -358,12 +390,14 @@ export function FeedbackActions({
                 disabled={archiving}
                 onClick={async () => {
                   setArchiving(true)
-                  const { error } = await supabase
-                    .from('feedback')
-                    .update({ is_archived: false, updated_at: new Date().toISOString() })
-                    .eq('id', feedbackId)
+                  let undoError: unknown = null
+                  try {
+                    await patchFeedback({ isArchived: false })
+                  } catch (error) {
+                    undoError = error
+                  }
                   setArchiving(false)
-                  if (error) {
+                  if (undoError) {
                     markError('The archive could not be undone. Try again.', async () => undefined)
                     return
                   }
@@ -387,12 +421,14 @@ export function FeedbackActions({
             onClick={async () => {
               setArchiving(true)
               markSaving()
-              const { error } = await supabase
-                .from('feedback')
-                .update({ is_archived: true, updated_at: new Date().toISOString() })
-                .eq('id', feedbackId)
+              let archiveError: unknown = null
+              try {
+                await patchFeedback({ isArchived: true })
+              } catch (error) {
+                archiveError = error
+              }
               setArchiving(false)
-              if (error) {
+              if (archiveError) {
                 markError('The feedback was not archived. Try again.', async () => undefined)
                 return
               }

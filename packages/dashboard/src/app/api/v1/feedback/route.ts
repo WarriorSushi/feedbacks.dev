@@ -9,6 +9,11 @@ import { normalizeFeedbackMetadata } from '@/lib/feedback-submissions'
 import type { FeedbackType, FeedbackPriority, FeedbackStatus, StructuredFeedbackData } from '@/lib/types'
 import { readJsonBody } from '@/lib/api-request'
 import { apiV1Error } from '@/lib/api-v1-response'
+import {
+  decodeFeedbackCursor,
+  feedbackCursorFilter,
+  nextFeedbackCursor,
+} from '@/lib/cursor-pagination'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -286,9 +291,13 @@ export async function GET(request: NextRequest) {
     if (!feature.allowed) return jsonError(feature.message, 403)
     const { searchParams } = new URL(request.url)
 
-    const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
+    const legacyPageValue = searchParams.get('page')
+    const page = Math.max(1, parseInt(legacyPageValue ?? '1'))
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') ?? '20')))
     const offset = (page - 1) * limit
+    const cursorValue = searchParams.get('cursor')
+    const cursor = decodeFeedbackCursor(cursorValue)
+    if (cursorValue && !cursor) return jsonError('Invalid pagination cursor', 400)
 
     const status = searchParams.get('status') as FeedbackStatus | null
     const type = searchParams.get('type') as FeedbackType | null
@@ -303,26 +312,37 @@ export async function GET(request: NextRequest) {
       .select('*', { count: 'exact' })
       .eq('project_id', project.id)
       .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
 
     if (status && VALID_STATUSES.includes(status)) query = query.eq('status', status)
     if (type && VALID_TYPES.includes(type)) query = query.eq('type', type)
     if (agentName) query = query.eq('agent_name', agentName)
     if (search) query = query.ilike('message', `%${search}%`)
     if (historyCutoff) query = query.gte('created_at', historyCutoff)
+    if (cursor) query = query.or(feedbackCursorFilter(cursor))
 
-    const { data, count, error } = await query.range(offset, offset + limit - 1)
+    const result = cursor || !legacyPageValue
+      ? await query.limit(limit + 1)
+      : await query.range(offset, offset + limit - 1)
+    const { data, count, error } = result
 
     if (error) {
       console.error('v1 feedback GET error:', error)
       return jsonError('Failed to fetch feedback', 500)
     }
 
+    const rows = data ?? []
+    const hasMore = cursor || !legacyPageValue ? rows.length > limit : page * limit < (count ?? 0)
+    const pageRows = rows.slice(0, limit)
     return json({
-      data: data ?? [],
+      data: pageRows,
       count: count ?? 0,
       page,
       totalPages: Math.ceil((count ?? 0) / limit),
       pageSize: limit,
+      nextCursor: nextFeedbackCursor(pageRows, hasMore),
+      hasMore,
+      pagination: legacyPageValue ? 'offset-deprecated' : 'cursor',
     })
   } catch (err) {
     console.error('v1 feedback GET error:', err)

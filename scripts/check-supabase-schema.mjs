@@ -90,6 +90,8 @@ const requiredColumns = {
   product_updates: ['id', 'project_id', 'created_by', 'status', 'title', 'summary', 'highlights', 'image_path', 'image_alt_text', 'cta_label', 'cta_url', 'published_at', 'expires_at'],
   product_update_metrics: ['project_id', 'update_id', 'metric_date', 'event_type', 'count'],
   project_embed_installations: ['project_id', 'last_seen_at', 'runtime_version', 'feedback_enabled', 'updates_enabled'],
+  email_delivery_events: ['id', 'provider_event_id', 'event_type', 'provider_email_id', 'recipient_hashes', 'reason', 'occurred_at', 'created_at'],
+  email_suppressions: ['recipient_hash', 'reason', 'provider_event_id', 'last_event_at', 'created_at', 'updated_at'],
 }
 
 const requiredBuckets = {
@@ -119,6 +121,19 @@ const requiredReadOnlyFunctions = [
   {
     name: 'get_public_board_directory',
     args: { p_sort: 'new', p_category: null, p_query: null, p_limit: 1, p_offset: 0 },
+  },
+  {
+    name: 'get_public_board_directory_cursor',
+    args: {
+      p_sort: 'new',
+      p_category: null,
+      p_query: null,
+      p_limit: 1,
+      p_after_score: null,
+      p_after_activity: null,
+      p_after_id: null,
+      p_snapshot_at: null,
+    },
   },
   {
     name: 'get_owner_project_health',

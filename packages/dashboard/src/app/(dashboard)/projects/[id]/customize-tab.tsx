@@ -15,6 +15,7 @@ import { Loader2, MousePointerClick, PanelTop, Send, ShieldCheck } from 'lucide-
 import { toast } from '@/hooks/use-toast'
 import { WidgetFormPreview } from './widget-form-preview'
 import { PageHeader } from '@/components/ui/workspace-shell'
+import { formatVersionEtag } from '@/lib/optimistic-concurrency'
 
 interface CustomizeTabProps {
   project: Project
@@ -53,6 +54,7 @@ export function CustomizeTab({
   )
   const [savedConfig, setSavedConfig] = React.useState<WidgetConfig>(serverSavedConfig)
   const [config, setConfig] = React.useState<WidgetConfig>(serverSavedConfig)
+  const [projectVersion, setProjectVersion] = React.useState(project.updated_at)
 
   React.useEffect(() => {
     setSavedConfig(serverSavedConfig)
@@ -177,7 +179,10 @@ export function CustomizeTab({
     try {
       const response = await fetch(`/api/projects/${project.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'If-Match': formatVersionEtag(projectVersion),
+        },
         body: JSON.stringify({
           settings: { widget_config: config },
         }),
@@ -189,6 +194,7 @@ export function CustomizeTab({
       }
 
       const payload = await response.json()
+      setProjectVersion(payload.updated_at)
       const nextSavedConfig = buildWidgetEditorConfig(previewProjectKey, payload.settings?.widget_config || {}, { appOrigin })
       setSavedConfig(nextSavedConfig)
       setConfig(nextSavedConfig)

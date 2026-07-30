@@ -32,3 +32,22 @@ test('all API route bodies use bounded readers instead of request.json', () => {
     assert.doesNotMatch(read(route), /request\.json\(\)/, route)
   }
 })
+
+test('owner-editable project, feedback, and Product Update routes require version preconditions', () => {
+  const routes = [
+    '../../src/app/api/projects/[id]/route.ts',
+    '../../src/app/api/feedback/[id]/route.ts',
+    '../../src/app/api/projects/[id]/updates/[updateId]/route.ts',
+    '../../src/app/api/projects/[id]/updates/[updateId]/publish/route.ts',
+    '../../src/app/api/projects/[id]/updates/[updateId]/archive/route.ts',
+    '../../src/app/api/projects/[id]/updates/[updateId]/restore/route.ts',
+    '../../src/app/api/projects/[id]/updates/[updateId]/image/route.ts',
+    '../../src/app/api/projects/[id]/updates/settings/route.ts',
+  ]
+  for (const route of routes) {
+    const source = read(route)
+    assert.match(source, /parseIfMatchVersion/, route)
+    assert.match(source, /(PRECONDITION_REQUIRED|status:\s*428)/, route)
+    assert.match(source, /(editConflictResponse|status:\s*409)/, route)
+  }
+})

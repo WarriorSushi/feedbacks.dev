@@ -30,6 +30,7 @@ export const env = {
   AGENT_SETUP_TOKEN_SECRET: optionalEnv('AGENT_SETUP_TOKEN_SECRET'),
   RESEND_API_KEY: optionalEnv('RESEND_API_KEY'),
   RESEND_FROM_EMAIL: optionalEnv('RESEND_FROM_EMAIL'),
+  RESEND_WEBHOOK_SECRET: optionalEnv('RESEND_WEBHOOK_SECRET'),
 } as const
 
 export function isBillingEnabled() {

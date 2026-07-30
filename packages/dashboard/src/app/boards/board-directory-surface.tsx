@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils'
 interface BoardDirectorySurfaceProps {
   sort?: string
   category?: string
-  page?: string
   query?: string
   variant?: 'public' | 'dashboard'
 }
@@ -15,28 +14,26 @@ interface BoardDirectorySurfaceProps {
 export async function BoardDirectorySurface({
   sort,
   category,
-  page,
   query,
   variant = 'public',
 }: BoardDirectorySurfaceProps) {
   const activeSort = ['trending', 'active', 'responsive', 'shipping', 'new'].includes(sort || '')
     ? sort as BoardSortMode
     : 'trending'
-  const activePage = Math.max(1, Number(page) || 1)
   const directory = await loadBoardDirectoryPage({
     sort: activeSort,
     category: category?.trim().toLowerCase() || '',
     query: query?.trim() || '',
-    page: activePage,
   })
   const categories = directory.categories.map((entry) => ({
     ...entry,
     label: getBoardCategoryLabel(entry.value),
   }))
   const dashboard = variant === 'dashboard'
+  const Root = dashboard ? 'div' : 'main'
 
   return (
-    <div
+    <Root
       data-tour={dashboard ? 'boards-directory' : undefined}
       className={dashboard ? 'space-y-6' : 'mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-12'}
     >
@@ -89,10 +86,11 @@ export async function BoardDirectorySurface({
         categories={categories}
         initialSort={activeSort}
         initialCategory={category?.trim().toLowerCase() || ''}
-        initialPage={activePage}
         initialQuery={query?.trim() || ''}
+        initialNextCursor={directory.nextCursor}
+        initialHasMore={directory.hasMore}
         variant={variant}
       />
-    </div>
+    </Root>
   )
 }

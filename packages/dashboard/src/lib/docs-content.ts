@@ -15,6 +15,8 @@ export interface DocsPage {
   blocks: DocsBlock[]
 }
 
+export const DOCS_REVISION = '2026-07-30'
+
 const websiteSnippet = `<div data-feedbacks-host="YOUR_PROJECT_KEY"></div>
 
 <script

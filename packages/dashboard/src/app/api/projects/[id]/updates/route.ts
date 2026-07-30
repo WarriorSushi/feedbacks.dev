@@ -29,6 +29,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   }
   return NextResponse.json({
     settings: { enabled: settingsResult.data?.enabled === true, ...mapProductUpdateSettings(settingsResult.data) },
+    settingsVersion: settingsResult.data?.updated_at || null,
     entitlements: { scheduling: entitlements.productUpdateScheduling, analyticsDays: entitlements.productUpdateAnalyticsDays, activeLimit: entitlements.productUpdateActiveLimit, customBranding: entitlements.customBranding },
     updates: (updatesResult.data || []).map((row) => ({ ...row, imageUrl: publicImageUrl(auth.admin, row.image_path), metrics: metrics.get(row.id) || { impressions: 0, dismissals: 0, ctaClicks: 0 } })),
   }, { headers })

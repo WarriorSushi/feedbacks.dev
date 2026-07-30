@@ -6,6 +6,7 @@ import { CopyButton } from '@/components/copy-button'
 import type { Project } from '@/lib/types'
 import { CodeSnippet } from '@/components/code-snippet'
 import { PageHeader } from '@/components/ui/workspace-shell'
+import { DOCS_REVISION } from '@/lib/docs-content'
 
 function CodeBlock({ code, language = 'bash' }: { code: string; language?: string }) {
   return (
@@ -44,6 +45,7 @@ function EndpointExample({
           <div className="flex flex-wrap items-center gap-2">
             <MethodBadge method={method} />
             <code className="break-all font-mono text-sm">{path}</code>
+            <Badge variant="outline">docs {DOCS_REVISION}</Badge>
           </div>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
         </div>
@@ -110,7 +112,7 @@ export function ApiDocs({
     {
       method: 'GET' as const,
       path: '/api/v1/feedback',
-      description: 'List feedback with pagination and filters for status, type, agent, search, page, and limit.',
+      description: 'List feedback with opaque cursor pagination and filters for status, type, agent, search, and limit. Pass nextCursor as cursor; page remains temporarily supported for older clients.',
       code: `curl ${baseUrl}/api/v1/feedback?status=new&limit=10 \\
   -H "X-API-Key: ${exampleApiKey}"`,
     },
@@ -139,6 +141,9 @@ export function ApiDocs({
         title="API and MCP"
         description="Use a private API key from a backend, script, or trusted agent. The browser embed uses a different publishable key."
       />
+      <p className="-mt-3 text-xs text-muted-foreground">
+        REST and MCP documentation revision {DOCS_REVISION}
+      </p>
 
       <details className="group rounded-lg border bg-card shadow-[var(--shadow-card)]">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4">
@@ -154,7 +159,7 @@ export function ApiDocs({
             ['Project scope', 'Each API key can access only its attached project.'],
             ['Plan limits', 'Free access follows the shared Free plan quotas and history window; Pro removes the short history limit.'],
             ['Rate limits', 'Public submission paths are rate limited and return friendly errors instead of exposing internals.'],
-            ['Pagination', 'List endpoints accept page and limit (maximum 100) and return total/page/limit metadata.'],
+            ['Pagination', 'List endpoints accept an opaque cursor and limit (maximum 100), then return nextCursor and hasMore. The legacy page parameter is temporarily supported and explicitly marked deprecated in response metadata.'],
             ['Idempotency', 'Send a unique Idempotency-Key on feedback creation. Safe retries replay the original response; a different body with the same key returns 409.'],
             ['Key rotation', 'Generate a replacement private key here, update trusted clients, then revoke the old key. Publishable widget keys are unaffected.'],
             ['Permissions', 'Private keys are scoped to one project and explicit capabilities such as feedback:read and feedback:write.'],

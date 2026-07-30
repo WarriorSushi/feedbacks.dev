@@ -190,3 +190,11 @@ test('public docs use the stable canonical embed and remote customization langua
   assert.doesNotMatch(source, /data-api-url/)
   assert.doesNotMatch(source, /data-config-version/)
 })
+
+test('public board directory owns a main landmark without nesting one in the dashboard', () => {
+  const directorySurface = read('../../src/app/boards/board-directory-surface.tsx')
+
+  assert.match(directorySurface, /const Root = dashboard \? 'div' : 'main'/)
+  assert.match(directorySurface, /<Root/)
+  assert.match(directorySurface, /<\/Root>/)
+})
