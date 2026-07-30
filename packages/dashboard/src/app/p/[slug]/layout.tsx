@@ -86,7 +86,7 @@ async function PublicBoardShell({
         <div className="mx-auto max-w-4xl px-4 flex items-center justify-center gap-2 text-sm text-gray-400 dark:text-gray-500">
           <span>Powered by</span>
           <a
-            href="https://feedbacks.dev"
+            href="https://www.feedbacks.dev"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-gray-600 transition-colors hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400"
