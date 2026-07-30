@@ -180,10 +180,11 @@ test('integrations UI shows saved endpoints', async ({ page }) => {
     },
   })
 
-  // Navigate to integrations tab and verify UI shows the endpoint
-  await page.goto(`/projects/${project.id}?tab=integrations`)
+  // Navigate to the stable integrations route and verify UI shows the endpoint
+  await page.goto(`/projects/${project.id}/integrations`)
   await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Route important feedback where your team already works' })).toBeVisible()
+  await expect(page).toHaveURL(`/projects/${project.id}/integrations`)
+  await expect(page.getByRole('heading', { name: 'Integrations' })).toBeVisible()
 
   // The slack section should show the saved endpoint with a "Send test" button
   const slackSection = page.locator('[data-webhook-kind="slack"]')
@@ -202,9 +203,10 @@ test('free plan can use one active integration endpoint', async ({ page }) => {
     await setBillingPlan(userId, 'free')
     const deliveriesPath = `/api/projects/${project.id}/webhooks/deliveries`
 
-    await page.goto(`/projects/${project.id}?tab=integrations`)
+    await page.goto(`/projects/${project.id}/integrations`)
     await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Route important feedback where your team already works' })).toBeVisible()
+    await expect(page).toHaveURL(`/projects/${project.id}/integrations`)
+    await expect(page.getByRole('heading', { name: 'Integrations' })).toBeVisible()
     await expect(page.getByText(/0 of 1 active endpoint used on Free/i)).toBeVisible()
     await expect(page.locator('[data-webhook-kind="slack"]')).toBeVisible()
     await page.locator('[data-webhook-kind="slack"]').getByRole('button', { name: 'Add endpoint' }).click()
