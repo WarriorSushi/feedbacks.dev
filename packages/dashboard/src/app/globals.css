@@ -195,6 +195,15 @@
   to   { opacity: 1; }
 }
 
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -248,6 +257,10 @@
   /* Entrance animations */
   .animate-fade-in {
     animation: fade-in 0.35s var(--ease-out-expo) both;
+  }
+
+  .animate-drawer-in {
+    animation: drawer-in 0.2s var(--ease-out-expo) both;
   }
 
   .animate-slide-up {
