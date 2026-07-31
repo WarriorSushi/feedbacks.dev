@@ -91,12 +91,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (body.name !== undefined) {
       const name = body.name?.trim()
-      if (!name || name.length > 80) return NextResponse.json({ error: 'Project name must be 1–80 characters.' }, { status: 400 })
+      if (!name || name.length > 80) return NextResponse.json({
+        error: 'Review the highlighted project name.',
+        fieldErrors: { name: ['Project name must be 1–80 characters.'] },
+      }, { status: 400 })
       updates.name = name
     }
     if (body.domain !== undefined) {
       const domain = normalizeProjectDomain(body.domain)
-      if (domain === undefined) return NextResponse.json({ error: 'Enter a valid website domain or URL.' }, { status: 400 })
+      if (domain === undefined) return NextResponse.json({
+        error: 'Review the highlighted domain.',
+        fieldErrors: { domain: ['Enter a valid website domain or URL.'] },
+      }, { status: 400 })
       updates.domain = domain
     }
 

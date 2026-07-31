@@ -221,3 +221,22 @@ test('public board directory owns a main landmark without nesting one in the das
   assert.match(directorySurface, /<Root/)
   assert.match(directorySurface, /<\/Root>/)
 })
+
+test('forms identify failed fields and public interactions avoid blocking browser alerts', () => {
+  const input = read('../../src/components/ui/input.tsx')
+  const textarea = read('../../src/components/ui/textarea.tsx')
+  const newProject = read('../../src/app/(dashboard)/projects/new/page.tsx')
+  const projectRoute = read('../../src/app/api/projects/route.ts')
+  const boardSubmit = read('../../src/components/boards/BoardSubmitForm.tsx')
+  const boardSubmitRoute = read('../../src/app/api/boards/[slug]/submit/route.ts')
+  const publicBoard = read('../../src/app/p/[slug]/public-board.tsx')
+
+  assert.match(input, /aria-\[invalid=true\]:border-destructive/)
+  assert.match(textarea, /aria-\[invalid=true\]:border-destructive/)
+  assert.match(newProject, /project-name-error/)
+  assert.match(projectRoute, /fieldErrors: \{ name:/)
+  assert.match(boardSubmit, /board-post-email-error/)
+  assert.match(boardSubmitRoute, /fieldErrors: \{ email:/)
+  assert.doesNotMatch(publicBoard, /window\.alert/)
+  assert.match(publicBoard, /aria-live="assertive"/)
+})

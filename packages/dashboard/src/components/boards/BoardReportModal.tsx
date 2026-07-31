@@ -4,6 +4,8 @@ import * as React from 'react'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { ReportTarget } from './board-types'
+import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
+import { readErrorMessage, readFieldErrors, type FieldErrors } from '@/lib/form-errors'
 
 interface BoardReportModalProps {
   slug: string
@@ -12,17 +14,43 @@ interface BoardReportModalProps {
 }
 
 export function BoardReportModal({ slug, target, onClose }: BoardReportModalProps) {
+  const dialogRef = React.useRef<HTMLDivElement>(null)
   const [reason, setReason] = React.useState('')
   const [details, setDetails] = React.useState('')
   const [email, setEmail] = React.useState('')
   const [submitting, setSubmitting] = React.useState(false)
   const [success, setSuccess] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({})
+
+  React.useEffect(() => {
+    const dialog = dialogRef.current
+    if (!dialog) return
+    const previous = document.activeElement as HTMLElement | null
+    dialog.querySelector<HTMLElement>('input, textarea, button')?.focus()
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onClose()
+        return
+      }
+      if (event.key !== 'Tab') return
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), textarea:not([disabled])')).filter((element) => element.offsetParent !== null)
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => { document.removeEventListener('keydown', handleKeyDown); previous?.focus() }
+  }, [onClose])
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     setSubmitting(true)
     setError(null)
+    setFieldErrors({})
 
     try {
       const response = await fetch(`/api/boards/${slug}/report`, {
@@ -36,11 +64,14 @@ export function BoardReportModal({ slug, target, onClose }: BoardReportModalProp
         }),
       })
       const data = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(data.error || 'Failed to save report')
+      if (!response.ok) {
+        setFieldErrors(readFieldErrors(data))
+        throw new Error(readErrorMessage(data, 'The report could not be saved. Check your connection and try again.'))
+      }
       setSuccess(true)
       window.setTimeout(onClose, 1000)
     } catch (reportError) {
-      setError(reportError instanceof Error ? reportError.message : 'Something went wrong')
+      setError(reportError instanceof Error ? reportError.message : 'The report could not be saved. Check your connection and try again.')
     } finally {
       setSubmitting(false)
     }
@@ -50,6 +81,7 @@ export function BoardReportModal({ slug, target, onClose }: BoardReportModalProp
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-slate-950/55 backdrop-blur-sm" onClick={onClose} />
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="board-report-modal-title"
@@ -86,34 +118,52 @@ export function BoardReportModal({ slug, target, onClose }: BoardReportModalProp
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 p-5">
-            <input
+          <form onSubmit={handleSubmit} aria-busy={submitting} className="space-y-4 p-5">
+            <div className="space-y-2">
+              <label htmlFor="board-report-reason" className="text-sm font-medium text-foreground">Reason</label>
+              <input
+              id="board-report-reason"
               value={reason}
-              onChange={(event) => setReason(event.target.value)}
-              aria-label="Report reason"
+              onChange={(event) => { setReason(event.target.value); setFieldErrors((current) => ({ ...current, reason: '' })) }}
+              aria-invalid={Boolean(fieldErrors.reason)}
+              aria-describedby={fieldErrors.reason ? 'board-report-reason-error' : undefined}
               placeholder="What needs review?"
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive/35"
               maxLength={160}
               required
             />
-            <textarea
+              <FieldError id="board-report-reason-error">{fieldErrors.reason}</FieldError>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="board-report-details" className="text-sm font-medium text-foreground">Details <span className="font-normal text-muted-foreground">Optional</span></label>
+              <textarea
+              id="board-report-details"
               value={details}
-              onChange={(event) => setDetails(event.target.value)}
-              aria-label="Report details"
+              onChange={(event) => { setDetails(event.target.value); setFieldErrors((current) => ({ ...current, details: '' })) }}
+              aria-invalid={Boolean(fieldErrors.details)}
+              aria-describedby={fieldErrors.details ? 'board-report-details-error' : undefined}
               rows={4}
-              className="min-h-[128px] w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary"
+              className="min-h-[128px] w-full rounded-lg border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-primary aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive/35"
               placeholder="Optional details that help the team review this faster."
               maxLength={2000}
             />
-            <input
+              <FieldError id="board-report-details-error">{fieldErrors.details}</FieldError>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="board-report-email" className="text-sm font-medium text-foreground">Email <span className="font-normal text-muted-foreground">Optional</span></label>
+              <input
+              id="board-report-email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              aria-label="Email (optional)"
+              onChange={(event) => { setEmail(event.target.value); setFieldErrors((current) => ({ ...current, email: '' })) }}
+              aria-invalid={Boolean(fieldErrors.email)}
+              aria-describedby={fieldErrors.email ? 'board-report-email-error' : undefined}
               placeholder="Email (optional)"
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive/35"
             />
-            {error && <p className="text-sm text-destructive">{error}</p>}
+              <FieldError id="board-report-email-error">{fieldErrors.email}</FieldError>
+            </div>
+            <FormErrorSummary>{error}</FormErrorSummary>
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 type="submit"

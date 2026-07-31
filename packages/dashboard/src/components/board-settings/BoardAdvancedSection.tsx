@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { WorkspaceSection } from '@/components/ui/workspace-section'
 import { Loader2 } from 'lucide-react'
 import type { BoardReport } from '@/lib/types'
+import { FieldError } from '@/components/ui/field-error'
+import type { FieldErrors } from '@/lib/form-errors'
 
 interface BoardAdvancedSettings {
   custom_css: string
@@ -16,6 +18,7 @@ interface BoardAdvancedSectionProps {
   reports: BoardReport[]
   reportBusyId: string | null
   onReportStatusUpdate: (reportId: string, status: BoardReport['status']) => void
+  fieldErrors?: FieldErrors
 }
 
 function formatReportTarget(report: BoardReport): string {
@@ -34,6 +37,7 @@ export function BoardAdvancedSection({
   reports,
   reportBusyId,
   onReportStatusUpdate,
+  fieldErrors = {},
 }: BoardAdvancedSectionProps) {
   return (
     <div className="space-y-6">
@@ -41,12 +45,16 @@ export function BoardAdvancedSection({
         <summary className="cursor-pointer border-b bg-muted/25 px-5 py-4 text-base font-semibold">Custom CSS <span className="text-sm font-normal text-muted-foreground">· optional</span></summary>
         <div className="space-y-3 p-5 sm:p-6">
           <textarea
+            id="board-custom-css"
             value={settings.custom_css}
             onChange={(e) => onSettingsChange({ custom_css: e.target.value.slice(0, 6000) })}
             rows={6}
-            className="min-h-[160px] w-full rounded-md border bg-background px-3 py-2 font-mono text-sm"
+            aria-invalid={Boolean(fieldErrors.custom_css)}
+            aria-describedby={fieldErrors.custom_css ? 'board-custom-css-error' : undefined}
+            className="min-h-[160px] w-full rounded-md border bg-background px-3 py-2 font-mono text-sm aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive/35"
             placeholder=".feedbacks-board { --feedbacks-accent: #0f766e; }"
           />
+          <FieldError id="board-custom-css-error">{fieldErrors.custom_css}</FieldError>
           <p className="text-xs text-muted-foreground">
             Use this only if the color and logo settings are not enough.
           </p>

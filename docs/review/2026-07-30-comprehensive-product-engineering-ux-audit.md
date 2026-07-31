@@ -48,6 +48,9 @@ All five P0 issues are remediated in code and the hosted data. The dark-mode cri
 
 ### Verified remediation evidence
 
+- [fixed 2026-07-31] Product-wide form failures now use a shared field-error contract: invalid controls are visibly highlighted and programmatically marked, field-specific recovery copy stays beside the input, and persistent summaries preserve context across project creation/settings, account settings, feedback-form customization, integrations, public-board posting/reporting/moderation, and board publishing.
+- [fixed 2026-07-31] Native public-board alerts were replaced with accessible in-page recovery states; network failures preserve drafts, public report dialogs trap focus and close with Escape, and mobile page overflow is clipped at the application shell while intentional horizontal filter rails remain scrollable.
+- [verified 2026-07-31] Desktop and 320px authenticated browser checks covered project validation, account settings, inbox, billing, API/MCP, public directories, docs, system-theme default behavior, and Windows 98 propagation. No browser runtime errors were observed.
 - [fixed] Publishable `fb_pub_…` browser keys and hashed, scoped, revocable `fb_live_…` credentials are structurally separate; public-key rejection and legacy embed migration are unit-tested.
 - [fixed] The install snippet is always visible and browser-verified; no secret generation or fresh-key action gates installation.
 - [fixed] 1,036 historical E2E projects were quarantined, the final manual audit projects were quarantined, the last test board was unpublished/unlisted, and live checks report zero active E2E projects and zero listed production test boards.
@@ -59,7 +62,7 @@ All five P0 issues are remediated in code and the hosted data. The dark-mode cri
 - [fixed] Product Updates, inbox presentation, and integration operations are decomposed into focused domain modules without increasing route budgets.
 - [fixed] Documentation pages and individual code blocks expose revision `2026-07-30`; REST pagination guidance matches the cursor contract.
 - [fixed] Signed, replay-safe Resend delivery ingestion stores hashed recipients and suppresses future sends after bounces, complaints, or provider suppression.
-- [fixed] Production build, lint, type checks, 153 unit tests, widget size (16,996 bytes gzip), dashboard route budgets, expanded live-schema checks, live advisor review, and the production dependency audit pass.
+- [fixed] Production build, lint, type checks, 161 unit tests, widget size, dashboard route budgets, expanded live-schema checks, live advisor review, and the production dependency audit pass.
 - [blocked: explicit recurring-cost approval required] Separate Supabase preview/development/E2E branches cost $0.01344/hour each ($0.04032/hour for three) and were not created without the owner's explicit acceptance.
 - [blocked: external credentials and a real charge required] Production Dodo is configured in test mode; live product/webhook credentials and one controlled real transaction are still required. Production checkout fails closed until then.
 - [blocked: provider console configuration required] Add the production Resend signing secret and trigger one controlled bounce/complaint event before calling bounce operations live-proven.

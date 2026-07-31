@@ -6,6 +6,8 @@ import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { typeConfig, type BoardSuggestion } from './board-types'
+import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
+import { readErrorMessage, readFieldErrors, type FieldErrors } from '@/lib/form-errors'
 
 interface BoardSubmitFormProps {
   slug: string
@@ -24,6 +26,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
   const [hp, setHp] = React.useState('')
   const [submitting, setSubmitting] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({})
   const [suggestions, setSuggestions] = React.useState<BoardSuggestion[]>([])
   const message = [title.trim(), details.trim()].filter(Boolean).join('\n')
   const deferredMessage = React.useDeferredValue(message)
@@ -121,6 +124,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     setError(null)
+    setFieldErrors({})
     setSubmitting(true)
 
     try {
@@ -132,12 +136,13 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
       const data = await response.json().catch(() => ({}))
       if (!response.ok) {
         if (Array.isArray(data.suggestions)) setSuggestions(data.suggestions)
-        throw new Error(data.error || 'Failed to submit')
+        setFieldErrors(readFieldErrors(data))
+        throw new Error(readErrorMessage(data, 'Your request could not be posted. Check your connection and try again.'))
       }
       window.sessionStorage.removeItem(draftKey)
       onSubmitted()
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : 'Something went wrong')
+      setError(submitError instanceof Error ? submitError.message : 'Your request could not be posted. Check your connection and try again.')
     } finally {
       setSubmitting(false)
     }
@@ -197,7 +202,8 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
 
           <div className="space-y-2">
             <label htmlFor="board-post-title" className="text-sm font-medium text-foreground">What do you need?</label>
-            <input id="board-post-title" value={title} onChange={(event) => setTitle(event.target.value)} className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition focus:border-primary" placeholder="For example: Let me sort by date" required minLength={5} maxLength={140}/>
+            <input id="board-post-title" value={title} onChange={(event) => { setTitle(event.target.value); setFieldErrors((current) => ({ ...current, title: '' })) }} aria-invalid={Boolean(fieldErrors.title)} aria-describedby={fieldErrors.title ? 'board-post-title-error' : undefined} className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none transition focus:border-primary aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive/35" placeholder="For example: Let me sort by date" required minLength={5} maxLength={140}/>
+            <FieldError id="board-post-title-error">{fieldErrors.title}</FieldError>
           </div>
 
           <div className="space-y-2">
@@ -205,12 +211,15 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
             <textarea
             id="board-post-details"
             value={details}
-            onChange={(event) => setDetails(event.target.value)}
+            onChange={(event) => { setDetails(event.target.value); setFieldErrors((current) => ({ ...current, details: '' })) }}
             rows={4}
-            className="min-h-[112px] w-full rounded-lg border border-border bg-background px-3 py-3 text-sm text-foreground outline-none transition focus:border-primary"
+            aria-invalid={Boolean(fieldErrors.details)}
+            aria-describedby={fieldErrors.details ? 'board-post-details-error' : undefined}
+            className="min-h-[112px] w-full rounded-lg border border-border bg-background px-3 py-3 text-sm text-foreground outline-none transition focus:border-primary aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive/35"
             placeholder="Add a short example or tell the team where you got stuck."
             maxLength={1850}
           />
+            <FieldError id="board-post-details-error">{fieldErrors.details}</FieldError>
           </div>
 
           <div>
@@ -219,11 +228,14 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
               id="board-post-email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => { setEmail(event.target.value); setFieldErrors((current) => ({ ...current, email: '' })) }}
               placeholder="you@example.com"
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground"
+              aria-invalid={Boolean(fieldErrors.email)}
+              aria-describedby={fieldErrors.email ? 'board-post-email-error' : 'board-post-email-help'}
+              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm text-foreground aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive/35"
             />
-            <p className="mt-1.5 text-xs text-muted-foreground">The team can use this to ask a question. It is not shown on the board.</p>
+            <p id="board-post-email-help" className="mt-1.5 text-xs text-muted-foreground">The team can use this to ask a question. It is not shown on the board.</p>
+            <FieldError id="board-post-email-error" className="mt-1.5">{fieldErrors.email}</FieldError>
           </div>
 
           <input
@@ -262,7 +274,7 @@ export function BoardSubmitForm({ slug, showTypes, onClose, onSubmitted }: Board
             </div>
           )}
 
-          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+          <FormErrorSummary>{error}</FormErrorSummary>
 
           <div className="flex flex-wrap items-center gap-3">
             <Button

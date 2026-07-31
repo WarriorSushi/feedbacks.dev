@@ -68,6 +68,8 @@ export function PublicBoard({
   const [showRecommendations, setShowRecommendations] = React.useState(false)
   const [voteError, setVoteError] = React.useState<string | null>(null)
   const [followLoading, setFollowLoading] = React.useState(false)
+  const [actionError, setActionError] = React.useState<string | null>(null)
+  const [actionErrorId, setActionErrorId] = React.useState<string | null>(null)
   const votesKey = `votes:${board.slug}`
 
   const commentsByFeedback = React.useMemo(() => {
@@ -100,6 +102,8 @@ export function PublicBoard({
   const toggleFollow = async () => {
     if (followLoading) return
     setFollowLoading(true)
+    setActionError(null)
+    setActionErrorId(null)
     const following = !followed
     try {
       const response = await fetch(`/api/boards/${board.slug}/follow`, {
@@ -114,44 +118,62 @@ export function PublicBoard({
       }
 
       if (!response.ok) {
-        window.alert('Could not update your board follow right now.')
+        const payload = await response.json().catch(() => null)
+        setActionError(payload?.error || 'The board follow could not be updated. Check your connection and try again.')
         return
       }
 
       setFollowed(following)
+    } catch {
+      setActionError('The board follow could not be updated. Check your connection and try again.')
     } finally {
       setFollowLoading(false)
     }
   }
 
   const toggleWatched = async (feedbackId: string) => {
+    if (busyId) return
+    setBusyId(feedbackId)
+    setActionError(null)
+    setActionErrorId(null)
     const next = new Set(watchedIds)
     const watching = !next.has(feedbackId)
-    const response = await fetch(`/api/boards/${board.slug}/watch`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ feedback_id: feedbackId, watching }),
-    })
+    try {
+      const response = await fetch(`/api/boards/${board.slug}/watch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback_id: feedbackId, watching }),
+      })
 
-    if (response.status === 401) {
-      redirectToAuth()
-      return
+      if (response.status === 401) {
+        redirectToAuth()
+        return
+      }
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        setActionError(payload?.error || 'This watch could not be updated. Check your connection and try again.')
+        setActionErrorId(feedbackId)
+        return
+      }
+
+      if (watching) next.add(feedbackId)
+      else next.delete(feedbackId)
+      setWatchedIds(next)
+    } catch {
+      setActionError('This watch could not be updated. Check your connection and try again.')
+      setActionErrorId(feedbackId)
+    } finally {
+      setBusyId(null)
     }
-
-    if (!response.ok) {
-      window.alert('Could not update your watch right now.')
-      return
-    }
-
-    if (watching) next.add(feedbackId)
-    else next.delete(feedbackId)
-    setWatchedIds(next)
   }
 
   const handleVote = async (feedbackId: string) => {
     if (votingId) return
     setVotingId(feedbackId)
     setVoteError(null)
+    setActionError(null)
+    setActionErrorId(null)
     try {
       const response = await fetch(`/api/boards/${board.slug}/vote`, {
         method: 'POST',
@@ -175,6 +197,8 @@ export function PublicBoard({
       else next.delete(feedbackId)
       setVotedIds(next)
       writeSetStorage(votesKey, next)
+    } catch {
+      setVoteError('Your vote could not be saved. Check your connection and try again.')
     } finally {
       setVotingId(null)
     }
@@ -199,6 +223,8 @@ export function PublicBoard({
     const draft = replyDrafts[feedbackId]?.trim()
     if (!draft) return
     setBusyId(feedbackId)
+    setActionError(null)
+    setActionErrorId(null)
     try {
       const response = await fetch(`/api/boards/${board.slug}/comment`, {
         method: 'POST',
@@ -218,7 +244,8 @@ export function PublicBoard({
       ])
       setReplyDrafts((prev) => ({ ...prev, [feedbackId]: '' }))
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : 'Failed to post public reply')
+      setActionError(error instanceof Error ? error.message : 'The public reply could not be posted. Try again.')
+      setActionErrorId(feedbackId)
     } finally {
       setBusyId(null)
     }
@@ -230,6 +257,8 @@ export function PublicBoard({
     value?: string,
   ) => {
     setBusyId(feedbackId)
+    setActionError(null)
+    setActionErrorId(null)
     try {
       const response = await fetch(`/api/boards/${board.slug}/moderate`, {
         method: 'POST',
@@ -247,7 +276,8 @@ export function PublicBoard({
           ),
         )
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : 'Failed to update board item')
+      setActionError(error instanceof Error ? error.message : 'This board item could not be updated. Try again.')
+      setActionErrorId(feedbackId)
     } finally {
       setBusyId(null)
     }
@@ -346,6 +376,13 @@ export function PublicBoard({
           </div>
         )}
 
+        {actionError && (
+          <div role="alert" aria-live="assertive" className="mb-5 flex items-start justify-between gap-3 rounded-md border border-destructive/35 bg-destructive/[0.07] px-4 py-3 text-sm text-destructive">
+            <span>{actionError}</span>
+            <button type="button" className="shrink-0 font-semibold underline underline-offset-2" onClick={() => { setActionError(null); setActionErrorId(null) }}>Dismiss</button>
+          </div>
+        )}
+
         <div className="space-y-6">
           <BoardAnnouncements announcements={initialAnnouncements} />
 
@@ -388,6 +425,7 @@ export function PublicBoard({
                   canWatchUpdates={viewerSignedIn}
                   replyDraft={replyDrafts[item.id] || ''}
                   busy={busyId === item.id}
+                  actionError={actionErrorId === item.id ? actionError : null}
                   onVote={() => handleVote(item.id)}
                   onToggle={() => setExpandedId(expandedId === item.id ? null : item.id)}
                   onToggleWatch={() => void toggleWatched(item.id)}

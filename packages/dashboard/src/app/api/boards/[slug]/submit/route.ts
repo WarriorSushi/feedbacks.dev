@@ -74,21 +74,33 @@ export async function POST(
   }
 
   if (!message || typeof message !== 'string' || message.trim().length < 5) {
-    return NextResponse.json({ error: 'Message must be at least 5 characters' }, { status: 400 })
+    return NextResponse.json({
+      error: 'Review the highlighted request title.',
+      fieldErrors: { title: ['Write at least 5 characters so the team knows what you need.'] },
+    }, { status: 400 })
   }
 
   if (message.length > 2000) {
-    return NextResponse.json({ error: 'Message too long (max 2000 chars)' }, { status: 400 })
+    return NextResponse.json({
+      error: 'Review the highlighted request details.',
+      fieldErrors: { details: ['Keep the title and details under 2,000 characters total.'] },
+    }, { status: 400 })
   }
 
   // Validate email if provided
   const trimmedEmail = email?.trim() || null
   if (trimmedEmail && !EMAIL_RE.test(trimmedEmail)) {
-    return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
+    return NextResponse.json({
+      error: 'Review the highlighted email address.',
+      fieldErrors: { email: ['Enter a valid email address or leave it blank.'] },
+    }, { status: 400 })
   }
 
   if (isLikelySpam(message)) {
-    return NextResponse.json({ error: 'This message looks automated or overly repetitive. Please rewrite it more clearly.' }, { status: 400 })
+    return NextResponse.json({
+      error: 'Rewrite the highlighted request before posting.',
+      fieldErrors: { title: ['This looks automated or overly repetitive. Rewrite it in your own words.'] },
+    }, { status: 400 })
   }
 
   const allowedTypes = board.show_types || ['idea', 'bug']
