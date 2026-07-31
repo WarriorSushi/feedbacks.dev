@@ -81,10 +81,17 @@ export default function SettingsPage() {
   }, [supabase])
 
   const handleSaveProfile = async () => {
-    setSaving(true)
-    setSaveState('saving')
     setSaveError('')
     setNameError('')
+    if (!displayName.trim()) {
+      const message = 'Enter a display name.'
+      setNameError(message)
+      setSaveError('Review the highlighted profile field.')
+      setSaveState('error')
+      return
+    }
+    setSaving(true)
+    setSaveState('saving')
     const { error } = await supabase.auth.updateUser({
       data: { full_name: displayName.trim() },
     })

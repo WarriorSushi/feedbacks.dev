@@ -50,7 +50,8 @@ export function FeedbackActions({
   const [saveState, setSaveState] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [saveError, setSaveError] = React.useState('')
   const [lastRetry, setLastRetry] = React.useState<null | (() => Promise<void>)>(null)
-  const [feedbackVersion, setFeedbackVersion] = React.useState(currentVersion)
+  const feedbackVersionRef = React.useRef(currentVersion)
+  const mutationInFlightRef = React.useRef(false)
   const router = useRouter()
   const supabase = React.useMemo(() => createClient(), [])
 
@@ -59,7 +60,7 @@ export function FeedbackActions({
   }, [currentTags])
 
   React.useEffect(() => {
-    setFeedbackVersion(currentVersion)
+    feedbackVersionRef.current = currentVersion
   }, [currentVersion])
 
   const patchFeedback = React.useCallback(async (changes: {
@@ -72,19 +73,20 @@ export function FeedbackActions({
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'If-Match': formatVersionEtag(feedbackVersion),
+        'If-Match': formatVersionEtag(feedbackVersionRef.current),
       },
       body: JSON.stringify(changes),
     })
     const payload = await response.json().catch(() => null)
     if (!response.ok) {
       const error = new Error(payload?.error || 'The feedback change was not saved.')
-      ;(error as Error & { code?: string }).code = payload?.code
+      ;(error as Error & { code?: string; currentVersion?: string }).code = payload?.code
+      ;(error as Error & { code?: string; currentVersion?: string }).currentVersion = payload?.currentVersion
       throw error
     }
-    setFeedbackVersion(payload.updated_at)
+    feedbackVersionRef.current = payload.updated_at
     return payload
-  }, [feedbackId, feedbackVersion])
+  }, [feedbackId])
 
   const markSaving = () => {
     setSaveState('saving')
@@ -103,19 +105,26 @@ export function FeedbackActions({
   }
 
   const handleStatusChange = async (newStatus: FeedbackStatus) => {
+    if (mutationInFlightRef.current) return
+    mutationInFlightRef.current = true
     const previousStatus = status
     setStatus(newStatus)
     markSaving()
     try {
       await patchFeedback({ status: newStatus })
     } catch (error) {
-      const conflict = (error as Error & { code?: string }).code === 'EDIT_CONFLICT'
+      const conflictError = error as Error & { code?: string; currentVersion?: string }
+      const conflict = conflictError.code === 'EDIT_CONFLICT'
+      if (conflict && conflictError.currentVersion) {
+        feedbackVersionRef.current = conflictError.currentVersion
+      }
       const message = conflict
         ? error instanceof Error ? error.message : 'This feedback changed in another tab.'
         : 'The status was not saved. Check your connection and try again.'
       toast({ title: 'Could not update status', description: message, variant: 'destructive' })
       setStatus(previousStatus)
-      markError(message, conflict ? async () => router.refresh() : () => handleStatusChange(newStatus))
+      markError(message, () => handleStatusChange(newStatus))
+      mutationInFlightRef.current = false
       return
     }
     markSaved()
@@ -127,25 +136,34 @@ export function FeedbackActions({
       })
     }
     router.refresh()
+    mutationInFlightRef.current = false
   }
 
   const handlePriorityChange = async (newPriority: FeedbackPriority) => {
+    if (mutationInFlightRef.current) return
+    mutationInFlightRef.current = true
     const previousPriority = priority
     setPriority(newPriority)
     markSaving()
     try {
       await patchFeedback({ priority: newPriority })
     } catch (error) {
-      const conflict = (error as Error & { code?: string }).code === 'EDIT_CONFLICT'
+      const conflictError = error as Error & { code?: string; currentVersion?: string }
+      const conflict = conflictError.code === 'EDIT_CONFLICT'
+      if (conflict && conflictError.currentVersion) {
+        feedbackVersionRef.current = conflictError.currentVersion
+      }
       const message = conflict
         ? error instanceof Error ? error.message : 'This feedback changed in another tab.'
         : 'The priority was not saved. Check your connection and try again.'
       setPriority(previousPriority)
-      markError(message, conflict ? async () => router.refresh() : () => handlePriorityChange(newPriority))
+      markError(message, () => handlePriorityChange(newPriority))
+      mutationInFlightRef.current = false
       return
     }
     markSaved()
     router.refresh()
+    mutationInFlightRef.current = false
   }
 
   React.useEffect(() => {
@@ -197,6 +215,8 @@ export function FeedbackActions({
   }
 
   const updateTags = async (nextTags: string[], title: string) => {
+    if (mutationInFlightRef.current) return
+    mutationInFlightRef.current = true
     setTagSaving(true)
     markSaving()
     let updateError: unknown = null
@@ -207,18 +227,24 @@ export function FeedbackActions({
     }
     setTagSaving(false)
     if (updateError) {
-      const conflict = (updateError as Error & { code?: string }).code === 'EDIT_CONFLICT'
+      const conflictError = updateError as Error & { code?: string; currentVersion?: string }
+      const conflict = conflictError.code === 'EDIT_CONFLICT'
+      if (conflict && conflictError.currentVersion) {
+        feedbackVersionRef.current = conflictError.currentVersion
+      }
       const message = conflict && updateError instanceof Error
         ? updateError.message
         : 'The tag change was not saved. Try again.'
       toast({ title: 'Could not update tags', description: message, variant: 'destructive' })
-      markError(message, conflict ? async () => router.refresh() : () => updateTags(nextTags, title))
+      markError(message, () => updateTags(nextTags, title))
+      mutationInFlightRef.current = false
       return
     }
     setTags(nextTags)
     markSaved()
     toast({ title })
     router.refresh()
+    mutationInFlightRef.current = false
   }
 
   const handleAddTag = async (e: React.FormEvent) => {
@@ -323,7 +349,7 @@ export function FeedbackActions({
                   onClick={() => void updateTags(tags.filter((currentTag) => currentTag !== tag), 'Tag removed')}
                   className="rounded-full text-muted-foreground transition-colors hover:text-foreground"
                   aria-label={`Remove tag ${tag}`}
-                  disabled={tagSaving}
+                  disabled={tagSaving || saveState === 'saving'}
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -341,7 +367,7 @@ export function FeedbackActions({
             onChange={(e) => setTagInput(e.target.value)}
             className="h-9"
           />
-          <Button type="submit" size="sm" disabled={tagSaving || !tagInput.trim()}>
+          <Button type="submit" size="sm" disabled={tagSaving || saveState === 'saving' || !tagInput.trim()}>
             {tagSaving && <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
             Add tag
           </Button>
@@ -353,7 +379,7 @@ export function FeedbackActions({
               <button
                 key={tag}
                 type="button"
-                disabled={tagSaving}
+                disabled={tagSaving || saveState === 'saving'}
                 onClick={() => void updateTags([...tags, tag], 'Tag added')}
                 className="rounded-full border bg-background px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
               >
@@ -387,9 +413,12 @@ export function FeedbackActions({
               <Button
                 variant="outline"
                 size="sm"
-                disabled={archiving}
+                disabled={archiving || saveState === 'saving'}
                 onClick={async () => {
+                  if (mutationInFlightRef.current) return
+                  mutationInFlightRef.current = true
                   setArchiving(true)
+                  markSaving()
                   let undoError: unknown = null
                   try {
                     await patchFeedback({ isArchived: false })
@@ -399,11 +428,13 @@ export function FeedbackActions({
                   setArchiving(false)
                   if (undoError) {
                     markError('The archive could not be undone. Try again.', async () => undefined)
+                    mutationInFlightRef.current = false
                     return
                   }
                   setArchived(false)
                   markSaved()
                   router.refresh()
+                  mutationInFlightRef.current = false
                 }}
               >
                 <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
@@ -417,8 +448,10 @@ export function FeedbackActions({
             variant="outline"
             size="sm"
             className="gap-1.5 text-muted-foreground hover:text-destructive"
-            disabled={archiving}
+            disabled={archiving || saveState === 'saving'}
             onClick={async () => {
+              if (mutationInFlightRef.current) return
+              mutationInFlightRef.current = true
               setArchiving(true)
               markSaving()
               let archiveError: unknown = null
@@ -430,10 +463,12 @@ export function FeedbackActions({
               setArchiving(false)
               if (archiveError) {
                 markError('The feedback was not archived. Try again.', async () => undefined)
+                mutationInFlightRef.current = false
                 return
               }
               setArchived(true)
               markSaved()
+              mutationInFlightRef.current = false
             }}
           >
             {archiving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}

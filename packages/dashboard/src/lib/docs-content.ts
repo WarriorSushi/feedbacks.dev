@@ -65,7 +65,7 @@ export const DOCS_PAGES: DocsPage[] = [
     description: 'Go from an empty account to a verified feedback submission in a few minutes.',
     blocks: [
       { type: 'heading', id: 'create', title: '1. Create the project' },
-      { type: 'paragraph', text: 'Open Projects, choose New Project, and use the name your team already uses for the product. The domain is optional. Creating the project opens its product home.' },
+      { type: 'paragraph', text: 'Open Projects, choose New Project, and use the name your team already uses for the product. The domain is optional. Creating the project opens the recommended Install workspace.' },
       { type: 'heading', id: 'install', title: '2. Paste the generated snippet' },
       { type: 'code', label: 'HTML', language: 'html', code: websiteSnippet },
       { type: 'callout', tone: 'warning', title: 'Use the generated project key', body: 'YOUR_PROJECT_KEY is a placeholder. Copy the complete snippet from your project Install tab. Never put a private REST API key in browser code.' },
@@ -122,7 +122,9 @@ export const DOCS_PAGES: DocsPage[] = [
       { type: 'paragraph', text: 'Add the generated Website script to the root layout. This avoids duplicate instances and keeps the form available across routes.' },
       { type: 'code', label: 'app/layout.tsx', language: 'tsx', code: `import Script from 'next/script'\n\nexport default function RootLayout({ children }) {\n  return (\n    <html lang="en">\n      <body>\n        {children}\n        <div data-feedbacks-host="YOUR_PROJECT_KEY" />\n        <Script\n          src="https://app.feedbacks.dev/widget/latest.js"\n          data-project="YOUR_PROJECT_KEY"\n          strategy="afterInteractive"\n        />\n      </body>\n    </html>\n  )\n}` },
       { type: 'heading', id: 'react-vue', title: 'React and Vue' },
-      { type: 'paragraph', text: 'The project Install tab generates framework-specific code with the project key and application origin. Put the wrapper at the application root. Saved product settings are resolved remotely. If your package registry cannot resolve a wrapper, use the Website script in the root HTML instead.' },
+      { type: 'paragraph', text: 'Install the matching wrapper package, then copy the generated component from the project Install tab. Put the wrapper at the application root. Saved product settings are resolved remotely. If your package registry cannot resolve a wrapper, use the Website script in the root HTML instead.' },
+      { type: 'code', label: 'React package', language: 'bash', code: 'pnpm add @feedbacks/widget-react' },
+      { type: 'code', label: 'Vue package', language: 'bash', code: 'pnpm add @feedbacks/widget-vue' },
       { type: 'heading', id: 'wordpress', title: 'WordPress' },
       { type: 'steps', items: [
         { title: 'Open Embed installation', body: 'Select WordPress to see the stable Website snippet and placement guidance.' },

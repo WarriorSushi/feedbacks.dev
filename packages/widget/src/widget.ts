@@ -554,10 +554,14 @@ class FeedbacksWidget {
     };
     updateCharacterCount();
     textarea?.addEventListener('input', () => {
+      this.clearFieldError(textarea);
       updateCharacterCount();
       persistDraft();
     });
-    emailInput?.addEventListener('input', persistDraft);
+    emailInput?.addEventListener('input', () => {
+      this.clearFieldError(emailInput);
+      persistDraft();
+    });
 
     // Category buttons
     const validCategories: CategoryType[] = ['bug', 'idea', 'praise', 'question'];
@@ -643,10 +647,10 @@ class FeedbacksWidget {
       const message = textarea.value.trim();
       const email = emailInput?.value.trim() || '';
 
-      if (!message || message.length < 2) { this.showError(container, 'Please enter your feedback (at least 2 characters).'); return; }
-      if (message.length > 2000) { this.showError(container, 'Feedback is too long (max 2,000 characters).'); return; }
-      if (this.cfg.requireEmail && !email) { this.showError(container, 'Email is required.'); return; }
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.showError(container, 'Please enter a valid email.'); return; }
+      if (!message || message.length < 2) { this.showError(container, 'Feedback message: enter at least 2 characters.', textarea); return; }
+      if (message.length > 2000) { this.showError(container, 'Feedback message: use no more than 2,000 characters.', textarea); return; }
+      if (this.cfg.requireEmail && !email) { this.showError(container, 'Email: enter an address.', emailInput); return; }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.showError(container, 'Email: enter a valid address.', emailInput); return; }
       if (!this.cfg.projectKey) { this.showError(container, 'Widget is missing a project key.'); return; }
       if (navigator.onLine === false) {
         this.showError(container, 'You appear to be offline. Your draft is saved in this tab—reconnect and try again.');
@@ -665,8 +669,8 @@ class FeedbacksWidget {
         const maxMB = this.cfg.attachmentMaxMB || 5;
         const allowed = (this.cfg.allowedAttachmentMimes || ['image/png','image/jpeg'])
           .filter((type): type is 'image/png' | 'image/jpeg' => type === 'image/png' || type === 'image/jpeg');
-        if (!allowed.some(type => type === file.type)) { this.showError(container, 'Unsupported file type.'); return; }
-        if (file.size > maxMB * 1024 * 1024) { this.showError(container, `File too large (max ${maxMB} MB).`); return; }
+        if (!allowed.some(type => type === file.type)) { this.showError(container, 'Attachment: choose a PNG or JPG file.', fileInput); return; }
+        if (file.size > maxMB * 1024 * 1024) { this.showError(container, `Attachment: choose a file smaller than ${maxMB} MB.`, fileInput); return; }
       }
 
       this.setLoading(submitBtn, true);
@@ -881,15 +885,33 @@ class FeedbacksWidget {
     }
   }
 
-  private showError(container: HTMLElement, message: string): void {
+  private clearFieldError(field: HTMLElement): void {
+    const errorId = field.getAttribute('aria-describedby');
+    field.removeAttribute('aria-invalid');
+    field.removeAttribute('aria-describedby');
+    if (errorId?.startsWith('fb-field-error-')) {
+      const root = field.getRootNode() as Document | ShadowRoot;
+      root.getElementById(errorId)?.remove();
+    }
+  }
+
+  private showError(container: HTMLElement, message: string, field?: HTMLElement | null): void {
     container.querySelector('.fb-error')?.remove();
+    container.querySelectorAll<HTMLElement>('[aria-invalid="true"]').forEach((item) => this.clearFieldError(item));
     const body = container.querySelector('.fb-body');
     if (!body) return;
     const div = document.createElement('div');
     div.className = 'fb-error';
     div.setAttribute('role', 'alert');
+    if (field) {
+      const errorId = `fb-field-error-${field.id || 'field'}`;
+      div.id = errorId;
+      field.setAttribute('aria-invalid', 'true');
+      field.setAttribute('aria-describedby', errorId);
+    }
     div.textContent = message;
     body.insertBefore(div, body.firstChild);
+    field?.focus();
   }
 
   private showSuccess(container: HTMLElement, isModal: boolean): void {

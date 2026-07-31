@@ -90,10 +90,13 @@ export function BoardIdentitySection({
             onChange={(e) => handleDisplayNameChange(e.target.value)}
             placeholder="My Product"
             maxLength={60}
+            aria-invalid={Boolean(fieldErrors.display_name)}
+            aria-describedby={fieldErrors.display_name ? 'board-display-name-error' : 'board-display-name-help'}
           />
-          <p className="text-xs text-muted-foreground">
+          <p id="board-display-name-help" className="text-xs text-muted-foreground">
             The name users see on your public board.
           </p>
+          <FieldError id="board-display-name-error">{fieldErrors.display_name}</FieldError>
         </div>
 
         <div className="space-y-2">
@@ -147,11 +150,16 @@ export function BoardIdentitySection({
                 className="h-10 w-10 cursor-pointer rounded border"
               />
               <Input
+                id="board-accent-color-hex"
                 value={settings.branding.accentColor || ''}
                 onChange={(e) => onBrandingChange({ accentColor: e.target.value })}
                 placeholder="#0f766e"
+                aria-label="Accent color hex value"
+                aria-invalid={Boolean(fieldErrors.accentColor)}
+                aria-describedby={fieldErrors.accentColor ? 'board-accent-color-error' : undefined}
               />
             </div>
+            <FieldError id="board-accent-color-error">{fieldErrors.accentColor}</FieldError>
           </div>
         </div>
 
@@ -162,7 +170,11 @@ export function BoardIdentitySection({
             value={settings.branding.websiteUrl || ''}
             onChange={(e) => onBrandingChange({ websiteUrl: e.target.value })}
             placeholder="https://example.com"
+            inputMode="url"
+            aria-invalid={Boolean(fieldErrors.websiteUrl)}
+            aria-describedby={fieldErrors.websiteUrl ? 'board-website-url-error' : undefined}
           />
+          <FieldError id="board-website-url-error">{fieldErrors.websiteUrl}</FieldError>
         </div>
 
         <div className="space-y-2 border-t pt-5">

@@ -116,8 +116,22 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
       const settings = { ...(project.settings || {}) } as Record<string, unknown>
       if ('widget_config' in body.settings) {
+        const widgetConfig = body.settings.widget_config
+        if (typeof widgetConfig !== 'object' || widgetConfig === null || Array.isArray(widgetConfig)) {
+          return NextResponse.json({
+            error: 'Review the highlighted feedback form fields.',
+            fieldErrors: { widget_config: ['Feedback form settings must be an object.'] },
+          }, { status: 400 })
+        }
+        const primaryColor = (widgetConfig as Record<string, unknown>).primaryColor
+        if (typeof primaryColor !== 'string' || !/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(primaryColor.trim())) {
+          return NextResponse.json({
+            error: 'Review the highlighted feedback form field.',
+            fieldErrors: { primaryColor: ['Enter a hex color such as #6366f1.'] },
+          }, { status: 400 })
+        }
         settings.widget_config = sanitizeSavedWidgetConfig(
-          body.settings.widget_config as Parameters<typeof sanitizeSavedWidgetConfig>[0],
+          widgetConfig as Parameters<typeof sanitizeSavedWidgetConfig>[0],
         )
       }
       if ('widget_origin_restriction' in body.settings) {

@@ -4,7 +4,7 @@ import { hashProjectApiKey, isPrivateProjectApiKey } from '@/lib/project-api-key
 import type { Project } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-const SAFE_PROJECT_COLUMNS = 'id, owner_user_id, name, api_key_last_four, domain, webhooks, settings, environment, test_namespace, expires_at, quarantined_at, created_at, updated_at'
+export const SAFE_PROJECT_COLUMNS = 'id, owner_user_id, name, api_key_last_four, domain, webhooks, settings, environment, test_namespace, expires_at, quarantined_at, created_at, updated_at'
 
 export type ProjectApiScope =
   | 'feedback:read'

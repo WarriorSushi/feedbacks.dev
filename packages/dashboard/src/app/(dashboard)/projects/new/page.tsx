@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import { rememberProjectApiKey } from '@/lib/project-api-keys'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -46,6 +45,7 @@ export default function NewProjectPage() {
           name: name.trim(),
           domain: domain.trim() || null,
           icon,
+          createPrivateKey: false,
           creationRequestId: creationRequestId.current || undefined,
         }),
       })
@@ -60,9 +60,6 @@ export default function NewProjectPage() {
         return
       }
 
-      if (payload.api_key) {
-        rememberProjectApiKey(payload.id, payload.api_key)
-      }
       router.push(`/projects/${payload.id}/install?created=1`)
       router.refresh()
     } catch (caught) {

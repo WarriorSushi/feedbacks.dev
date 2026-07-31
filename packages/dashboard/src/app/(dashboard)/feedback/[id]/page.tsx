@@ -222,14 +222,15 @@ export default async function FeedbackDetailPage({
                 {fb.email}
               </span>
             )}
-            {fb.rating && (
-              <span className="flex items-center gap-1 rounded-lg border bg-card px-3 py-2 text-xs">
+            {fb.rating !== null && (
+              <span className="flex items-center gap-1 rounded-lg border bg-card px-3 py-2 text-xs" aria-label={`Rating ${fb.rating} out of 5`}>
                 {Array.from({ length: 5 }, (_, i) => (
                   <Star
                     key={i}
                     className={`h-3 w-3 ${i < fb.rating! ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/20'}`}
                   />
                 ))}
+                <span className="ml-1 font-medium">{fb.rating}/5</span>
               </span>
             )}
           </div>
@@ -353,19 +354,20 @@ export default async function FeedbackDetailPage({
                     <span className="text-sm">{fb.email}</span>
                   </div>
                 )}
-                {fb.rating && (
+                {fb.rating !== null && (
                   <div className="flex items-center justify-between py-3">
                     <span className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Star className="h-3.5 w-3.5" />
                       Rating
                     </span>
-                    <div className="flex gap-0.5">
+                    <div className="flex items-center gap-0.5" aria-label={`Rating ${fb.rating} out of 5`}>
                       {Array.from({ length: 5 }, (_, i) => (
                         <Star
                           key={i}
                           className={`h-4 w-4 ${i < fb.rating! ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground/20'}`}
                         />
                       ))}
+                      <span className="ml-1.5 text-sm font-medium">{fb.rating}/5</span>
                     </div>
                   </div>
                 )}

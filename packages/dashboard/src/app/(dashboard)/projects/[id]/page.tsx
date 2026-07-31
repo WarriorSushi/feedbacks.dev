@@ -5,6 +5,7 @@ import { getCurrentUserBillingSummary } from '@/lib/billing'
 import { ProjectTabs } from './project-tabs'
 import { toSafeWebhookConfig } from '@/lib/integration-secrets'
 import { normalizeWebhookConfig } from '@/lib/webhook-config'
+import { SAFE_PROJECT_COLUMNS } from '@/lib/api-auth'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Project Workspace' }
@@ -19,7 +20,7 @@ export default async function ProjectDetailPage({
 
   const { data: project } = await supabase
     .from('projects')
-    .select('*')
+    .select(SAFE_PROJECT_COLUMNS)
     .eq('id', id)
     .single()
 
@@ -29,6 +30,7 @@ export default async function ProjectDetailPage({
 
   const safeProject = {
     ...project,
+    api_key: null,
     webhooks: toSafeWebhookConfig(normalizeWebhookConfig(project.webhooks)),
   } as Project
 

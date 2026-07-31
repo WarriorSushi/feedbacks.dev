@@ -225,7 +225,7 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
         const nextFieldErrors = readFieldErrors(payload)
         setFieldErrors(nextFieldErrors)
         setSaveError(readErrorMessage(payload, 'Board settings could not be saved. Check your connection and try again.'))
-        if (nextFieldErrors.slug) setActiveTab('identity')
+        if (nextFieldErrors.slug || nextFieldErrors.display_name || nextFieldErrors.websiteUrl || nextFieldErrors.accentColor) setActiveTab('identity')
         else if (nextFieldErrors.custom_css) setActiveTab('advanced')
         return
       }
