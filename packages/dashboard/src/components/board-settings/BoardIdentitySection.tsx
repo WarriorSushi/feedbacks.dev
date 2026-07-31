@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { WorkspaceSection } from '@/components/ui/workspace-section'
 import type { BoardBranding } from '@/lib/public-board'
+import { FieldError } from '@/components/ui/field-error'
+import type { FieldErrors } from '@/lib/form-errors'
 
 interface BoardSettingsSlice {
   display_name: string
@@ -18,6 +20,7 @@ interface BoardIdentitySectionProps {
   onSettingsChange: (patch: Partial<BoardSettingsSlice>) => void
   onBrandingChange: (patch: Partial<BoardBranding>) => void
   slugManuallyEdited: React.RefObject<boolean>
+  fieldErrors?: FieldErrors
 }
 
 function slugify(text: string): string {
@@ -34,6 +37,7 @@ export function BoardIdentitySection({
   onSettingsChange,
   onBrandingChange,
   slugManuallyEdited,
+  fieldErrors = {},
 }: BoardIdentitySectionProps) {
   const [slugStatus, setSlugStatus] = React.useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle')
   const handleDisplayNameChange = (value: string) => {
@@ -103,7 +107,8 @@ export function BoardIdentitySection({
               value={settings.slug}
               onChange={(e) => handleSlugChange(e.target.value)}
               placeholder="my-product"
-              aria-describedby="board-slug-status"
+              aria-invalid={Boolean(fieldErrors.slug || slugStatus === 'taken')}
+              aria-describedby={fieldErrors.slug ? 'board-slug-error' : 'board-slug-status'}
             />
           </div>
           <p
@@ -117,6 +122,7 @@ export function BoardIdentitySection({
             {slugStatus === 'taken' && 'That link is already in use. Choose another slug.'}
             {slugStatus === 'error' && 'Availability could not be checked. It will be checked again when you save.'}
           </p>
+          <FieldError id="board-slug-error">{fieldErrors.slug}</FieldError>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">

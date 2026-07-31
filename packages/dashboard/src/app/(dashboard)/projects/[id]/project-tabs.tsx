@@ -23,6 +23,8 @@ import { SetupProgress } from './project-flow-nav'
 import { ProjectHome } from './project-home'
 import { PageHeader } from '@/components/ui/workspace-shell'
 import { formatVersionEtag } from '@/lib/optimistic-concurrency'
+import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
+import { readErrorMessage, readFieldErrors, type FieldErrors } from '@/lib/form-errors'
 
 function SectionLoading() {
   return <div className="rounded-lg border bg-card p-6 text-sm text-muted-foreground">Loading this workspace…</div>
@@ -186,71 +188,77 @@ function SettingsTab({ project }: { project: Project }) {
   const [confirmDelete, setConfirmDelete] = React.useState(false)
   const [deleteInput, setDeleteInput] = React.useState('')
   const [projectVersion, setProjectVersion] = React.useState(project.updated_at)
+  const [saveError, setSaveError] = React.useState('')
+  const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({})
+  const [deleteError, setDeleteError] = React.useState('')
 
   const handleSave = async () => {
     setSaving(true)
+    setSaveError('')
+    setFieldErrors({})
     const origins = parseAllowedOrigins(allowedOriginsText)
 
     if (restrictOrigins && origins.length === 0) {
       setSaving(false)
-      toast({
-        title: 'Add at least one allowed site',
-        description: 'Use full URLs like https://example.com, one per line.',
-        variant: 'destructive',
-      })
+      setFieldErrors({ origins: 'Add at least one full URL, such as https://example.com.' })
+      setSaveError('Review the highlighted allowed sites before saving.')
       return
     }
 
-    const response = await fetch(`/api/projects/${project.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'If-Match': formatVersionEtag(projectVersion),
-      },
-      body: JSON.stringify({
-        name: name.trim(),
-        domain: domain.trim() || null,
-        settings: {
-          widget_origin_restriction: {
-            enabled: restrictOrigins,
-            origins,
-          },
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'If-Match': formatVersionEtag(projectVersion),
         },
-      }),
-    })
-    const payload = await response.json().catch(() => null)
-    setSaving(false)
-    if (!response.ok) {
-      toast({
-        title: 'Failed to save settings',
-        description: payload?.error || 'Please try again.',
-        variant: 'destructive',
+        body: JSON.stringify({
+          name: name.trim(),
+          domain: domain.trim() || null,
+          settings: {
+            widget_origin_restriction: {
+              enabled: restrictOrigins,
+              origins,
+            },
+          },
+        }),
       })
-      return
+      const payload = await response.json().catch(() => null)
+      if (!response.ok) {
+        setFieldErrors(readFieldErrors(payload))
+        setSaveError(readErrorMessage(payload, 'Project settings could not be saved. Check your connection and try again.'))
+        return
+      }
+      setProjectVersion(payload.updated_at)
+      toast({ title: 'Project settings saved' })
+      router.refresh()
+    } catch {
+      setSaveError('Project settings could not be saved. Check your connection and try again.')
+    } finally {
+      setSaving(false)
     }
-    setProjectVersion(payload.updated_at)
-    toast({ title: 'Project settings saved' })
-    router.refresh()
   }
 
   const handleDelete = async () => {
     setDeleting(true)
-    const response = await fetch(`/api/projects/${project.id}`, { method: 'DELETE' })
-    const payload = await response.json().catch(() => null)
-    if (!response.ok) {
-      toast({
-        title: 'Failed to delete project',
-        description: payload?.error || 'Please try again.',
-        variant: 'destructive',
-      })
+    setDeleteError('')
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, { method: 'DELETE' })
+      const payload = await response.json().catch(() => null)
+      if (!response.ok) {
+        setDeleteError(readErrorMessage(payload, 'The project could not be deleted. Check your connection and try again.'))
+        return
+      }
+      window.dispatchEvent(
+        new CustomEvent('feedbacks:project-deleted', { detail: { projectId: project.id } }),
+      )
+      router.replace('/projects')
+      router.refresh()
+    } catch {
+      setDeleteError('The project could not be deleted. Check your connection and try again.')
+    } finally {
       setDeleting(false)
-      return
     }
-    window.dispatchEvent(
-      new CustomEvent('feedbacks:project-deleted', { detail: { projectId: project.id } }),
-    )
-    router.replace('/projects')
-    router.refresh()
   }
 
   return (
@@ -263,16 +271,20 @@ function SettingsTab({ project }: { project: Project }) {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="project-name">Project Name</Label>
-            <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input id="project-name" value={name} onChange={(e) => { setName(e.target.value); setFieldErrors((current) => ({ ...current, name: '' })) }} aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'project-settings-name-error' : undefined} maxLength={80} />
+            <FieldError id="project-settings-name-error">{fieldErrors.name}</FieldError>
           </div>
           <div className="space-y-2">
             <Label htmlFor="project-domain">Domain</Label>
             <Input
               id="project-domain"
               value={domain}
-              onChange={(e) => setDomain(e.target.value)}
+              onChange={(e) => { setDomain(e.target.value); setFieldErrors((current) => ({ ...current, domain: '' })) }}
               placeholder="myapp.com"
+              aria-invalid={Boolean(fieldErrors.domain)}
+              aria-describedby={fieldErrors.domain ? 'project-settings-domain-error' : undefined}
             />
+            <FieldError id="project-settings-domain-error">{fieldErrors.domain}</FieldError>
           </div>
           <div className="rounded-lg border border-border/80 bg-muted/30 p-4">
             <div className="flex items-start gap-3">
@@ -292,18 +304,22 @@ function SettingsTab({ project }: { project: Project }) {
                 </p>
                 <Textarea
                   value={allowedOriginsText}
-                  onChange={(event) => setAllowedOriginsText(event.target.value)}
+                  onChange={(event) => { setAllowedOriginsText(event.target.value); setFieldErrors((current) => ({ ...current, origins: '' })) }}
                   placeholder={`https://example.com\nhttps://app.example.com`}
                   rows={3}
                   disabled={!restrictOrigins}
                   aria-label="Allowed widget origins"
+                  aria-invalid={Boolean(fieldErrors.origins)}
+                  aria-describedby={fieldErrors.origins ? 'project-origins-error' : undefined}
                 />
+                <FieldError id="project-origins-error">{fieldErrors.origins}</FieldError>
                 <p className="text-xs text-muted-foreground">
                   One origin per line. Use only scheme and domain, like https://example.com. Do not include paths.
                 </p>
               </div>
             </div>
           </div>
+          <FormErrorSummary>{saveError}</FormErrorSummary>
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save
@@ -350,6 +366,7 @@ function SettingsTab({ project }: { project: Project }) {
                   Cancel
                 </Button>
               </div>
+              <FormErrorSummary>{deleteError}</FormErrorSummary>
             </div>
           )}
         </CardContent>

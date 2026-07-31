@@ -55,6 +55,7 @@ interface BoardFeedbackCardProps {
   canWatchUpdates: boolean
   replyDraft: string
   busy: boolean
+  actionError?: string | null
   onVote: () => void
   onToggle: () => void
   onToggleWatch: () => void
@@ -76,6 +77,7 @@ export function BoardFeedbackCard({
   canWatchUpdates,
   replyDraft,
   busy,
+  actionError,
   onVote,
   onToggle,
   onToggleWatch,
@@ -231,7 +233,9 @@ export function BoardFeedbackCard({
                     rows={3}
                     className="min-h-[112px] w-full rounded-lg border border-border bg-card px-3 py-2.5 text-sm"
                     placeholder="Share a public update or clarify the plan."
+                    aria-invalid={Boolean(actionError)}
                   />
+                  {actionError && <p role="alert" className="text-xs font-medium text-destructive">{actionError}</p>}
                   <button
                     onClick={onReplySubmit}
                     disabled={busy || replyDraft.trim().length === 0}

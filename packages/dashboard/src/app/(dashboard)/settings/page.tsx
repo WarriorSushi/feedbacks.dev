@@ -12,6 +12,7 @@ import { PageHeader } from '@/components/ui/workspace-shell'
 import { AlertTriangle, Loader2, Mail } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import Link from 'next/link'
+import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
 
 export default function SettingsPage() {
   const supabase = React.useMemo(() => createClient(), [])
@@ -28,6 +29,9 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = React.useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = React.useState('')
   const [saveState, setSaveState] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [saveError, setSaveError] = React.useState('')
+  const [nameError, setNameError] = React.useState('')
+  const [deleteError, setDeleteError] = React.useState('')
   const savedValues = React.useRef('')
 
   const currentValues = JSON.stringify({
@@ -79,6 +83,8 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     setSaving(true)
     setSaveState('saving')
+    setSaveError('')
+    setNameError('')
     const { error } = await supabase.auth.updateUser({
       data: { full_name: displayName.trim() },
     })
@@ -102,11 +108,9 @@ export default function SettingsPage() {
       : { error: null }
     setSaving(false)
     if (error || settingsResult.error) {
-      toast({
-        title: 'Failed to save profile',
-        description: error?.message || settingsResult.error?.message || 'Please try again.',
-        variant: 'destructive',
-      })
+      const message = error?.message || settingsResult.error?.message || 'Account settings could not be saved. Check your connection and try again.'
+      setSaveError(message)
+      if (error) setNameError(message)
       setSaveState('error')
       return
     }
@@ -117,6 +121,7 @@ export default function SettingsPage() {
 
   const handleDeleteAccount = async () => {
     setDeleting(true)
+    setDeleteError('')
     try {
       const response = await fetch('/api/account/delete', {
         method: 'POST',
@@ -132,11 +137,7 @@ export default function SettingsPage() {
       toast({ title: payload.pending ? 'Account deletion queued' : 'Account deleted', description: payload.message })
       window.location.href = '/auth'
     } catch (error) {
-      toast({
-        title: 'Failed to delete account',
-        description: error instanceof Error ? error.message : 'Please try again.',
-        variant: 'destructive',
-      })
+      setDeleteError(error instanceof Error ? error.message : 'The account could not be deleted. Check your connection and try again.')
     } finally {
       setDeleting(false)
     }
@@ -200,11 +201,15 @@ export default function SettingsPage() {
               <Input
                 id="settings-name"
                 value={displayName}
-                onChange={(e) => { setDisplayName(e.target.value); setSaveState('idle') }}
+                onChange={(e) => { setDisplayName(e.target.value); setSaveState('idle'); setNameError(''); setSaveError('') }}
                 placeholder="Your name"
                 maxLength={80}
+                aria-invalid={Boolean(nameError)}
+                aria-describedby={nameError ? 'settings-name-error' : undefined}
               />
+              <FieldError id="settings-name-error">{nameError}</FieldError>
             </div>
+            <FormErrorSummary>{saveError}</FormErrorSummary>
             <Button onClick={handleSaveProfile} disabled={saving || !hasUnsavedChanges}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save account settings
@@ -356,9 +361,12 @@ export default function SettingsPage() {
             <Input
               id="delete-confirmation"
               value={deleteConfirmation}
-              onChange={(event) => setDeleteConfirmation(event.target.value)}
+              onChange={(event) => { setDeleteConfirmation(event.target.value); setDeleteError('') }}
               placeholder={email || 'you@example.com'}
+              aria-invalid={Boolean(deleteError)}
+              aria-describedby={deleteError ? 'delete-account-error' : undefined}
             />
+            <FieldError id="delete-account-error">{deleteError}</FieldError>
           </div>
           <Button
             variant="destructive"

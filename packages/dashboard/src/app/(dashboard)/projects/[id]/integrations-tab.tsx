@@ -27,6 +27,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { toast } from '@/hooks/use-toast'
 import { PageHeader } from '@/components/ui/workspace-shell'
+import { FormErrorSummary } from '@/components/ui/field-error'
 import {
   Github,
   Loader2,
@@ -154,6 +155,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
   const [billingSummary, setBillingSummary] = React.useState<BillingSummary | null>(initialBillingSummary)
   const [loadingOps, setLoadingOps] = React.useState(initialBillingSummary?.entitlements.webhooks !== false)
   const [saving, setSaving] = React.useState(false)
+  const [saveError, setSaveError] = React.useState('')
   const [testingKey, setTestingKey] = React.useState<string | null>(null)
   const [resendingId, setResendingId] = React.useState<string | null>(null)
   const [featureLocked, setFeatureLocked] = React.useState(initialBillingSummary?.entitlements.webhooks === false)
@@ -288,6 +290,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
 
   const handleSave = async () => {
     setSaving(true)
+    setSaveError('')
     try {
       const response = await fetch(`/api/projects/${project.id}/webhooks`, {
         method: 'PUT',
@@ -313,11 +316,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
       toast({ title: 'Integrations saved' })
       await loadOperations()
     } catch (error) {
-      toast({
-        title: 'Failed to save integrations',
-        description: error instanceof Error ? error.message : 'Failed to save integrations',
-        variant: 'destructive',
-      })
+      setSaveError(error instanceof Error ? error.message : 'Integrations could not be saved. Check the endpoint details and try again.')
     } finally {
       setSaving(false)
     }
@@ -690,13 +689,15 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
           </Card>
 
           {isDirty && (
-            <div className="sticky bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-20 flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-background/95 p-3 shadow-xl backdrop-blur">
-              <p className="text-sm text-muted-foreground">You have unsaved integration changes.</p>
-              <div className="flex gap-2">
+            <div className="sticky bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] z-20 rounded-lg border bg-background/95 p-3 shadow-xl backdrop-blur">
+              <FormErrorSummary className="mb-3">{saveError}</FormErrorSummary>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">You have unsaved integration changes.</p>
+                <div className="flex gap-2">
                 <Button
                   variant="outline"
                   disabled={saving}
-                  onClick={() => setConfig(savedConfig)}
+                  onClick={() => { setConfig(savedConfig); setSaveError('') }}
                 >
                   Discard
                 </Button>
@@ -704,6 +705,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                   {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Save integrations
                 </Button>
+                </div>
               </div>
             </div>
           )}

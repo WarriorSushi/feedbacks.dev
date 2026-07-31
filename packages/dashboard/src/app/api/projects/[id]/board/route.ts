@@ -213,7 +213,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const body = bodyResult.data
     const slug = sanitizeSlug(body.slug)
     if (!slug) {
-      return NextResponse.json({ error: 'A board slug is required' }, { status: 400 })
+      return NextResponse.json({
+        error: 'Review the highlighted public link.',
+        fieldErrors: { slug: ['Enter at least one letter or number for the public link.'] },
+      }, { status: 400 })
     }
 
     let customCss: string | null

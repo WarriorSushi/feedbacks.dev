@@ -50,15 +50,24 @@ export async function POST(
   const reporterEmail = typeof body.email === 'string' ? body.email.trim() : ''
 
   if (!reason || reason.length > 160) {
-    return NextResponse.json({ error: 'Please share a short reason (1-160 characters).' }, { status: 400 })
+    return NextResponse.json({
+      error: 'Review the highlighted report reason.',
+      fieldErrors: { reason: ['Share a short reason between 1 and 160 characters.'] },
+    }, { status: 400 })
   }
 
   if (details.length > 2000) {
-    return NextResponse.json({ error: 'Report details are too long.' }, { status: 400 })
+    return NextResponse.json({
+      error: 'Review the highlighted report details.',
+      fieldErrors: { details: ['Keep report details under 2,000 characters.'] },
+    }, { status: 400 })
   }
 
   if (reporterEmail && !EMAIL_RE.test(reporterEmail)) {
-    return NextResponse.json({ error: 'Please enter a valid email address or leave it blank.' }, { status: 400 })
+    return NextResponse.json({
+      error: 'Review the highlighted email address.',
+      fieldErrors: { email: ['Enter a valid email address or leave it blank.'] },
+    }, { status: 400 })
   }
 
   const supabase = await createServerSupabase()

@@ -18,6 +18,8 @@ import { BoardVisibilitySection } from './BoardVisibilitySection'
 import { BoardAdvancedSection } from './BoardAdvancedSection'
 import { PageHeader } from '@/components/ui/workspace-shell'
 import { getMarketingOrigin } from '@/lib/domain-routing'
+import { FormErrorSummary } from '@/components/ui/field-error'
+import { readErrorMessage, readFieldErrors, type FieldErrors } from '@/lib/form-errors'
 
 interface BoardSettingsState {
   id?: string
@@ -103,22 +105,34 @@ interface BoardSettingsTabsProps {
 export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
   const router = useRouter()
   const [loading, setLoading] = React.useState(true)
+  const [loadError, setLoadError] = React.useState('')
+  const [reloadKey, setReloadKey] = React.useState(0)
   const [saving, setSaving] = React.useState(false)
   const [activeTab, setActiveTab] = React.useState<TabId>('identity')
   const [settings, setSettings] = React.useState<BoardSettingsState>(createDefaultSettings(project))
   const [reports, setReports] = React.useState<BoardReport[]>([])
   const [stats, setStats] = React.useState<BoardStats>({ followerCount: 0, watchCount: 0, openReportCount: 0 })
   const [reportBusyId, setReportBusyId] = React.useState<string | null>(null)
+  const [saveError, setSaveError] = React.useState('')
+  const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({})
   const slugManuallyEdited = React.useRef(false)
 
   React.useEffect(() => {
     async function load() {
-      const response = await fetch(`/api/projects/${project.id}/board`, { cache: 'no-store' })
-      const data = await response.json().catch(() => null)
+      setLoading(true)
+      setLoadError('')
+      try {
+        const response = await fetch(`/api/projects/${project.id}/board`, { cache: 'no-store' })
+        const data = await response.json().catch(() => null)
 
-      if (response.ok && data?.board) {
-        const defaults = createDefaultSettings(project)
-        setSettings({
+        if (!response.ok) {
+          setLoadError(readErrorMessage(data, 'Board settings could not be loaded. Check your connection and try again.'))
+          return
+        }
+
+        if (data?.board) {
+          const defaults = createDefaultSettings(project)
+          setSettings({
           id: data.board.id,
           enabled: data.board.enabled,
           slug: data.board.slug,
@@ -135,20 +149,22 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
           },
           announcements: data.board.announcements || [],
         })
-        setReports(data.reports || [])
-        setStats(data.stats || { followerCount: 0, watchCount: 0, openReportCount: 0 })
+          setReports(data.reports || [])
+          setStats(data.stats || { followerCount: 0, watchCount: 0, openReportCount: 0 })
 
-        // If there's already a slug, assume it was manually set
-        if (data.board.slug) {
-          slugManuallyEdited.current = true
+          if (data.board.slug) {
+            slugManuallyEdited.current = true
+          }
         }
+      } catch {
+        setLoadError('Board settings could not be loaded. Check your connection and try again.')
+      } finally {
+        setLoading(false)
       }
-
-      setLoading(false)
     }
 
     void load()
-  }, [project])
+  }, [project, reloadKey])
 
   const boardOrigin = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname)
     ? window.location.origin
@@ -159,6 +175,11 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
   const canOpenBoard = settings.enabled && !isLegacyPrivate
   const updateSettings = (patch: Partial<BoardSettingsState>) => {
     setSettings((prev) => ({ ...prev, ...patch }))
+    setFieldErrors((current) => {
+      const next = { ...current }
+      Object.keys(patch).forEach((key) => { delete next[key] })
+      return next
+    })
   }
 
   const updateBranding = (patch: Partial<BoardBranding>) => {
@@ -173,62 +194,72 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
     successTitle = 'Board settings saved',
   ) => {
     setSaving(true)
+    setSaveError('')
+    setFieldErrors({})
 
-    const response = await fetch(`/api/projects/${project.id}/board`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: nextSettings.id,
-        enabled: nextSettings.enabled,
-        slug: nextSettings.slug,
-        display_name: nextSettings.display_name,
-        title: nextSettings.title,
-        description: nextSettings.description,
-        show_types: nextSettings.show_types,
-        allow_submissions: nextSettings.allow_submissions,
-        require_email_to_vote: nextSettings.require_email_to_vote,
-        custom_css: nextSettings.custom_css,
-        branding: {
-          ...nextSettings.branding,
-          displayName: nextSettings.display_name,
-        },
-        announcements: nextSettings.announcements,
-      }),
-    })
-    const payload = await response.json().catch(() => null)
-
-    if (!response.ok) {
-      toast({ title: 'Failed to save board settings', description: payload?.error || 'Please try again.', variant: 'destructive' })
-      setSaving(false)
-      return
-    }
-
-    if (payload?.board) {
-      const defaults = createDefaultSettings(project)
-      setSettings({
-        id: payload.board.id,
-        enabled: payload.board.enabled,
-        slug: payload.board.slug,
-        display_name: payload.board.display_name || '',
-        title: payload.board.title || '',
-        description: payload.board.description || '',
-        show_types: payload.board.show_types || ['idea', 'bug'],
-        allow_submissions: payload.board.allow_submissions,
-        require_email_to_vote: payload.board.require_email_to_vote,
-        custom_css: payload.board.custom_css || '',
-        branding: {
-          ...defaults.branding,
-          ...payload.board.profile,
-        },
-        announcements: payload.board.announcements || [],
+    try {
+      const response = await fetch(`/api/projects/${project.id}/board`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: nextSettings.id,
+          enabled: nextSettings.enabled,
+          slug: nextSettings.slug,
+          display_name: nextSettings.display_name,
+          title: nextSettings.title,
+          description: nextSettings.description,
+          show_types: nextSettings.show_types,
+          allow_submissions: nextSettings.allow_submissions,
+          require_email_to_vote: nextSettings.require_email_to_vote,
+          custom_css: nextSettings.custom_css,
+          branding: {
+            ...nextSettings.branding,
+            displayName: nextSettings.display_name,
+          },
+          announcements: nextSettings.announcements,
+        }),
       })
-      setReports(payload.reports || [])
-      setStats(payload.stats || { followerCount: 0, watchCount: 0, openReportCount: 0 })
-    }
+      const payload = await response.json().catch(() => null)
 
-    toast({ title: successTitle })
-    setSaving(false)
-    router.refresh()
+      if (!response.ok) {
+        const nextFieldErrors = readFieldErrors(payload)
+        setFieldErrors(nextFieldErrors)
+        setSaveError(readErrorMessage(payload, 'Board settings could not be saved. Check your connection and try again.'))
+        if (nextFieldErrors.slug) setActiveTab('identity')
+        else if (nextFieldErrors.custom_css) setActiveTab('advanced')
+        return
+      }
+
+      if (payload?.board) {
+        const defaults = createDefaultSettings(project)
+        setSettings({
+          id: payload.board.id,
+          enabled: payload.board.enabled,
+          slug: payload.board.slug,
+          display_name: payload.board.display_name || '',
+          title: payload.board.title || '',
+          description: payload.board.description || '',
+          show_types: payload.board.show_types || ['idea', 'bug'],
+          allow_submissions: payload.board.allow_submissions,
+          require_email_to_vote: payload.board.require_email_to_vote,
+          custom_css: payload.board.custom_css || '',
+          branding: {
+            ...defaults.branding,
+            ...payload.board.profile,
+          },
+          announcements: payload.board.announcements || [],
+        })
+        setReports(payload.reports || [])
+        setStats(payload.stats || { followerCount: 0, watchCount: 0, openReportCount: 0 })
+      }
+
+      toast({ title: successTitle })
+      router.refresh()
+    } catch {
+      setSaveError('Board settings could not be saved. Check your connection and try again.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleSave = async () => {
@@ -327,6 +358,18 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
     )
   }
 
+  if (loadError) {
+    return (
+      <Card>
+        <CardHeader>
+          <p className="text-lg font-semibold text-foreground">Board settings are unavailable</p>
+          <p role="alert" className="mt-2 text-sm text-destructive">{loadError}</p>
+        </CardHeader>
+        <CardContent><Button onClick={() => setReloadKey((value) => value + 1)}>Try again</Button></CardContent>
+      </Card>
+    )
+  }
+
   return (
     <div className="space-y-5">
       <PageHeader
@@ -409,6 +452,7 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
           onSettingsChange={updateSettings}
           onBrandingChange={updateBranding}
           slugManuallyEdited={slugManuallyEdited}
+          fieldErrors={fieldErrors}
         />
       )}
 
@@ -438,13 +482,17 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
           reports={reports}
           reportBusyId={reportBusyId}
           onReportStatusUpdate={updateReportStatus}
+          fieldErrors={fieldErrors}
         />
       )}
 
-      <div className="sticky bottom-4 flex justify-end rounded-lg border bg-card p-3 shadow-[var(--shadow-float)]"><Button onClick={() => void handleSave()} disabled={saving}>
-        {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Save changes
-      </Button></div>
+      <div className="sticky bottom-4 rounded-lg border bg-card p-3 shadow-[var(--shadow-float)]">
+        <FormErrorSummary className="mb-3">{saveError}</FormErrorSummary>
+        <div className="flex justify-end"><Button onClick={() => void handleSave()} disabled={saving}>
+          {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Save changes
+        </Button></div>
+      </div>
     </div>
   )
 }

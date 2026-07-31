@@ -16,6 +16,7 @@ import { toast } from '@/hooks/use-toast'
 import { WidgetFormPreview } from './widget-form-preview'
 import { PageHeader } from '@/components/ui/workspace-shell'
 import { formatVersionEtag } from '@/lib/optimistic-concurrency'
+import { FormErrorSummary } from '@/components/ui/field-error'
 
 interface CustomizeTabProps {
   project: Project
@@ -45,6 +46,7 @@ export function CustomizeTab({
   const appOrigin = publicEnv.NEXT_PUBLIC_APP_ORIGIN
   const previewProjectKey = projectKey
   const [saving, setSaving] = React.useState(false)
+  const [saveError, setSaveError] = React.useState('')
   const [draftRestored, setDraftRestored] = React.useState(false)
   const [draftHydrated, setDraftHydrated] = React.useState(false)
   const storageKey = React.useMemo(() => `feedbacks-widget-draft:${project.id}`, [project.id])
@@ -164,6 +166,7 @@ export function CustomizeTab({
 
   const updateConfig = (key: keyof WidgetConfig, value: unknown) => {
     setConfig((prev) => ({ ...prev, [key]: value }))
+    setSaveError('')
   }
 
   const handleReset = () => {
@@ -176,6 +179,7 @@ export function CustomizeTab({
 
   const handleSave = async () => {
     setSaving(true)
+    setSaveError('')
     try {
       const response = await fetch(`/api/projects/${project.id}`, {
         method: 'PATCH',
@@ -209,11 +213,7 @@ export function CustomizeTab({
       })
       router.refresh()
     } catch (error) {
-      toast({
-        title: 'Failed to save',
-        description: error instanceof Error ? error.message : 'Failed to save widget settings',
-        variant: 'destructive',
-      })
+      setSaveError(error instanceof Error ? error.message : 'Feedback form settings could not be saved. Check your connection and try again.')
     } finally {
       setSaving(false)
     }
@@ -494,6 +494,7 @@ export function CustomizeTab({
 
       {hasUnsavedChanges && (
         <div className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-20 rounded-lg border border-amber-300/80 bg-amber-50 p-3 shadow-lg dark:bg-amber-950">
+          <FormErrorSummary className="mb-3">{saveError}</FormErrorSummary>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-foreground">Publish remote changes</p>

@@ -79,16 +79,25 @@ export async function POST(request: NextRequest) {
 
     const name = body.name?.trim()
     if (!name || name.length < 1 || name.length > 80) {
-      return NextResponse.json({ error: 'Project name is required (1–80 characters)' }, { status: 400 })
+      return NextResponse.json({
+        error: 'Review the highlighted project name.',
+        fieldErrors: { name: ['Project name must be 1–80 characters.'] },
+      }, { status: 400 })
     }
 
     const domain = normalizeProjectDomain(body.domain)
     if (domain === undefined) {
-      return NextResponse.json({ error: 'Enter a valid website domain or URL' }, { status: 400 })
+      return NextResponse.json({
+        error: 'Review the highlighted domain.',
+        fieldErrors: { domain: ['Enter a valid website domain or URL.'] },
+      }, { status: 400 })
     }
     const icon = body.icon === undefined ? DEFAULT_PROJECT_ICON : body.icon
     if (!isProjectIcon(icon)) {
-      return NextResponse.json({ error: 'Choose a valid project icon' }, { status: 400 })
+      return NextResponse.json({
+        error: 'Review the highlighted project icon.',
+        fieldErrors: { icon: ['Choose one of the available project icons.'] },
+      }, { status: 400 })
     }
 
     const rawApiKey = generateProjectApiKey()
