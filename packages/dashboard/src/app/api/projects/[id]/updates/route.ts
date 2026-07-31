@@ -48,10 +48,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { data, error } = await auth.admin.from('product_updates').insert({
     project_id: id, created_by: auth.user.id, status: 'draft', version_label: dataValue(parsed.data.versionLabel),
     title: parsed.data.title, summary: parsed.data.summary, highlights: parsed.data.highlights || [],
-    cta_label: dataValue(parsed.data.ctaLabel), cta_url: dataValue(parsed.data.ctaUrl),
+    cta_label: dataValue(parsed.data.ctas?.[0]?.label || parsed.data.ctaLabel),
+    cta_url: dataValue(parsed.data.ctas?.[0]?.url || parsed.data.ctaUrl),
+    ctas: parsed.data.ctas || [],
     image_alt_text: dataValue(parsed.data.imageAltText),
   }).select('*').single()
-  if (error || !data) return NextResponse.json({ error: 'Unable to save draft.' }, { status: 500, headers })
+  if (error || !data) {
+    console.error('Unable to create product update draft', error)
+    return NextResponse.json({
+      code: 'DRAFT_SAVE_FAILED',
+      error: 'The draft could not be saved. Your text is still in the editor. Wait a moment, then try again; if it continues, reload the page and retry.',
+    }, { status: 500, headers })
+  }
   void recordActivationMilestone({ projectId: id, userId: auth.user.id, eventName: 'updates_first_draft_created', admin: auth.admin })
   return NextResponse.json({ update: data }, { status: 201, headers })
 }

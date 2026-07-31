@@ -36,6 +36,12 @@ export function ProductUpdatesOverview({
   if (!updates.length) {
     return (
       <div className="mx-auto max-w-3xl space-y-5">
+        <div className="flex justify-end">
+          <Button variant="outline" onClick={onSettings}>
+            <Settings2 className="mr-2 h-4 w-4" />
+            Display settings
+          </Button>
+        </div>
         <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
           <p className="text-xs font-semibold text-primary">
             Updates for your users
@@ -75,7 +81,7 @@ export function ProductUpdatesOverview({
           <div className="flex gap-2">
             <Button variant="outline" onClick={onSettings}>
               <Settings2 className="mr-2 h-4 w-4" />
-              Settings
+              Display settings
             </Button>
             <Button onClick={onNew}>
               <Plus className="mr-2 h-4 w-4" />

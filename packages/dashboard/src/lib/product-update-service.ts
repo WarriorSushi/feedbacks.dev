@@ -11,6 +11,15 @@ export const PRODUCT_UPDATE_DEFAULT_SETTINGS: ProductUpdatePublicSettings = {
 }
 
 export function mapProductUpdate(row: Record<string, unknown>, imageUrl?: string): ProductUpdateContent {
+  const ctas = Array.isArray(row.ctas)
+    ? row.ctas.flatMap((item) => {
+        if (!item || typeof item !== 'object') return []
+        const value = item as Record<string, unknown>
+        return typeof value.label === 'string' && typeof value.url === 'string'
+          ? [{ label: value.label, url: value.url }]
+          : []
+      })
+    : []
   return {
     id: String(row.id),
     ...(typeof row.version_label === 'string' ? { versionLabel: row.version_label } : {}),
@@ -20,6 +29,7 @@ export function mapProductUpdate(row: Record<string, unknown>, imageUrl?: string
     ...(typeof row.image_alt_text === 'string' && row.image_alt_text ? { imageAltText: row.image_alt_text } : {}),
     ...(typeof row.cta_label === 'string' ? { ctaLabel: row.cta_label } : {}),
     ...(typeof row.cta_url === 'string' ? { ctaUrl: row.cta_url } : {}),
+    ...(ctas.length ? { ctas } : {}),
     publishedAt: String(row.published_at),
     ...(typeof row.expires_at === 'string' ? { expiresAt: row.expires_at } : {}),
   }

@@ -54,7 +54,7 @@ export default async function RootLayout({
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="system"
           themes={['light', 'dark', 'windows98']}
           enableSystem
           disableTransitionOnChange

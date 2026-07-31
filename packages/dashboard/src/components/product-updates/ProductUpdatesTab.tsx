@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { CalendarClock, Eye, Settings2 } from "lucide-react";
+import {
+  CalendarClock,
+  Eye,
+  Plus,
+  Settings2,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +71,10 @@ export function ProductUpdatesTab({
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
+  const [imageStatus, setImageStatus] = React.useState<{
+    kind: "idle" | "uploading" | "success" | "error";
+    message?: string;
+  }>({ kind: "idle" });
   const [modules, setModules] = React.useState<Modules | null>(null);
   const [embedStatus, setEmbedStatus] = React.useState<EmbedStatus | null>(
     null,
@@ -135,8 +145,23 @@ export function ProductUpdatesTab({
       edit(updates.find((update) => update.id === updateId)!);
   }, [updateId, updates, view]);
 
-  const updateForm = (key: keyof FormValues, value: string) =>
+  const updateForm = (
+    key: Exclude<keyof FormValues, "ctas">,
+    value: string,
+  ) =>
     setForm((current) => ({ ...current, [key]: value }));
+
+  const updateCta = (
+    index: number,
+    key: "label" | "url",
+    value: string,
+  ) =>
+    setForm((current) => ({
+      ...current,
+      ctas: current.ctas.map((cta, ctaIndex) =>
+        ctaIndex === index ? { ...cta, [key]: value } : cta,
+      ),
+    }));
 
   function edit(update: Update) {
     setSelectedId(update.id);
@@ -151,7 +176,7 @@ export function ProductUpdatesTab({
       throw new Error(
         data?.error ||
           Object.values(data?.errors || {}).join(" ") ||
-          "Request failed.",
+          `The server could not complete this ${response.status >= 500 ? "because of a temporary service problem. Your draft is still in the editor; wait a moment and try again." : "request. Review the highlighted fields and try again."}`,
       );
     return data;
   }
@@ -165,8 +190,7 @@ export function ProductUpdatesTab({
         .split("\n")
         .map((item) => item.trim())
         .filter(Boolean),
-      ctaLabel: form.ctaLabel,
-      ctaUrl: form.ctaUrl,
+      ctas: form.ctas,
       imageAltText: form.imageAltText,
     };
   }
@@ -255,25 +279,61 @@ export function ProductUpdatesTab({
 
   async function uploadImage(file: File | undefined) {
     if (!file || !selected) return;
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      setImageStatus({
+        kind: "error",
+        message: "Choose a JPEG or PNG image.",
+      });
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setImageStatus({
+        kind: "error",
+        message: `This image is ${(file.size / 1024 / 1024).toFixed(1)} MB. Choose one under 2 MB.`,
+      });
+      return;
+    }
     setSaving(true);
+    setImageStatus({
+      kind: "uploading",
+      message: `Uploading ${file.name}…`,
+    });
     try {
-      await request(`/api/projects/${projectId}/updates/${selected.id}/image`, {
+      const result = await request(
+        `/api/projects/${projectId}/updates/${selected.id}/image`,
+        {
         method: "POST",
         headers: {
           "Content-Type": file.type,
           "If-Match": formatVersionEtag(selected.updated_at),
         },
         body: file,
+        },
+      );
+      setUpdates((current) =>
+        current.map((update) =>
+          update.id === selected.id
+            ? { ...update, ...result.update }
+            : update,
+        ),
+      );
+      setImageStatus({
+        kind: "success",
+        message: `${file.name} uploaded successfully.`,
       });
-      toast({ title: "Image uploaded" });
-      await load();
+      toast({
+        title: "Image uploaded",
+        description: "The preview now shows the saved image.",
+      });
     } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Use a JPEG or PNG image under 2 MB.";
+      setImageStatus({ kind: "error", message });
       toast({
         title: "Could not upload image",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Use JPEG or PNG under 2 MB.",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -512,12 +572,23 @@ export function ProductUpdatesTab({
             publishing.
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/projects/${projectId}/release-notes`)}
-        >
-          Back to updates
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={() =>
+              router.push(`/projects/${projectId}/release-notes/settings`)
+            }
+          >
+            <Settings2 className="mr-2 h-4 w-4" />
+            Display settings
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/projects/${projectId}/release-notes`)}
+          >
+            Back to updates
+          </Button>
+        </div>
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -560,11 +631,6 @@ export function ProductUpdatesTab({
                 Image
               </Label>
               <div className="mt-1 flex items-center gap-3">
-                {selected?.imageUrl && (
-                  <span className="whitespace-nowrap text-xs text-muted-foreground">
-                    Image uploaded
-                  </span>
-                )}
                 <Input
                   id="update-image"
                   type="file"
@@ -580,8 +646,30 @@ export function ProductUpdatesTab({
                     : "Save the draft before adding an image"}
                 </span>
               </div>
+              <p
+                className={`mt-2 text-xs ${
+                  imageStatus.kind === "error"
+                    ? "text-destructive"
+                    : imageStatus.kind === "success"
+                      ? "text-primary"
+                      : "text-muted-foreground"
+                }`}
+                role={imageStatus.kind === "error" ? "alert" : "status"}
+              >
+                {imageStatus.message ||
+                  (selected?.imageUrl
+                    ? "An image is saved and shown below."
+                    : "JPEG or PNG, up to 2 MB.")}
+              </p>
               {selected?.imageUrl && (
-                <div className="mt-3">
+                <div className="mt-3 space-y-3">
+                  {/* Dynamic Supabase URLs are user-owned content and bypass optimization. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={selected.imageUrl}
+                    alt={form.imageAltText || "Current product update image"}
+                    className="aspect-video w-full max-w-md rounded-md border object-cover"
+                  />
                   <ProductUpdateField label="Image description">
                     <Input
                       value={form.imageAltText}
@@ -633,25 +721,76 @@ export function ProductUpdatesTab({
                     }
                   />
                 </ProductUpdateField>
-                <ProductUpdateField label="CTA label">
-                  <Input
-                    value={form.ctaLabel}
-                    maxLength={40}
-                    onChange={(event) =>
-                      updateForm("ctaLabel", event.target.value)
+              </div>
+              <div className="mt-5 border-t pt-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium">Action buttons</p>
+                    <p className="text-xs text-muted-foreground">
+                      Add up to four links. The first is the primary action.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={form.ctas.length >= 4}
+                    onClick={() =>
+                      setForm((current) => ({
+                        ...current,
+                        ctas: [...current.ctas, { label: "", url: "" }],
+                      }))
                     }
-                  />
-                </ProductUpdateField>
-                <ProductUpdateField label="CTA URL">
-                  <Input
-                    value={form.ctaUrl}
-                    maxLength={2048}
-                    placeholder="/new-feature or https://example.com"
-                    onChange={(event) =>
-                      updateForm("ctaUrl", event.target.value)
-                    }
-                  />
-                </ProductUpdateField>
+                  >
+                    <Plus className="mr-1.5 h-4 w-4" />
+                    Add button
+                  </Button>
+                </div>
+                <div className="mt-3 space-y-3">
+                  {form.ctas.map((cta, index) => (
+                    <div
+                      key={index}
+                      className="grid gap-3 rounded-md border bg-muted/20 p-3 sm:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)_auto]"
+                    >
+                      <ProductUpdateField label={`Button ${index + 1} label`}>
+                        <Input
+                          value={cta.label}
+                          maxLength={40}
+                          onChange={(event) =>
+                            updateCta(index, "label", event.target.value)
+                          }
+                        />
+                      </ProductUpdateField>
+                      <ProductUpdateField label={`Button ${index + 1} URL`}>
+                        <Input
+                          value={cta.url}
+                          maxLength={2048}
+                          placeholder="/new-feature or https://example.com"
+                          onChange={(event) =>
+                            updateCta(index, "url", event.target.value)
+                          }
+                        />
+                      </ProductUpdateField>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="self-end"
+                        aria-label={`Remove button ${index + 1}`}
+                        onClick={() =>
+                          setForm((current) => ({
+                            ...current,
+                            ctas: current.ctas.filter(
+                              (_, ctaIndex) => ctaIndex !== index,
+                            ),
+                          }))
+                        }
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </details>
             <div className="mt-5 flex flex-wrap gap-2">

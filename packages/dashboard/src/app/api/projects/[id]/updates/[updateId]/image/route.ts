@@ -28,9 +28,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
   const path = `${id}/${updateId}/${crypto.randomUUID()}.${image.extension}`
   const { error: uploadError } = await auth.admin.storage.from('product_update_images').upload(path, image.buffer, { contentType: image.mimeType, upsert: false })
-  if (uploadError) return NextResponse.json({ error: 'Unable to upload image.' }, { status: 500, headers })
+  if (uploadError) {
+    console.error('Unable to upload product update image', uploadError)
+    const bucketUnavailable = /bucket|not found/i.test(uploadError.message)
+    return NextResponse.json({
+      code: bucketUnavailable ? 'IMAGE_STORAGE_UNAVAILABLE' : 'IMAGE_UPLOAD_FAILED',
+      error: bucketUnavailable
+        ? 'Image storage is temporarily unavailable. Your draft is safe; try again later.'
+        : 'The image could not be uploaded. Your draft is safe; check your connection and try the file again.',
+    }, { status: 500, headers })
+  }
   const { data, error } = await auth.admin.from('product_updates').update({ image_path: path, updated_at: new Date().toISOString() }).eq('project_id', id).eq('id', updateId).eq('updated_at', expectedVersion).select('*').maybeSingle()
-  if (error) { await auth.admin.storage.from('product_update_images').remove([path]); return NextResponse.json({ error: 'Unable to save image.' }, { status: 500, headers }) }
+  if (error) {
+    console.error('Unable to attach product update image', error)
+    await auth.admin.storage.from('product_update_images').remove([path])
+    return NextResponse.json({
+      code: 'IMAGE_ATTACH_FAILED',
+      error: 'The file uploaded, but could not be attached to this update. It was safely removed; reload the update and try again.',
+    }, { status: 500, headers })
+  }
   if (!data) { await auth.admin.storage.from('product_update_images').remove([path]); return NextResponse.json(editConflictResponse(update.updated_at), { status: 409, headers }) }
   if (update.image_path) await auth.admin.storage.from('product_update_images').remove([update.image_path])
   return NextResponse.json({ update: { ...data, imageUrl: publicImageUrl(auth.admin, path) } }, { headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } })

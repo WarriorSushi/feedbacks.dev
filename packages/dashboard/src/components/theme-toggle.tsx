@@ -119,7 +119,7 @@ export function ThemeToggle({ collapsed = false, className }: ThemeToggleProps) 
       <div
         role="radiogroup"
         aria-label="Appearance"
-        className="grid grid-cols-4 gap-1 rounded-lg border bg-surface-inset/45 p-1"
+        className="grid grid-cols-4 gap-1.5 rounded-lg border border-border/90 bg-surface-raised p-1.5 shadow-[inset_0_1px_0_hsl(var(--background)/0.8),0_1px_3px_hsl(var(--foreground)/0.12)]"
       >
         {APPEARANCE_OPTIONS.map((option) => {
           const Icon = option.icon
@@ -134,10 +134,10 @@ export function ThemeToggle({ collapsed = false, className }: ThemeToggleProps) 
               title={option.label}
               onClick={(event) => void changeTheme(option.value, event.currentTarget)}
               className={cn(
-                'flex h-8 min-w-0 items-center justify-center gap-1 rounded-md text-[11px] font-semibold transition-colors',
+                'flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border border-transparent text-[11px] font-semibold transition-colors',
                 selected
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                  ? 'border-border/80 bg-card text-foreground shadow-[0_1px_3px_hsl(var(--foreground)/0.18)]'
+                  : 'text-muted-foreground hover:border-border/60 hover:bg-accent hover:text-accent-foreground',
               )}
             >
               <Icon className="h-3.5 w-3.5 shrink-0" />
