@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       name?: string
       domain?: string
       icon?: string
+      createPrivateKey?: boolean
       creationRequestId?: string
     }>(request)
     if (!bodyResult.ok) return bodyResult.response
@@ -100,8 +101,9 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const rawApiKey = generateProjectApiKey()
-    const apiKeyHash = await hashProjectApiKey(rawApiKey)
+    const createPrivateKey = body.createPrivateKey !== false
+    const rawApiKey = createPrivateKey ? generateProjectApiKey() : null
+    const apiKeyHash = rawApiKey ? await hashProjectApiKey(rawApiKey) : null
 
     const now = new Date().toISOString()
     const project = {
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest) {
       creation_request_id: creationRequestId,
       api_key: null,
       api_key_hash: null,
-      api_key_last_four: getProjectApiKeyLastFour(rawApiKey),
+      api_key_last_four: rawApiKey ? getProjectApiKeyLastFour(rawApiKey) : null,
       domain,
       webhooks: {},
       settings: { icon },
@@ -141,15 +143,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
     }
 
-    const { error: apiKeyError } = await admin.rpc('rotate_project_api_key', {
-      p_project_id: data.id,
-      p_key_hash: apiKeyHash,
-      p_key_last_four: getProjectApiKeyLastFour(rawApiKey),
-      p_actor_user_id: user.id,
-    })
-    if (apiKeyError) {
-      await admin.from('projects').delete().eq('id', data.id)
-      return NextResponse.json({ error: 'Failed to create a private API key' }, { status: 500 })
+    if (rawApiKey && apiKeyHash) {
+      const { error: apiKeyError } = await admin.rpc('rotate_project_api_key', {
+        p_project_id: data.id,
+        p_key_hash: apiKeyHash,
+        p_key_last_four: getProjectApiKeyLastFour(rawApiKey),
+        p_actor_user_id: user.id,
+      })
+      if (apiKeyError) {
+        await admin.from('projects').delete().eq('id', data.id)
+        return NextResponse.json({ error: 'Failed to create a private API key' }, { status: 500 })
+      }
     }
 
     await recordActivationMilestone({

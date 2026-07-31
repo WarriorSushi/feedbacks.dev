@@ -127,22 +127,26 @@ export async function GET(
     return NextResponse.json({ error: 'Board not found' }, { status: 404 })
   }
 
-  // Get all public comments for feedback in this project
-  const { data: comments } = await admin
+  // Keep the public read project-scoped in SQL. Never load every public note
+  // into application memory as the product grows.
+  const { data: comments, error: commentsError } = await admin
     .from('feedback_notes')
-    .select('id, feedback_id, content, created_at')
+    .select('id, feedback_id, content, created_at, feedback!inner(project_id, is_public)')
     .eq('is_public', true)
+    .eq('feedback.project_id', board.project_id)
+    .eq('feedback.is_public', true)
     .order('created_at', { ascending: true })
+    .limit(500)
 
-  // Filter to only comments on feedback belonging to this project
-  // We need to join through feedback table
-  const { data: projectFeedbackIds } = await admin
-    .from('feedback')
-    .select('id')
-    .eq('project_id', board.project_id)
-
-  const feedbackIdSet = new Set(projectFeedbackIds?.map((f) => f.id) || [])
-  const filtered = (comments || []).filter((c) => feedbackIdSet.has(c.feedback_id))
+  if (commentsError) {
+    return NextResponse.json({ error: 'Comments could not be loaded.' }, { status: 500 })
+  }
+  const filtered = (comments || []).map((comment) => ({
+    id: comment.id,
+    feedback_id: comment.feedback_id,
+    content: comment.content,
+    created_at: comment.created_at,
+  }))
 
   return NextResponse.json({ comments: filtered })
 }

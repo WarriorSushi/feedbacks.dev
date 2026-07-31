@@ -3,11 +3,7 @@
 import * as React from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import {
-  getProjectPublishableKey,
-  readStoredProjectApiKey,
-  rememberProjectApiKey,
-} from '@/lib/project-api-keys'
+import { getProjectPublishableKey } from '@/lib/project-api-keys'
 import type { BillingSummary, Project } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -82,7 +78,7 @@ function ProjectTabsInner({ project, billingSummary, initialTab, updatesView, up
   const searchParams = useSearchParams()
   const router = useRouter()
   const [isInteractive, setIsInteractive] = React.useState(false)
-  const [apiKey, setApiKey] = React.useState<string | null>(project.api_key)
+  const [apiKey, setApiKey] = React.useState<string | null>(null)
   const [rotatingApiKey, setRotatingApiKey] = React.useState(false)
   const publishableKey = React.useMemo(() => getProjectPublishableKey(project.id), [project.id])
   const tabParam = searchParams.get('tab') as TabId | null
@@ -96,19 +92,6 @@ function ProjectTabsInner({ project, billingSummary, initialTab, updatesView, up
     setIsInteractive(true)
   }, [])
 
-  React.useEffect(() => {
-    if (project.api_key) {
-      rememberProjectApiKey(project.id, project.api_key)
-      setApiKey(project.api_key)
-      return
-    }
-
-    const storedKey = readStoredProjectApiKey(project.id)
-    if (storedKey) {
-      setApiKey(storedKey)
-    }
-  }, [project.api_key, project.id])
-
   const handleRotateApiKey = async () => {
     setRotatingApiKey(true)
     try {
@@ -120,11 +103,10 @@ function ProjectTabsInner({ project, billingSummary, initialTab, updatesView, up
         throw new Error(payload.error || 'Failed to rotate API key')
       }
 
-      rememberProjectApiKey(project.id, payload.api_key)
       setApiKey(payload.api_key)
       toast({
         title: 'New API key generated',
-        description: 'This key is only visible in this browser session. Copy it into your app or agent config now.',
+        description: 'This key is visible once. Copy it into your app or agent config now.',
       })
       router.refresh()
     } catch (error) {

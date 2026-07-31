@@ -264,7 +264,10 @@ export function ProductUpdatesTab({
             headers: { "Content-Type": "application/json" },
             body,
           });
-      if (!selected && data.update?.id) setSelectedId(data.update.id);
+      if (!selected && data.update?.id) {
+        setSelectedId(data.update.id);
+        router.replace(`/projects/${projectId}/release-notes/${data.update.id}`);
+      }
       toast({ title: selected ? "Update saved" : "Draft saved" });
       await load();
     } catch (error) {

@@ -162,7 +162,7 @@ export default function LandingPage() {
                 ['2', 'Collect useful context', 'Users write the message. Page and browser context arrive automatically; screenshots stay optional.'],
                 ['3', 'Triage and close the loop', 'Prioritize the signal, route what matters, and show users the improvements you ship.'],
               ].map(([step, title, body]) => (
-                <li key={step} className="rounded-xl border bg-card p-6 shadow-[var(--shadow-card)]">
+                <li key={step} className="min-w-0 rounded-xl border bg-card p-6 shadow-[var(--shadow-card)]">
                   <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">{step}</span>
                   <h3 className="mt-5 text-lg font-semibold">{title}</h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{body}</p>

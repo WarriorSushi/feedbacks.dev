@@ -211,11 +211,44 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const bodyResult = await readJsonBody(request)
     if (!bodyResult.ok) return bodyResult.response
     const body = bodyResult.data
+    const displayName = sanitizeText(body.display_name, 60)
+    if (!displayName) {
+      return NextResponse.json({
+        error: 'Review the highlighted board name.',
+        fieldErrors: { display_name: ['Enter a display name for the public board.'] },
+      }, { status: 400 })
+    }
     const slug = sanitizeSlug(body.slug)
     if (!slug) {
       return NextResponse.json({
         error: 'Review the highlighted public link.',
         fieldErrors: { slug: ['Enter at least one letter or number for the public link.'] },
+      }, { status: 400 })
+    }
+    const brandingInput = body.branding && typeof body.branding === 'object' && !Array.isArray(body.branding)
+      ? body.branding as Record<string, unknown>
+      : {}
+    const websiteUrl = typeof brandingInput.websiteUrl === 'string' ? brandingInput.websiteUrl.trim() : ''
+    if (websiteUrl) {
+      let validWebsiteUrl = false
+      try {
+        const parsed = new URL(websiteUrl)
+        validWebsiteUrl = parsed.protocol === 'https:' || parsed.protocol === 'http:'
+      } catch {
+        validWebsiteUrl = false
+      }
+      if (!validWebsiteUrl) {
+        return NextResponse.json({
+          error: 'Review the highlighted website URL.',
+          fieldErrors: { websiteUrl: ['Enter a complete http:// or https:// website URL.'] },
+        }, { status: 400 })
+      }
+    }
+    const accentColor = typeof brandingInput.accentColor === 'string' ? brandingInput.accentColor.trim() : ''
+    if (accentColor && !/^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(accentColor)) {
+      return NextResponse.json({
+        error: 'Review the highlighted accent color.',
+        fieldErrors: { accentColor: ['Enter a hex color such as #0f766e.'] },
       }, { status: 400 })
     }
 
@@ -234,7 +267,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
     const showTypes = sanitizeShowTypes(body.show_types)
     const profile = sanitizeBoardBranding(
-      body.branding as Parameters<typeof sanitizeBoardBranding>[0],
+      brandingInput as Parameters<typeof sanitizeBoardBranding>[0],
     )
     const announcements = sanitizeBoardAnnouncements(body.announcements)
     const existing = await admin

@@ -121,6 +121,8 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   const [collapsed, setCollapsed] = React.useState(false)
   const [utilityCollapsed, setUtilityCollapsed] = React.useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
+  const mobileDrawerRef = React.useRef<HTMLElement>(null)
+  const mobileMenuButtonRef = React.useRef<HTMLButtonElement>(null)
   const supabase = React.useMemo(() => createClient(), [])
 
   React.useEffect(() => {
@@ -172,6 +174,56 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
     setMobileOpen(false)
     setPendingHref(null)
   }, [currentHref])
+
+  React.useEffect(() => {
+    if (!mobileOpen) return
+
+    const drawer = mobileDrawerRef.current
+    const main = document.querySelector<HTMLElement>('main')
+    const focusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ) || [])
+    const previousMainAriaHidden = main?.getAttribute('aria-hidden')
+    if (main) {
+      main.inert = true
+      main.setAttribute('aria-hidden', 'true')
+    }
+    document.body.style.overflow = 'hidden'
+    window.requestAnimationFrame(() => focusable()[0]?.focus())
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setMobileOpen(false)
+        return
+      }
+      if (event.key !== 'Tab') return
+      const items = focusable()
+      if (!items.length) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = ''
+      if (main) {
+        main.inert = false
+        if (previousMainAriaHidden == null) main.removeAttribute('aria-hidden')
+        else main.setAttribute('aria-hidden', previousMainAriaHidden)
+      }
+      window.requestAnimationFrame(() => {
+        document.querySelector<HTMLButtonElement>('[aria-controls="mobile-navigation-drawer"]')?.focus()
+      })
+    }
+  }, [mobileOpen])
 
   React.useEffect(() => {
     const expandForTour = () => {
@@ -251,6 +303,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
           </Link>
         </div>
         <Button
+          ref={mobileMenuButtonRef}
           variant="ghost"
           size="icon"
           className="hidden h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground md:flex"
@@ -606,6 +659,8 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
           className="h-11 w-11"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation-drawer"
         >
           {mobileOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
         </Button>
@@ -621,15 +676,18 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
       />
 
       {/* ── Mobile drawer (fixed, slides in) ──────────────────────────── */}
-      <aside
-        className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r bg-surface-sidebar md:hidden',
-          'transition-transform duration-300 [transition-timing-function:cubic-bezier(0.25,1,0.5,1)]',
-          mobileOpen ? 'translate-x-0' : '-translate-x-full',
-        )}
-      >
-        {sidebarContent}
-      </aside>
+      {mobileOpen && (
+        <aside
+          ref={mobileDrawerRef}
+          id="mobile-navigation-drawer"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Main navigation"
+          className="fixed inset-y-0 left-0 z-50 flex w-60 flex-col border-r bg-surface-sidebar md:hidden"
+        >
+          {sidebarContent}
+        </aside>
+      )}
 
       {/* ── Desktop sidebar (static flex child, full height from parent) ─ */}
       <aside

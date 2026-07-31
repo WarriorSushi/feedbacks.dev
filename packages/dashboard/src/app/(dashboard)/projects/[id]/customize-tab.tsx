@@ -16,7 +16,8 @@ import { toast } from '@/hooks/use-toast'
 import { WidgetFormPreview } from './widget-form-preview'
 import { PageHeader } from '@/components/ui/workspace-shell'
 import { formatVersionEtag } from '@/lib/optimistic-concurrency'
-import { FormErrorSummary } from '@/components/ui/field-error'
+import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
+import { readErrorMessage, readFieldErrors, type FieldErrors } from '@/lib/form-errors'
 
 interface CustomizeTabProps {
   project: Project
@@ -38,6 +39,8 @@ const TRACKED_WIDGET_FIELDS: Array<[keyof WidgetConfig, string]> = [
   ['captchaProvider', 'Captcha provider'],
 ]
 
+const HEX_COLOR_RE = /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i
+
 export function CustomizeTab({
   project,
   projectKey,
@@ -47,6 +50,7 @@ export function CustomizeTab({
   const previewProjectKey = projectKey
   const [saving, setSaving] = React.useState(false)
   const [saveError, setSaveError] = React.useState('')
+  const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({})
   const [draftRestored, setDraftRestored] = React.useState(false)
   const [draftHydrated, setDraftHydrated] = React.useState(false)
   const storageKey = React.useMemo(() => `feedbacks-widget-draft:${project.id}`, [project.id])
@@ -166,6 +170,7 @@ export function CustomizeTab({
 
   const updateConfig = (key: keyof WidgetConfig, value: unknown) => {
     setConfig((prev) => ({ ...prev, [key]: value }))
+    setFieldErrors((current) => ({ ...current, [key]: '' }))
     setSaveError('')
   }
 
@@ -178,8 +183,16 @@ export function CustomizeTab({
   }
 
   const handleSave = async () => {
-    setSaving(true)
     setSaveError('')
+    setFieldErrors({})
+    const primaryColor = config.primaryColor?.trim() || ''
+    if (!HEX_COLOR_RE.test(primaryColor)) {
+      setFieldErrors({ primaryColor: 'Enter a hex color such as #6366f1.' })
+      setSaveError('Review the highlighted feedback form field.')
+      window.requestAnimationFrame(() => document.getElementById('primary-color-hex')?.focus())
+      return
+    }
+    setSaving(true)
     try {
       const response = await fetch(`/api/projects/${project.id}`, {
         method: 'PATCH',
@@ -194,7 +207,8 @@ export function CustomizeTab({
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({ error: 'Failed to save widget settings' }))
-        throw new Error(data.error || 'Failed to save widget settings')
+        setFieldErrors(readFieldErrors(data))
+        throw new Error(readErrorMessage(data, 'Failed to save widget settings'))
       }
 
       const payload = await response.json()
@@ -313,16 +327,20 @@ export function CustomizeTab({
                     <input
                       type="color"
                       id="primary-color"
-                      value={config.primaryColor || '#6366f1'}
+                      value={/^#[0-9a-f]{6}$/i.test(config.primaryColor || '') ? config.primaryColor : '#6366f1'}
                       onChange={(e) => updateConfig('primaryColor', e.target.value)}
                       className="h-11 w-11 cursor-pointer rounded border"
                     />
                     <Input
+                      id="primary-color-hex"
                       value={config.primaryColor || ''}
                       onChange={(e) => updateConfig('primaryColor', e.target.value)}
                       aria-label="Primary color hex value"
+                      aria-invalid={Boolean(fieldErrors.primaryColor)}
+                      aria-describedby={fieldErrors.primaryColor ? 'primary-color-error' : undefined}
                     />
                   </div>
+                  <FieldError id="primary-color-error">{fieldErrors.primaryColor}</FieldError>
                 </div>
 
                 {isFloatingButton && (

@@ -487,7 +487,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                 title={endpointLimitReached ? 'Free includes one active endpoint. Disable another endpoint or upgrade.' : undefined}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Add endpoint
+                Add {section.title} endpoint
               </Button>
             </summary>
 
@@ -532,6 +532,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-muted-foreground">Repository</label>
                             <Input
+                              aria-label={`Repository for ${section.title} endpoint ${index + 1}`}
                               placeholder={section.placeholder}
                               value={(endpoint as GitHubEndpoint).repo}
                               onChange={(e) => {
@@ -547,6 +548,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-muted-foreground">Token</label>
                             <Input
+                              aria-label={`Token for ${section.title} endpoint ${index + 1}`}
                               type="password"
                               placeholder={(endpoint as GitHubEndpoint).secretStored ? 'Stored securely ••••••••' : 'github_pat_...'}
                               value={(endpoint as GitHubEndpoint).token}
@@ -561,6 +563,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-muted-foreground">Labels</label>
                             <Input
+                              aria-label={`Labels for ${section.title} endpoint ${index + 1}`}
                               placeholder="feedback, triage"
                               value={(endpoint as GitHubEndpoint).labels || ''}
                               onChange={(e) =>
@@ -573,7 +576,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                           </div>
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-muted-foreground">Issue API URL</label>
-                            <Input value={endpoint.url} readOnly className="text-xs text-muted-foreground" />
+                            <Input aria-label={`Issue API URL for ${section.title} endpoint ${index + 1}`} value={endpoint.url} readOnly className="text-xs text-muted-foreground" />
                           </div>
                         </div>
                       ) : (
@@ -581,6 +584,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                           <div className="space-y-1.5">
                             <label className="text-xs font-medium text-muted-foreground">Webhook URL</label>
                             <Input
+                              aria-label={`Webhook URL for ${section.title} endpoint ${index + 1}`}
                               placeholder={section.placeholder}
                               value={endpoint.url}
                               onChange={(e) =>
@@ -609,6 +613,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
                                   </p>
                                 </div>
                                 <Input
+                                  aria-label={`Signing secret for ${section.title} endpoint ${index + 1}`}
                                   type="password"
                                   placeholder={endpoint.secretStored ? 'Stored securely (optional)' : 'whsec_...'}
                                   value={endpoint.signingSecret || ''}

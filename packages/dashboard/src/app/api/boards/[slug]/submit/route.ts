@@ -140,7 +140,7 @@ export async function POST(
       status: 'new',
       priority: 'low',
       tags: [],
-      metadata: {},
+      metadata: { source: 'public_board' },
       is_public: true,
       vote_count: 0,
       read_at: null,

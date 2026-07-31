@@ -58,6 +58,7 @@ export function IntegrationEndpointRulesEditor({
             Delivery timing
           </label>
           <select
+            aria-label="Delivery timing"
             className="h-9 w-full rounded-md border bg-background px-3 text-sm"
             value={endpoint.delivery || "immediate"}
             onChange={(event) =>
@@ -76,6 +77,7 @@ export function IntegrationEndpointRulesEditor({
             Payload format
           </label>
           <select
+            aria-label="Payload format"
             className="h-9 w-full rounded-md border bg-background px-3 text-sm"
             value={endpoint.format || "full"}
             onChange={(event) =>
@@ -94,6 +96,7 @@ export function IntegrationEndpointRulesEditor({
             Max rating
           </label>
           <Input
+            aria-label="Maximum rating"
             type="number"
             min={1}
             max={5}
@@ -115,6 +118,7 @@ export function IntegrationEndpointRulesEditor({
             Tags must include
           </label>
           <Input
+            aria-label="Required tags"
             placeholder="billing, auth"
             value={endpoint.rules?.tagsInclude?.join(", ") || ""}
             onChange={(event) => {

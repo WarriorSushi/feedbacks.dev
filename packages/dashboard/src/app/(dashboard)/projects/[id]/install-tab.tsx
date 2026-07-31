@@ -216,6 +216,7 @@ export function FeedbacksWidgetScript() {
     body: string
     code: string | null
     language: string
+    packageCommand?: string
     placement: string
     expected: string
   }> = [
@@ -256,6 +257,7 @@ export function FeedbacksWidgetScript() {
       body: 'Use when your web app has a React root where the widget should load once.',
       code: reactSnippet,
       language: 'tsx',
+      packageCommand: 'pnpm add @feedbacks/widget-react',
       placement: 'Render this once near your app root, layout, or provider tree.',
       expected: expectedResult,
     },
@@ -276,6 +278,7 @@ export function FeedbacksWidgetScript() {
       body: 'Use when your web app has a Vue shell where the widget should load once.',
       code: vueSnippet,
       language: 'vue',
+      packageCommand: 'pnpm add @feedbacks/widget-vue',
       placement: 'Mount once in the app shell so route changes do not create duplicate widgets.',
       expected: expectedResult,
     },
@@ -352,7 +355,17 @@ export function FeedbacksWidgetScript() {
         </div>
 
         {selectedTarget.code ? (
-          <div data-tour="install-code">
+          <div data-tour="install-code" className="space-y-4">
+            {selectedTarget.packageCommand && (
+              <div>
+                <p className="mb-2 text-sm font-medium text-foreground">1. Install the package</p>
+                <CodeSnippet
+                  tabs={[{ label: 'PNPM', code: selectedTarget.packageCommand, language: 'bash' }]}
+                  maxHeightClassName="max-h-28"
+                />
+                <p className="mb-2 mt-4 text-sm font-medium text-foreground">2. Add the component</p>
+              </div>
+            )}
             <CodeSnippet
               tabs={[{
                 label: selectedTarget.label,
