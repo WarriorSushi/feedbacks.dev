@@ -96,10 +96,15 @@ export function ProductUpdatesTab({
     null,
   );
   const [privateTestOpen, setPrivateTestOpen] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(view === "settings");
   const [publishConfirmation, setPublishConfirmation] = React.useState<
     "published" | "scheduled" | null
   >(null);
   const selected = updates.find((update) => update.id === selectedId) || null;
+
+  React.useEffect(() => {
+    if (view === "settings") setSettingsOpen(true);
+  }, [view]);
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -443,6 +448,8 @@ export function ProductUpdatesTab({
       );
       setSettings(result.settings);
       setSettingsVersion(result.settingsVersion);
+      toast({ title: "Display settings saved" });
+      return true;
     } catch (error) {
       toast({
         title: "Could not save settings",
@@ -450,6 +457,14 @@ export function ProductUpdatesTab({
         variant: "destructive",
       });
       void load();
+      return false;
+    }
+  }
+
+  function closeSettings() {
+    setSettingsOpen(false);
+    if (view === "settings") {
+      router.replace(`/projects/${projectId}/release-notes`);
     }
   }
 
@@ -512,67 +527,67 @@ export function ProductUpdatesTab({
       />
     );
   }
-  if (view === "settings") {
+  const settingsPanel = settingsOpen ? (
+    <ProductUpdatesSettings
+      settings={settings}
+      entitlements={entitlements}
+      onSave={saveSettings}
+      onClose={closeSettings}
+    />
+  ) : null;
+
+  if (view === "overview" || view === "settings") {
     return (
-      <ProductUpdatesSettings
-        settings={settings}
-        entitlements={entitlements}
-        onSave={saveSettings}
-        onBack={() => router.push(`/projects/${projectId}/release-notes`)}
-      />
-    );
-  }
-  if (view === "overview") {
-    return (
-      <ProductUpdatesOverview
-        updates={updates}
-        onNew={() => router.push(`/projects/${projectId}/release-notes/new`)}
-        onEdit={(id) =>
-          router.push(`/projects/${projectId}/release-notes/${id}`)
-        }
-        onSettings={() =>
-          router.push(`/projects/${projectId}/release-notes/settings`)
-        }
-        onAction={async (update, action) => {
-          if (
-            action === "delete" &&
-            !window.confirm(`Delete “${update.title}”? This cannot be undone.`)
-          )
-            return;
-          setSaving(true);
-          try {
-            await request(
-              `/api/projects/${projectId}/updates/${update.id}${action === "archive" || action === "restore" ? `/${action}` : ""}`,
-              {
-                method: action === "delete" ? "DELETE" : "POST",
-                headers: {
-                  "If-Match": formatVersionEtag(update.updated_at),
-                },
-              },
-            );
-            toast({
-              title:
-                action === "delete"
-                  ? "Update deleted"
-                  : action === "archive"
-                    ? "Update archived"
-                    : "Update restored",
-            });
-            await load();
-          } catch (error) {
-            toast({
-              title: `Could not ${action} update`,
-              description:
-                error instanceof Error ? error.message : "Try again.",
-              variant: "destructive",
-            });
-            await load();
-          } finally {
-            setSaving(false);
+      <>
+        <ProductUpdatesOverview
+          updates={updates}
+          onNew={() => router.push(`/projects/${projectId}/release-notes/new`)}
+          onEdit={(id) =>
+            router.push(`/projects/${projectId}/release-notes/${id}`)
           }
-        }}
-        busy={saving}
-      />
+          onSettings={() => setSettingsOpen(true)}
+          onAction={async (update, action) => {
+            if (
+              action === "delete" &&
+              !window.confirm(`Delete “${update.title}”? This cannot be undone.`)
+            )
+              return;
+            setSaving(true);
+            try {
+              await request(
+                `/api/projects/${projectId}/updates/${update.id}${action === "archive" || action === "restore" ? `/${action}` : ""}`,
+                {
+                  method: action === "delete" ? "DELETE" : "POST",
+                  headers: {
+                    "If-Match": formatVersionEtag(update.updated_at),
+                  },
+                },
+              );
+              toast({
+                title:
+                  action === "delete"
+                    ? "Update deleted"
+                    : action === "archive"
+                      ? "Update archived"
+                      : "Update restored",
+              });
+              await load();
+            } catch (error) {
+              toast({
+                title: `Could not ${action} update`,
+                description:
+                  error instanceof Error ? error.message : "Try again.",
+                variant: "destructive",
+              });
+              await load();
+            } finally {
+              setSaving(false);
+            }
+          }}
+          busy={saving}
+        />
+        {settingsPanel}
+      </>
     );
   }
 
@@ -659,9 +674,7 @@ export function ProductUpdatesTab({
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
-            onClick={() =>
-              router.push(`/projects/${projectId}/release-notes/settings`)
-            }
+            onClick={() => setSettingsOpen(true)}
           >
             <Settings2 className="mr-2 h-4 w-4" />
             Display settings
@@ -1029,9 +1042,7 @@ export function ProductUpdatesTab({
           <Button
             className="w-full"
             variant="ghost"
-            onClick={() =>
-              router.push(`/projects/${projectId}/release-notes/settings`)
-            }
+            onClick={() => setSettingsOpen(true)}
           >
             <Settings2 className="mr-2 h-4 w-4" />
             Release note settings
@@ -1045,6 +1056,7 @@ export function ProductUpdatesTab({
           onClose={() => setPrivateTestOpen(false)}
         />
       )}
+      {settingsPanel}
     </div>
   );
 }
