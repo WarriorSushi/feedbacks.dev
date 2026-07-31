@@ -60,6 +60,12 @@ export default function NewProjectPage() {
         return
       }
 
+      if (payload.marketing_event_id) {
+        window.dispatchEvent(new CustomEvent('feedbacks:marketing-conversion', {
+          detail: { eventName: 'ProjectCreated', eventId: payload.marketing_event_id },
+        }))
+      }
+
       router.push(`/projects/${payload.id}/install?created=1`)
       router.refresh()
     } catch (caught) {

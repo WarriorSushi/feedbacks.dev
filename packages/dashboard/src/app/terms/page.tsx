@@ -15,7 +15,7 @@ export default function TermsPage() {
 
         <h1 className="text-3xl font-bold tracking-tight">Terms of Service</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Last updated: July 30, 2026
+          Last updated: August 1, 2026
         </p>
 
         <div className="prose prose-zinc mt-8 max-w-none dark:prose-invert">
@@ -77,12 +77,20 @@ export default function TermsPage() {
             cancel or downgrade it from Billing before deleting the account. We may suspend accounts that violate these terms.
           </p>
 
-          <h2>9. Changes</h2>
+          <h2>9. Invitation Program</h2>
+          <p>
+            Each account may use its personal invitation link for up to five verified new-account signups.
+            After the fifth eligible signup, the inviter receives one complimentary month of Pro. The reward
+            can be earned once, is non-transferable, has no cash value, and may be withheld or reversed for
+            self-referrals, duplicate accounts, automation, fraud, or other abuse.
+          </p>
+
+          <h2>10. Changes</h2>
           <p>
             We may update these terms. Continued use after changes means acceptance.
           </p>
 
-          <h2>10. Contact</h2>
+          <h2>11. Contact</h2>
           <p>
             For billing, account, privacy, or support questions, contact us at{' '}
             <a href="mailto:pashaseenainc@gmail.com" className="underline">pashaseenainc@gmail.com</a>.

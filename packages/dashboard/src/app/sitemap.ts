@@ -20,6 +20,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'daily',
       priority: 0.75,
     },
+    {
+      url: `${SITE_ORIGIN}/early-access`,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
     ...docs,
     {
       url: `${SITE_ORIGIN}/privacy`,

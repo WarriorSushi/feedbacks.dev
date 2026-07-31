@@ -29,6 +29,7 @@ function defaultBillingAccount(userId: string, email?: string | null): BillingAc
     user_id: userId,
     plan_tier: 'free',
     billing_status: 'free',
+    complimentary_pro_until: null,
     dodo_customer_id: null,
     dodo_subscription_id: null,
     dodo_product_id: null,
@@ -93,8 +94,9 @@ function defaultUsageSnapshot(entitlements: EntitlementSet, projectCount = 0): U
   }
 }
 
-export function resolvePlanTier(account: Pick<BillingAccount, 'plan_tier' | 'billing_status'> | null): PlanTier {
+export function resolvePlanTier(account: Pick<BillingAccount, 'plan_tier' | 'billing_status' | 'complimentary_pro_until'> | null): PlanTier {
   if (!account) return 'free'
+  if (account.complimentary_pro_until && new Date(account.complimentary_pro_until).getTime() > Date.now()) return 'pro'
   const statusPlan = BILLING_STATUS_TO_PLAN[account.billing_status]
   if (statusPlan === 'pro' && account.plan_tier === 'pro') return 'pro'
   return account.plan_tier === 'pro' && statusPlan === 'pro' ? 'pro' : statusPlan

@@ -29,14 +29,16 @@ function AuthPageInner() {
   const encodedRedirect = encodeURIComponent(redirect)
   const supabase = React.useMemo(() => createClient(), [])
   const callbackError = searchParams.get('error')
+  const invited = searchParams.get('invited') === '1'
 
   React.useEffect(() => {
     if (!callbackError) return
-    setError(
-      callbackError === 'auth_failed'
-        ? 'That sign-in link is expired, already used, or was opened in the wrong browser. Request a new link below.'
-        : 'Sign in could not be completed. Please try again.',
-    )
+    const messages: Record<string, string> = {
+      auth_failed: 'That sign-in link is expired, already used, or was opened in the wrong browser. Request a new link below.',
+      invalid_invite: 'That invitation link is not valid. You can still create a free account below.',
+      invite_complete: 'That invitation has filled all five spots. You can still create a free account below.',
+    }
+    setError(messages[callbackError] || 'Sign in could not be completed. Please try again.')
   }, [callbackError])
 
   React.useEffect(() => {
@@ -131,6 +133,7 @@ function AuthPageInner() {
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Your workspace</p>
               <h1 className="mt-3 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">{sent ? 'Check your inbox' : 'Sign in or create an account'}</h1>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{sent ? `We sent a secure sign-in link to ${email}.` : 'New here? GitHub or a magic link creates your account and opens project setup automatically.'}</p>
+              {invited && !sent && <p className="mt-3 rounded-md border border-primary/25 bg-primary/[0.05] px-3 py-2 text-xs text-foreground">You were invited by another feedbacks.dev user. Create a new account through this page and their invite progress updates automatically.</p>}
             </div>
 
             {sent ? (

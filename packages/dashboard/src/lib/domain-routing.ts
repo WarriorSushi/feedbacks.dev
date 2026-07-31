@@ -11,10 +11,12 @@ const APP_SURFACE_PREFIXES = [
   '/billing',
   '/integrations',
   '/api-docs',
+  '/project-required',
+  '/invites',
 ]
 
 const PROTECTED_APP_PREFIXES = APP_SURFACE_PREFIXES.filter((prefix) => prefix !== '/auth')
-const MARKETING_SURFACE_PREFIXES = ['/', '/boards', '/docs', '/privacy', '/terms']
+const MARKETING_SURFACE_PREFIXES = ['/', '/boards', '/docs', '/privacy', '/terms', '/early-access', '/r']
 
 function normalizeOrigin(value: string | undefined, fallback: string) {
   return (value || fallback).replace(/\/+$/, '')
@@ -47,10 +49,11 @@ export function getAppOrigin() {
 }
 
 export function getMarketingOrigin() {
-  return normalizeOrigin(
-    process.env.NEXT_PUBLIC_MARKETING_ORIGIN || process.env.NEXT_PUBLIC_SITE_ORIGIN,
-    DEFAULT_MARKETING_ORIGIN,
-  )
+  const configured = process.env.NEXT_PUBLIC_MARKETING_ORIGIN || process.env.NEXT_PUBLIC_SITE_ORIGIN
+  if (configured) return normalizeOrigin(configured, DEFAULT_MARKETING_ORIGIN)
+  const appOrigin = normalizeOrigin(process.env.NEXT_PUBLIC_APP_ORIGIN, DEFAULT_APP_ORIGIN)
+  if (new URL(appOrigin).hostname === 'localhost' || new URL(appOrigin).hostname === '127.0.0.1') return appOrigin
+  return DEFAULT_MARKETING_ORIGIN
 }
 
 export function isAppSurfacePath(pathname: string) {

@@ -9,6 +9,8 @@ const DASHBOARD_ROUTES = [
   '/dashboard',
   '/feedback',
   '/integrations',
+  '/invites',
+  '/project-required',
   '/projects',
   '/settings',
   '/tutorials',

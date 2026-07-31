@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import { BrandWordmark } from '@/components/brand-wordmark'
 import { PLAN_MATRIX, generateInstallSnippets } from '@feedbacks/shared'
-import { LandingProductLoop } from '@/components/landing-product-loop'
+import { LandingProofPanel } from '@/components/landing-proof-panel'
 import { LandingConnectionsStory } from '@/components/landing-connections-story'
 import { LandingScrollHeader } from '@/components/landing-scroll-header'
 import { publicEnv } from '@/lib/public-env'
@@ -18,6 +18,7 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { AuthenticatedRedirect } from './authenticated-redirect'
+import { PrivacyChoicesButton } from '@/components/privacy-choices-button'
 
 const appOrigin = publicEnv.NEXT_PUBLIC_APP_ORIGIN
 const authHref = `${appOrigin}/auth`
@@ -120,13 +121,13 @@ export default function LandingPage() {
 
       <main>
         <section className="landing-hero relative overflow-hidden border-b">
-          <div className="landing-hero-grain absolute inset-0" aria-hidden="true" />
           <div className="relative mx-auto grid max-w-[1440px] gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pt-20 xl:grid-cols-[minmax(540px,0.88fr)_minmax(0,1.12fr)] xl:items-center xl:gap-12 xl:pb-24 xl:pt-24">
             <div className="lg:pb-6">
               <p className="inline-flex items-center gap-2 text-xs font-semibold text-foreground/70"><span className="h-1.5 w-1.5 rounded-full bg-primary" /> Feedback and updates inside your app</p>
               <h1 className="mt-5 max-w-2xl text-[2rem] font-semibold leading-[0.98] tracking-[-0.055em] sm:text-[4rem] xl:text-[3.55rem] 2xl:text-[3.85rem]">
-                <span className="block xl:whitespace-nowrap">Find what users need.</span>
-                <span className="mt-1 block xl:whitespace-nowrap">Show what you fixed.</span>
+                <span className="block xl:whitespace-nowrap">Install in minutes.</span>
+                <span className="mt-1 block xl:whitespace-nowrap">Learn what matters.</span>
+                <span className="mt-1 block xl:whitespace-nowrap">Show what shipped.</span>
               </h1>
               <p className="mt-6 max-w-[590px] text-base leading-7 text-muted-foreground sm:text-lg">
                 Put a small feedback form in your app. Capture page and browser context automatically, with an optional screenshot. Then show users the fixes you ship.
@@ -137,13 +138,14 @@ export default function LandingPage() {
                 </Link>
                 <Link href="#products"><Button variant="outline" size="lg" className="h-12 w-full bg-background/70 px-6 sm:w-auto">See how it works</Button></Link>
               </div>
+              <p className="mt-4 text-xs text-muted-foreground">Not ready to create an account? <Link href="/early-access" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-primary">Join the launch notes</Link>.</p>
               <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
                 {['No card to start', 'Under 20KB gzip', 'Private feedback media'].map((item) => (
                   <span key={item} className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" />{item}</span>
                 ))}
               </div>
             </div>
-            <div className="min-w-0"><LandingProductLoop /></div>
+            <div className="min-w-0"><LandingProofPanel installSnippet={installSnippet} /></div>
           </div>
         </section>
 
@@ -283,7 +285,7 @@ export default function LandingPage() {
       <footer className="border-t px-5 py-8 sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 sm:flex-row">
           <BrandWordmark className="text-sm font-semibold" markClassName="h-5 w-5" />
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground"><Link href="/docs" prefetch={false}>Docs</Link><Link href="/boards" prefetch={false}>Public boards</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></div>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground"><Link href="/docs" prefetch={false}>Docs</Link><Link href="/boards" prefetch={false}>Public boards</Link><Link href="/early-access">Launch notes</Link><Link href="/privacy">Privacy</Link><PrivacyChoicesButton /><Link href="/terms">Terms</Link></div>
           <a href="https://github.com/WarriorSushi/Feedbacks.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><Github className="h-4 w-4" /> Source available</a>
         </div>
       </footer>

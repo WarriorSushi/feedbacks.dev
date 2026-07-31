@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
 import { assertCanCreateProject } from '@/lib/billing'
 import { hasE2EBypass } from '@/lib/e2e'
@@ -11,6 +11,7 @@ import { DEFAULT_PROJECT_ICON, isProjectIcon } from '@/lib/project-icons'
 import { recordActivationMilestone } from '@/lib/activation-milestones'
 import { readJsonBody } from '@/lib/api-request'
 import { normalizeProjectDomain } from '@/lib/project-input'
+import { recordMarketingConversion } from '@/lib/marketing'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const SAFE_PROJECT_SELECT = 'id,owner_user_id,name,api_key_last_four,domain,webhooks,settings,environment,test_namespace,expires_at,quarantined_at,created_at,updated_at'
@@ -163,7 +164,17 @@ export async function POST(request: NextRequest) {
       admin,
     })
 
-    return NextResponse.json({ ...data, api_key: rawApiKey }, { status: 201 })
+    const marketingEventId = crypto.randomUUID()
+    after(() => recordMarketingConversion({
+      eventId: marketingEventId,
+      eventName: 'ProjectCreated',
+      email: user.email,
+      userId: user.id,
+      sourceUrl: request.headers.get('referer'),
+      request,
+    }))
+
+    return NextResponse.json({ ...data, api_key: rawApiKey, marketing_event_id: marketingEventId }, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

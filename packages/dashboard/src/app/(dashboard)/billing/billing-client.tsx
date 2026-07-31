@@ -138,23 +138,30 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
     summary.entitlements.webhookDeliveryLogLimit === null
       ? 'Full delivery history'
       : `Latest ${summary.entitlements.webhookDeliveryLogLimit} deliveries`
+  const complimentaryProActive = Boolean(
+    summary.account.complimentary_pro_until &&
+    new Date(summary.account.complimentary_pro_until).getTime() > Date.now(),
+  )
+  const paidProActive = summary.account.plan_tier === 'pro' &&
+    (summary.account.billing_status === 'active' || summary.account.billing_status === 'trialing')
+  const effectivePro = paidProActive || complimentaryProActive
 
   return (
     <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
       <section>
         <header className="border-b bg-surface-raised px-5 py-5 sm:px-6">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={summary.account.plan_tier === 'pro' ? 'default' : 'secondary'}>
+            <Badge variant={effectivePro ? 'default' : 'secondary'}>
               {summary.entitlements.label}
             </Badge>
-            <Badge variant="outline">{summary.account.billing_status}</Badge>
+            <Badge variant="outline">{complimentaryProActive && !paidProActive ? 'referral reward' : summary.account.billing_status}</Badge>
             {!customerBillingLive && <Badge variant="outline">Live checkout unavailable</Badge>}
           </div>
           <h2 className="mt-3 text-lg font-semibold">Billing and plan</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             See your plan, usage, limits, and renewal date in one place.
           </p>
-          {!customerBillingLive && summary.account.plan_tier !== 'pro' && (
+          {!customerBillingLive && !effectivePro && (
             <p className="mt-3 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-foreground">
               Pro checkout is paused while the live payment configuration is being verified. Your Free plan remains fully available and no test checkout will be shown in production.
             </p>
@@ -173,7 +180,7 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
                 value: feedbackLimitText,
                 hint: summary.entitlements.feedbackMonthlyLimit ? 'Monthly quota' : 'Unlimited on Pro',
               },
-              ...(summary.account.plan_tier === 'pro'
+              ...(paidProActive
                 ? [
                     {
                       label: summary.account.cancel_at_period_end ? 'Access until' : 'Next charge',
@@ -186,7 +193,15 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
                       hint: formatBillingInterval(summary.account.billing_interval, summary.account.billing_interval_count),
                     },
                   ]
-                : [
+                : complimentaryProActive
+                  ? [
+                    {
+                      label: 'Complimentary access until',
+                      value: formatPeriodEnd(summary.account.complimentary_pro_until),
+                      hint: 'One-time five-invite reward',
+                    },
+                  ]
+                  : [
                     {
                       label: 'History window',
                       value: `${summary.entitlements.historyDays || 30} days`,
@@ -203,11 +218,13 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {summary.account.plan_tier === 'pro' ? (
+            {paidProActive ? (
               <Button onClick={openPortal} disabled={portalLoading || !summary.billingEnabled}>
                 {portalLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Manage billing
               </Button>
+            ) : complimentaryProActive ? (
+              <Button disabled>Referral Pro active</Button>
             ) : (
               <Button onClick={startCheckout} disabled={checkoutLoading || !customerBillingLive}>
                 {checkoutLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

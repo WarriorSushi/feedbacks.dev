@@ -83,7 +83,7 @@ curl https://app.feedbacks.dev/api/v1/feedback \
 Push feedback to Slack, Discord, GitHub Issues, or any HTTP endpoint. Delivery logs, replay, health states, endpoint rules, and retry jobs help keep routing operational. Generic webhooks support optional HMAC signing headers.
 
 ### Privacy-First
-No tracking scripts. No cookies. No third-party analytics in the widget. The hosted service keeps feedback data in feedbacks.dev's managed Supabase project, protected by RLS and server-side write paths.
+No tracking scripts, cookies, or third-party analytics are added to the customer widget. On feedbacks.dev's own marketing and signup surfaces, optional advertising measurement remains off until a visitor explicitly allows it. The hosted service keeps feedback data in feedbacks.dev's managed Supabase project, protected by RLS and server-side write paths.
 
 ---
 

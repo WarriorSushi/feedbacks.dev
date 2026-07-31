@@ -264,6 +264,7 @@ export interface BillingAccount {
   user_id: string
   plan_tier: PlanTier
   billing_status: BillingStatus
+  complimentary_pro_until: string | null
   dodo_customer_id: string | null
   dodo_subscription_id: string | null
   dodo_product_id: string | null

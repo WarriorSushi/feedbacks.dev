@@ -75,8 +75,11 @@ For a new internal staging, recovery, or disposable verification project, run th
 51. `sql/051_advisor_security_hardening.sql` — removes remaining callable trigger internals, makes service-only RLS intent explicit, and fixes advisor indexes
 52. `sql/052_resend_delivery_events.sql` — records signed Resend delivery events and suppresses bounced or complained recipients without storing plaintext email addresses
 53. `sql/053_versioned_product_update_publish.sql` — rejects stale Product Update publication requests inside the database lock
+54. `sql/054_multiple_product_update_ctas.sql` — supports multiple validated call-to-action links on Product Updates
+55. `sql/055_private_feedback_by_default.sql` — makes non-board feedback private by default and marks its collection source
+56. `sql/056_growth_referrals_and_marketing.sql` — adds consent-aware lead and conversion records, five-use referrals, a one-time complimentary Pro month, and service-only growth data access
 
-Hosted schema note, 30 July 2026: migrations through `053` are applied and verified on the live project. Product Updates tables and storage exist with RLS enabled, embed heartbeats are service-managed, module choices are atomic, public-directory pagination is snapshot-stable, stale writes and publications are rejected atomically, email bounces and complaints are replay-safe and suppress future sends, advisor-owned security and performance warnings are cleared, generated types are current, and `pnpm supabase:check` passes.
+Hosted schema note, 30 July 2026: migrations through `055` are applied and verified on the live project. Migration `056` must be applied before deploying the matching growth and referral application code. Product Updates tables and storage exist with RLS enabled, embed heartbeats are service-managed, module choices are atomic, public-directory pagination is snapshot-stable, stale writes and publications are rejected atomically, email bounces and complaints are replay-safe and suppress future sends, advisor-owned security and performance warnings are cleared, generated types are current, and `pnpm supabase:check` passes.
 
 **How for internal/staging use:** apply the files through the Supabase CLI or copy-paste the contents of each file into the SQL Editor and click "Run".
 

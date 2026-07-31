@@ -285,6 +285,40 @@ Acceptance criteria:
 - generated install code remains stable after installation
 - saved browser-safe configuration is delivered remotely and matches the dashboard preview
 
+## Epic 10: Discover and recommend the product
+
+### US-10.1
+
+Story:
+As an interested developer who is not ready to create an account, I want to join a concise product list so I can receive useful launch guidance without entering the dashboard.
+
+Acceptance criteria:
+- email consent is explicit and separate from advertising measurement
+- duplicate submissions are idempotent and abuse-limited
+- the success state explains what happens next
+
+### US-10.2
+
+Story:
+As a user who recommends feedbacks.dev, I want a personal five-use invite link so successful introductions are easy to track and reward.
+
+Acceptance criteria:
+- each verified new account fills one of five slots
+- self-referrals and duplicate invitee credit do not count
+- the fifth signup grants one complimentary Pro month atomically
+- the reward can be earned only once
+
+### US-10.3
+
+Story:
+As a privacy-conscious visitor, I want advertising measurement off by default and reversible so I control whether ad platforms receive conversion data.
+
+Acceptance criteria:
+- tags and server conversion calls require explicit consent
+- Meta and Reddit browser/server events deduplicate with the same identifier
+- customer widgets and public boards never contain advertising tags
+- privacy choices remain available after the first decision
+
 ## Priority order
 
 ### Must-have for v1
@@ -303,6 +337,9 @@ Acceptance criteria:
 - US-6.2
 - US-6.4
 - US-7.1
+- US-10.1
+- US-10.2
+- US-10.3
 
 ### Should-have shortly after v1
 

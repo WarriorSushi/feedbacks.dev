@@ -6,7 +6,7 @@ const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf
 
 test('landing page explains both sides of the feedback loop and keeps the install-once architecture', () => {
   const source = read('../../src/app/page.tsx')
-  const demo = read('../../src/components/landing-product-loop.tsx')
+  const demo = read('../../src/components/landing-proof-panel.tsx')
   const connections = read('../../src/components/landing-connections-story.tsx')
 
   assert.match(source, /Put a small feedback form in your app/)
@@ -17,18 +17,17 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   assert.match(source, /Questions developers ask first\./)
   assert.match(source, /Under 20KB gzip/)
   assert.match(source, /Private feedback media/)
-  assert.match(demo, /Send feedback/)
-  assert.match(demo, /See what changed/)
-  assert.match(demo, /setPaused\(true\)/)
-  assert.match(demo, /AUTO_ADVANCE_MS = 8000/)
+  assert.match(source, /Install in minutes\./)
+  assert.match(source, /Learn what matters\./)
+  assert.match(source, /Show what shipped\./)
   assert.match(demo, /Orbit/)
-  assert.match(demo, /Ledgerly/)
-  assert.match(demo, /Parcel/)
-  assert.match(demo, /OrbitCanvas/)
-  assert.match(demo, /LedgerlyCanvas/)
-  assert.match(demo, /ParcelCanvas/)
+  assert.match(demo, /Install once/)
+  assert.match(demo, /Useful context arrives/)
+  assert.match(demo, /Show what shipped/)
+  assert.match(demo, /Screenshot included/)
+  assert.match(demo, /navigator\.clipboard/)
+  assert.doesNotMatch(demo, /AUTO_ADVANCE|setInterval/)
   assert.match(demo, /setTimeout/)
-  assert.doesNotMatch(demo, /onMouseEnter|hovered/)
   assert.match(connections, /Slack/)
   assert.match(connections, /GitHub/)
   assert.match(connections, /Discord/)
@@ -62,6 +61,7 @@ test('marketing routes expose a crawlable acquisition foundation without indexin
   assert.match(sitemap, /`\$\{SITE_ORIGIN\}\/boards`/)
   assert.match(openGraph, /ImageResponse/)
   assert.match(openGraph, /Find what users need\./)
+  assert.match(landing, /\/early-access/)
 })
 
 test('first-run and public feedback screens keep optional work out of the main path', () => {
@@ -129,6 +129,9 @@ test('sidebar exposes a stable Home destination and groups project work by user 
   assert.match(sidebar, /label: 'Feedback inbox', icon: Inbox/)
   assert.doesNotMatch(sidebar, /label: 'Overview'/)
   assert.doesNotMatch(sidebar, /projectTab: 'home'/)
+  assert.match(sidebar, /project-required\?feature=/)
+  assert.match(sidebar, /label: 'Invite friends'/)
+  assert.ok(sidebar.indexOf('aria-controls="mobile-navigation-drawer"') < sidebar.indexOf('<BrandWordmark', sidebar.indexOf('Mobile top bar')))
 })
 
 test('sign-in explains account creation and the shared embed before setup', () => {

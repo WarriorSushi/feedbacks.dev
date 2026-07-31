@@ -56,6 +56,10 @@ Recommended high-level shape:
 - docs and implementation must stay synchronized
 - paid-plan truth must be server-driven and webhook-authoritative
 - billing provider integration must remain isolated from browser code except for hosted redirects
+- advertising scripts must remain isolated from customer widgets and load only after explicit consent
+- server conversion payloads must use allowlisted events, hashed normalized match data, bounded attribution fields, and browser/server deduplication identifiers
+- referral qualification and reward application must be a single locked database operation callable only by the service role
+- complimentary access must augment, not overwrite, webhook-authoritative billing state
 
 ## Archived project note
 

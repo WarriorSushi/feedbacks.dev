@@ -9,6 +9,8 @@ import { Toaster } from '@/components/toaster'
 import { SITE_ORIGIN } from '@/lib/site'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { MarketingMeasurement } from '@/components/marketing-measurement'
+import { Suspense } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -48,6 +50,8 @@ export default async function RootLayout({
   // A nonce-based CSP only works when Next renders per request and can attach
   // the middleware nonce to framework and hydration scripts.
   const nonce = (await headers()).get('x-nonce') || undefined
+  const pathname = (await headers()).get('x-pathname') || '/'
+  const showMarketingConsent = pathname === '/' || pathname === '/auth' || pathname.startsWith('/early-access')
 
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
@@ -63,6 +67,18 @@ export default async function RootLayout({
           {children}
           <PublicThemeControl />
           <Toaster />
+          <Suspense>
+            <MarketingMeasurement
+              showBanner={showMarketingConsent}
+              config={{
+                googleTagId: process.env.NEXT_PUBLIC_GOOGLE_TAG_ID,
+                googleLeadLabel: process.env.NEXT_PUBLIC_GOOGLE_ADS_LEAD_LABEL,
+                googleSignupLabel: process.env.NEXT_PUBLIC_GOOGLE_ADS_SIGNUP_LABEL,
+                metaPixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID,
+                redditPixelId: process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID,
+              }}
+            />
+          </Suspense>
           <Analytics />
           <SpeedInsights />
         </ThemeProvider>

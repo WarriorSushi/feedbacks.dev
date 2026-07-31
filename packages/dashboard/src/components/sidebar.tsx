@@ -30,6 +30,7 @@ import {
   CircleHelp,
   Library,
   Megaphone,
+  Gift,
 } from 'lucide-react'
 import type { Project } from '@/lib/types'
 import { createClient } from '@/lib/supabase-browser'
@@ -88,6 +89,7 @@ const primaryNavGroups: NavGroup[] = [
 ]
 
 const utilityNavItems: NavItem[] = [
+  { href: '/invites', label: 'Invite friends', icon: Gift, tourId: 'nav-invites' },
   { href: 'https://www.feedbacks.dev/docs', label: 'Docs', icon: Library, tourId: 'nav-docs', external: true },
   { href: '/billing',   label: 'Billing',   icon: CreditCard, tourId: 'nav-billing' },
   { href: '/settings',  label: 'Settings',  icon: Settings, tourId: 'nav-settings' },
@@ -101,6 +103,7 @@ interface SidebarProps {
   billingAccount?: {
     plan_tier: PlanTier
     billing_status: BillingStatus
+    complimentary_pro_until: string | null
   } | null
 }
 
@@ -146,9 +149,11 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   }, [])
 
   const currentProject = visibleProjects.find((p) => p.id === resolvedCurrentProjectId) || visibleProjects[0]
-  const showProBrand =
-    billingAccount?.plan_tier === 'pro' &&
-    (billingAccount.billing_status === 'active' || billingAccount.billing_status === 'trialing')
+  const showProBrand = Boolean(
+    (billingAccount?.plan_tier === 'pro' &&
+      (billingAccount.billing_status === 'active' || billingAccount.billing_status === 'trialing')) ||
+    (billingAccount?.complimentary_pro_until && new Date(billingAccount.complimentary_pro_until).getTime() > Date.now())
+  )
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -179,6 +184,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
     if (!mobileOpen) return
 
     const drawer = mobileDrawerRef.current
+    const menuButton = mobileMenuButtonRef.current
     const main = document.querySelector<HTMLElement>('main')
     const focusable = () => Array.from(drawer?.querySelectorAll<HTMLElement>(
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
@@ -220,7 +226,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
         else main.setAttribute('aria-hidden', previousMainAriaHidden)
       }
       window.requestAnimationFrame(() => {
-        document.querySelector<HTMLButtonElement>('[aria-controls="mobile-navigation-drawer"]')?.focus()
+        menuButton?.focus()
       })
     }
   }, [mobileOpen])
@@ -277,9 +283,27 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
     <>
       {/* Logo row */}
       <div className="flex h-14 shrink-0 items-center justify-between border-b border-border/80 px-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground md:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Close navigation menu"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="hidden h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground md:flex"
+          onClick={() => setCollapsed(!collapsed)}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+        </Button>
         <div
           className={cn(
-            'overflow-hidden transition-[width,opacity] duration-200',
+            'ml-auto overflow-hidden transition-[width,opacity] duration-200',
             collapsed ? 'w-0 opacity-0' : 'w-full opacity-100'
           )}
         >
@@ -289,7 +313,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
             onClick={() => beginNavigation('/dashboard')}
             onMouseEnter={() => router.prefetch('/dashboard')}
             onFocus={() => router.prefetch('/dashboard')}
-            className="whitespace-nowrap font-semibold transition-opacity active:opacity-70"
+            className="flex justify-end whitespace-nowrap font-semibold transition-opacity active:opacity-70"
             aria-label="Go to Home"
             title="Home"
             tabIndex={collapsed ? -1 : 0}
@@ -302,16 +326,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
             />
           </Link>
         </div>
-        <Button
-          ref={mobileMenuButtonRef}
-          variant="ghost"
-          size="icon"
-          className="hidden h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground md:flex"
-          onClick={() => setCollapsed(!collapsed)}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-        </Button>
       </div>
 
       {/* Project switcher */}
@@ -451,6 +465,8 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                 const projectTab = item.projectTab
                 const scopedHref = projectTab && currentProject
                   ? getProjectRoute(currentProject.id, projectTab as Parameters<typeof getProjectRoute>[1])
+                  : projectTab
+                    ? `/project-required?feature=${encodeURIComponent(item.label)}`
                   : item.href
                 const activeProjectSection = getProjectRouteSection(pathname)
                 const isActive = projectTab
@@ -646,24 +662,33 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
     <>
       {/* ── Mobile top bar ──────────────────────────────────────────────── */}
       <div className="flex h-14 shrink-0 items-center justify-between border-b bg-surface-sidebar px-4 md:hidden">
-        <Link href="/dashboard" prefetch={false} className="font-semibold transition-opacity active:opacity-70">
+        <Button
+          ref={mobileMenuButtonRef}
+          variant="ghost"
+          size="icon"
+          className="h-11 w-11"
+          onClick={() => {
+            setCollapsed(false)
+            setMobileOpen(!mobileOpen)
+          }}
+          aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation-drawer"
+        >
+          {mobileOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
+        </Button>
+        <Link
+          href="/dashboard"
+          prefetch={false}
+          onClick={() => beginNavigation('/dashboard')}
+          className="font-semibold transition-opacity active:opacity-70"
+        >
           <BrandWordmark
             className="text-[17px]"
             markClassName={cn('h-6 w-6', showProBrand && 'rounded-lg')}
             markSrc={showProBrand ? '/feedbacks.dev_pro_monthly.svg' : undefined}
           />
         </Link>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-11 w-11"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-          aria-expanded={mobileOpen}
-          aria-controls="mobile-navigation-drawer"
-        >
-          {mobileOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
-        </Button>
       </div>
 
       {/* ── Mobile overlay ──────────────────────────────────────────────── */}
