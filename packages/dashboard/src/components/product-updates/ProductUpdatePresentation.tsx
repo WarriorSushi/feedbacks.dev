@@ -12,16 +12,28 @@ export function ProductUpdateField({
   label,
   children,
   className,
+  error,
 }: {
   label: string;
   children: React.ReactNode;
   className?: string;
+  error?: string;
 }) {
   return (
-    <label className={`block space-y-1.5 ${className || ""}`}>
-      <span className="text-sm font-medium">{label}</span>
-      {children}
-    </label>
+    <div
+      data-field-error={error ? "true" : undefined}
+      className={`block space-y-1.5 ${error ? "rounded-md bg-destructive/10 p-2 ring-1 ring-destructive/70" : ""} ${className || ""}`}
+    >
+      <label className="block space-y-1.5">
+        <span className="text-sm font-medium">{label}</span>
+        {children}
+      </label>
+      {error ? (
+        <p className="text-xs font-medium text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
