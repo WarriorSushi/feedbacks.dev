@@ -1029,6 +1029,7 @@ export type Database = {
           created_by: string | null
           cta_label: string | null
           cta_url: string | null
+          ctas: Json
           expires_at: string | null
           highlights: string[]
           id: string
@@ -1047,6 +1048,7 @@ export type Database = {
           created_by?: string | null
           cta_label?: string | null
           cta_url?: string | null
+          ctas?: Json
           expires_at?: string | null
           highlights?: string[]
           id?: string
@@ -1065,6 +1067,7 @@ export type Database = {
           created_by?: string | null
           cta_label?: string | null
           cta_url?: string | null
+          ctas?: Json
           expires_at?: string | null
           highlights?: string[]
           id?: string

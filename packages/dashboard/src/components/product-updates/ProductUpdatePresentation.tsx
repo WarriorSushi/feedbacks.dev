@@ -97,6 +97,14 @@ export function ProductUpdatePreview({
       >
         {form.summary || "A concise summary of the release appears here."}
       </p>
+      {form.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={form.imageUrl}
+          alt={form.imageAltText || ""}
+          className="mt-4 aspect-video w-full rounded-md object-cover"
+        />
+      )}
       {form.highlights && (
         <ul className="mt-3 list-disc space-y-1 pl-5 text-sm">
           {form.highlights
@@ -107,13 +115,22 @@ export function ProductUpdatePreview({
             ))}
         </ul>
       )}
-      {form.ctaLabel && (
-        <span
-          className="mt-4 inline-flex rounded-md px-3 py-2 text-sm font-semibold text-white"
-          style={{ backgroundColor: accent }}
-        >
-          {form.ctaLabel}
-        </span>
+      {form.ctas.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {form.ctas.map((cta, index) => (
+            <span
+              key={`${cta.label}-${index}`}
+              className="inline-flex rounded-md border px-3 py-2 text-sm font-semibold"
+              style={
+                index === 0
+                  ? { backgroundColor: accent, borderColor: accent, color: "#fff" }
+                  : { borderColor: accent, color: accent }
+              }
+            >
+              {cta.label || `Button ${index + 1}`}
+            </span>
+          ))}
+        </div>
       )}
     </div>
   );

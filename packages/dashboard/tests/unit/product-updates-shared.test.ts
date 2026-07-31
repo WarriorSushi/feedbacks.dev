@@ -62,3 +62,27 @@ test('product update validation permits clearing an optional version label', asy
   assert.deepEqual(result.errors, {})
   assert.equal(result.data.versionLabel, undefined)
 })
+
+test('product update validation accepts up to four safe ordered CTAs', async () => {
+  const { sanitizeProductUpdateInput } = await loadProductUpdates()
+  const valid = sanitizeProductUpdateInput({
+    title: 'Title',
+    summary: 'Summary',
+    ctas: [
+      { label: 'Open dashboard', url: '/dashboard' },
+      { label: 'Read docs', url: 'https://feedbacks.dev/docs' },
+    ],
+  }, { requirePublishFields: true })
+  assert.deepEqual(valid.errors, {})
+  assert.equal(valid.data.ctas?.length, 2)
+
+  const tooMany = sanitizeProductUpdateInput({
+    title: 'Title',
+    summary: 'Summary',
+    ctas: Array.from({ length: 5 }, (_, index) => ({
+      label: `Button ${index}`,
+      url: `/button-${index}`,
+    })),
+  }, { requirePublishFields: true })
+  assert.ok(tooMany.errors.ctas)
+})

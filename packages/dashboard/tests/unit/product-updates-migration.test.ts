@@ -7,6 +7,10 @@ const versionedPublishMigration = new URL(
   '../../../../sql/053_versioned_product_update_publish.sql',
   import.meta.url,
 )
+const multipleCtasMigration = new URL(
+  '../../../../sql/054_multiple_product_update_ctas.sql',
+  import.meta.url,
+)
 
 test('product update migration preserves RLS, service-only RPCs, and atomic publish limits', async () => {
   const sql = await readFile(migration, 'utf8')
@@ -20,6 +24,14 @@ test('product update migration preserves RLS, service-only RPCs, and atomic publ
   assert.match(sql, /grant execute on function public\.publish_product_update[\s\S]+to service_role/i)
   assert.match(sql, /product_update_images/)
   assert.match(sql, /target\.published_at <= now\(\)/)
+})
+
+test('product updates store a bounded ordered CTA collection with legacy backfill', async () => {
+  const sql = await readFile(multipleCtasMigration, 'utf8')
+
+  assert.match(sql, /add column if not exists ctas jsonb/i)
+  assert.match(sql, /jsonb_array_length\(ctas\) <= 4/i)
+  assert.match(sql, /jsonb_build_object\('label', cta_label, 'url', cta_url\)/i)
 })
 
 test('product update publication rejects a stale editor inside the database lock', async () => {

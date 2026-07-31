@@ -176,7 +176,17 @@ export class ProductUpdatesController {
       modal.append(list)
     }
 
-    if (update.ctaLabel && update.ctaUrl) modal.append(this.createCta(update, manual))
+    const ctas = update.ctas?.length
+      ? update.ctas
+      : update.ctaLabel && update.ctaUrl
+        ? [{ label: update.ctaLabel, url: update.ctaUrl }]
+        : []
+    if (ctas.length) {
+      const actions = document.createElement('div')
+      actions.className = 'fb-update-actions'
+      ctas.forEach((cta) => actions.append(this.createCta(update, cta, manual)))
+      modal.append(actions)
+    }
     if (this.response?.settings.showPoweredBy) modal.append(this.text('p', 'Powered by feedbacks.dev', 'fb-update-powered'))
 
     overlay.append(modal)
@@ -199,12 +209,16 @@ export class ProductUpdatesController {
     this.dispatch('feedbacks:updates:shown', update.id, manual)
   }
 
-  private createCta(update: ProductUpdateContent, manual: boolean) {
+  private createCta(
+    update: ProductUpdateContent,
+    action: { label: string; url: string },
+    manual: boolean,
+  ) {
     const cta = document.createElement('a')
     cta.className = 'fb-update-cta'
-    cta.textContent = update.ctaLabel!
+    cta.textContent = action.label
     try {
-      const url = new URL(update.ctaUrl!, location.href)
+      const url = new URL(action.url, location.href)
       cta.href = url.href
       if (url.origin !== location.origin) {
         cta.target = '_blank'

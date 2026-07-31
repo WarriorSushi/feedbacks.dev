@@ -54,6 +54,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     highlights: existing.highlights,
     ctaLabel: existing.cta_label,
     ctaUrl: existing.cta_url,
+    ctas: existing.ctas,
     ...(typeof existing.published_at === 'string' ? { publishedAt: existing.published_at } : {}),
     ...(typeof existing.expires_at === 'string' ? { expiresAt: existing.expires_at } : {}),
     ...(typeof existing.image_alt_text === 'string' ? { imageAltText: existing.image_alt_text } : {}),
@@ -61,11 +62,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }, { requirePublishFields: true }); if (Object.keys(parsed.errors).length) return NextResponse.json({ errors: parsed.errors }, { status: 400, headers })
   const { data, error } = await auth.admin.from('product_updates').update({
     version_label: parsed.data.versionLabel || null, title: parsed.data.title, summary: parsed.data.summary,
-    highlights: parsed.data.highlights, cta_label: parsed.data.ctaLabel || null, cta_url: parsed.data.ctaUrl || null,
+    highlights: parsed.data.highlights,
+    cta_label: parsed.data.ctas?.[0]?.label || parsed.data.ctaLabel || null,
+    cta_url: parsed.data.ctas?.[0]?.url || parsed.data.ctaUrl || null,
+    ctas: parsed.data.ctas || [],
     image_alt_text: parsed.data.imageAltText || null,
     updated_at: new Date().toISOString(),
   }).eq('project_id', id).eq('id', updateId).eq('updated_at', expectedVersion).select('*').maybeSingle()
-  if (error) return NextResponse.json({ error: 'Unable to save update.' }, { status: 500, headers })
+  if (error) {
+    console.error('Unable to save product update', error)
+    return NextResponse.json({
+      code: 'UPDATE_SAVE_FAILED',
+      error: 'The update could not be saved. Your changes are still in the editor. Wait a moment, then try again; if it continues, reload the latest version.',
+    }, { status: 500, headers })
+  }
   if (!data) {
     const { data: latest } = await auth.admin.from('product_updates').select('updated_at').eq('project_id', id).eq('id', updateId).maybeSingle()
     const currentVersion = latest?.updated_at || existing.updated_at

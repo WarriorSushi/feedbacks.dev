@@ -166,6 +166,7 @@ test('Windows 98 is a complete selectable appearance across product and public s
   const settings = read('../../src/app/(dashboard)/settings/page.tsx')
 
   assert.match(layout, /themes=\{\['light', 'dark', 'windows98'\]\}/)
+  assert.match(layout, /defaultTheme="system"/)
   assert.match(toggle, /value: 'windows98', label: 'Windows 98'/)
   assert.match(toggle, /role="radiogroup"/)
   assert.match(settings, /\['windows98', 'Windows 98'\]/)

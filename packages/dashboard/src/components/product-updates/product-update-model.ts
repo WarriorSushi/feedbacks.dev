@@ -8,6 +8,7 @@ export type ProductUpdate = {
   highlights: string[];
   cta_label: string | null;
   cta_url: string | null;
+  ctas?: Array<{ label: string; url: string }>;
   imageUrl?: string;
   image_alt_text: string | null;
   published_at: string | null;
@@ -38,10 +39,10 @@ export type ProductUpdateForm = {
   title: string;
   summary: string;
   highlights: string;
-  ctaLabel: string;
-  ctaUrl: string;
+  ctas: Array<{ label: string; url: string }>;
   expiresAt: string;
   imageAltText: string;
+  imageUrl: string;
 };
 
 export type ProductModules = { feedback: boolean; updates: boolean };
@@ -56,10 +57,10 @@ export const blankProductUpdateForm: ProductUpdateForm = {
   title: "",
   summary: "",
   highlights: "",
-  ctaLabel: "",
-  ctaUrl: "",
+  ctas: [],
   expiresAt: "",
   imageAltText: "",
+  imageUrl: "",
 };
 
 export function toProductUpdateForm(update: ProductUpdate): ProductUpdateForm {
@@ -68,10 +69,15 @@ export function toProductUpdateForm(update: ProductUpdate): ProductUpdateForm {
     title: update.title,
     summary: update.summary,
     highlights: update.highlights.join("\n"),
-    ctaLabel: update.cta_label || "",
-    ctaUrl: update.cta_url || "",
+    ctas:
+      update.ctas?.length
+        ? update.ctas
+        : update.cta_label && update.cta_url
+          ? [{ label: update.cta_label, url: update.cta_url }]
+          : [],
     expiresAt: localDateTime(update.expires_at),
     imageAltText: update.image_alt_text || "",
+    imageUrl: update.imageUrl || "",
   };
 }
 

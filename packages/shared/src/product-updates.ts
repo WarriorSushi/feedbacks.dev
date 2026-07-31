@@ -28,6 +28,7 @@ export const PRODUCT_UPDATE_LIMITS = {
   highlight: 160,
   ctaLabel: 40,
   ctaUrl: 2048,
+  ctas: 4,
   imageAltText: 160,
   paths: 10,
   path: 120,
@@ -37,6 +38,11 @@ export const PRODUCT_UPDATE_LIMITS = {
   metricEvents: 10,
   metricBodyBytes: 8 * 1024,
 } as const
+
+export interface ProductUpdateCta {
+  label: string
+  url: string
+}
 
 export interface ProductUpdateContent {
   id: string
@@ -48,6 +54,7 @@ export interface ProductUpdateContent {
   imageAltText?: string
   ctaLabel?: string
   ctaUrl?: string
+  ctas?: ProductUpdateCta[]
   publishedAt: string
   expiresAt?: string
 }
@@ -183,6 +190,7 @@ export interface ProductUpdateInput {
   highlights?: string[]
   ctaLabel?: string
   ctaUrl?: string
+  ctas?: ProductUpdateCta[]
   imageAltText?: string
   publishedAt?: string
   expiresAt?: string
@@ -268,6 +276,24 @@ export function sanitizeProductUpdateInput(
   if ((rawCtaLabel && !ctaLabel) || (rawCtaUrl && !ctaUrl) || Boolean(ctaLabel) !== Boolean(ctaUrl)) {
     errors.cta = 'CTA label and a safe relative or HTTP(S) URL are both required.'
   }
+  const rawCtas = source.ctas
+  const ctas = Array.isArray(rawCtas)
+    ? rawCtas.flatMap((item) => {
+        if (!item || typeof item !== 'object') return []
+        const candidate = item as Record<string, unknown>
+        const label = optionalText(candidate.label, PRODUCT_UPDATE_LIMITS.ctaLabel)
+        const url = sanitizeProductUpdateCta(candidate.url)
+        return label && url ? [{ label, url }] : []
+      })
+    : []
+  if (
+    rawCtas !== undefined
+    && (!Array.isArray(rawCtas)
+      || rawCtas.length > PRODUCT_UPDATE_LIMITS.ctas
+      || ctas.length !== rawCtas.length)
+  ) {
+    errors.ctas = `Use up to ${PRODUCT_UPDATE_LIMITS.ctas} buttons. Every button needs a label and a safe relative or HTTP(S) URL.`
+  }
 
   const publishedAt = parseIso(source.publishedAt)
   const expiresAt = parseIso(source.expiresAt)
@@ -282,6 +308,7 @@ export function sanitizeProductUpdateInput(
       ...(summary ? { summary } : {}),
       highlights: errors.highlights ? [] : highlights,
       ...(ctaLabel && ctaUrl ? { ctaLabel, ctaUrl } : {}),
+      ...(rawCtas !== undefined && !errors.ctas ? { ctas } : {}),
       ...(imageAltText ? { imageAltText } : {}),
       ...(publishedAt ? { publishedAt } : {}),
       ...(expiresAt ? { expiresAt } : {}),
