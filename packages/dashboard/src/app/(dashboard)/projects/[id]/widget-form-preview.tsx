@@ -135,7 +135,7 @@ export function WidgetFormPreview({ config, className }: WidgetFormPreviewProps)
   )
 
   return (
-    <div className={cn('rounded-lg border bg-zinc-50 p-4', className)}>
+    <div className={cn('widget-theme-preview rounded-lg border bg-zinc-50 p-4', className)}>
       {mode === 'inline' ? (
         <PreviewForm config={config} />
       ) : (

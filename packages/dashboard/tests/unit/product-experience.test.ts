@@ -158,6 +158,28 @@ test('theme tokens use perceptual OKLCH colors in both themes', () => {
   assert.doesNotMatch(tailwind, /hsl\(var\(--primary\)/)
 })
 
+test('Windows 98 is a complete selectable appearance across product and public surfaces', () => {
+  const css = read('../../src/app/globals.css')
+  const layout = read('../../src/app/layout.tsx')
+  const toggle = read('../../src/components/theme-toggle.tsx')
+  const publicControl = read('../../src/components/public-theme-control.tsx')
+  const settings = read('../../src/app/(dashboard)/settings/page.tsx')
+
+  assert.match(layout, /themes=\{\['light', 'dark', 'windows98'\]\}/)
+  assert.match(toggle, /value: 'windows98', label: 'Windows 98'/)
+  assert.match(toggle, /role="radiogroup"/)
+  assert.match(settings, /\['windows98', 'Windows 98'\]/)
+  assert.match(publicControl, /<ThemeToggle collapsed \/>/)
+  assert.match(css, /\.windows98 \{/)
+  assert.match(css, /--win98-raised:/)
+  assert.match(css, /\.windows98 \.dashboard-shell/)
+  assert.match(css, /\.windows98 \.landing-hero/)
+  assert.match(css, /\.windows98 \.docs-content/)
+  assert.match(css, /\.windows98 \.public-board-shell/)
+  assert.match(css, /\.windows98 input/)
+  assert.match(css, /\.windows98 table/)
+})
+
 test('authenticated workspaces use page headers, section panels, and progressive disclosure', () => {
   const card = read('../../src/components/ui/card.tsx')
   const install = read('../../src/app/(dashboard)/projects/[id]/install-tab.tsx')

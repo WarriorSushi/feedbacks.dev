@@ -294,7 +294,7 @@ export function PublicBoard({
     <div
       data-public-board
       data-public-board-ready={ready ? 'true' : 'false'}
-      className="min-h-screen bg-background"
+      className="public-board-shell min-h-screen bg-background"
     >
       {board.customCss ? <style>{board.customCss}</style> : null}
       {viewerSignedIn && (

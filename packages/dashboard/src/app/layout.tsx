@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { headers } from 'next/headers'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
+import { PublicThemeControl } from '@/components/public-theme-control'
 import { Toaster } from '@/components/toaster'
 import { SITE_ORIGIN } from '@/lib/site'
 import { Analytics } from '@vercel/analytics/next'
@@ -54,11 +55,13 @@ export default async function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
+          themes={['light', 'dark', 'windows98']}
           enableSystem
           disableTransitionOnChange
           nonce={nonce}
         >
           {children}
+          <PublicThemeControl />
           <Toaster />
           <Analytics />
           <SpeedInsights />

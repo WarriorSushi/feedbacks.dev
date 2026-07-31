@@ -252,7 +252,7 @@ export interface Vote {
 export interface UserSettings {
   user_id: string
   preferences: {
-    theme?: 'light' | 'dark' | 'system'
+    theme?: 'light' | 'dark' | 'windows98' | 'system'
     defaultProject?: string
   }
   notification_settings: NotificationSettings

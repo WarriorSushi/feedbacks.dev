@@ -80,7 +80,7 @@ function AuthPageInner() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-background">
+    <main className="auth-shell relative min-h-screen overflow-hidden bg-background">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_16%,oklch(var(--primary)/0.1),transparent_34%)]" />
       <div className="relative mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1fr_0.85fr]">
         <section className="hidden border-r px-10 py-9 lg:flex lg:flex-col xl:px-16">

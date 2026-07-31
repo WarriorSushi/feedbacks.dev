@@ -22,7 +22,7 @@ export default async function BoardsPage({
   const authHref = `${publicEnv.NEXT_PUBLIC_APP_ORIGIN}/auth`
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,_oklch(var(--background))_0%,_oklch(var(--muted))_100%)]">
+    <div className="board-directory-shell min-h-screen bg-[linear-gradient(180deg,_oklch(var(--background))_0%,_oklch(var(--muted))_100%)]">
       <header className="border-b bg-background/85 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="font-bold transition-opacity active:opacity-70">

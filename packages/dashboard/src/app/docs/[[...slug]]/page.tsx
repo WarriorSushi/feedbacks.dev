@@ -95,8 +95,8 @@ export default async function DocsPage({ params }: { params: Promise<{ slug?: st
   const dashboardHref = `${publicEnv.NEXT_PUBLIC_APP_ORIGIN}/dashboard`
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+    <div className="docs-shell min-h-screen bg-background text-foreground">
+      <header className="docs-titlebar sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-[1480px] items-center gap-4 px-4 sm:px-6">
           <Link href="/" className="shrink-0"><BrandWordmark className="text-lg" priority /></Link>
           <span className="hidden h-5 w-px bg-border sm:block" />
@@ -123,7 +123,7 @@ export default async function DocsPage({ params }: { params: Promise<{ slug?: st
         <div className="grid lg:grid-cols-[230px_minmax(0,1fr)] xl:grid-cols-[230px_minmax(0,820px)_220px] xl:gap-12">
           <aside className="hidden border-r pr-5 lg:block"><div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto py-8"><DocsNavigation activeSlug={page.slug} /></div></aside>
 
-          <main className="min-w-0 py-8 lg:px-8 xl:px-0 xl:py-12">
+          <main className="docs-content min-w-0 py-8 lg:px-8 xl:px-0 xl:py-12">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{page.category}</p>
             <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{page.title}</h1>
             <p className="mt-4 max-w-[68ch] text-base leading-7 text-muted-foreground">{page.description}</p>

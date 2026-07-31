@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="legal-shell min-h-screen bg-background">
       <div className="container mx-auto max-w-3xl px-4 py-8">
         <Button variant="ghost" asChild className="mb-6 gap-2">
           <Link href="/">
