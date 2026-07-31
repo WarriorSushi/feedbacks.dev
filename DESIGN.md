@@ -24,13 +24,22 @@ A developer is adding feedback collection during a normal build session, switchi
 
 ## Visual System
 
-- Theme: light-first by default. Both themes use visibly distinct canvas, sidebar, panel, raised, selected, popover, and code roles.
+- Theme: light-first by default. Light, dark, and the optional Windows 98 appearance use visibly distinct canvas, sidebar, panel, raised, selected, popover, and code roles.
 - Dark hierarchy: keep the canvas, sidebar, inset rails, and code areas deep. Use lighter cards for primary work, a soft neutral for supporting rows and footers, and the brightest neutral only for headers, menus, and overlays. Do not alternate shades decoratively; assign them by function.
 - Typography: system sans or the existing app font stack. Fixed sizes, no viewport-scaled product text.
 - Accent: controlled green/primary accent for primary actions, active state, success, and focus. Do not use accent as decoration.
 - Structure: crisp 1px borders, neutral panels, compact spacing, and clear section separation. Prefer page headers, rows, tables, and disclosures over card stacks.
 - Radius: keep panels and controls modest. Avoid oversized rounded containers and repeated pill shapes.
 - Icons: use the existing icon system for actions and status. Prefer icon plus label for unfamiliar actions.
+
+## Windows 98 Appearance
+
+- Windows 98 is an optional product appearance, never the default.
+- Base the palette on Windows Classic system roles: teal desktop, button-face gray, near-white window fields, navy active captions, and separate highlight, light, shadow, and dark-shadow edges.
+- Raised controls use highlight/light on the top and left with shadow/dark-shadow on the bottom and right. Pressed controls and fields reverse that edge order.
+- Apply the appearance across marketing, authentication, dashboard, documentation, legal pages, public directories, public boards, overlays, loading states, tables, code panes, and responsive navigation.
+- Preserve native product semantics, keyboard focus, reduced-motion behavior, and mobile usability. Nostalgia must not hide actions or reduce legibility.
+- Keep customer widget previews and the installed widget isolated from the app appearance. Their project-controlled styles remain authoritative.
 
 ## Component Rules
 

@@ -6,7 +6,7 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       className={cn(
-        "overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-[var(--shadow-card)]",
+        "win98-window overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-[var(--shadow-card)]",
         className,
       )}
       {...props}
@@ -17,7 +17,7 @@ Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex flex-col space-y-1.5 border-b bg-surface-raised/70 p-5", className)} {...props} />
+    <div ref={ref} className={cn("win98-titlebar flex flex-col space-y-1.5 border-b bg-surface-raised/70 p-5", className)} {...props} />
   )
 )
 CardHeader.displayName = "CardHeader"

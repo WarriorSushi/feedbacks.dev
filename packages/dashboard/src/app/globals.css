@@ -70,6 +70,61 @@
     --brand: 0.735 0.155 132;
     --brand-subtle: 0.245 0.04 128;
   }
+
+  .windows98 {
+    color-scheme: light;
+    /* Windows Classic system-color roles, adapted to the app's OKLCH token contract. */
+    --background: 0.8078 0 90;
+    --foreground: 0.115 0.003 264;
+    --surface-sidebar: 0.8078 0 90;
+    --surface-raised: 0.9037 0 90;
+    --surface-soft: 0.8078 0 90;
+    --surface-inset: 0.5999 0 90;
+    --surface-overlay: 0.9922 0.039 107.09;
+    --surface-selected: 0.2711 0.1879 264.05;
+    --surface-code: 0.135 0.008 145;
+    --card: 0.8078 0 90;
+    --card-foreground: 0.115 0.003 264;
+    --popover: 0.8078 0 90;
+    --popover-foreground: 0.115 0.003 264;
+    --primary: 0.2711 0.1879 264.05;
+    --primary-foreground: 0.985 0.004 90;
+    --secondary: 0.8078 0 90;
+    --secondary-foreground: 0.115 0.003 264;
+    --muted: 0.756 0 90;
+    --muted-foreground: 0.3715 0 90;
+    --accent: 0.2711 0.1879 264.05;
+    --accent-foreground: 0.985 0.004 90;
+    --destructive: 0.44 0.17 28;
+    --destructive-foreground: 0.985 0.004 90;
+    --border: 0.3715 0 90;
+    --input: 0.3715 0 90;
+    --ring: 0.115 0.003 264;
+    --radius: 0rem;
+    --brand: 0.2711 0.1879 264.05;
+    --brand-subtle: 0.8078 0 90;
+
+    --win98-desktop: oklch(0.5431 0.0927 194.77);
+    --win98-face: oklch(0.8078 0 90);
+    --win98-window: oklch(0.985 0.004 90);
+    --win98-highlight: oklch(0.985 0.004 90);
+    --win98-light: oklch(0.9037 0 90);
+    --win98-shadow: oklch(0.5999 0 90);
+    --win98-dark-shadow: oklch(0.3715 0 90);
+    --win98-text: oklch(0.115 0.003 264);
+    --win98-title: oklch(0.2711 0.1879 264.05);
+    --win98-title-end: oklch(0.452 0.3132 264.05);
+    --win98-raised:
+      inset -1px -1px var(--win98-dark-shadow),
+      inset 1px 1px var(--win98-highlight),
+      inset -2px -2px var(--win98-shadow),
+      inset 2px 2px var(--win98-light);
+    --win98-sunken:
+      inset -1px -1px var(--win98-highlight),
+      inset 1px 1px var(--win98-dark-shadow),
+      inset -2px -2px var(--win98-light),
+      inset 2px 2px var(--win98-shadow);
+  }
 }
 
 @layer base {
@@ -124,6 +179,13 @@
 .dark {
   --shadow-card: 0 1px 2px rgb(0 0 0 / 0.18), 0 10px 24px rgb(0 0 0 / 0.14);
   --shadow-float: 0 24px 72px rgb(0 0 0 / 0.4);
+}
+
+.windows98 {
+  --shadow-card: var(--win98-raised);
+  --shadow-float:
+    2px 2px 0 rgb(5 5 8 / 0.72),
+    var(--win98-raised);
 }
 
 /* ─── Keyframes ───────────────────────────────────────────────────────────── */
@@ -324,6 +386,464 @@
 
 .dark .landing-header-scrolled {
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 12px 34px rgb(0 0 0 / 0.22);
+}
+
+/* ─── Windows 98 appearance ──────────────────────────────────────────────── */
+
+.windows98 body {
+  font-family: "MS Sans Serif", Tahoma, "Segoe UI", sans-serif;
+  font-feature-settings: normal;
+  letter-spacing: 0;
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: auto;
+}
+
+html.windows98 {
+  scroll-behavior: auto;
+}
+
+.windows98 ::selection {
+  background: var(--win98-title);
+  color: var(--win98-highlight);
+}
+
+.windows98 *:focus-visible {
+  outline: 1px dotted var(--win98-text) !important;
+  outline-offset: -4px !important;
+  box-shadow: none;
+  --tw-ring-shadow: 0 0 transparent !important;
+  --tw-ring-offset-shadow: 0 0 transparent !important;
+}
+
+.windows98 [class*="rounded-"]:not(.widget-theme-preview *),
+.windows98 [class~="rounded"]:not(.widget-theme-preview *) {
+  border-radius: 0 !important;
+}
+
+.windows98 .dashboard-shell,
+.windows98 .marketing-shell,
+.windows98 .board-directory-shell,
+.windows98 .public-board-shell,
+.windows98 .auth-shell {
+  background-color: var(--win98-desktop) !important;
+  background-image:
+    linear-gradient(45deg, rgb(5 5 8 / 0.025) 25%, transparent 25%),
+    linear-gradient(-45deg, rgb(5 5 8 / 0.025) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgb(250 250 248 / 0.025) 75%),
+    linear-gradient(-45deg, transparent 75%, rgb(250 250 248 / 0.025) 75%) !important;
+  background-position: 0 0, 0 2px, 2px -2px, -2px 0 !important;
+  background-size: 4px 4px !important;
+}
+
+.windows98 .dashboard-shell > main {
+  background: var(--win98-desktop) !important;
+  padding: 6px;
+}
+
+.windows98 .dashboard-shell > main > div {
+  min-height: calc(100% - 2px);
+  background: var(--win98-face);
+  box-shadow: var(--win98-raised);
+}
+
+.windows98 .dashboard-shell aside,
+.windows98 .dashboard-shell > div:first-child {
+  border-color: var(--win98-dark-shadow) !important;
+  background: var(--win98-face) !important;
+  box-shadow: inset -1px 0 var(--win98-dark-shadow), inset -2px 0 var(--win98-highlight);
+}
+
+.windows98 .win98-window,
+.windows98 [class~="bg-card"][class*="border"]:not(.widget-theme-preview *),
+.windows98 [class~="bg-popover"][class*="border"]:not(.widget-theme-preview *) {
+  border: 0 !important;
+  background-color: var(--win98-face) !important;
+  box-shadow: var(--win98-raised) !important;
+}
+
+.windows98 .win98-window {
+  padding: 3px;
+}
+
+.windows98 .win98-titlebar,
+.windows98 .win98-page-title {
+  border: 0 !important;
+  background: linear-gradient(90deg, var(--win98-title), var(--win98-title-end)) !important;
+  color: var(--win98-highlight) !important;
+  box-shadow: none !important;
+}
+
+.windows98 .win98-titlebar {
+  min-height: 22px;
+  margin: 0;
+  padding: 4px 6px !important;
+}
+
+.windows98 .win98-page-title {
+  margin-bottom: 6px;
+  padding: 6px 8px !important;
+  box-shadow: var(--win98-raised) !important;
+}
+
+.windows98 .win98-titlebar :is(h1, h2, h3, p, span, a),
+.windows98 .win98-page-title :is(h1, h2, h3, p, span, a) {
+  color: inherit !important;
+  letter-spacing: 0 !important;
+}
+
+.windows98 .win98-titlebar :is(h1, h2, h3),
+.windows98 .win98-page-title :is(h1, h2, h3) {
+  font-size: 0.8125rem !important;
+  font-weight: 700 !important;
+  line-height: 1.15 !important;
+}
+
+.windows98 .win98-window > [class*="border-t"],
+.windows98 .win98-window > [class*="border-b"] {
+  border-color: var(--win98-shadow) !important;
+}
+
+.windows98 button:not(.widget-theme-preview *),
+.windows98 a[class*="inline-flex"][class~="border"]:not(.widget-theme-preview *),
+.windows98 a[class*="inline-flex"][class~="bg-primary"]:not(.widget-theme-preview *) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--win98-face) !important;
+  color: var(--win98-text) !important;
+  box-shadow: var(--win98-raised) !important;
+  filter: none !important;
+  transform: none;
+}
+
+.windows98 button[class*="hover:bg-accent"]:not([class~="border"], [aria-pressed="true"], [aria-checked="true"], .widget-theme-preview *) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.windows98 button[class*="hover:bg-accent"]:not([class~="border"], .widget-theme-preview *):hover {
+  background: var(--win98-face) !important;
+  box-shadow: var(--win98-raised) !important;
+}
+
+.windows98 button:not(.widget-theme-preview *):hover,
+.windows98 a[class*="inline-flex"][class~="border"]:not(.widget-theme-preview *):hover,
+.windows98 a[class*="inline-flex"][class~="bg-primary"]:not(.widget-theme-preview *):hover {
+  background: var(--win98-light) !important;
+  color: var(--win98-text) !important;
+}
+
+.windows98 button:not(.widget-theme-preview *):active,
+.windows98 button[aria-pressed="true"]:not(.widget-theme-preview *),
+.windows98 [role="radio"][aria-checked="true"]:not(.widget-theme-preview *) {
+  background: var(--win98-face) !important;
+  color: var(--win98-text) !important;
+  box-shadow: var(--win98-sunken) !important;
+  transform: translate(1px, 1px) !important;
+}
+
+.windows98 button[class~="bg-primary"]:not(.widget-theme-preview *),
+.windows98 a[class~="bg-primary"]:not(.widget-theme-preview *) {
+  font-weight: 700;
+  box-shadow:
+    0 0 0 1px var(--win98-text),
+    var(--win98-raised) !important;
+}
+
+.windows98 button:disabled:not(.widget-theme-preview *) {
+  color: var(--win98-shadow) !important;
+  opacity: 1 !important;
+  text-shadow: 1px 1px var(--win98-highlight);
+}
+
+.windows98 input:not([type="checkbox"], [type="radio"], [type="range"], .widget-theme-preview *),
+.windows98 textarea:not(.widget-theme-preview *),
+.windows98 select:not(.widget-theme-preview *) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--win98-window) !important;
+  color: var(--win98-text) !important;
+  box-shadow: var(--win98-sunken) !important;
+}
+
+.windows98 input::placeholder,
+.windows98 textarea::placeholder {
+  color: var(--win98-shadow) !important;
+  opacity: 1;
+}
+
+.windows98 input:is([type="checkbox"], [type="radio"], [type="range"]) {
+  accent-color: var(--win98-title);
+}
+
+.windows98 [role="switch"][data-state="checked"] {
+  background: var(--win98-title) !important;
+  color: var(--win98-highlight) !important;
+}
+
+.windows98 [role="menu"],
+.windows98 [role="listbox"],
+.windows98 [role="dialog"],
+.windows98 [data-radix-popper-content-wrapper] > div {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--win98-face) !important;
+  box-shadow:
+    2px 2px 0 rgb(5 5 8 / 0.72),
+    var(--win98-raised) !important;
+}
+
+.windows98 [role="option"][data-highlighted],
+.windows98 [role="menuitem"][data-highlighted],
+.windows98 a[aria-current="page"],
+.windows98 a[class*="bg-surface-selected"] {
+  background: var(--win98-title) !important;
+  color: var(--win98-highlight) !important;
+}
+
+.windows98 table {
+  background: var(--win98-window);
+  box-shadow: var(--win98-sunken);
+}
+
+.windows98 th {
+  background: var(--win98-face) !important;
+  box-shadow: var(--win98-raised);
+}
+
+.windows98 td,
+.windows98 th {
+  border-color: var(--win98-shadow) !important;
+}
+
+.windows98 hr,
+.windows98 [data-orientation="horizontal"],
+.windows98 [class~="divide-y"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--win98-shadow) !important;
+}
+
+.windows98 code,
+.windows98 pre,
+.windows98 kbd {
+  font-family: "Lucida Console", "Courier New", monospace;
+}
+
+.windows98 pre:not(.widget-theme-preview *),
+.windows98 [class~="bg-zinc-950"]:not(.widget-theme-preview *) {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--surface-code) !important;
+  color: oklch(0.92 0.012 145) !important;
+  box-shadow: var(--win98-sunken) !important;
+}
+
+.windows98 .skeleton,
+.windows98 [class*="animate-pulse"]:not(.widget-theme-preview *) {
+  animation: none !important;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--win98-face) 0 2px,
+      var(--win98-light) 2px 4px
+    ) !important;
+}
+
+.windows98 .animate-fade-in,
+.windows98 .animate-slide-up,
+.windows98 .animate-slide-in,
+.windows98 .animate-shimmer {
+  animation: none !important;
+}
+
+.windows98 .public-theme-control {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--win98-face) !important;
+  box-shadow:
+    2px 2px 0 rgb(5 5 8 / 0.65),
+    var(--win98-raised) !important;
+}
+
+.windows98 .landing-header,
+.windows98 .landing-header-scrolled,
+.windows98 .docs-titlebar,
+.windows98 .board-directory-shell > header {
+  border-color: var(--win98-dark-shadow) !important;
+  background: var(--win98-face) !important;
+  box-shadow: var(--win98-raised) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.windows98 .landing-hero {
+  overflow: visible;
+  border: 0 !important;
+  background: var(--win98-desktop) !important;
+}
+
+.windows98 .landing-hero-grain {
+  display: none;
+}
+
+.windows98 .landing-hero > .relative {
+  margin: 12px auto;
+  padding: 3px 3px 28px !important;
+  gap: 1.5rem;
+  border: 0;
+  background: var(--win98-face);
+  box-shadow:
+    3px 3px 0 rgb(5 5 8 / 0.45),
+    var(--win98-raised);
+}
+
+.windows98 .landing-hero > .relative::before {
+  content: "feedbacks.dev - Welcome";
+  display: flex;
+  grid-column: 1 / -1;
+  min-height: 22px;
+  align-items: center;
+  padding: 3px 6px;
+  background: linear-gradient(90deg, var(--win98-title), var(--win98-title-end));
+  color: var(--win98-highlight);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.windows98 .landing-hero > .relative > div {
+  padding: 1rem;
+}
+
+.windows98 .landing-product-loop {
+  border: 0;
+  border-radius: 0;
+  box-shadow: var(--win98-sunken);
+  animation: none;
+}
+
+.windows98 .marketing-shell > main > section:not(.landing-hero),
+.windows98 .marketing-shell > footer {
+  background: var(--win98-face) !important;
+  border-color: var(--win98-shadow) !important;
+}
+
+.windows98 .marketing-shell h1,
+.windows98 .marketing-shell h2,
+.windows98 .marketing-shell h3,
+.windows98 .board-directory-shell h1,
+.windows98 .public-board-shell h1 {
+  letter-spacing: 0 !important;
+}
+
+.windows98 .docs-shell {
+  background: var(--win98-face) !important;
+}
+
+.windows98 .docs-shell aside {
+  background: var(--win98-face);
+}
+
+.windows98 .docs-content {
+  margin-block: 8px;
+  padding: 1.5rem !important;
+  background: var(--win98-window);
+  box-shadow: var(--win98-sunken);
+}
+
+.windows98 .docs-content > h1,
+.windows98 .legal-shell h1 {
+  margin: -1.5rem -1.5rem 1rem !important;
+  padding: 5px 8px;
+  background: linear-gradient(90deg, var(--win98-title), var(--win98-title-end));
+  color: var(--win98-highlight);
+  font-size: 0.875rem !important;
+  letter-spacing: 0 !important;
+}
+
+.windows98 .docs-shell a[class*="bg-primary/10"] {
+  background: var(--win98-title) !important;
+  color: var(--win98-highlight) !important;
+}
+
+.windows98 .docs-content [class*="rounded-lg"][class*="border"],
+.windows98 .legal-shell .prose {
+  border-radius: 0 !important;
+  box-shadow: var(--win98-raised);
+}
+
+.windows98 .legal-shell {
+  background: var(--win98-desktop) !important;
+  padding-block: 8px;
+}
+
+.windows98 .legal-shell > div {
+  background: var(--win98-face);
+  box-shadow: var(--win98-raised);
+}
+
+.windows98 .legal-shell .prose {
+  padding: 1.25rem;
+  background: var(--win98-window);
+  color: var(--win98-text);
+}
+
+.windows98 .auth-shell > div.relative {
+  margin: 10px auto;
+  min-height: calc(100vh - 20px);
+  background: var(--win98-face);
+  box-shadow:
+    3px 3px 0 rgb(5 5 8 / 0.45),
+    var(--win98-raised);
+}
+
+.windows98 .auth-shell > .pointer-events-none {
+  display: none;
+}
+
+.windows98 .board-directory-shell > main,
+.windows98 .public-board-shell > div {
+  background: var(--win98-face);
+}
+
+.windows98 .board-directory-shell main > section:first-child,
+.windows98 .public-board-shell section[class*="rounded"],
+.windows98 .public-board-shell article,
+.windows98 .public-board-shell footer {
+  border-radius: 0 !important;
+  background: var(--win98-face) !important;
+  box-shadow: var(--win98-raised) !important;
+}
+
+.windows98 [class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.windows98 [class*="bg-gradient"],
+.windows98 [class*="bg-[linear-gradient"] {
+  background-image: none !important;
+}
+
+@media (max-width: 767px) {
+  .windows98 .dashboard-shell > main {
+    padding: 3px;
+  }
+
+  .windows98 .dashboard-shell > main > div {
+    min-height: 100%;
+    padding-inline: 0.75rem;
+  }
+
+  .windows98 .landing-hero > .relative {
+    margin: 6px;
+  }
+
+  .windows98 .docs-content {
+    margin-inline: -0.5rem;
+    padding: 1rem !important;
+  }
+
+  .windows98 .docs-content > h1 {
+    margin: -1rem -1rem 1rem !important;
+  }
 }
 
 /* Respect reduced motion */

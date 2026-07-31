@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { flushSync } from 'react-dom'
-import { Moon, Sun } from 'lucide-react'
+import { Laptop, Moon, Palette, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 
@@ -16,7 +16,15 @@ type ViewTransitionDocument = Document & {
 
 interface ThemeToggleProps {
   collapsed?: boolean
+  className?: string
 }
+
+const APPEARANCE_OPTIONS = [
+  { value: 'light', label: 'Light', icon: Sun },
+  { value: 'dark', label: 'Dark', icon: Moon },
+  { value: 'windows98', label: 'Windows 98', shortLabel: '98', icon: Palette },
+  { value: 'system', label: 'Device', icon: Laptop },
+] as const
 
 function getMaxRadius(x: number, y: number) {
   return Math.hypot(
@@ -25,18 +33,28 @@ function getMaxRadius(x: number, y: number) {
   )
 }
 
-export function ThemeToggle({ collapsed = false }: ThemeToggleProps) {
-  const { resolvedTheme, setTheme } = useTheme()
+export function ThemeToggle({ collapsed = false, className }: ThemeToggleProps) {
+  const { theme, resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
-  const isDark = mounted && resolvedTheme === 'dark'
-  const nextTheme = isDark ? 'light' : 'dark'
+  const currentTheme = mounted ? (theme || resolvedTheme || 'light') : 'light'
+  const currentIndex = Math.max(
+    0,
+    APPEARANCE_OPTIONS.findIndex((option) => option.value === currentTheme),
+  )
+  const currentOption = APPEARANCE_OPTIONS[currentIndex]
+  const nextOption = APPEARANCE_OPTIONS[(currentIndex + 1) % APPEARANCE_OPTIONS.length]
 
-  const toggleTheme = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const changeTheme = async (
+    nextTheme: (typeof APPEARANCE_OPTIONS)[number]['value'],
+    target: HTMLElement,
+  ) => {
+    if (nextTheme === currentTheme) return
+
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const viewTransitionDocument = document as ViewTransitionDocument
 
@@ -45,7 +63,7 @@ export function ThemeToggle({ collapsed = false }: ThemeToggleProps) {
       return
     }
 
-    const rect = event.currentTarget.getBoundingClientRect()
+    const rect = target.getBoundingClientRect()
     const x = rect.left + rect.width / 2
     const y = rect.top + rect.height / 2
     const maxRadius = getMaxRadius(x, y)
@@ -66,38 +84,68 @@ export function ThemeToggle({ collapsed = false }: ThemeToggleProps) {
         ],
       },
       {
-        duration: 520,
+        duration: nextTheme === 'windows98' ? 260 : 520,
         easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
         pseudoElement: '::view-transition-new(root)',
       },
     )
   }
 
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={isDark}
-      aria-label={isDark ? 'Use light appearance' : 'Use dark appearance'}
-      title={collapsed ? (isDark ? 'Use light appearance' : 'Use dark appearance') : undefined}
-      onClick={toggleTheme}
-      className={cn(
-        'group flex w-full items-center rounded-lg text-[13px] font-medium',
-        'text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-        collapsed ? 'justify-center px-2 py-2' : 'justify-between gap-3 px-3 py-2',
-      )}
-    >
-      <span className={cn('flex items-center', collapsed ? 'justify-center' : 'gap-2.5')}>
-        {isDark ? (
-          <Moon className="h-[17px] w-[17px] shrink-0" />
-        ) : (
-          <Sun className="h-[17px] w-[17px] shrink-0" />
-        )}
-        {!collapsed && <span>Appearance</span>}
-      </span>
+  if (collapsed) {
+    const CurrentIcon = currentOption.icon
 
-      {!collapsed && <span className="text-[11px] font-medium text-muted-foreground">{isDark ? 'Dark' : 'Light'}</span>}
-    </button>
+    return (
+      <button
+        type="button"
+        aria-label={`Appearance: ${currentOption.label}. Switch to ${nextOption.label}`}
+        title={`${currentOption.label}. Switch to ${nextOption.label}`}
+        onClick={(event) => void changeTheme(nextOption.value, event.currentTarget)}
+        className={cn(
+          'flex h-10 w-full items-center justify-center rounded-lg text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-accent-foreground',
+          className,
+        )}
+      >
+        <CurrentIcon className="h-[17px] w-[17px]" />
+      </button>
+    )
+  }
+
+  return (
+    <div className={cn('space-y-1.5', className)}>
+      <div className="flex items-center justify-between px-1 text-[11px] font-medium text-muted-foreground">
+        <span>Appearance</span>
+        <span aria-live="polite">{currentOption.label}</span>
+      </div>
+      <div
+        role="radiogroup"
+        aria-label="Appearance"
+        className="grid grid-cols-4 gap-1 rounded-lg border bg-surface-inset/45 p-1"
+      >
+        {APPEARANCE_OPTIONS.map((option) => {
+          const Icon = option.icon
+          const selected = currentTheme === option.value
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              aria-label={option.label}
+              title={option.label}
+              onClick={(event) => void changeTheme(option.value, event.currentTarget)}
+              className={cn(
+                'flex h-8 min-w-0 items-center justify-center gap-1 rounded-md text-[11px] font-semibold transition-colors',
+                selected
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+              )}
+            >
+              <Icon className="h-3.5 w-3.5 shrink-0" />
+              {'shortLabel' in option && option.shortLabel ? <span>{option.shortLabel}</span> : null}
+            </button>
+          )
+        })}
+      </div>
+    </div>
   )
 }

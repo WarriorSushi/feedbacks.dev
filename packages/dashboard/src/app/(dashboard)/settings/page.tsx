@@ -310,17 +310,24 @@ export default function SettingsPage() {
         <section className="grid gap-6 p-5 sm:p-6 md:grid-cols-[150px_minmax(0,1fr)]">
           <div>
             <h2 className="font-semibold">Appearance</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Use light, dark, or your system preference.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Choose the calm light UI, focused dark UI, Windows 98, or your device preference.</p>
           </div>
-          <div className="flex gap-2">
-            {(['light', 'dark', 'system'] as const).map((t) => (
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Appearance">
+            {([
+              ['light', 'Light'],
+              ['dark', 'Dark'],
+              ['windows98', 'Windows 98'],
+              ['system', 'Device'],
+            ] as const).map(([value, label]) => (
               <Button
-                key={t}
-                variant={theme === t ? 'default' : 'outline'}
+                key={value}
+                role="radio"
+                aria-checked={theme === value}
+                variant={theme === value ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setTheme(t)}
+                onClick={() => setTheme(value)}
               >
-                {t.charAt(0).toUpperCase() + t.slice(1)}
+                {label}
               </Button>
             ))}
           </div>
