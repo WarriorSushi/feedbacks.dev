@@ -17,6 +17,16 @@ function buildContentSecurityPolicy(nonce: string): string {
     ? 'https://live.dodopayments.com'
     : 'https://test.dodopayments.com'
   const developmentScriptSource = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
+  const trackingScriptSources = [
+    process.env.NEXT_PUBLIC_GOOGLE_TAG_ID ? 'https://www.googletagmanager.com' : '',
+    process.env.NEXT_PUBLIC_META_PIXEL_ID ? 'https://connect.facebook.net' : '',
+    process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID ? 'https://www.redditstatic.com' : '',
+  ].filter(Boolean).join(' ')
+  const trackingConnectSources = [
+    process.env.NEXT_PUBLIC_GOOGLE_TAG_ID ? 'https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net' : '',
+    process.env.NEXT_PUBLIC_META_PIXEL_ID ? 'https://www.facebook.com' : '',
+    process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID ? 'https://alb.reddit.com https://events.reddit.com' : '',
+  ].filter(Boolean).join(' ')
 
   const directives = [
     "default-src 'self'",
@@ -24,11 +34,11 @@ function buildContentSecurityPolicy(nonce: string): string {
     "object-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${developmentScriptSource}`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${trackingScriptSources}${developmentScriptSource}`.trim(),
     "style-src 'self' 'unsafe-inline'",
-    `img-src 'self' data: blob: ${supabaseOrigin}`.trim(),
+    `img-src 'self' data: blob: ${supabaseOrigin} ${trackingConnectSources}`.trim(),
     "font-src 'self' data:",
-    `connect-src 'self' ${appOrigin} ${supabaseOrigin} ${supabaseWsOrigin} ${dodoOrigin}`.trim(),
+    `connect-src 'self' ${appOrigin} ${supabaseOrigin} ${supabaseWsOrigin} ${dodoOrigin} ${trackingConnectSources}`.trim(),
     "worker-src 'self' blob:",
     "frame-src 'self'",
   ]

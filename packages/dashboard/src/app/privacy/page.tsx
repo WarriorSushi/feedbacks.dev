@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+import { PrivacyChoicesButton } from '@/components/privacy-choices-button'
 
 export default function PrivacyPage() {
   return (
@@ -15,7 +16,7 @@ export default function PrivacyPage() {
 
         <h1 className="text-3xl font-bold tracking-tight">Privacy Policy</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Last updated: July 30, 2026
+          Last updated: August 1, 2026
         </p>
 
         <div className="prose prose-zinc mt-8 max-w-none dark:prose-invert">
@@ -27,6 +28,8 @@ export default function PrivacyPage() {
             <li>Account information (email, name via GitHub OAuth or magic link)</li>
             <li>Project configuration data</li>
             <li>Feedback submitted through your widgets (messages, ratings, page URL, browser context, optional screenshots or image attachments, and optional contact details)</li>
+            <li>Lead-list information you submit (email, optional use case, consent time, and campaign attribution)</li>
+            <li>Referral codes, successful referred signups, and one-time reward status</li>
           </ul>
 
           <h2>How We Use Your Information</h2>
@@ -35,6 +38,8 @@ export default function PrivacyPage() {
             <li>To send opt-in notifications about feedback activity</li>
             <li>To deliver webhooks to your configured endpoints</li>
             <li>To manage subscriptions and billing when you upgrade to a paid plan</li>
+            <li>To operate the invitation program and apply earned complimentary access</li>
+            <li>With your permission, to measure which advertising campaigns lead to signups</li>
           </ul>
 
           <h2>Data Storage</h2>
@@ -65,7 +70,26 @@ export default function PrivacyPage() {
             <li><strong>GitHub:</strong> optional OAuth authentication</li>
             <li><strong>Dodo Payments:</strong> checkout, billing portal, and subscription events</li>
             <li><strong>Resend:</strong> transactional email delivery for opt-in alerts</li>
+            <li><strong>Google Ads:</strong> consent-gated advertising and conversion measurement</li>
+            <li><strong>Meta:</strong> consent-gated Pixel and server-side Conversions API measurement</li>
+            <li><strong>Reddit:</strong> consent-gated Pixel and server-side Conversions API measurement</li>
           </ul>
+
+          <h2 id="advertising-measurement">Advertising Measurement and Cookies</h2>
+          <p>
+            Google, Meta, and Reddit measurement is optional and off until you choose “Allow measurement.”
+            If enabled, browser tags may use advertising identifiers and cookies. For completed lead or
+            signup events, our server may send a matching event identifier, a hashed normalized email,
+            campaign click identifiers, IP address, user agent, and the page where the conversion happened.
+            Browser and server events use the same identifier so providers can deduplicate them.
+          </p>
+          <p>
+            Advertising tags are limited to feedbacks.dev marketing and signup measurement. They are not
+            installed in customer widgets, customer websites, submitted feedback, or public feedback boards.
+            Choosing “Only necessary” prevents these tags and server conversion calls. You can change or
+            withdraw your choice at any time.
+          </p>
+          <PrivacyChoicesButton className="not-prose inline-flex rounded-md border px-3 py-2 text-sm font-medium" />
 
           <h2>Data Retention</h2>
           <p>
@@ -76,6 +100,9 @@ export default function PrivacyPage() {
             product data and uploaded feedback media. Operational delivery and security records are
             retained only as needed to operate, secure, and troubleshoot the service, with destinations
             redacted and credentials excluded.
+            Lead-list records are kept until you unsubscribe or ask us to remove them. Advertising conversion
+            records retain hashed match fields and delivery status only as long as needed for attribution,
+            troubleshooting, deletion requests, and fraud prevention.
           </p>
 
           <h2>Your Rights</h2>
@@ -83,6 +110,8 @@ export default function PrivacyPage() {
             You can export your feedback data as CSV, delete entire projects, or delete your account
             from the Settings page. If you have an active paid subscription, cancel or downgrade it from
             Billing before account deletion.
+            You can also withdraw advertising measurement through the privacy choices control and request
+            deletion of lead, referral, or advertising match data by contacting us.
           </p>
 
           <h2>Contact</h2>

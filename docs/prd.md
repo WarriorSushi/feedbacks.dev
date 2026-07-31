@@ -142,6 +142,16 @@ Must support:
 - Initial targets include webhook routing and opt-in owner email alerts.
 - Integration setup should be secondary to the core install flow.
 
+### Growth and referrals
+
+- Provide a focused lead-capture page with explicit email consent and clear distinction from account creation.
+- Support consent-gated Google Ads, Meta Pixel + Conversions API, and Reddit Pixel + Conversions API measurement.
+- Browser and server conversion events must share a stable event identifier for provider deduplication.
+- Do not load advertising tags before consent or on customer widgets and public feedback boards.
+- Give each account one personal invite link with five verified new-account slots.
+- Atomically grant one complimentary Pro month after the fifth eligible signup; self-referrals, duplicate accounts, and repeated rewards must fail safely.
+- Project-scoped navigation without a project must explain the prerequisite and link directly to project creation.
+
 ## 8. UX requirements
 
 ### Required UX characteristics

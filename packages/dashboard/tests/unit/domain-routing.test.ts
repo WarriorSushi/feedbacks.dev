@@ -29,6 +29,18 @@ test('marketing surfaces redirect from app host to www host', async () => {
   assert.equal(redirect?.toString(), 'https://www.feedbacks.dev/boards?sort=recent')
 })
 
+test('lead and invite links stay on the marketing host', async () => {
+  const { getCanonicalHostRedirect } = await loadDomainRouting()
+  assert.equal(
+    getCanonicalHostRedirect(new URL('https://app.feedbacks.dev/early-access?utm_source=reddit'))?.toString(),
+    'https://www.feedbacks.dev/early-access?utm_source=reddit',
+  )
+  assert.equal(
+    getCanonicalHostRedirect(new URL('https://app.feedbacks.dev/r/abcdefghij'))?.toString(),
+    'https://www.feedbacks.dev/r/abcdefghij',
+  )
+})
+
 test('documentation stays on the canonical marketing host', async () => {
   const { getCanonicalHostRedirect } = await loadDomainRouting()
   const redirect = getCanonicalHostRedirect(new URL('https://app.feedbacks.dev/docs/api/rest'))

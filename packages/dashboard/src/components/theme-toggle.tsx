@@ -27,10 +27,12 @@ const APPEARANCE_OPTIONS = [
 ] as const
 
 function getMaxRadius(x: number, y: number) {
+  // Add a small overscan so scrollbar gutters, fractional device pixels, and
+  // screenshot viewports cannot leave an unrevealed corner sliver.
   return Math.hypot(
     Math.max(x, window.innerWidth - x),
     Math.max(y, window.innerHeight - y),
-  )
+  ) + 96
 }
 
 export function ThemeToggle({ collapsed = false, className }: ThemeToggleProps) {

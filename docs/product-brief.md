@@ -115,3 +115,11 @@ The launch target is a full-surface paid release with:
 - Free and Pro tiers
 - Dodo Payments for billing
 - public boards, integrations, and AI/MCP treated as real product surfaces rather than future ideas
+
+## Acquisition without weakening trust
+
+- Paid-campaign landing and signup paths are measurable only after an explicit visitor choice.
+- Google, Meta, and Reddit measurement belongs to feedbacks.dev marketing surfaces, never the customer widget.
+- Interested visitors can join a focused launch list without creating an account.
+- Each user receives a five-slot invitation link; five verified new-account signups unlock one complimentary Pro month, once.
+- Growth mechanics preserve the same clear hierarchy, privacy boundaries, and abuse resistance as the core product.

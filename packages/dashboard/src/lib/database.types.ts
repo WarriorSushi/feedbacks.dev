@@ -224,6 +224,7 @@ export type Database = {
           billing_interval: string | null
           billing_interval_count: number | null
           billing_status: string
+          complimentary_pro_until: string | null
           cancel_at_period_end: boolean
           created_at: string
           current_period_end: string | null
@@ -245,6 +246,7 @@ export type Database = {
           billing_interval?: string | null
           billing_interval_count?: number | null
           billing_status?: string
+          complimentary_pro_until?: string | null
           cancel_at_period_end?: boolean
           created_at?: string
           current_period_end?: string | null
@@ -266,6 +268,7 @@ export type Database = {
           billing_interval?: string | null
           billing_interval_count?: number | null
           billing_status?: string
+          complimentary_pro_until?: string | null
           cancel_at_period_end?: boolean
           created_at?: string
           current_period_end?: string | null
@@ -1884,11 +1887,183 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_conversion_events: {
+        Row: {
+          attempt_count: number
+          attribution: Json
+          consent_version: string
+          created_at: string
+          delivered_at: string | null
+          email_hash: string | null
+          event_id: string
+          event_name: string
+          provider_results: Json
+          source_url: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          attempt_count?: number
+          attribution?: Json
+          consent_version: string
+          created_at?: string
+          delivered_at?: string | null
+          email_hash?: string | null
+          event_id: string
+          event_name: string
+          provider_results?: Json
+          source_url?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          attempt_count?: number
+          attribution?: Json
+          consent_version?: string
+          created_at?: string
+          delivered_at?: string | null
+          email_hash?: string | null
+          event_id?: string
+          event_name?: string
+          provider_results?: Json
+          source_url?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      marketing_leads: {
+        Row: {
+          attribution: Json
+          consent_version: string
+          consented_at: string
+          created_at: string
+          email: string
+          email_hash: string
+          id: string
+          source: string
+          updated_at: string
+          use_case: string | null
+        }
+        Insert: {
+          attribution?: Json
+          consent_version: string
+          consented_at: string
+          created_at?: string
+          email: string
+          email_hash: string
+          id?: string
+          source?: string
+          updated_at?: string
+          use_case?: string | null
+        }
+        Update: {
+          attribution?: Json
+          consent_version?: string
+          consented_at?: string
+          created_at?: string
+          email?: string
+          email_hash?: string
+          id?: string
+          source?: string
+          updated_at?: string
+          use_case?: string | null
+        }
+        Relationships: []
+      }
+      referral_programs: {
+        Row: {
+          code: string
+          created_at: string
+          reward_expires_at: string | null
+          reward_granted_at: string | null
+          successful_referrals: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          reward_expires_at?: string | null
+          reward_granted_at?: string | null
+          successful_referrals?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          reward_expires_at?: string | null
+          reward_granted_at?: string | null
+          successful_referrals?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_signups: {
+        Row: {
+          created_at: string
+          id: string
+          invited_user_id: string
+          inviter_user_id: string
+          referral_code: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_user_id: string
+          inviter_user_id: string
+          referral_code: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_user_id?: string
+          inviter_user_id?: string
+          referral_code?: string
+        }
+        Relationships: []
+      }
+      user_acquisition: {
+        Row: {
+          attribution: Json
+          consent_version: string | null
+          created_at: string
+          referral_code: string | null
+          signup_event_id: string | null
+          signup_recorded_at: string
+          user_id: string
+        }
+        Insert: {
+          attribution?: Json
+          consent_version?: string | null
+          created_at?: string
+          referral_code?: string | null
+          signup_event_id?: string | null
+          signup_recorded_at?: string
+          user_id: string
+        }
+        Update: {
+          attribution?: Json
+          consent_version?: string | null
+          created_at?: string
+          referral_code?: string | null
+          signup_event_id?: string | null
+          signup_recorded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      claim_referral_signup: {
+        Args: { p_invited_user_id: string; p_referral_code: string }
+        Returns: Json
+      }
       apply_claimed_billing_event: {
         Args: {
           p_billing_email: string | null

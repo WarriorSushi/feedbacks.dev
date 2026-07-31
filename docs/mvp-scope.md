@@ -20,6 +20,8 @@ Ship a version of `feedbacks.dev` that proves four things:
 - webhook-backed paid-plan truth
 - AI / MCP access on Pro
 - account-level notification and billing settings
+- consent-gated campaign measurement and a focused lead-capture page
+- a bounded five-invite, one-time complimentary Pro reward
 
 ## Must-have scope
 
