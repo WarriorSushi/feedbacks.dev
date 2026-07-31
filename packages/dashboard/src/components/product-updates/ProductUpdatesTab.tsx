@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { UpdatesOnboarding } from "./UpdatesOnboarding";
+import { ProductUpdateImageEditor } from "./ProductUpdateImageEditor";
 import { formatVersionEtag } from "@/lib/optimistic-concurrency";
 import { ProductUpdatesOverview } from "./ProductUpdatesOverview";
 import { ProductUpdatesSettings } from "./ProductUpdatesSettings";
@@ -42,6 +43,15 @@ type Entitlements = ProductUpdateEntitlements;
 type FormValues = ProductUpdateForm;
 type Modules = ProductModules;
 type EmbedStatus = ProductEmbedStatus;
+
+class ApiRequestError extends Error {
+  constructor(
+    message: string,
+    readonly fieldErrors: Record<string, string> = {},
+  ) {
+    super(message);
+  }
+}
 
 export function ProductUpdatesTab({
   projectId,
@@ -75,6 +85,12 @@ export function ProductUpdatesTab({
     kind: "idle" | "uploading" | "success" | "error";
     message?: string;
   }>({ kind: "idle" });
+  const [pendingImage, setPendingImage] = React.useState<File | null>(null);
+  const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>(
+    {},
+  );
+  const editorRef = React.useRef<HTMLElement>(null);
+  const advancedRef = React.useRef<HTMLDetailsElement>(null);
   const [modules, setModules] = React.useState<Modules | null>(null);
   const [embedStatus, setEmbedStatus] = React.useState<EmbedStatus | null>(
     null,
@@ -148,20 +164,35 @@ export function ProductUpdatesTab({
   const updateForm = (
     key: Exclude<keyof FormValues, "ctas">,
     value: string,
-  ) =>
+  ) => {
+    setFieldErrors((current) => {
+      if (!current[key]) return current;
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
     setForm((current) => ({ ...current, [key]: value }));
+  };
 
   const updateCta = (
     index: number,
     key: "label" | "url",
     value: string,
-  ) =>
+  ) => {
+    setFieldErrors((current) => {
+      if (!current.ctas && !current.cta) return current;
+      const next = { ...current };
+      delete next.ctas;
+      delete next.cta;
+      return next;
+    });
     setForm((current) => ({
       ...current,
       ctas: current.ctas.map((cta, ctaIndex) =>
         ctaIndex === index ? { ...cta, [key]: value } : cta,
       ),
     }));
+  };
 
   function edit(update: Update) {
     setSelectedId(update.id);
@@ -172,12 +203,26 @@ export function ProductUpdatesTab({
   async function request(url: string, options?: RequestInit) {
     const response = await fetch(url, options);
     const data = await response.json().catch(() => null);
-    if (!response.ok)
-      throw new Error(
+    if (!response.ok) {
+      const errors =
+        data?.errors && typeof data.errors === "object"
+          ? Object.fromEntries(
+              Object.entries(data.errors).filter(
+                (entry): entry is [string, string] =>
+                  typeof entry[1] === "string",
+              ),
+            )
+          : {};
+      const fieldMessage = Object.values(errors).join(" ");
+      throw new ApiRequestError(
         data?.error ||
-          Object.values(data?.errors || {}).join(" ") ||
-          `The server could not complete this ${response.status >= 500 ? "because of a temporary service problem. Your draft is still in the editor; wait a moment and try again." : "request. Review the highlighted fields and try again."}`,
+          fieldMessage ||
+          (response.status >= 500
+            ? "A temporary service problem prevented this save. Your draft is still in the editor; wait a moment and try again."
+            : "The server rejected this request. Your draft is still in the editor; reload the latest version and try again."),
+        errors,
       );
+    }
     return data;
   }
 
@@ -197,6 +242,7 @@ export function ProductUpdatesTab({
 
   async function saveDraft() {
     setSaving(true);
+    setFieldErrors({});
     try {
       const body = JSON.stringify(formBody());
       const data = selected
@@ -217,12 +263,28 @@ export function ProductUpdatesTab({
       toast({ title: selected ? "Update saved" : "Draft saved" });
       await load();
     } catch (error) {
+      const errors =
+        error instanceof ApiRequestError ? error.fieldErrors : {};
+      setFieldErrors(errors);
+      if (Object.keys(errors).some((key) => ["versionLabel", "expiresAt", "ctas", "cta"].includes(key))) {
+        if (advancedRef.current) advancedRef.current.open = true;
+      }
+      if (Object.keys(errors).length) {
+        requestAnimationFrame(() => {
+          const invalid = editorRef.current?.querySelector<HTMLElement>(
+            '[data-field-error="true"] input, [data-field-error="true"] textarea, [data-field-error="true"] select',
+          );
+          invalid?.focus();
+          invalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+      }
       toast({
         title: "Could not save draft",
-        description:
-          error instanceof Error
+        description: Object.keys(errors).length
+          ? "Correct the highlighted fields. Your draft is still in the editor."
+          : error instanceof Error
             ? error.message
-            : "Check the fields and try again.",
+            : "Your draft is still in the editor. Try again.",
         variant: "destructive",
       });
     } finally {
@@ -291,6 +353,7 @@ export function ProductUpdatesTab({
         kind: "error",
         message: `This image is ${(file.size / 1024 / 1024).toFixed(1)} MB. Choose one under 2 MB.`,
       });
+      setPendingImage(null);
       return;
     }
     setSaving(true);
@@ -321,6 +384,7 @@ export function ProductUpdatesTab({
         kind: "success",
         message: `${file.name} uploaded successfully.`,
       });
+      setPendingImage(null);
       toast({
         title: "Image uploaded",
         description: "The preview now shows the saved image.",
@@ -339,6 +403,26 @@ export function ProductUpdatesTab({
     } finally {
       setSaving(false);
     }
+  }
+
+  function prepareImage(file: File | undefined) {
+    if (!file) return;
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      setImageStatus({ kind: "error", message: "Choose a JPEG or PNG image." });
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      setImageStatus({
+        kind: "error",
+        message: "Choose an image under 20 MB, then crop and resize it before upload.",
+      });
+      return;
+    }
+    setImageStatus({
+      kind: "idle",
+      message: `${file.name} is ready to crop and resize.`,
+    });
+    setPendingImage(file);
   }
 
   async function saveSettings(next: Settings) {
@@ -593,7 +677,7 @@ export function ProductUpdatesTab({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
-          <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+          <section ref={editorRef} className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">
@@ -606,8 +690,9 @@ export function ProductUpdatesTab({
               </div>
             </div>
             <div>
-              <ProductUpdateField label="Title">
+              <ProductUpdateField label="Title" error={fieldErrors.title}>
                 <Input
+                  aria-invalid={Boolean(fieldErrors.title)}
                   value={form.title}
                   maxLength={120}
                   onChange={(event) => updateForm("title", event.target.value)}
@@ -615,8 +700,9 @@ export function ProductUpdatesTab({
               </ProductUpdateField>
             </div>
             <div className="mt-4">
-              <ProductUpdateField label="Summary">
+              <ProductUpdateField label="Summary" error={fieldErrors.summary}>
                 <Textarea
+                  aria-invalid={Boolean(fieldErrors.summary)}
                   value={form.summary}
                   maxLength={280}
                   rows={3}
@@ -636,13 +722,14 @@ export function ProductUpdatesTab({
                   type="file"
                   accept="image/jpeg,image/png"
                   disabled={saving || !selected}
-                  onChange={(event) =>
-                    void uploadImage(event.currentTarget.files?.[0])
-                  }
+                  onChange={(event) => {
+                    prepareImage(event.currentTarget.files?.[0]);
+                    event.currentTarget.value = "";
+                  }}
                 />
                 <span className="whitespace-nowrap text-xs text-muted-foreground">
                   {selected
-                    ? "2 MB max"
+                    ? "Edit files up to 20 MB; uploads are limited to 2 MB"
                     : "Save the draft before adding an image"}
                 </span>
               </div>
@@ -661,6 +748,14 @@ export function ProductUpdatesTab({
                     ? "An image is saved and shown below."
                     : "JPEG or PNG, up to 2 MB.")}
               </p>
+              {pendingImage ? (
+                <ProductUpdateImageEditor
+                  file={pendingImage}
+                  busy={saving}
+                  onCancel={() => setPendingImage(null)}
+                  onApply={uploadImage}
+                />
+              ) : null}
               {selected?.imageUrl && (
                 <div className="mt-3 space-y-3">
                   {/* Dynamic Supabase URLs are user-owned content and bypass optimization. */}
@@ -670,8 +765,9 @@ export function ProductUpdatesTab({
                     alt={form.imageAltText || "Current product update image"}
                     className="aspect-video w-full max-w-md rounded-md border object-cover"
                   />
-                  <ProductUpdateField label="Image description">
+                  <ProductUpdateField label="Image description" error={fieldErrors.imageAltText}>
                     <Input
+                      aria-invalid={Boolean(fieldErrors.imageAltText)}
                       value={form.imageAltText}
                       maxLength={160}
                       placeholder="Describe the image, or leave blank if it is decorative"
@@ -687,8 +783,9 @@ export function ProductUpdatesTab({
               )}
             </div>
             <div className="mt-4">
-              <ProductUpdateField label="Highlights, one per line">
+              <ProductUpdateField label="Highlights, one per line" error={fieldErrors.highlights}>
                 <Textarea
+                  aria-invalid={Boolean(fieldErrors.highlights)}
                   value={form.highlights}
                   rows={5}
                   onChange={(event) =>
@@ -697,13 +794,14 @@ export function ProductUpdatesTab({
                 />
               </ProductUpdateField>
             </div>
-            <details className="mt-5 rounded-md border p-4">
+            <details ref={advancedRef} className="mt-5 rounded-md border p-4">
               <summary className="cursor-pointer text-sm font-medium">
                 Advanced details
               </summary>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <ProductUpdateField label="Version label">
+                <ProductUpdateField label="Version label" error={fieldErrors.versionLabel}>
                   <Input
+                    aria-invalid={Boolean(fieldErrors.versionLabel)}
                     value={form.versionLabel}
                     maxLength={32}
                     placeholder="v2.4"
@@ -712,8 +810,9 @@ export function ProductUpdatesTab({
                     }
                   />
                 </ProductUpdateField>
-                <ProductUpdateField label="Expires">
+                <ProductUpdateField label="Expires" error={fieldErrors.expiresAt}>
                   <Input
+                    aria-invalid={Boolean(fieldErrors.expiresAt)}
                     type="datetime-local"
                     value={form.expiresAt}
                     onChange={(event) =>
@@ -722,7 +821,10 @@ export function ProductUpdatesTab({
                   />
                 </ProductUpdateField>
               </div>
-              <div className="mt-5 border-t pt-4">
+              <div
+                data-field-error={fieldErrors.ctas || fieldErrors.cta ? "true" : undefined}
+                className={`mt-5 border-t pt-4 ${fieldErrors.ctas || fieldErrors.cta ? "rounded-md bg-destructive/10 p-3 ring-1 ring-destructive/70" : ""}`}
+              >
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium">Action buttons</p>
@@ -754,6 +856,7 @@ export function ProductUpdatesTab({
                     >
                       <ProductUpdateField label={`Button ${index + 1} label`}>
                         <Input
+                          aria-invalid={Boolean(fieldErrors.ctas || fieldErrors.cta)}
                           value={cta.label}
                           maxLength={40}
                           onChange={(event) =>
@@ -763,6 +866,7 @@ export function ProductUpdatesTab({
                       </ProductUpdateField>
                       <ProductUpdateField label={`Button ${index + 1} URL`}>
                         <Input
+                          aria-invalid={Boolean(fieldErrors.ctas || fieldErrors.cta)}
                           value={cta.url}
                           maxLength={2048}
                           placeholder="/new-feature or https://example.com"
@@ -791,6 +895,11 @@ export function ProductUpdatesTab({
                     </div>
                   ))}
                 </div>
+                {fieldErrors.ctas || fieldErrors.cta ? (
+                  <p className="mt-2 text-xs font-medium text-destructive" role="alert">
+                    {fieldErrors.ctas || fieldErrors.cta}
+                  </p>
+                ) : null}
               </div>
             </details>
             <div className="mt-5 flex flex-wrap gap-2">
