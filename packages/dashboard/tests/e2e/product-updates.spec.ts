@@ -27,6 +27,37 @@ async function bootstrap(page: Page, projectKey: string) {
   }
 }
 
+async function createEditableReleaseNote(page: Page, projectId: string) {
+  const settingsRead = await page.request.get(
+    `/api/projects/${projectId}/updates/settings`,
+  )
+  const currentSettings = await settingsRead.json()
+  expect(settingsRead.ok(), JSON.stringify(currentSettings)).toBeTruthy()
+  const settingsResponse = await page.request.patch(
+    `/api/projects/${projectId}/updates/settings`,
+    {
+      headers: currentSettings.settingsVersion
+        ? { 'If-Match': `"${currentSettings.settingsVersion}"` }
+        : undefined,
+      data: { enabled: true },
+    },
+  )
+  expect(settingsResponse.ok(), await settingsResponse.text()).toBeTruthy()
+  const createResponse = await page.request.post(`/api/projects/${projectId}/updates`, {
+    data: {
+      versionLabel: 'v1.0',
+      title: 'Initial release note',
+      summary: 'Initial saved summary.',
+      highlights: ['Initial highlight'],
+      ctas: [],
+      imageAltText: '',
+    },
+  })
+  const payload = await createResponse.json()
+  expect(createResponse.ok(), JSON.stringify(payload)).toBeTruthy()
+  return payload.update as { id: string; updated_at: string }
+}
+
 test('new Updates-only user verifies the embed, tests a draft, and publishes', async ({ page }) => {
   await signInWithTestSession(page)
 
@@ -110,4 +141,60 @@ test('a bootstrap failure preserves an existing Feedback installation', async ({
 
   await page.goto(projectVerifyPath(project.id), { waitUntil: 'domcontentloaded' })
   await expect(page.locator('.fb-launcher')).toBeVisible({ timeout: 30_000 })
+})
+
+test('release note conflicts keep recovery visible and retry confirmed deletion', async ({ page }) => {
+  await signInWithTestSession(page)
+  const project = await createProjectViaApi(page, {
+    name: `Playwright Release Recovery ${Date.now().toString(36)}`,
+  })
+  const update = await createEditableReleaseNote(page, project.id)
+
+  await page.goto(`/projects/${project.id}/release-notes/${update.id}`, {
+    waitUntil: 'domcontentloaded',
+  })
+  await expect(page.getByLabel('Title')).toHaveValue('Initial release note')
+
+  const remoteTitle = 'Saved somewhere else'
+  const remoteChange = await page.request.patch(
+    `/api/projects/${project.id}/updates/${update.id}`,
+    {
+      headers: { 'If-Match': `"${update.updated_at}"` },
+      data: { title: remoteTitle },
+    },
+  )
+  expect(remoteChange.ok(), await remoteChange.text()).toBeTruthy()
+
+  await page.getByLabel('Title').fill('My unsaved local title')
+  await page.getByRole('button', { name: 'Save draft' }).click()
+
+  const recovery = page.getByLabel('Saved version recovery')
+  await expect(recovery).toBeVisible()
+  await expect(recovery.getByRole('button', { name: 'Reload saved version' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Save draft' })).toBeDisabled()
+  await expect(page.getByRole('button', { name: 'Delete release note' })).toBeDisabled()
+
+  await recovery.getByRole('button', { name: 'Reload saved version' }).click()
+  await expect(recovery).toHaveCount(0)
+  await expect(page.getByLabel('Title')).toHaveValue(remoteTitle)
+
+  const current = await page.request.get(
+    `/api/projects/${project.id}/updates/${update.id}`,
+  )
+  const currentPayload = await current.json()
+  const secondRemoteChange = await page.request.patch(
+    `/api/projects/${project.id}/updates/${update.id}`,
+    {
+      headers: { 'If-Match': `"${currentPayload.update.updated_at}"` },
+      data: { summary: 'A newer remote summary.' },
+    },
+  )
+  expect(secondRemoteChange.ok(), await secondRemoteChange.text()).toBeTruthy()
+
+  page.once('dialog', (dialog) => dialog.accept())
+  await page.getByRole('button', { name: 'Delete release note' }).click()
+  await expect(page).toHaveURL(
+    new RegExp(`/projects/${project.id}/release-notes$`),
+  )
+  await expect(page.getByText(remoteTitle)).toHaveCount(0)
 })

@@ -47,7 +47,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       error: 'The file uploaded, but could not be attached to this update. It was safely removed; reload the update and try again.',
     }, { status: 500, headers })
   }
-  if (!data) { await auth.admin.storage.from('product_update_images').remove([path]); return NextResponse.json(editConflictResponse(update.updated_at), { status: 409, headers }) }
+  if (!data) {
+    await auth.admin.storage.from('product_update_images').remove([path])
+    const { data: latest } = await auth.admin.from('product_updates').select('updated_at').eq('project_id', id).eq('id', updateId).maybeSingle()
+    const currentVersion = latest?.updated_at || update.updated_at
+    return NextResponse.json(editConflictResponse(currentVersion), { status: 409, headers: { ...headers, ETag: formatVersionEtag(currentVersion) } })
+  }
   if (update.image_path) await auth.admin.storage.from('product_update_images').remove([update.image_path])
   return NextResponse.json({ update: { ...data, imageUrl: publicImageUrl(auth.admin, path) } }, { headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } })
 }
@@ -60,7 +65,11 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   if (expectedVersion !== update.updated_at) return NextResponse.json(editConflictResponse(update.updated_at), { status: 409, headers: { ...headers, ETag: formatVersionEtag(update.updated_at) } })
   const { data, error } = await auth.admin.from('product_updates').update({ image_path: null, updated_at: new Date().toISOString() }).eq('project_id', id).eq('id', updateId).eq('updated_at', expectedVersion).select('updated_at').maybeSingle()
   if (error) return NextResponse.json({ error: 'Unable to remove image.' }, { status: 500, headers })
-  if (!data) return NextResponse.json(editConflictResponse(update.updated_at), { status: 409, headers })
+  if (!data) {
+    const { data: latest } = await auth.admin.from('product_updates').select('updated_at').eq('project_id', id).eq('id', updateId).maybeSingle()
+    const currentVersion = latest?.updated_at || update.updated_at
+    return NextResponse.json(editConflictResponse(currentVersion), { status: 409, headers: { ...headers, ETag: formatVersionEtag(currentVersion) } })
+  }
   if (update.image_path) await auth.admin.storage.from('product_update_images').remove([update.image_path])
   return NextResponse.json(
     { update: { updated_at: data.updated_at, imageUrl: null } },
