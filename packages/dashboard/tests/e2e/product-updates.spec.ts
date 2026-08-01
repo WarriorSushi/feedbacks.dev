@@ -165,6 +165,8 @@ test('release note conflicts keep recovery visible and retry confirmed deletion'
     ),
   })
   await expect(page.getByRole('button', { name: 'Crop and upload' })).toBeVisible()
+  await expect(page.getByText('Previewing unsaved crop')).toBeVisible()
+  await expect(page.getByTestId('release-note-preview-image')).toHaveAttribute('src', /^blob:/)
   const imageUpload = page.waitForResponse((response) =>
     response.url().includes(`/api/projects/${project.id}/updates/${update.id}/image`)
       && response.request().method() === 'POST'
@@ -173,6 +175,7 @@ test('release note conflicts keep recovery visible and retry confirmed deletion'
   await page.getByRole('button', { name: 'Crop and upload' }).click()
   await imageUpload
   await expect(page.getByTestId('release-note-preview-image')).toBeVisible()
+  await expect(page.getByTestId('release-note-preview-image')).not.toHaveAttribute('src', /^blob:/)
   await expect(page.getByRole('button', { name: 'Replace image' })).toBeVisible()
 
   const remoteTitle = 'Saved somewhere else'
