@@ -62,5 +62,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   if (error) return NextResponse.json({ error: 'Unable to remove image.' }, { status: 500, headers })
   if (!data) return NextResponse.json(editConflictResponse(update.updated_at), { status: 409, headers })
   if (update.image_path) await auth.admin.storage.from('product_update_images').remove([update.image_path])
-  return new NextResponse(null, { status: 204, headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } })
+  return NextResponse.json(
+    { update: { updated_at: data.updated_at, imageUrl: null } },
+    { headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } },
+  )
 }

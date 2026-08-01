@@ -13,7 +13,7 @@ export function parseIfMatchVersion(value: string | null): string | null {
 export function editConflictResponse(currentVersion: string) {
   return {
     code: 'EDIT_CONFLICT',
-    error: 'A newer saved version is available. Your text is still in the editor. Reload the page to get the latest version, review your changes, then save again.',
+    error: 'A newer saved version is available. Your text is still in the editor. Use Reload saved version to load it, review your changes, then save again.',
     currentVersion,
   }
 }

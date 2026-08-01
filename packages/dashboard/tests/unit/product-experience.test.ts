@@ -120,6 +120,32 @@ test('navigation gives product updates user context instead of an ambiguous rele
   assert.doesNotMatch(sidebar, /label: 'Release notes'/)
 })
 
+test('release note editor exposes recovery and destructive actions without vague page naming', () => {
+  const editor = read('../../src/components/product-updates/ProductUpdatesTab.tsx')
+  const imageEditor = read('../../src/components/product-updates/ProductUpdateImageEditor.tsx')
+
+  assert.match(editor, /Edit release note/)
+  assert.doesNotMatch(editor, /Edit product update/)
+  assert.match(editor, /Reload saved version/)
+  assert.match(editor, /Delete release note/)
+  assert.match(editor, /Remove image/)
+  assert.match(editor, /hydratedUpdateRef/)
+  assert.match(imageEditor, /Drag inside the frame to move it/)
+  assert.match(imageEditor, /Resize from top left/)
+  assert.match(imageEditor, /resizeProductUpdateCropFromCorner/)
+  assert.doesNotMatch(imageEditor, /Horizontal crop position/)
+})
+
+test('feedback form editor refreshes stale baselines and exposes explicit recovery', () => {
+  const editor = read('../../src/app/(dashboard)/projects/[id]/customize-tab.tsx')
+
+  assert.match(editor, /loadLatestProject/)
+  assert.match(editor, /latestFingerprint === draftFingerprint/)
+  assert.match(editor, /latestFingerprint === savedFingerprint/)
+  assert.match(editor, /Feedback form already saved/)
+  assert.match(editor, /Reload saved settings/)
+})
+
 test('dense dashboard forms use clear tonal sections instead of one flat canvas', () => {
   const section = read('../../src/components/ui/workspace-section.tsx')
   const boardIdentity = read('../../src/components/board-settings/BoardIdentitySection.tsx')
