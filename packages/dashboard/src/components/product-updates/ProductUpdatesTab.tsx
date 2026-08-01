@@ -3,9 +3,11 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
+  AlertTriangle,
   CalendarClock,
   Eye,
   Plus,
+  RefreshCw,
   Settings2,
   Trash2,
 } from "lucide-react";
@@ -13,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
+import { dismissToast, toast } from "@/hooks/use-toast";
 import { UpdatesOnboarding } from "./UpdatesOnboarding";
 import { ProductUpdateImageEditor } from "./ProductUpdateImageEditor";
 import { formatVersionEtag } from "@/lib/optimistic-concurrency";
@@ -49,6 +51,7 @@ class ApiRequestError extends Error {
     message: string,
     readonly fieldErrors: Record<string, string> = {},
     readonly code?: string,
+    readonly currentVersion?: string,
   ) {
     super(message);
   }
@@ -96,6 +99,8 @@ export function ProductUpdatesTab({
   const editorRef = React.useRef<HTMLElement>(null);
   const advancedRef = React.useRef<HTMLDetailsElement>(null);
   const hydratedUpdateRef = React.useRef<string | null>(null);
+  const savedFormRef = React.useRef<FormValues | null>(null);
+  const conflictToastIdRef = React.useRef<string | null>(null);
   const [modules, setModules] = React.useState<Modules | null>(null);
   const [embedStatus, setEmbedStatus] = React.useState<EmbedStatus | null>(
     null,
@@ -208,11 +213,17 @@ export function ProductUpdatesTab({
   };
 
   function edit(update: Update) {
+    const nextForm = toProductUpdateForm(update);
     hydratedUpdateRef.current = update.id;
     setSelectedId(update.id);
-    setForm(toProductUpdateForm(update));
+    savedFormRef.current = nextForm;
+    setForm(nextForm);
     setPublishAt(localDateTime(update.published_at));
     setEditorConflict(null);
+    if (conflictToastIdRef.current) {
+      dismissToast(conflictToastIdRef.current);
+      conflictToastIdRef.current = null;
+    }
   }
 
   async function request(url: string, options?: RequestInit) {
@@ -237,6 +248,9 @@ export function ProductUpdatesTab({
             : "The server rejected this request. Your draft is still in the editor; reload the latest version and try again."),
         errors,
         typeof data?.code === "string" ? data.code : undefined,
+        typeof data?.currentVersion === "string"
+          ? data.currentVersion
+          : undefined,
       );
     }
     return data;
@@ -246,7 +260,79 @@ export function ProductUpdatesTab({
     if (!(error instanceof ApiRequestError) || error.code !== "EDIT_CONFLICT")
       return false;
     setEditorConflict(error.message);
+    if (conflictToastIdRef.current) {
+      dismissToast(conflictToastIdRef.current);
+    }
+    conflictToastIdRef.current = toast({
+      title: "Reload required before more changes",
+      description:
+        "Your text is safe. Use the recovery bar at the bottom of the screen to load the latest saved version.",
+      variant: "destructive",
+    });
     return true;
+  }
+
+  async function requestWithFreshVersion(
+    // Media and confirmed destructive actions can be retried without replacing editor text.
+    url: string,
+    options: RequestInit,
+  ): Promise<{ data: unknown; recoveredFromConflict: boolean }> {
+    try {
+      return { data: await request(url, options), recoveredFromConflict: false };
+    } catch (error) {
+      if (
+        !(error instanceof ApiRequestError) ||
+        error.code !== "EDIT_CONFLICT" ||
+        !error.currentVersion
+      ) {
+        throw error;
+      }
+      const headers = new Headers(options.headers);
+      headers.set("If-Match", formatVersionEtag(error.currentVersion));
+      return {
+        data: await request(url, { ...options, headers }),
+        recoveredFromConflict: true,
+      };
+    }
+  }
+
+  function hasUnsavedEditorChanges() {
+    const saved = savedFormRef.current;
+    if (!saved) return false;
+    const comparable = (value: FormValues) => ({
+      versionLabel: value.versionLabel,
+      title: value.title,
+      summary: value.summary,
+      highlights: value.highlights,
+      ctas: value.ctas,
+      expiresAt: value.expiresAt,
+      imageAltText: value.imageAltText,
+    });
+    return JSON.stringify(comparable(form)) !== JSON.stringify(comparable(saved));
+  }
+
+  function applyMediaMutation(
+    update: Partial<Update>,
+    recoveredFromConflict: boolean,
+  ) {
+    if (!selected) return;
+    const next = { ...selected, ...update };
+    setUpdates((current) =>
+      current.map((item) => (item.id === selected.id ? next : item)),
+    );
+    if (!recoveredFromConflict) return;
+    if (hasUnsavedEditorChanges()) {
+      captureEditConflict(
+        new ApiRequestError(
+          "The media change was saved against a newer version, but this editor still contains unsaved text.",
+          {},
+          "EDIT_CONFLICT",
+          next.updated_at,
+        ),
+      );
+      return;
+    }
+    edit(next);
   }
 
   function formBody() {
@@ -287,9 +373,18 @@ export function ProductUpdatesTab({
         router.replace(`/projects/${projectId}/release-notes/${data.update.id}`);
       }
       toast({ title: selected ? "Release note saved" : "Draft saved" });
+      savedFormRef.current = {
+        ...form,
+        ctas: form.ctas.map((cta) => ({ ...cta })),
+      };
+      setEditorConflict(null);
+      if (conflictToastIdRef.current) {
+        dismissToast(conflictToastIdRef.current);
+        conflictToastIdRef.current = null;
+      }
       await load();
     } catch (error) {
-      captureEditConflict(error);
+      const conflicted = captureEditConflict(error);
       const errors =
         error instanceof ApiRequestError ? error.fieldErrors : {};
       setFieldErrors(errors);
@@ -305,15 +400,17 @@ export function ProductUpdatesTab({
           invalid?.scrollIntoView({ behavior: "smooth", block: "center" });
         });
       }
-      toast({
-        title: "Could not save draft",
-        description: Object.keys(errors).length
-          ? "Correct the highlighted fields. Your draft is still in the editor."
-          : error instanceof Error
-            ? error.message
-            : "Your draft is still in the editor. Try again.",
-        variant: "destructive",
-      });
+      if (!conflicted) {
+        toast({
+          title: "Could not save draft",
+          description: Object.keys(errors).length
+            ? "Correct the highlighted fields. Your draft is still in the editor."
+            : error instanceof Error
+              ? error.message
+              : "Your draft is still in the editor. Try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -356,12 +453,13 @@ export function ProductUpdatesTab({
       setPublishConfirmation(scheduled ? "scheduled" : "published");
       await load();
     } catch (error) {
-      captureEditConflict(error);
-      toast({
-        title: "Could not publish release note",
-        description: error instanceof Error ? error.message : "Try again.",
-        variant: "destructive",
-      });
+      if (!captureEditConflict(error)) {
+        toast({
+          title: "Could not publish release note",
+          description: error instanceof Error ? error.message : "Try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -390,7 +488,7 @@ export function ProductUpdatesTab({
       message: `Uploading ${file.name}…`,
     });
     try {
-      const result = await request(
+      const mutation = await requestWithFreshVersion(
         `/api/projects/${projectId}/updates/${selected.id}/image`,
         {
         method: "POST",
@@ -401,13 +499,8 @@ export function ProductUpdatesTab({
         body: file,
         },
       );
-      setUpdates((current) =>
-        current.map((update) =>
-          update.id === selected.id
-            ? { ...update, ...result.update }
-            : update,
-        ),
-      );
+      const result = mutation.data as { update: Partial<Update> };
+      applyMediaMutation(result.update, mutation.recoveredFromConflict);
       setImageStatus({
         kind: "success",
         message: `${file.name} uploaded successfully.`,
@@ -418,17 +511,19 @@ export function ProductUpdatesTab({
         description: "The preview now shows the saved image.",
       });
     } catch (error) {
-      captureEditConflict(error);
+      const conflicted = captureEditConflict(error);
       const message =
         error instanceof Error
           ? error.message
           : "Use a JPEG or PNG image under 2 MB.";
       setImageStatus({ kind: "error", message });
-      toast({
-        title: "Could not upload image",
-        description: message,
-        variant: "destructive",
-      });
+      if (!conflicted) {
+        toast({
+          title: "Could not upload image",
+          description: message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -493,28 +588,26 @@ export function ProductUpdatesTab({
     if (!window.confirm("Remove this image from the release note?")) return;
     setSaving(true);
     try {
-      const result = await request(
+      const mutation = await requestWithFreshVersion(
         `/api/projects/${projectId}/updates/${selected.id}/image`,
         {
           method: "DELETE",
           headers: { "If-Match": formatVersionEtag(selected.updated_at) },
         },
       );
-      setUpdates((current) =>
-        current.map((update) =>
-          update.id === selected.id ? { ...update, ...result.update } : update,
-        ),
-      );
+      const result = mutation.data as { update: Partial<Update> };
+      applyMediaMutation(result.update, mutation.recoveredFromConflict);
       setForm((current) => ({ ...current, imageUrl: "" }));
       setImageStatus({ kind: "success", message: "Image removed." });
       toast({ title: "Image removed" });
     } catch (error) {
-      captureEditConflict(error);
-      toast({
-        title: "Could not remove image",
-        description: error instanceof Error ? error.message : "Try again.",
-        variant: "destructive",
-      });
+      if (!captureEditConflict(error)) {
+        toast({
+          title: "Could not remove image",
+          description: error instanceof Error ? error.message : "Try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -530,19 +623,23 @@ export function ProductUpdatesTab({
       return;
     setSaving(true);
     try {
-      await request(`/api/projects/${projectId}/updates/${selected.id}`, {
-        method: "DELETE",
-        headers: { "If-Match": formatVersionEtag(selected.updated_at) },
-      });
+      await requestWithFreshVersion(
+        `/api/projects/${projectId}/updates/${selected.id}`,
+        {
+          method: "DELETE",
+          headers: { "If-Match": formatVersionEtag(selected.updated_at) },
+        },
+      );
       toast({ title: "Release note deleted" });
       router.push(`/projects/${projectId}/release-notes`);
     } catch (error) {
-      captureEditConflict(error);
-      toast({
-        title: "Could not delete release note",
-        description: error instanceof Error ? error.message : "Try again.",
-        variant: "destructive",
-      });
+      if (!captureEditConflict(error)) {
+        toast({
+          title: "Could not delete release note",
+          description: error instanceof Error ? error.message : "Try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -775,7 +872,7 @@ export function ProductUpdatesTab({
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${editorConflict ? "pb-24" : ""}`}>
       {editorConflict && selected ? (
         <section
           className="flex flex-col gap-4 rounded-md border border-destructive/40 bg-destructive/10 p-4 sm:flex-row sm:items-center sm:justify-between"
@@ -790,7 +887,7 @@ export function ProductUpdatesTab({
           </div>
           <Button
             className="shrink-0"
-            variant="outline"
+            variant="destructive"
             disabled={saving}
             onClick={() => void reloadSavedVersion()}
           >
@@ -829,7 +926,7 @@ export function ProductUpdatesTab({
             <Button
               variant="ghost"
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-              disabled={saving}
+              disabled={saving || Boolean(editorConflict)}
               onClick={() => void deleteSelectedUpdate()}
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -885,7 +982,7 @@ export function ProductUpdatesTab({
                   id="update-image"
                   type="file"
                   accept="image/jpeg,image/png"
-                  disabled={saving || !selected}
+                  disabled={saving || !selected || Boolean(editorConflict)}
                   onChange={(event) => {
                     prepareImage(event.currentTarget.files?.[0]);
                     event.currentTarget.value = "";
@@ -915,7 +1012,7 @@ export function ProductUpdatesTab({
               {pendingImage ? (
                 <ProductUpdateImageEditor
                   file={pendingImage}
-                  busy={saving}
+                  busy={saving || Boolean(editorConflict)}
                   onCancel={() => setPendingImage(null)}
                   onApply={uploadImage}
                 />
@@ -935,7 +1032,7 @@ export function ProductUpdatesTab({
                       size="sm"
                       variant="outline"
                       className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      disabled={saving}
+                      disabled={saving || Boolean(editorConflict)}
                       onClick={() => void removeImage()}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
@@ -1080,7 +1177,10 @@ export function ProductUpdatesTab({
               </div>
             </details>
             <div className="mt-5 flex flex-wrap gap-2">
-              <Button onClick={() => void saveDraft()} disabled={saving}>
+              <Button
+                onClick={() => void saveDraft()}
+                disabled={saving || Boolean(editorConflict)}
+              >
                 {saving
                   ? "Saving…"
                   : selected?.status === "published"
@@ -1091,7 +1191,7 @@ export function ProductUpdatesTab({
                 <Button
                   variant="outline"
                   onClick={openPrivateTest}
-                  disabled={saving}
+                  disabled={saving || Boolean(editorConflict)}
                 >
                   Test
                 </Button>
@@ -1100,7 +1200,7 @@ export function ProductUpdatesTab({
                 <Button
                   variant="outline"
                   onClick={() => void publish(false)}
-                  disabled={saving}
+                  disabled={saving || Boolean(editorConflict)}
                 >
                   Publish now
                 </Button>
@@ -1121,7 +1221,9 @@ export function ProductUpdatesTab({
                 </ProductUpdateField>
                 <Button
                   variant="outline"
-                  disabled={saving || !entitlements?.scheduling}
+                  disabled={
+                    saving || Boolean(editorConflict) || !entitlements?.scheduling
+                  }
                   onClick={() => void publish(true)}
                 >
                   <CalendarClock className="mr-2 h-4 w-4" />
@@ -1221,6 +1323,32 @@ export function ProductUpdatesTab({
         />
       )}
       {settingsPanel}
+      {editorConflict && selected ? (
+        <section
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-1/2 z-40 flex w-[calc(100vw-1.5rem)] max-w-3xl -translate-x-1/2 flex-col gap-3 rounded-lg border border-destructive/50 bg-popover p-3 shadow-[var(--shadow-float)] sm:flex-row sm:items-center sm:justify-between md:bottom-6 md:w-[calc(100vw-17rem)]"
+          aria-label="Saved version recovery"
+        >
+          <div className="flex min-w-0 items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">Editing paused for safety</p>
+              <p className="mt-0.5 text-xs leading-5 text-muted-foreground sm:text-sm">
+                Your text is still here. Load the latest saved version before
+                uploading, deleting, publishing, or saving again.
+              </p>
+            </div>
+          </div>
+          <Button
+            className="shrink-0"
+            variant="destructive"
+            disabled={saving}
+            onClick={() => void reloadSavedVersion()}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${saving ? "animate-spin" : ""}`} />
+            {saving ? "Reloading…" : "Reload saved version"}
+          </Button>
+        </section>
+      ) : null}
     </div>
   );
 }

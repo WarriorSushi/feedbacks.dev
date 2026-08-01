@@ -98,7 +98,11 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   if (expectedVersion !== data.updated_at) return NextResponse.json(editConflictResponse(data.updated_at), { status: 409, headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } })
   const { data: deleted, error } = await auth.admin.from('product_updates').delete().eq('project_id', id).eq('id', updateId).eq('updated_at', expectedVersion).select('image_path').maybeSingle()
   if (error) return NextResponse.json({ error: 'Unable to delete update.' }, { status: 500, headers })
-  if (!deleted) return NextResponse.json(editConflictResponse(data.updated_at), { status: 409, headers })
+  if (!deleted) {
+    const { data: latest } = await auth.admin.from('product_updates').select('updated_at').eq('project_id', id).eq('id', updateId).maybeSingle()
+    const currentVersion = latest?.updated_at || data.updated_at
+    return NextResponse.json(editConflictResponse(currentVersion), { status: 409, headers: { ...headers, ETag: formatVersionEtag(currentVersion) } })
+  }
   if (deleted.image_path) {
     const { error: storageError } = await auth.admin.storage.from('product_update_images').remove([deleted.image_path])
     if (storageError) console.error('Unable to remove deleted product update media', storageError)

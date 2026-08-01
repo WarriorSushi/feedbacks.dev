@@ -10,6 +10,7 @@ interface ToastProps {
 }
 
 let listeners: Array<(toast: ToastProps) => void> = []
+let dismissListeners: Array<(id: string) => void> = []
 let toastId = 0
 
 export function toast(props: Omit<ToastProps, 'id'>) {
@@ -17,6 +18,10 @@ export function toast(props: Omit<ToastProps, 'id'>) {
   const t = { ...props, id }
   listeners.forEach((fn) => fn(t))
   return id
+}
+
+export function dismissToast(id: string) {
+  dismissListeners.forEach((fn) => fn(id))
 }
 
 export function useToast() {
@@ -29,16 +34,18 @@ export function useToast() {
     }, 4000)
   }, [])
 
-  useEffect(() => {
-    listeners.push(addToast)
-    return () => {
-      listeners = listeners.filter((fn) => fn !== addToast)
-    }
-  }, [addToast])
-
   const dismiss = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
   }, [])
+
+  useEffect(() => {
+    listeners.push(addToast)
+    dismissListeners.push(dismiss)
+    return () => {
+      listeners = listeners.filter((fn) => fn !== addToast)
+      dismissListeners = dismissListeners.filter((fn) => fn !== dismiss)
+    }
+  }, [addToast, dismiss])
 
   return { toasts, toast, dismiss }
 }
