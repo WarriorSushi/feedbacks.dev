@@ -42,8 +42,8 @@ export function LandingFeedbackStory() {
               active === index ? 'bg-white/[0.07]' : 'hover:bg-white/[0.035]',
             )}
           >
-            <span className={cn('flex h-7 w-7 items-center justify-center rounded-full border text-[10px] font-bold', active === index ? 'border-lime-300 bg-lime-300 text-zinc-950' : 'border-white/15 text-zinc-400')}>{index + 1}</span>
-            <span><span className="block text-xs font-semibold text-zinc-100">{step.label}</span><span className="mt-0.5 block text-[10px] text-zinc-400">{step.note}</span></span>
+            <span className={cn('landing-story-step-number flex h-7 w-7 items-center justify-center rounded-full border text-[10px] font-bold', active === index ? 'border-lime-300 bg-lime-300 text-zinc-950' : 'border-white/15 text-zinc-400')}>{index + 1}</span>
+            <span><span className="landing-story-step-label block text-xs font-semibold text-zinc-100">{step.label}</span><span className="landing-story-step-note mt-0.5 block text-[10px] text-zinc-400">{step.note}</span></span>
             {active === index && <span className={cn('absolute bottom-0 left-0 h-0.5 w-full bg-lime-300', !paused && 'landing-story-progress')} />}
           </button>
         ))}

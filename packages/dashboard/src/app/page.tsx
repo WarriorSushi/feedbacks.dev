@@ -8,6 +8,7 @@ import { LandingInstallStory } from '@/components/landing-install-story'
 import { LandingFeedbackStory } from '@/components/landing-feedback-story'
 import { LandingConnectionsStory } from '@/components/landing-connections-story'
 import { LandingScrollHeader } from '@/components/landing-scroll-header'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { publicEnv } from '@/lib/public-env'
 import { SITE_ORIGIN } from '@/lib/site'
 import {
@@ -95,16 +96,17 @@ export default function LandingPage() {
       <LandingScrollHeader>
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-6">
           <Link href="/" className="font-semibold transition-opacity hover:opacity-80">
-            <BrandWordmark className="text-lg" priority />
+            <BrandWordmark className="text-lg" textClassName="hidden sm:inline" priority />
           </Link>
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+          <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
             <Link href="#product"><Button variant="ghost" size="sm">Product</Button></Link>
             <Link href="#setup"><Button variant="ghost" size="sm">How it works</Button></Link>
             <Link href="#pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
             <Link href="/docs" prefetch={false}><Button variant="ghost" size="sm">Docs</Button></Link>
           </nav>
           <div className="flex items-center gap-1 sm:gap-2">
-            <details className="relative md:hidden">
+            <ThemeToggle landing />
+            <details className="relative lg:hidden">
               <summary className="cursor-pointer list-none rounded-md px-2 py-2 text-sm font-medium hover:bg-accent">Menu</summary>
               <nav className="absolute right-0 top-11 z-50 grid min-w-44 gap-1 rounded-lg border bg-popover p-2 shadow-[var(--shadow-float)]" aria-label="Mobile navigation">
                 <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href="#product">Product</Link>
@@ -113,7 +115,7 @@ export default function LandingPage() {
                 <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href={authHref}>Sign in</Link>
               </nav>
             </details>
-            <Link href={authHref} className="hidden md:block"><Button variant="ghost" size="sm">Sign in</Button></Link>
+            <Link href={authHref} className="hidden lg:block"><Button variant="ghost" size="sm">Sign in</Button></Link>
             <Link href={authHref}>
               <Button size="sm" className="gap-1.5">Start free <ArrowRight className="hidden h-3.5 w-3.5 sm:block" /></Button>
             </Link>
