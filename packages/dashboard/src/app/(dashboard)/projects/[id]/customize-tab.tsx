@@ -15,7 +15,7 @@ import { Loader2, MousePointerClick, PanelTop, Send, ShieldCheck } from 'lucide-
 import { toast } from '@/hooks/use-toast'
 import { WidgetFormPreview } from './widget-form-preview'
 import { PageHeader } from '@/components/ui/workspace-shell'
-import { formatVersionEtag } from '@/lib/optimistic-concurrency'
+import { mutationVersionHeaders } from '@/lib/optimistic-concurrency'
 import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
 import { readErrorMessage, readFieldErrors, type FieldErrors } from '@/lib/form-errors'
 
@@ -274,7 +274,7 @@ export function CustomizeTab({
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
-            'If-Match': formatVersionEtag(expectedVersion),
+            ...mutationVersionHeaders(expectedVersion),
           },
           body: JSON.stringify({
             settings: { widget_config: config },

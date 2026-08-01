@@ -3,7 +3,9 @@ import test from 'node:test'
 import {
   editConflictResponse,
   formatVersionEtag,
+  mutationVersionHeaders,
   parseIfMatchVersion,
+  parseMutationVersion,
 } from '../../src/lib/optimistic-concurrency.ts'
 
 test('project versions round-trip through a strong ETag', () => {
@@ -16,6 +18,16 @@ test('malformed or wildcard If-Match values are rejected', () => {
   assert.equal(parseIfMatchVersion('*'), null)
   assert.equal(parseIfMatchVersion('weak-version'), null)
   assert.equal(parseIfMatchVersion('W/"version"'), null)
+})
+
+test('application mutation versions use a namespaced header and keep legacy ETag compatibility', () => {
+  const version = '2026-08-02T02:30:00.000Z'
+  const applicationHeaders = new Headers(mutationVersionHeaders(version))
+  assert.equal(applicationHeaders.get('x-feedbacks-version'), version)
+  assert.equal(parseMutationVersion(applicationHeaders), version)
+
+  const legacyHeaders = new Headers({ 'If-Match': formatVersionEtag(version) })
+  assert.equal(parseMutationVersion(legacyHeaders), version)
 })
 
 test('edit conflicts preserve a safe recovery instruction and current version', () => {

@@ -17,14 +17,14 @@ test("stale project settings writes are rejected instead of silently overwriting
   expect(initialVersion).toBeTruthy();
 
   const accepted = await page.request.patch(`/api/projects/${project.id}`, {
-    headers: { "If-Match": initialVersion },
+    headers: { "X-Feedbacks-Version": initialVersion.replaceAll('"', '') },
     data: { name: `${project.name} accepted` },
   });
   expect(accepted.ok()).toBe(true);
   expect(accepted.headers().etag).not.toBe(initialVersion);
 
   const stale = await page.request.patch(`/api/projects/${project.id}`, {
-    headers: { "If-Match": initialVersion },
+    headers: { "X-Feedbacks-Version": initialVersion.replaceAll('"', '') },
     data: { name: `${project.name} stale` },
   });
   expect(stale.status()).toBe(409);
@@ -63,13 +63,13 @@ test("stale inbox triage writes preserve the first accepted change", async ({
   const initialVersion = `"${listed.updated_at}"`;
 
   const accepted = await page.request.patch(`/api/feedback/${id}`, {
-    headers: { "If-Match": initialVersion },
+    headers: { "X-Feedbacks-Version": initialVersion.replaceAll('"', '') },
     data: { status: "reviewed" },
   });
   expect(accepted.ok()).toBe(true);
 
   const stale = await page.request.patch(`/api/feedback/${id}`, {
-    headers: { "If-Match": initialVersion },
+    headers: { "X-Feedbacks-Version": initialVersion.replaceAll('"', '') },
     data: { priority: "critical" },
   });
   expect(stale.status()).toBe(409);

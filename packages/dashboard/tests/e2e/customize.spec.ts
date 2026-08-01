@@ -86,7 +86,7 @@ test('retries feedback-form saves after an unrelated project version change', as
 
   const current = await page.request.get(`/api/projects/${project.id}`)
   const accepted = await page.request.patch(`/api/projects/${project.id}`, {
-    headers: { 'If-Match': current.headers().etag },
+    headers: { 'X-Feedbacks-Version': current.headers().etag.replaceAll('"', '') },
     data: { name: `${project.name} renamed` },
   })
   expect(accepted.ok()).toBe(true)

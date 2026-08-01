@@ -6,7 +6,7 @@ import { readJsonBody } from '@/lib/api-request'
 import {
   editConflictResponse,
   formatVersionEtag,
-  parseIfMatchVersion,
+  parseMutationVersion,
 } from '@/lib/optimistic-concurrency'
 
 const headers = { 'Cache-Control': 'no-store' }
@@ -31,7 +31,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (!body || typeof body !== 'object' || ['status', 'projectId', 'project_id', 'publishedAt', 'published_at', 'expiresAt', 'expires_at'].some((key) => key in body)) return NextResponse.json({ error: 'Lifecycle fields require their explicit action.' }, { status: 400, headers })
   const { data: existing, error: existingError } = await auth.admin.from('product_updates').select('*').eq('project_id', id).eq('id', updateId).maybeSingle()
   if (existingError || !existing) return NextResponse.json({ error: 'Update not found.' }, { status: 404, headers })
-  const expectedVersion = parseIfMatchVersion(request.headers.get('if-match'))
+  const expectedVersion = parseMutationVersion(request.headers)
   if (!expectedVersion) {
     return NextResponse.json(
       {
@@ -93,7 +93,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   const { id, updateId, auth } = await resolve(params); if ('error' in auth) return auth.error
   const { data } = await auth.admin.from('product_updates').select('image_path,updated_at').eq('project_id', id).eq('id', updateId).maybeSingle()
   if (!data) return NextResponse.json({ error: 'Update not found.' }, { status: 404, headers })
-  const expectedVersion = parseIfMatchVersion(request.headers.get('if-match'))
+  const expectedVersion = parseMutationVersion(request.headers)
   if (!expectedVersion) return NextResponse.json({ code: 'PRECONDITION_REQUIRED', error: 'Reload this update before deleting it.' }, { status: 428, headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } })
   if (expectedVersion !== data.updated_at) return NextResponse.json(editConflictResponse(data.updated_at), { status: 409, headers: { ...headers, ETag: formatVersionEtag(data.updated_at) } })
   const { data: deleted, error } = await auth.admin.from('product_updates').delete().eq('project_id', id).eq('id', updateId).eq('updated_at', expectedVersion).select('image_path').maybeSingle()

@@ -37,7 +37,7 @@ async function createEditableReleaseNote(page: Page, projectId: string) {
     `/api/projects/${projectId}/updates/settings`,
     {
       headers: currentSettings.settingsVersion
-        ? { 'If-Match': `"${currentSettings.settingsVersion}"` }
+        ? { 'X-Feedbacks-Version': currentSettings.settingsVersion }
         : undefined,
       data: { enabled: true },
     },
@@ -178,6 +178,16 @@ test('release note conflicts keep recovery visible and retry confirmed deletion'
   await expect(page.getByTestId('release-note-preview-image')).not.toHaveAttribute('src', /^blob:/)
   await expect(page.getByRole('button', { name: 'Replace image' })).toBeVisible()
 
+  const saveAfterUpload = page.waitForResponse((response) =>
+    response.url().includes(`/api/projects/${project.id}/updates/${update.id}`)
+      && response.request().method() === 'PATCH'
+      && response.status() === 200,
+  )
+  await page.getByLabel('Summary').fill('Saved immediately after the image upload.')
+  await page.getByRole('button', { name: 'Save draft' }).click()
+  await saveAfterUpload
+  await expect(page.getByLabel('Saved version recovery')).toHaveCount(0)
+
   const remoteTitle = 'Saved somewhere else'
   const currentAfterUpload = await page.request.get(
     `/api/projects/${project.id}/updates/${update.id}`,
@@ -187,7 +197,7 @@ test('release note conflicts keep recovery visible and retry confirmed deletion'
     `/api/projects/${project.id}/updates/${update.id}`,
     {
       headers: {
-        'If-Match': `"${currentAfterUploadPayload.update.updated_at}"`,
+        'X-Feedbacks-Version': currentAfterUploadPayload.update.updated_at,
       },
       data: { title: remoteTitle },
     },
@@ -214,7 +224,7 @@ test('release note conflicts keep recovery visible and retry confirmed deletion'
   const secondRemoteChange = await page.request.patch(
     `/api/projects/${project.id}/updates/${update.id}`,
     {
-      headers: { 'If-Match': `"${currentPayload.update.updated_at}"` },
+      headers: { 'X-Feedbacks-Version': currentPayload.update.updated_at },
       data: { summary: 'A newer remote summary.' },
     },
   )

@@ -7,7 +7,7 @@ import { readJsonBody } from '@/lib/api-request'
 import {
   editConflictResponse,
   formatVersionEtag,
-  parseIfMatchVersion,
+  parseMutationVersion,
 } from '@/lib/optimistic-concurrency'
 
 const headers = { 'Cache-Control': 'no-store' }
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const body: unknown = bodyResult.data
   const { data: update } = await auth.admin.from('product_updates').select('*').eq('project_id', id).eq('id', updateId).maybeSingle()
   if (!update) return NextResponse.json({ error: 'Update not found.' }, { status: 404, headers })
-  const expectedVersion = parseIfMatchVersion(request.headers.get('if-match'))
+  const expectedVersion = parseMutationVersion(request.headers)
   if (!expectedVersion) return NextResponse.json(
     { code: 'PRECONDITION_REQUIRED', error: 'Reload this update before publishing it.' },
     { status: 428, headers: { ...headers, ETag: formatVersionEtag(update.updated_at) } },
