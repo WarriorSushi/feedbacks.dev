@@ -113,9 +113,21 @@ test('install snippets stay stable when remotely managed settings change', async
 })
 
 test('server module preference survives customization without leaking into install markup', async () => {
-  const { sanitizeSavedWidgetConfig, generateInstallSnippets } = await loadWidgetInstall()
+  const {
+    generateInstallSnippets,
+    mergeOwnerEditableWidgetConfig,
+    sanitizeSavedWidgetConfig,
+  } = await loadWidgetInstall()
   const saved = sanitizeSavedWidgetConfig({ feedbackEnabled: false, buttonText: 'Contact us' })
   assert.equal(saved.feedbackEnabled, false)
+
+  const merged = mergeOwnerEditableWidgetConfig(
+    { feedbackEnabled: false, enableUpdates: true, buttonText: 'Old label' },
+    { feedbackEnabled: true, enableUpdates: false, buttonText: 'New label' },
+  )
+  assert.equal(merged.feedbackEnabled, false)
+  assert.equal(merged.enableUpdates, true)
+  assert.equal(merged.buttonText, 'New label')
 
   const websiteSnippet = generateInstallSnippets({
     projectKey: 'fb_live_demo',

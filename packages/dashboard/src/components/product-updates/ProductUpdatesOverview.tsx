@@ -56,7 +56,7 @@ export function ProductUpdatesOverview({
         </section>
         <section className="rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
           <h3 className="text-lg font-semibold">
-            Create the first product update
+            Create the first release note
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
             Start with a title and summary. Add an image or delivery rules only
@@ -64,7 +64,7 @@ export function ProductUpdatesOverview({
           </p>
           <Button className="mt-5" onClick={onNew}>
             <Plus className="mr-2 h-4 w-4" />
-            Create first update
+            Create first release note
           </Button>
         </section>
       </div>
@@ -85,7 +85,7 @@ export function ProductUpdatesOverview({
             </Button>
             <Button onClick={onNew}>
               <Plus className="mr-2 h-4 w-4" />
-              New product update
+              New release note
             </Button>
           </div>
         }

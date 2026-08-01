@@ -21,7 +21,7 @@ test('malformed or wildcard If-Match values are rejected', () => {
 test('edit conflicts preserve a safe recovery instruction and current version', () => {
   assert.deepEqual(editConflictResponse('new-version'), {
     code: 'EDIT_CONFLICT',
-    error: 'A newer saved version is available. Your text is still in the editor. Reload the page to get the latest version, review your changes, then save again.',
+    error: 'A newer saved version is available. Your text is still in the editor. Use Reload saved version to load it, review your changes, then save again.',
     currentVersion: 'new-version',
   })
 })

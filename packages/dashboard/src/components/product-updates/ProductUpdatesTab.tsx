@@ -48,6 +48,7 @@ class ApiRequestError extends Error {
   constructor(
     message: string,
     readonly fieldErrors: Record<string, string> = {},
+    readonly code?: string,
   ) {
     super(message);
   }
@@ -89,8 +90,12 @@ export function ProductUpdatesTab({
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>(
     {},
   );
+  const [editorConflict, setEditorConflict] = React.useState<string | null>(
+    null,
+  );
   const editorRef = React.useRef<HTMLElement>(null);
   const advancedRef = React.useRef<HTMLDetailsElement>(null);
+  const hydratedUpdateRef = React.useRef<string | null>(null);
   const [modules, setModules] = React.useState<Modules | null>(null);
   const [embedStatus, setEmbedStatus] = React.useState<EmbedStatus | null>(
     null,
@@ -158,12 +163,15 @@ export function ProductUpdatesTab({
     }).catch(() => undefined);
   }, [projectId]);
   React.useEffect(() => {
+    const update = updates.find((item) => item.id === updateId);
     if (
       view === "composer" &&
       updateId &&
-      updates.some((update) => update.id === updateId)
-    )
-      edit(updates.find((update) => update.id === updateId)!);
+      update &&
+      hydratedUpdateRef.current !== updateId
+    ) {
+      edit(update);
+    }
   }, [updateId, updates, view]);
 
   const updateForm = (
@@ -200,9 +208,11 @@ export function ProductUpdatesTab({
   };
 
   function edit(update: Update) {
+    hydratedUpdateRef.current = update.id;
     setSelectedId(update.id);
     setForm(toProductUpdateForm(update));
     setPublishAt(localDateTime(update.published_at));
+    setEditorConflict(null);
   }
 
   async function request(url: string, options?: RequestInit) {
@@ -226,9 +236,17 @@ export function ProductUpdatesTab({
             ? "A temporary service problem prevented this save. Your draft is still in the editor; wait a moment and try again."
             : "The server rejected this request. Your draft is still in the editor; reload the latest version and try again."),
         errors,
+        typeof data?.code === "string" ? data.code : undefined,
       );
     }
     return data;
+  }
+
+  function captureEditConflict(error: unknown) {
+    if (!(error instanceof ApiRequestError) || error.code !== "EDIT_CONFLICT")
+      return false;
+    setEditorConflict(error.message);
+    return true;
   }
 
   function formBody() {
@@ -268,9 +286,10 @@ export function ProductUpdatesTab({
         setSelectedId(data.update.id);
         router.replace(`/projects/${projectId}/release-notes/${data.update.id}`);
       }
-      toast({ title: selected ? "Update saved" : "Draft saved" });
+      toast({ title: selected ? "Release note saved" : "Draft saved" });
       await load();
     } catch (error) {
+      captureEditConflict(error);
       const errors =
         error instanceof ApiRequestError ? error.fieldErrors : {};
       setFieldErrors(errors);
@@ -337,6 +356,7 @@ export function ProductUpdatesTab({
       setPublishConfirmation(scheduled ? "scheduled" : "published");
       await load();
     } catch (error) {
+      captureEditConflict(error);
       toast({
         title: "Could not publish release note",
         description: error instanceof Error ? error.message : "Try again.",
@@ -398,6 +418,7 @@ export function ProductUpdatesTab({
         description: "The preview now shows the saved image.",
       });
     } catch (error) {
+      captureEditConflict(error);
       const message =
         error instanceof Error
           ? error.message
@@ -431,6 +452,100 @@ export function ProductUpdatesTab({
       message: `${file.name} is ready to crop and resize.`,
     });
     setPendingImage(file);
+  }
+
+  async function reloadSavedVersion() {
+    if (!selectedId) return;
+    setSaving(true);
+    try {
+      const result = await request(
+        `/api/projects/${projectId}/updates/${selectedId}`,
+        { cache: "no-store" },
+      );
+      const currentMetrics =
+        updates.find((update) => update.id === selectedId)?.metrics ||
+        { impressions: 0, dismissals: 0, ctaClicks: 0 };
+      const latest = { ...result.update, metrics: currentMetrics } as Update;
+      setUpdates((current) =>
+        current.map((update) => (update.id === latest.id ? latest : update)),
+      );
+      edit(latest);
+      setPendingImage(null);
+      setImageStatus({
+        kind: "idle",
+        message: "Latest saved version loaded.",
+      });
+      setFieldErrors({});
+      toast({ title: "Latest saved version loaded" });
+    } catch (error) {
+      toast({
+        title: "Could not reload the saved version",
+        description: error instanceof Error ? error.message : "Try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeImage() {
+    if (!selected?.imageUrl) return;
+    if (!window.confirm("Remove this image from the release note?")) return;
+    setSaving(true);
+    try {
+      const result = await request(
+        `/api/projects/${projectId}/updates/${selected.id}/image`,
+        {
+          method: "DELETE",
+          headers: { "If-Match": formatVersionEtag(selected.updated_at) },
+        },
+      );
+      setUpdates((current) =>
+        current.map((update) =>
+          update.id === selected.id ? { ...update, ...result.update } : update,
+        ),
+      );
+      setForm((current) => ({ ...current, imageUrl: "" }));
+      setImageStatus({ kind: "success", message: "Image removed." });
+      toast({ title: "Image removed" });
+    } catch (error) {
+      captureEditConflict(error);
+      toast({
+        title: "Could not remove image",
+        description: error instanceof Error ? error.message : "Try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteSelectedUpdate() {
+    if (!selected) return;
+    if (
+      !window.confirm(
+        `Delete “${selected.title}”? This release note and its metrics will be permanently removed.`,
+      )
+    )
+      return;
+    setSaving(true);
+    try {
+      await request(`/api/projects/${projectId}/updates/${selected.id}`, {
+        method: "DELETE",
+        headers: { "If-Match": formatVersionEtag(selected.updated_at) },
+      });
+      toast({ title: "Release note deleted" });
+      router.push(`/projects/${projectId}/release-notes`);
+    } catch (error) {
+      captureEditConflict(error);
+      toast({
+        title: "Could not delete release note",
+        description: error instanceof Error ? error.message : "Try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function saveSettings(next: Settings) {
@@ -597,7 +712,7 @@ export function ProductUpdatesTab({
   if (updateId && !updates.some((update) => update.id === updateId)) {
     return (
       <div className="mx-auto max-w-2xl py-8">
-        <h2 className="text-xl font-semibold">Product update not found</h2>
+        <h2 className="text-xl font-semibold">Release note not found</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           It may have been deleted, or the link may be out of date.
         </p>
@@ -661,13 +776,35 @@ export function ProductUpdatesTab({
 
   return (
     <div className="space-y-6">
+      {editorConflict && selected ? (
+        <section
+          className="flex flex-col gap-4 rounded-md border border-destructive/40 bg-destructive/10 p-4 sm:flex-row sm:items-center sm:justify-between"
+          role="alert"
+        >
+          <div className="max-w-2xl">
+            <h2 className="text-sm font-semibold">The saved version changed</h2>
+            <p className="mt-1 text-sm leading-6 text-muted-foreground">
+              {editorConflict} Reloading replaces the text currently shown in
+              this editor with the latest saved content.
+            </p>
+          </div>
+          <Button
+            className="shrink-0"
+            variant="outline"
+            disabled={saving}
+            onClick={() => void reloadSavedVersion()}
+          >
+            {saving ? "Reloading…" : "Reload saved version"}
+          </Button>
+        </section>
+      ) : null}
       <section className="flex flex-wrap items-start justify-between gap-4 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold text-primary">
             Update shown to your users
           </p>
           <h2 className="mt-1 text-xl font-semibold">
-            {selected ? "Edit product update" : "Create product update"}
+            {selected ? "Edit release note" : "Create release note"}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Keep the announcement concise. You can review it privately before
@@ -688,6 +825,17 @@ export function ProductUpdatesTab({
           >
             Back to updates
           </Button>
+          {selected ? (
+            <Button
+              variant="ghost"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              disabled={saving}
+              onClick={() => void deleteSelectedUpdate()}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete release note
+            </Button>
+          ) : null}
         </div>
       </section>
 
@@ -697,7 +845,7 @@ export function ProductUpdatesTab({
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h3 className="font-semibold">
-                  {selected ? "Edit release note" : "Draft details"}
+                  Release note content
                 </h3>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Plain text only. A live release note keeps its existing seen
@@ -774,13 +922,26 @@ export function ProductUpdatesTab({
               ) : null}
               {selected?.imageUrl && (
                 <div className="mt-3 space-y-3">
-                  {/* Dynamic Supabase URLs are user-owned content and bypass optimization. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={selected.imageUrl}
-                    alt={form.imageAltText || "Current product update image"}
-                    className="aspect-video w-full max-w-md rounded-md border object-cover"
-                  />
+                  <div className="flex flex-wrap items-end gap-3">
+                    {/* Dynamic Supabase URLs are user-owned content and bypass optimization. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={selected.imageUrl}
+                      alt={form.imageAltText || "Current release note image"}
+                      className="aspect-video w-full max-w-md rounded-md border object-cover"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      disabled={saving}
+                      onClick={() => void removeImage()}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Remove image
+                    </Button>
+                  </div>
                   <ProductUpdateField label="Image description" error={fieldErrors.imageAltText}>
                     <Input
                       aria-invalid={Boolean(fieldErrors.imageAltText)}

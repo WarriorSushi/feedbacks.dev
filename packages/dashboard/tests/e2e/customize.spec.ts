@@ -70,3 +70,38 @@ test('publishes saved feedback-form changes remotely without changing install co
   await expect(page.getByTestId('install-verify-instruction')).toContainText('Ideas')
   await expect(page.locator('[data-tour="install-code"]')).not.toContainText('Ideas')
 })
+
+test('retries feedback-form saves after an unrelated project version change', async ({ page }) => {
+  await signInWithTestSession(page)
+  const project = await createProjectViaApi(page, { name: `Playwright Widget Conflict ${Date.now().toString(36)}` })
+  const initialProjectRead = page.waitForResponse((response) =>
+    response.url().includes(`/api/projects/${project.id}`)
+      && response.request().method() === 'GET'
+      && response.status() === 200,
+  )
+
+  await page.goto(projectCustomizePath(project.id), { waitUntil: 'domcontentloaded' })
+  await initialProjectRead
+  await expect(page.locator('[data-project-tabs-ready="true"]')).toBeVisible()
+
+  const current = await page.request.get(`/api/projects/${project.id}`)
+  const accepted = await page.request.patch(`/api/projects/${project.id}`, {
+    headers: { 'If-Match': current.headers().etag },
+    data: { name: `${project.name} renamed` },
+  })
+  expect(accepted.ok()).toBe(true)
+
+  await page.getByLabel('Button text').fill('Recovered save')
+  await page.getByRole('button', { name: 'Save changes' }).click()
+
+  await expect(page.getByText('Showing saved version')).toBeVisible()
+  await expect(page.getByText('Recovered save')).toBeVisible()
+
+  const bootstrapResponse = await page.request.get(
+    `/api/widget/bootstrap?projectKey=${encodeURIComponent(project.apiKey)}&runtimeVersion=e2e`,
+  )
+  expect(bootstrapResponse.ok()).toBeTruthy()
+  await expect(bootstrapResponse.json()).resolves.toMatchObject({
+    feedbackConfig: { buttonText: 'Recovered save' },
+  })
+})

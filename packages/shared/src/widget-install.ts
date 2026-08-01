@@ -352,6 +352,26 @@ export function sanitizeSavedWidgetConfig(
   ) as SavedWidgetConfig
 }
 
+export function mergeOwnerEditableWidgetConfig(
+  current: SavedWidgetConfig | null | undefined,
+  requested: SavedWidgetConfig,
+): SavedWidgetConfig {
+  const currentConfig = sanitizeSavedWidgetConfig(current)
+  const nextConfig = sanitizeSavedWidgetConfig(requested)
+
+  // Module switches are controlled by their dedicated product settings flow.
+  // A form customization save must not reverse them from a stale browser copy.
+  for (const key of ['feedbackEnabled', 'enableUpdates'] as const) {
+    if (typeof currentConfig[key] === 'boolean') {
+      nextConfig[key] = currentConfig[key]
+    } else {
+      delete nextConfig[key]
+    }
+  }
+
+  return nextConfig
+}
+
 export function normalizeAppOrigin(appOrigin?: string): string {
   return stripTrailingSlash(appOrigin?.trim() || DEFAULT_APP_ORIGIN)
 }

@@ -9,7 +9,7 @@ export type ProductUpdate = {
   cta_label: string | null;
   cta_url: string | null;
   ctas?: Array<{ label: string; url: string }>;
-  imageUrl?: string;
+  imageUrl?: string | null;
   image_alt_text: string | null;
   published_at: string | null;
   expires_at: string | null;

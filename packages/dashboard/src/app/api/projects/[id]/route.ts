@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuthedUserAndProject } from '@/lib/api-auth'
 import { sanitizeWidgetOriginRestriction } from '@/lib/origin-allowlist'
 import { cleanupFeedbackStorageForProjectIds } from '@/lib/feedback-storage-cleanup'
-import { sanitizeSavedWidgetConfig } from '@feedbacks/shared'
+import { mergeOwnerEditableWidgetConfig, sanitizeSavedWidgetConfig } from '@feedbacks/shared'
 import { readJsonBody } from '@/lib/api-request'
 import { normalizeProjectDomain } from '@/lib/project-input'
 import {
@@ -130,8 +130,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             fieldErrors: { primaryColor: ['Enter a hex color such as #6366f1.'] },
           }, { status: 400 })
         }
-        settings.widget_config = sanitizeSavedWidgetConfig(
-          widgetConfig as Parameters<typeof sanitizeSavedWidgetConfig>[0],
+        settings.widget_config = mergeOwnerEditableWidgetConfig(
+          project.settings?.widget_config,
+          widgetConfig as Parameters<typeof sanitizeSavedWidgetConfig>[0] & object,
         )
       }
       if ('widget_origin_restriction' in body.settings) {

@@ -53,6 +53,7 @@ export function CustomizeTab({
   const [fieldErrors, setFieldErrors] = React.useState<FieldErrors>({})
   const [draftRestored, setDraftRestored] = React.useState(false)
   const [draftHydrated, setDraftHydrated] = React.useState(false)
+  const [conflictingProject, setConflictingProject] = React.useState<Project | null>(null)
   const storageKey = React.useMemo(() => `feedbacks-widget-draft:${project.id}`, [project.id])
   const serverSavedConfig = React.useMemo(
     () => buildWidgetEditorConfig(previewProjectKey, project.settings?.widget_config || {}, { appOrigin }),
@@ -66,15 +67,62 @@ export function CustomizeTab({
     setSavedConfig(serverSavedConfig)
   }, [serverSavedConfig])
 
+  React.useEffect(() => {
+    setProjectVersion(project.updated_at)
+  }, [project.id, project.updated_at])
+
   const fingerprintConfig = React.useCallback(
-    (nextConfig: WidgetConfig) =>
-      JSON.stringify(
-        buildRuntimeWidgetConfig(previewProjectKey, nextConfig, {
-          appOrigin,
-        }),
+    (nextConfig: WidgetConfig) => {
+      const runtimeConfig = buildRuntimeWidgetConfig(previewProjectKey, nextConfig, {
+        appOrigin,
+      })
+      return JSON.stringify(
+        Object.fromEntries(
+          Object.entries(runtimeConfig).filter(
+            ([key]) => key !== 'feedbackEnabled' && key !== 'enableUpdates',
+          ),
+        ),
+      )
+    },
+    [appOrigin, previewProjectKey],
+  )
+
+  const editorConfigFromProject = React.useCallback(
+    (nextProject: Project) =>
+      buildWidgetEditorConfig(
+        previewProjectKey,
+        nextProject.settings?.widget_config || {},
+        { appOrigin },
       ),
     [appOrigin, previewProjectKey],
   )
+
+  const loadLatestProject = React.useCallback(async () => {
+    const response = await fetch(`/api/projects/${project.id}`, {
+      cache: 'no-store',
+    })
+    const payload = await response.json().catch(() => null)
+    if (!response.ok || !payload?.updated_at) {
+      throw new Error(readErrorMessage(payload, 'The latest saved feedback form could not be loaded.'))
+    }
+    return payload as Project
+  }, [project.id])
+
+  React.useEffect(() => {
+    let cancelled = false
+
+    void loadLatestProject()
+      .then((latestProject) => {
+        if (cancelled) return
+        setProjectVersion(latestProject.updated_at)
+        setSavedConfig(editorConfigFromProject(latestProject))
+      })
+      .catch(() => undefined)
+
+    return () => {
+      cancelled = true
+    }
+  }, [editorConfigFromProject, loadLatestProject])
 
   React.useEffect(() => {
     setDraftHydrated(false)
@@ -177,8 +225,32 @@ export function CustomizeTab({
   const handleReset = () => {
     setConfig(savedConfig)
     setDraftRestored(false)
+    setConflictingProject(null)
+    setSaveError('')
     if (typeof window !== 'undefined') {
       window.sessionStorage.removeItem(storageKey)
+    }
+  }
+
+  const reloadSavedSettings = async () => {
+    setSaving(true)
+    try {
+      const latestProject = await loadLatestProject()
+      const latestConfig = editorConfigFromProject(latestProject)
+      setProjectVersion(latestProject.updated_at)
+      setSavedConfig(latestConfig)
+      setConfig(latestConfig)
+      setConflictingProject(null)
+      setSaveError('')
+      setDraftRestored(false)
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(storageKey)
+      }
+      toast({ title: 'Latest saved feedback form loaded' })
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'The latest saved feedback form could not be loaded.')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -194,28 +266,70 @@ export function CustomizeTab({
     }
     setSaving(true)
     try {
-      const response = await fetch(`/api/projects/${project.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'If-Match': formatVersionEtag(projectVersion),
-        },
-        body: JSON.stringify({
-          settings: { widget_config: config },
-        }),
-      })
+      let expectedVersion = projectVersion
+      let payload: Project | null = null
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({ error: 'Failed to save widget settings' }))
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        const response = await fetch(`/api/projects/${project.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'If-Match': formatVersionEtag(expectedVersion),
+          },
+          body: JSON.stringify({
+            settings: { widget_config: config },
+          }),
+        })
+        const data = await response.json().catch(() => null)
+
+        if (response.ok) {
+          payload = data as Project
+          break
+        }
+
+        if (response.status === 409 && data?.code === 'EDIT_CONFLICT') {
+          const latestProject = await loadLatestProject()
+          const latestConfig = editorConfigFromProject(latestProject)
+          const latestFingerprint = fingerprintConfig(latestConfig)
+
+          if (latestFingerprint === draftFingerprint) {
+            setProjectVersion(latestProject.updated_at)
+            setSavedConfig(latestConfig)
+            setConfig(latestConfig)
+            setConflictingProject(null)
+            setDraftRestored(false)
+            if (typeof window !== 'undefined') {
+              window.sessionStorage.removeItem(storageKey)
+            }
+            toast({
+              title: 'Feedback form already saved',
+              description: 'The saved version already matches this draft.',
+            })
+            return
+          }
+
+          if (attempt === 0 && latestFingerprint === savedFingerprint) {
+            expectedVersion = latestProject.updated_at
+            setProjectVersion(latestProject.updated_at)
+            setSavedConfig(latestConfig)
+            continue
+          }
+
+          setConflictingProject(latestProject)
+          setSaveError('The saved feedback form changed while this draft was open. Reload the saved settings, review them, then make your changes again.')
+          return
+        }
+
         setFieldErrors(readFieldErrors(data))
         throw new Error(readErrorMessage(data, 'Failed to save widget settings'))
       }
 
-      const payload = await response.json()
+      if (!payload) throw new Error('Failed to save widget settings')
       setProjectVersion(payload.updated_at)
       const nextSavedConfig = buildWidgetEditorConfig(previewProjectKey, payload.settings?.widget_config || {}, { appOrigin })
       setSavedConfig(nextSavedConfig)
       setConfig(nextSavedConfig)
+      setConflictingProject(null)
 
       if (typeof window !== 'undefined') {
         window.sessionStorage.removeItem(storageKey)
@@ -512,7 +626,14 @@ export function CustomizeTab({
 
       {hasUnsavedChanges && (
         <div className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-20 rounded-lg border border-amber-300/80 bg-amber-50 p-3 shadow-lg dark:bg-amber-950">
-          <FormErrorSummary className="mb-3">{saveError}</FormErrorSummary>
+          {conflictingProject ? (
+            <div className="mb-3 rounded-md border border-destructive/40 bg-destructive/10 p-3" role="alert">
+              <p className="text-sm font-semibold text-foreground">Saved settings changed</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">{saveError}</p>
+            </div>
+          ) : (
+            <FormErrorSummary className="mb-3">{saveError}</FormErrorSummary>
+          )}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-semibold text-foreground">Publish remote changes</p>
@@ -521,12 +642,16 @@ export function CustomizeTab({
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button onClick={handleSave} disabled={saving}>
+              <Button onClick={handleSave} disabled={saving || Boolean(conflictingProject)}>
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save changes
               </Button>
-              <Button variant="outline" onClick={handleReset} disabled={saving}>
-                Discard
+              <Button
+                variant="outline"
+                onClick={conflictingProject ? () => void reloadSavedSettings() : handleReset}
+                disabled={saving}
+              >
+                {conflictingProject ? 'Reload saved settings' : 'Discard'}
               </Button>
             </div>
           </div>

@@ -12,10 +12,13 @@ test('owner project resolution does not select private credential hashes', () =>
 
 test('generic project mutation rejects unknown property bags and merges settings server-side', () => {
   const route = read('../../src/app/api/projects/[id]/route.ts')
+  const widgetInstall = read('../../../shared/src/widget-install.ts')
   assert.match(route, /allowedTopLevel/)
   assert.match(route, /allowedSettings/)
   assert.match(route, /\{ \.\.\.\(project\.settings \|\| \{\}\) \}/)
   assert.doesNotMatch(route, /updates\.settings = body\.settings/)
+  assert.match(route, /mergeOwnerEditableWidgetConfig/)
+  assert.match(widgetInstall, /'feedbackEnabled', 'enableUpdates'/)
 })
 
 test('all API route bodies use bounded readers instead of request.json', () => {
