@@ -17,6 +17,7 @@ type ViewTransitionDocument = Document & {
 interface ThemeToggleProps {
   collapsed?: boolean
   className?: string
+  landing?: boolean
 }
 
 const APPEARANCE_OPTIONS = [
@@ -35,7 +36,7 @@ function getMaxRadius(x: number, y: number) {
   ) + 96
 }
 
-export function ThemeToggle({ collapsed = false, className }: ThemeToggleProps) {
+export function ThemeToggle({ collapsed = false, className, landing = false }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
@@ -44,6 +45,7 @@ export function ThemeToggle({ collapsed = false, className }: ThemeToggleProps) 
   }, [])
 
   const currentTheme = mounted ? (theme || resolvedTheme || 'light') : 'light'
+  const selectedTheme = currentTheme === 'system' ? (resolvedTheme || 'light') : currentTheme
   const currentIndex = Math.max(
     0,
     APPEARANCE_OPTIONS.findIndex((option) => option.value === currentTheme),
@@ -90,6 +92,47 @@ export function ThemeToggle({ collapsed = false, className }: ThemeToggleProps) 
         easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
         pseudoElement: '::view-transition-new(root)',
       },
+    )
+  }
+
+  if (landing) {
+    const landingOptions = APPEARANCE_OPTIONS.filter((option) => option.value !== 'system')
+
+    return (
+      <div
+        role="radiogroup"
+        aria-label="Landing page appearance"
+        className={cn(
+          'landing-theme-toggle inline-flex shrink-0 items-center gap-0.5 rounded-lg border border-border/80 bg-background/70 p-1 shadow-sm',
+          className,
+        )}
+      >
+        {landingOptions.map((option) => {
+          const Icon = option.icon
+          const selected = selectedTheme === option.value
+          return (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              aria-label={`${option.label} appearance`}
+              title={option.label}
+              onClick={(event) => void changeTheme(option.value, event.currentTarget)}
+              className={cn(
+                'landing-theme-option relative flex h-8 min-w-8 items-center justify-center gap-1.5 overflow-hidden rounded-md px-2 text-[11px] font-semibold text-muted-foreground transition-colors',
+                selected ? 'bg-card text-foreground shadow-sm' : 'hover:bg-accent hover:text-accent-foreground',
+                option.value === 'windows98' && 'landing-theme-option-98',
+              )}
+            >
+              <Icon className="relative z-[1] h-3.5 w-3.5 shrink-0" />
+              <span className="relative z-[1] hidden xl:inline">
+                {option.value === 'windows98' ? '98' : option.label}
+              </span>
+            </button>
+          )
+        })}
+      </div>
     )
   }
 

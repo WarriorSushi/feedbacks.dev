@@ -554,6 +554,11 @@
   .landing-demo-float {
     animation: none !important;
   }
+
+  .landing-theme-option-98::after {
+    animation: none !important;
+    display: none;
+  }
 }
 
 .landing-product-loop {
@@ -603,6 +608,22 @@
 
 .dark .landing-header-scrolled {
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 12px 34px rgb(0 0 0 / 0.22);
+}
+
+.landing-theme-option-98::after {
+  content: "";
+  position: absolute;
+  inset: -60% auto -60% -45%;
+  width: 36%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.58), transparent);
+  transform: skewX(-18deg) translateX(-240%);
+  animation: landing-theme-98-shine 4.8s ease-in-out infinite;
+}
+
+@keyframes landing-theme-98-shine {
+  0%, 62% { transform: skewX(-18deg) translateX(-240%); }
+  82%, 100% { transform: skewX(-18deg) translateX(620%); }
 }
 
 /* ─── Windows 98 appearance ──────────────────────────────────────────────── */
@@ -963,6 +984,28 @@ html.windows98 {
   border-radius: 0;
   box-shadow: var(--win98-sunken);
   animation: none;
+}
+
+.windows98 .landing-story-step-label,
+.windows98 .landing-story-step-number {
+  color: var(--win98-text) !important;
+  text-shadow: none !important;
+}
+
+.windows98 .landing-story-step-note {
+  color: var(--win98-dark-shadow) !important;
+  text-shadow: none !important;
+}
+
+.windows98 .landing-theme-toggle {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--win98-face) !important;
+  box-shadow: var(--win98-sunken) !important;
+}
+
+.windows98 .landing-theme-option[aria-checked="true"] {
+  background: var(--win98-window) !important;
 }
 
 .windows98 .marketing-shell > main > section:not(.landing-hero),
