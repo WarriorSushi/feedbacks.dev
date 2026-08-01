@@ -123,12 +123,12 @@ export default function LandingPage() {
 
       <main>
         <section className="landing-hero relative overflow-hidden border-b">
-          <div className="relative mx-auto grid max-w-[1440px] gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pt-20 xl:grid-cols-[minmax(500px,0.82fr)_minmax(0,1.18fr)] xl:items-center xl:gap-14 xl:pb-24 xl:pt-24">
-            <div className="lg:pb-6">
+          <div className="relative mx-auto grid max-w-[1600px] gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pt-20 2xl:grid-cols-[minmax(640px,0.9fr)_minmax(0,1.1fr)] 2xl:items-center 2xl:gap-12 2xl:pb-24 2xl:pt-24">
+            <div className="min-w-0 lg:pb-6">
               <p className="inline-flex items-center gap-2 text-xs font-semibold text-foreground/70"><span className="h-1.5 w-1.5 rounded-full bg-primary" /> In-app feedback for developer-led teams</p>
-              <h1 className="mt-5 max-w-2xl text-[2.55rem] font-semibold leading-[0.98] tracking-[-0.055em] sm:text-[4.25rem] xl:text-[3.7rem] 2xl:text-[4.1rem]">
-                <span className="block xl:whitespace-nowrap">Find what users need.</span>
-                <span className="mt-1 block xl:whitespace-nowrap">Show what you fixed.</span>
+              <h1 className="mt-5 max-w-2xl text-[2.55rem] font-semibold leading-[0.98] tracking-[-0.055em] sm:text-[4.25rem] 2xl:text-[3.75rem]">
+                <span className="block 2xl:whitespace-nowrap">Find what users need.</span>
+                <span className="mt-1 block 2xl:whitespace-nowrap">Show what you fixed.</span>
               </h1>
               <p className="mt-6 max-w-[570px] text-base leading-7 text-muted-foreground sm:text-lg">
                 Add a lightweight feedback widget to your app. Every message reaches one focused inbox with the page, browser, and optional screenshot attached.
