@@ -68,15 +68,19 @@ export function ProductUpdateImageEditor({
   busy,
   onCancel,
   onApply,
+  onPreviewChange,
 }: {
   file: File;
   busy: boolean;
   onCancel: () => void;
   onApply: (file: File) => Promise<void>;
+  onPreviewChange: (url: string | null) => void;
 }) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
   const interactionRef = React.useRef<CropInteraction | null>(null);
+  const previewUrlRef = React.useRef<string | null>(null);
+  const previewSequenceRef = React.useRef(0);
   const [image, setImage] = React.useState<HTMLImageElement | null>(null);
   const [aspect, setAspect] = React.useState<ProductUpdateImageAspect>("16:9");
   const [crop, setCrop] = React.useState<ProductUpdateCrop | null>(null);
@@ -84,6 +88,13 @@ export function ProductUpdateImageEditor({
   const [editorError, setEditorError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
+    previewSequenceRef.current += 1;
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
+    onPreviewChange(null);
+
     const url = URL.createObjectURL(file);
     const nextImage = new Image();
     nextImage.onload = () => {
@@ -104,7 +115,19 @@ export function ProductUpdateImageEditor({
       setEditorError("This image could not be opened. Choose a valid JPEG or PNG file.");
     nextImage.src = url;
     return () => URL.revokeObjectURL(url);
-  }, [file]);
+  }, [file, onPreviewChange]);
+
+  React.useEffect(
+    () => () => {
+      previewSequenceRef.current += 1;
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+      }
+      onPreviewChange(null);
+    },
+    [onPreviewChange],
+  );
 
   const output = crop
     ? calculateProductUpdateOutput(crop, outputWidth)
@@ -263,7 +286,42 @@ export function ProductUpdateImageEditor({
       finalWidth,
       finalHeight,
     );
-  }, [crop, finalHeight, finalWidth, image]);
+    const previewSequence = ++previewSequenceRef.current;
+    const mimeType = file.type === "image/jpeg" ? "image/jpeg" : "image/png";
+    const previewCanvas = document.createElement("canvas");
+    const previewWidth = Math.min(finalWidth, 480);
+    const previewHeight = Math.max(
+      1,
+      Math.round((previewWidth / finalWidth) * finalHeight),
+    );
+    previewCanvas.width = previewWidth;
+    previewCanvas.height = previewHeight;
+    const previewContext = previewCanvas.getContext("2d");
+    if (!previewContext) return;
+    previewContext.drawImage(
+      image,
+      crop.x,
+      crop.y,
+      crop.width,
+      crop.height,
+      0,
+      0,
+      previewWidth,
+      previewHeight,
+    );
+    previewCanvas.toBlob(
+      (blob) => {
+        if (!blob || previewSequence !== previewSequenceRef.current) return;
+        const nextPreviewUrl = URL.createObjectURL(blob);
+        const previousPreviewUrl = previewUrlRef.current;
+        previewUrlRef.current = nextPreviewUrl;
+        onPreviewChange(nextPreviewUrl);
+        if (previousPreviewUrl) URL.revokeObjectURL(previousPreviewUrl);
+      },
+      mimeType,
+      mimeType === "image/jpeg" ? 0.86 : undefined,
+    );
+  }, [crop, file.type, finalHeight, finalWidth, image, onPreviewChange]);
 
   async function apply() {
     const canvas = canvasRef.current;

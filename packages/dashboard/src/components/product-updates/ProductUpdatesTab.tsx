@@ -91,6 +91,9 @@ export function ProductUpdatesTab({
     message?: string;
   }>({ kind: "idle" });
   const [pendingImage, setPendingImage] = React.useState<File | null>(null);
+  const [pendingImagePreviewUrl, setPendingImagePreviewUrl] = React.useState<
+    string | null
+  >(null);
   const [fieldErrors, setFieldErrors] = React.useState<Record<string, string>>(
     {},
   );
@@ -539,6 +542,7 @@ export function ProductUpdatesTab({
 
   function prepareImage(file: File | undefined) {
     if (!file) return;
+    setPendingImage(null);
     if (!["image/jpeg", "image/png"].includes(file.type)) {
       setImageStatus({ kind: "error", message: "Choose a JPEG or PNG image." });
       return;
@@ -1034,6 +1038,7 @@ export function ProductUpdatesTab({
                   busy={saving || Boolean(editorConflict)}
                   onCancel={() => setPendingImage(null)}
                   onApply={uploadImage}
+                  onPreviewChange={setPendingImagePreviewUrl}
                 />
               ) : null}
               {selected?.imageUrl && (
@@ -1280,11 +1285,21 @@ export function ProductUpdatesTab({
               </div>
             </div>
             <div className="mt-3 flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">
-                {settings?.theme === "auto"
-                  ? "Auto theme"
-                  : `${settings?.theme || "Auto"} theme`}
-              </span>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span>
+                  {settings?.theme === "auto"
+                    ? "Auto theme"
+                    : `${settings?.theme || "Auto"} theme`}
+                </span>
+                {pendingImagePreviewUrl ? (
+                  <span
+                    className="rounded-sm border border-primary/40 bg-primary/10 px-2 py-1 font-medium text-foreground"
+                    role="status"
+                  >
+                    Previewing unsaved crop
+                  </span>
+                ) : null}
+              </div>
               <Button
                 size="sm"
                 variant="ghost"
@@ -1295,7 +1310,11 @@ export function ProductUpdatesTab({
               </Button>
             </div>
             <ProductUpdatePreview
-              form={form}
+              form={
+                pendingImagePreviewUrl
+                  ? { ...form, imageUrl: pendingImagePreviewUrl }
+                  : form
+              }
               dark={previewDark}
               mobile={previewMobile}
               accent={settings?.accentColor || "#6366f1"}
