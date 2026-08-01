@@ -154,12 +154,38 @@ test('release note conflicts keep recovery visible and retry confirmed deletion'
     waitUntil: 'domcontentloaded',
   })
   await expect(page.getByLabel('Title')).toHaveValue('Initial release note')
+  await expect(page.getByRole('button', { name: 'Choose image' })).toBeVisible()
+
+  await page.locator('#update-image').setInputFiles({
+    name: 'preview-check.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZB4sAAAAASUVORK5CYII=',
+      'base64',
+    ),
+  })
+  await expect(page.getByRole('button', { name: 'Crop and upload' })).toBeVisible()
+  const imageUpload = page.waitForResponse((response) =>
+    response.url().includes(`/api/projects/${project.id}/updates/${update.id}/image`)
+      && response.request().method() === 'POST'
+      && response.status() === 200,
+  )
+  await page.getByRole('button', { name: 'Crop and upload' }).click()
+  await imageUpload
+  await expect(page.getByTestId('release-note-preview-image')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Replace image' })).toBeVisible()
 
   const remoteTitle = 'Saved somewhere else'
+  const currentAfterUpload = await page.request.get(
+    `/api/projects/${project.id}/updates/${update.id}`,
+  )
+  const currentAfterUploadPayload = await currentAfterUpload.json()
   const remoteChange = await page.request.patch(
     `/api/projects/${project.id}/updates/${update.id}`,
     {
-      headers: { 'If-Match': `"${update.updated_at}"` },
+      headers: {
+        'If-Match': `"${currentAfterUploadPayload.update.updated_at}"`,
+      },
       data: { title: remoteTitle },
     },
   )

@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   CalendarClock,
   Eye,
+  ImagePlus,
   Plus,
   RefreshCw,
   Settings2,
@@ -98,6 +99,7 @@ export function ProductUpdatesTab({
   );
   const editorRef = React.useRef<HTMLElement>(null);
   const advancedRef = React.useRef<HTMLDetailsElement>(null);
+  const imageInputRef = React.useRef<HTMLInputElement>(null);
   const hydratedUpdateRef = React.useRef<string | null>(null);
   const savedFormRef = React.useRef<FormValues | null>(null);
   const conflictToastIdRef = React.useRef<string | null>(null);
@@ -501,6 +503,12 @@ export function ProductUpdatesTab({
       );
       const result = mutation.data as { update: Partial<Update> };
       applyMediaMutation(result.update, mutation.recoveredFromConflict);
+      if (typeof result.update.imageUrl === "string") {
+        setForm((current) => ({
+          ...current,
+          imageUrl: result.update.imageUrl as string,
+        }));
+      }
       setImageStatus({
         kind: "success",
         message: `${file.name} uploaded successfully.`,
@@ -977,20 +985,31 @@ export function ProductUpdatesTab({
               <Label htmlFor="update-image" className="text-sm">
                 Image
               </Label>
-              <div className="mt-1 flex items-center gap-3">
-                <Input
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <input
+                  ref={imageInputRef}
                   id="update-image"
                   type="file"
                   accept="image/jpeg,image/png"
+                  className="hidden"
                   disabled={saving || !selected || Boolean(editorConflict)}
                   onChange={(event) => {
                     prepareImage(event.currentTarget.files?.[0]);
                     event.currentTarget.value = "";
                   }}
                 />
-                <span className="whitespace-nowrap text-xs text-muted-foreground">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={saving || !selected || Boolean(editorConflict)}
+                  onClick={() => imageInputRef.current?.click()}
+                >
+                  <ImagePlus className="mr-2 h-4 w-4" />
+                  {selected?.imageUrl ? "Replace image" : "Choose image"}
+                </Button>
+                <span className="text-xs leading-5 text-muted-foreground">
                   {selected
-                    ? "Edit files up to 20 MB; uploads are limited to 2 MB"
+                    ? "JPEG or PNG. Edit files up to 20 MB; uploads are limited to 2 MB."
                     : "Save the draft before adding an image"}
                 </span>
               </div>

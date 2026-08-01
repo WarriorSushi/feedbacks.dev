@@ -112,6 +112,7 @@ export function ProductUpdatePreview({
       {form.imageUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          data-testid="release-note-preview-image"
           src={form.imageUrl}
           alt={form.imageAltText || ""}
           className="mt-4 aspect-video w-full rounded-md object-cover"
