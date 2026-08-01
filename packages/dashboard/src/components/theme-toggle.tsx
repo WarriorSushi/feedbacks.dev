@@ -23,9 +23,24 @@ interface ThemeToggleProps {
 const APPEARANCE_OPTIONS = [
   { value: 'light', label: 'Light', icon: Sun },
   { value: 'dark', label: 'Dark', icon: Moon },
-  { value: 'windows98', label: 'Windows 98', shortLabel: '98', icon: Palette },
+  { value: 'windows98', label: 'Windows 98', icon: Palette },
   { value: 'system', label: 'Device', icon: Laptop },
 ] as const
+
+function Windows98Mark({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'windows98-toggle-mark relative z-[1] inline-flex min-w-8 flex-col items-center justify-center leading-none',
+        className,
+      )}
+    >
+      <span className="text-[6px] font-bold leading-[7px] tracking-[-0.01em]">Windows</span>
+      <span className="text-[15px] font-black leading-[14px] tracking-[-0.06em]">98</span>
+    </span>
+  )
+}
 
 function getMaxRadius(x: number, y: number) {
   // Add a small overscan so scrollbar gutters, fractional device pixels, and
@@ -125,10 +140,14 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
                 option.value === 'windows98' && 'landing-theme-option-98',
               )}
             >
-              <Icon className="relative z-[1] h-3.5 w-3.5 shrink-0" />
-              <span className="relative z-[1] hidden xl:inline">
-                {option.value === 'windows98' ? '98' : option.label}
-              </span>
+              {option.value === 'windows98' ? (
+                <Windows98Mark />
+              ) : (
+                <>
+                  <Icon className="relative z-[1] h-3.5 w-3.5 shrink-0" />
+                  <span className="relative z-[1] hidden xl:inline">{option.label}</span>
+                </>
+              )}
             </button>
           )
         })}
@@ -150,7 +169,11 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
           className,
         )}
       >
-        <CurrentIcon className="h-[17px] w-[17px]" />
+        {currentOption.value === 'windows98' ? (
+          <Windows98Mark />
+        ) : (
+          <CurrentIcon className="h-[17px] w-[17px]" />
+        )}
       </button>
     )
   }
@@ -185,8 +208,11 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
                   : 'text-muted-foreground hover:border-border/60 hover:bg-accent hover:text-accent-foreground',
               )}
             >
-              <Icon className="h-3.5 w-3.5 shrink-0" />
-              {'shortLabel' in option && option.shortLabel ? <span>{option.shortLabel}</span> : null}
+              {option.value === 'windows98' ? (
+                <Windows98Mark />
+              ) : (
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+              )}
             </button>
           )
         })}
