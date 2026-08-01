@@ -3,7 +3,9 @@ import type { Metadata } from 'next'
 import { Button } from '@/components/ui/button'
 import { BrandWordmark } from '@/components/brand-wordmark'
 import { PLAN_MATRIX, generateInstallSnippets } from '@feedbacks/shared'
-import { LandingProofPanel } from '@/components/landing-proof-panel'
+import { LandingHeroDemo } from '@/components/landing-hero-demo'
+import { LandingInstallStory } from '@/components/landing-install-story'
+import { LandingFeedbackStory } from '@/components/landing-feedback-story'
 import { LandingConnectionsStory } from '@/components/landing-connections-story'
 import { LandingScrollHeader } from '@/components/landing-scroll-header'
 import { publicEnv } from '@/lib/public-env'
@@ -96,7 +98,7 @@ export default function LandingPage() {
             <BrandWordmark className="text-lg" priority />
           </Link>
           <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
-            <Link href="#products"><Button variant="ghost" size="sm">Products</Button></Link>
+            <Link href="#product"><Button variant="ghost" size="sm">Product</Button></Link>
             <Link href="#setup"><Button variant="ghost" size="sm">How it works</Button></Link>
             <Link href="#pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
             <Link href="/docs" prefetch={false}><Button variant="ghost" size="sm">Docs</Button></Link>
@@ -105,7 +107,7 @@ export default function LandingPage() {
             <details className="relative md:hidden">
               <summary className="cursor-pointer list-none rounded-md px-2 py-2 text-sm font-medium hover:bg-accent">Menu</summary>
               <nav className="absolute right-0 top-11 z-50 grid min-w-44 gap-1 rounded-lg border bg-popover p-2 shadow-[var(--shadow-float)]" aria-label="Mobile navigation">
-                <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href="#products">Product</Link>
+                <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href="#product">Product</Link>
                 <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href="#pricing">Pricing</Link>
                 <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href="/docs" prefetch={false}>Docs</Link>
                 <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href={authHref}>Sign in</Link>
@@ -121,76 +123,66 @@ export default function LandingPage() {
 
       <main>
         <section className="landing-hero relative overflow-hidden border-b">
-          <div className="relative mx-auto grid max-w-[1440px] gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pt-20 xl:grid-cols-[minmax(540px,0.88fr)_minmax(0,1.12fr)] xl:items-center xl:gap-12 xl:pb-24 xl:pt-24">
+          <div className="relative mx-auto grid max-w-[1440px] gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pt-20 xl:grid-cols-[minmax(500px,0.82fr)_minmax(0,1.18fr)] xl:items-center xl:gap-14 xl:pb-24 xl:pt-24">
             <div className="lg:pb-6">
-              <p className="inline-flex items-center gap-2 text-xs font-semibold text-foreground/70"><span className="h-1.5 w-1.5 rounded-full bg-primary" /> Feedback and updates inside your app</p>
-              <h1 className="mt-5 max-w-2xl text-[2rem] font-semibold leading-[0.98] tracking-[-0.055em] sm:text-[4rem] xl:text-[3.55rem] 2xl:text-[3.85rem]">
-                <span className="block xl:whitespace-nowrap">Install in minutes.</span>
-                <span className="mt-1 block xl:whitespace-nowrap">Learn what matters.</span>
-                <span className="mt-1 block xl:whitespace-nowrap">Show what shipped.</span>
+              <p className="inline-flex items-center gap-2 text-xs font-semibold text-foreground/70"><span className="h-1.5 w-1.5 rounded-full bg-primary" /> In-app feedback for developer-led teams</p>
+              <h1 className="mt-5 max-w-2xl text-[2.55rem] font-semibold leading-[0.98] tracking-[-0.055em] sm:text-[4.25rem] xl:text-[3.7rem] 2xl:text-[4.1rem]">
+                <span className="block xl:whitespace-nowrap">Find what users need.</span>
+                <span className="mt-1 block xl:whitespace-nowrap">Show what you fixed.</span>
               </h1>
-              <p className="mt-6 max-w-[590px] text-base leading-7 text-muted-foreground sm:text-lg">
-                Put a small feedback form in your app. Capture page and browser context automatically, with an optional screenshot. Then show users the fixes you ship.
+              <p className="mt-6 max-w-[570px] text-base leading-7 text-muted-foreground sm:text-lg">
+                Add a lightweight feedback widget to your app. Every message reaches one focused inbox with the page, browser, and optional screenshot attached.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link href={authHref}>
                   <Button size="lg" className="h-12 w-full gap-2 px-6 sm:w-auto">Create a free project <ArrowRight className="h-4 w-4" /></Button>
                 </Link>
-                <Link href="#products"><Button variant="outline" size="lg" className="h-12 w-full bg-background/70 px-6 sm:w-auto">See how it works</Button></Link>
+                <Link href="#setup"><Button variant="outline" size="lg" className="h-12 w-full bg-background/70 px-6 sm:w-auto">See the 3-step setup</Button></Link>
               </div>
-              <p className="mt-4 text-xs text-muted-foreground">Not ready to create an account? <Link href="/early-access" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-primary">Join the launch notes</Link>.</p>
               <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
-                {['No card to start', 'Under 20KB gzip', 'Private feedback media'].map((item) => (
+                {['Free to start', 'Under 20KB gzip', 'Install in under 10 minutes'].map((item) => (
                   <span key={item} className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" />{item}</span>
                 ))}
               </div>
             </div>
-            <div className="min-w-0"><LandingProofPanel installSnippet={installSnippet} /></div>
+            <div className="min-w-0"><LandingHeroDemo installSnippet={installSnippet} /></div>
           </div>
         </section>
 
-        <section id="products" className="border-b py-20 sm:py-28">
-          <div className="mx-auto max-w-7xl px-5 sm:px-6">
+        <section id="setup" className="border-b py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-0 sm:px-6">
             <div className="mb-12 grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
-              <div>
-                <p className="text-xs font-semibold text-primary">From install to useful feedback</p>
-                <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">One short path to a message you can act on.</h2>
+              <div className="px-5 sm:px-0">
+                <p className="text-xs font-semibold text-primary">Setup without setup fatigue</p>
+                <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Copy. Verify. Start listening.</h2>
               </div>
-              <p className="max-w-2xl text-base leading-7 text-muted-foreground lg:justify-self-end">Create a project, paste one browser-safe snippet, and send a test. Customization and routing stay out of the way until the core loop works.</p>
+              <p className="max-w-2xl px-5 text-base leading-7 text-muted-foreground sm:px-0 lg:justify-self-end">Create a project, paste the recommended snippet, and send one private test. Customize after the connection works.</p>
             </div>
-            <ol className="grid gap-4 lg:grid-cols-3">
-              {[
-                ['1', 'Install once', 'Choose Website, React, Next.js, or Vue and copy the visible snippet into your app shell.'],
-                ['2', 'Collect useful context', 'Users write the message. Page and browser context arrive automatically; screenshots stay optional.'],
-                ['3', 'Triage and close the loop', 'Prioritize the signal, route what matters, and show users the improvements you ship.'],
-              ].map(([step, title, body]) => (
-                <li key={step} className="min-w-0 rounded-xl border bg-card p-6 shadow-[var(--shadow-card)]">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">{step}</span>
-                  <h3 className="mt-5 text-lg font-semibold">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{body}</p>
-                  {step === '1' && (
-                    <pre className="mt-5 overflow-x-auto rounded-lg border bg-[oklch(var(--surface-inset))] p-3 text-xs text-foreground" aria-label="Example website install snippet">
-                      <code>{installSnippet}</code>
-                    </pre>
-                  )}
-                </li>
-              ))}
-            </ol>
-            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-[oklch(var(--surface-raised))] p-5">
-              <p className="text-sm leading-6 text-muted-foreground"><strong className="text-foreground">Installed code stays stable.</strong> Change the button, fields, and copy remotely after verification.</p>
-              <Link href="/docs" prefetch={false}><Button variant="outline">Read the install guide</Button></Link>
-            </div>
+            <LandingInstallStory snippet={installSnippet} />
           </div>
         </section>
 
-        <section id="setup" className="border-b bg-muted/20 py-20 sm:py-28">
+        <section id="product" className="border-b bg-muted/20 py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-0 sm:px-6">
             <div className="mb-12 grid gap-6 px-5 sm:px-0 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
               <div>
-                <p className="text-xs font-semibold text-primary">After feedback reaches the inbox</p>
-                <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Turn a user message into work your team can finish.</h2>
+                <p className="text-xs font-semibold text-primary">The product loop</p>
+                <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">A clear path from problem to shipped fix.</h2>
               </div>
-              <p className="max-w-2xl leading-7 text-muted-foreground lg:justify-self-end">Send the right feedback to Slack, Discord, GitHub, or any webhook. Let trusted coding agents read and submit feedback through REST or MCP. Give users a public page for ideas, votes, and replies.</p>
+              <p className="max-w-2xl leading-7 text-muted-foreground lg:justify-self-end">See exactly what the user sees, triage the message, and publish the update without losing the original context.</p>
+            </div>
+            <LandingFeedbackStory />
+          </div>
+        </section>
+
+        <section id="integrations" className="border-b py-20 sm:py-28">
+          <div className="mx-auto max-w-7xl px-0 sm:px-6">
+            <div className="mb-12 grid gap-6 px-5 sm:px-0 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+              <div>
+                <p className="text-xs font-semibold text-primary">Route the signal</p>
+                <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Feedback goes where work already happens.</h2>
+              </div>
+              <p className="max-w-2xl leading-7 text-muted-foreground lg:justify-self-end">Send selected feedback to Slack, Discord, GitHub, or any webhook. Use REST or MCP when a trusted coding agent needs the same context.</p>
             </div>
             <LandingConnectionsStory />
           </div>

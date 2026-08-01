@@ -282,7 +282,7 @@ export default async function DashboardPage({
             ? 'Your inbox is clear. Recent product signal is below.'
             : 'Connect the project and send one test to start the feedback loop.'}
         meta={selectedProject && (
-          <div className="inline-flex items-center rounded-md border bg-surface-raised p-0.5 text-xs" aria-label="Dashboard project scope">
+          <div className="dashboard-scope-toggle inline-flex items-center rounded-md border bg-surface-raised p-0.5 text-xs" aria-label="Dashboard project scope">
             <Link
               href="/dashboard"
               data-testid="dashboard-current-project-scope"
