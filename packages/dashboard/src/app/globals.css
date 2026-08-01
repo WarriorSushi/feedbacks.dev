@@ -986,6 +986,21 @@ html.windows98 {
   animation: none;
 }
 
+.windows98 .landing-demo-tab-label {
+  color: var(--win98-text) !important;
+  text-shadow: none !important;
+}
+
+.windows98 .landing-demo-tab-detail,
+.windows98 .landing-demo-tab-icon {
+  color: var(--win98-dark-shadow) !important;
+  text-shadow: none !important;
+}
+
+.windows98 .landing-demo-tab-icon-active {
+  color: var(--win98-title) !important;
+}
+
 .windows98 .landing-story-step-label,
 .windows98 .landing-story-step-number {
   color: var(--win98-text) !important;

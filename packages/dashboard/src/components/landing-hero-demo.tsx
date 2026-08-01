@@ -93,11 +93,11 @@ export function LandingHeroDemo({ installSnippet }: { installSnippet: string }) 
               active === index ? 'bg-white/[0.075]' : 'hover:bg-white/[0.035]',
             )}
           >
-            <span className="flex items-center gap-1.5 text-[9px] font-semibold text-zinc-200 sm:text-[10px]">
-              <Icon className={cn('h-3 w-3 shrink-0', active === index ? 'text-lime-300' : 'text-zinc-500')} />
+            <span className="landing-demo-tab-label flex items-center gap-1.5 text-[9px] font-semibold text-zinc-200 sm:text-[10px]">
+              <Icon className={cn('landing-demo-tab-icon h-3 w-3 shrink-0', active === index ? 'landing-demo-tab-icon-active text-lime-300' : 'text-zinc-500')} />
               <span className="truncate">{label}</span>
             </span>
-            <span className="mt-1 hidden truncate text-[9px] text-zinc-500 sm:block">{detail}</span>
+            <span className="landing-demo-tab-detail mt-1 hidden truncate text-[9px] text-zinc-500 sm:block">{detail}</span>
             {active === index && (
               <span
                 key={`${active}-${paused}`}
