@@ -7,7 +7,7 @@ import { readJsonBody } from '@/lib/api-request'
 import {
   editConflictResponse,
   formatVersionEtag,
-  parseIfMatchVersion,
+  parseMutationVersion,
 } from '@/lib/optimistic-concurrency'
 
 const headers = { 'Cache-Control': 'no-store' }
@@ -40,7 +40,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     .eq('project_id', id)
     .maybeSingle()
   if (existingError) return NextResponse.json({ error: 'Unable to load settings.' }, { status: 500, headers })
-  const expectedVersion = parseIfMatchVersion(request.headers.get('if-match'))
+  const expectedVersion = parseMutationVersion(request.headers)
   if (existing && !expectedVersion) {
     return NextResponse.json(
       {

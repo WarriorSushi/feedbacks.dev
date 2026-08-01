@@ -8,7 +8,7 @@ import { normalizeProjectDomain } from '@/lib/project-input'
 import {
   editConflictResponse,
   formatVersionEtag,
-  parseIfMatchVersion,
+  parseMutationVersion,
 } from '@/lib/optimistic-concurrency'
 
 type RouteParams = { params: Promise<{ id: string }> }
@@ -59,7 +59,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if ('error' in result) return result.error
 
     const { admin, project } = result as Exclude<typeof result, { error: NextResponse }>
-    const expectedVersion = parseIfMatchVersion(request.headers.get('if-match'))
+    const expectedVersion = parseMutationVersion(request.headers)
     if (!expectedVersion) {
       return NextResponse.json(
         {

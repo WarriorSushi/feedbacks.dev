@@ -18,7 +18,7 @@ import { InstallTab } from './install-tab'
 import { SetupProgress } from './project-flow-nav'
 import { ProjectHome } from './project-home'
 import { PageHeader } from '@/components/ui/workspace-shell'
-import { formatVersionEtag } from '@/lib/optimistic-concurrency'
+import { mutationVersionHeaders } from '@/lib/optimistic-concurrency'
 import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
 import { readErrorMessage, readFieldErrors, type FieldErrors } from '@/lib/form-errors'
 
@@ -192,7 +192,7 @@ function SettingsTab({ project }: { project: Project }) {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'If-Match': formatVersionEtag(projectVersion),
+          ...mutationVersionHeaders(projectVersion),
         },
         body: JSON.stringify({
           name: name.trim(),

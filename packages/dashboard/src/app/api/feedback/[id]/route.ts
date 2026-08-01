@@ -4,7 +4,7 @@ import { readJsonBody } from '@/lib/api-request'
 import {
   editConflictResponse,
   formatVersionEtag,
-  parseIfMatchVersion,
+  parseMutationVersion,
 } from '@/lib/optimistic-concurrency'
 import { createServerSupabase } from '@/lib/supabase-server'
 
@@ -35,7 +35,7 @@ export async function PATCH(
     return NextResponse.json({ error: 'Unsupported feedback change.' }, { status: 400 })
   }
 
-  const expectedVersion = parseIfMatchVersion(request.headers.get('if-match'))
+  const expectedVersion = parseMutationVersion(request.headers)
   const { data: current } = await supabase
     .from('feedback')
     .select('id, updated_at')

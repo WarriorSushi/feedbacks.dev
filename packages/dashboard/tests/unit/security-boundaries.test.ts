@@ -49,8 +49,22 @@ test('owner-editable project, feedback, and Product Update routes require versio
   ]
   for (const route of routes) {
     const source = read(route)
-    assert.match(source, /parseIfMatchVersion/, route)
+    assert.match(source, /parseMutationVersion/, route)
     assert.match(source, /(PRECONDITION_REQUIRED|status:\s*428)/, route)
     assert.match(source, /(editConflictResponse|status:\s*409)/, route)
+  }
+})
+
+test('browser mutations use the application version header instead of transport If-Match', () => {
+  const clients = [
+    '../../src/components/product-updates/ProductUpdatesTab.tsx',
+    '../../src/app/(dashboard)/feedback/[id]/feedback-actions.tsx',
+    '../../src/app/(dashboard)/projects/[id]/customize-tab.tsx',
+    '../../src/app/(dashboard)/projects/[id]/project-tabs.tsx',
+  ]
+  for (const client of clients) {
+    const source = read(client)
+    assert.match(source, /mutationVersionHeaders|MUTATION_VERSION_HEADER/, client)
+    assert.doesNotMatch(source, /['"]If-Match['"]/, client)
   }
 })

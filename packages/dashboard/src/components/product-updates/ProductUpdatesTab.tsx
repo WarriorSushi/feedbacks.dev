@@ -19,7 +19,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { dismissToast, toast } from "@/hooks/use-toast";
 import { UpdatesOnboarding } from "./UpdatesOnboarding";
 import { ProductUpdateImageEditor } from "./ProductUpdateImageEditor";
-import { formatVersionEtag } from "@/lib/optimistic-concurrency";
+import {
+  MUTATION_VERSION_HEADER,
+  mutationVersionHeaders,
+  parseIfMatchVersion,
+} from "@/lib/optimistic-concurrency";
 import { ProductUpdatesOverview } from "./ProductUpdatesOverview";
 import { ProductUpdatesSettings } from "./ProductUpdatesSettings";
 import {
@@ -105,6 +109,7 @@ export function ProductUpdatesTab({
   const imageInputRef = React.useRef<HTMLInputElement>(null);
   const hydratedUpdateRef = React.useRef<string | null>(null);
   const savedFormRef = React.useRef<FormValues | null>(null);
+  const selectedVersionRef = React.useRef<string | null>(null);
   const conflictToastIdRef = React.useRef<string | null>(null);
   const [modules, setModules] = React.useState<Modules | null>(null);
   const [embedStatus, setEmbedStatus] = React.useState<EmbedStatus | null>(
@@ -222,6 +227,7 @@ export function ProductUpdatesTab({
     hydratedUpdateRef.current = update.id;
     setSelectedId(update.id);
     savedFormRef.current = nextForm;
+    selectedVersionRef.current = update.updated_at;
     setForm(nextForm);
     setPublishAt(localDateTime(update.published_at));
     setEditorConflict(null);
@@ -245,17 +251,24 @@ export function ProductUpdatesTab({
             )
           : {};
       const fieldMessage = Object.values(errors).join(" ");
+      const isEditConflict = response.status === 409 || response.status === 412;
       throw new ApiRequestError(
         data?.error ||
           fieldMessage ||
-          (response.status >= 500
+          (isEditConflict
+            ? "A newer saved version is available. Your text is still in the editor. Reload the saved version, review your changes, then save again."
+            : response.status >= 500
             ? "A temporary service problem prevented this save. Your draft is still in the editor; wait a moment and try again."
             : "The server rejected this request. Your draft is still in the editor; reload the latest version and try again."),
         errors,
-        typeof data?.code === "string" ? data.code : undefined,
+        typeof data?.code === "string"
+          ? data.code
+          : isEditConflict
+            ? "EDIT_CONFLICT"
+            : undefined,
         typeof data?.currentVersion === "string"
           ? data.currentVersion
-          : undefined,
+          : parseIfMatchVersion(response.headers.get("etag")) || undefined,
       );
     }
     return data;
@@ -293,7 +306,7 @@ export function ProductUpdatesTab({
         throw error;
       }
       const headers = new Headers(options.headers);
-      headers.set("If-Match", formatVersionEtag(error.currentVersion));
+      headers.set(MUTATION_VERSION_HEADER, error.currentVersion);
       return {
         data: await request(url, { ...options, headers }),
         recoveredFromConflict: true,
@@ -322,8 +335,13 @@ export function ProductUpdatesTab({
   ) {
     if (!selected) return;
     const next = { ...selected, ...update };
+    if (typeof update.updated_at === "string") {
+      selectedVersionRef.current = update.updated_at;
+    }
     setUpdates((current) =>
-      current.map((item) => (item.id === selected.id ? next : item)),
+      current.map((item) =>
+        item.id === selected.id ? { ...item, ...update } : item,
+      ),
     );
     if (!recoveredFromConflict) return;
     if (hasUnsavedEditorChanges()) {
@@ -364,7 +382,9 @@ export function ProductUpdatesTab({
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
-              "If-Match": formatVersionEtag(selected.updated_at),
+              ...mutationVersionHeaders(
+                selectedVersionRef.current || selected.updated_at,
+              ),
             },
             body,
           })
@@ -376,6 +396,14 @@ export function ProductUpdatesTab({
       if (!selected && data.update?.id) {
         setSelectedId(data.update.id);
         router.replace(`/projects/${projectId}/release-notes/${data.update.id}`);
+      }
+      if (typeof data.update?.updated_at === "string") {
+        selectedVersionRef.current = data.update.updated_at;
+        setUpdates((current) =>
+          current.map((item) =>
+            item.id === data.update.id ? { ...item, ...data.update } : item,
+          ),
+        );
       }
       toast({ title: selected ? "Release note saved" : "Draft saved" });
       savedFormRef.current = {
@@ -433,13 +461,15 @@ export function ProductUpdatesTab({
     }
     setSaving(true);
     try {
-      await request(
+      const data = await request(
         `/api/projects/${projectId}/updates/${selected.id}/publish`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "If-Match": formatVersionEtag(selected.updated_at),
+            ...mutationVersionHeaders(
+              selectedVersionRef.current || selected.updated_at,
+            ),
           },
           body: JSON.stringify({
             publishedAt: scheduled
@@ -451,6 +481,9 @@ export function ProductUpdatesTab({
           }),
         },
       );
+      if (typeof data.update?.updated_at === "string") {
+        selectedVersionRef.current = data.update.updated_at;
+      }
       toast({
         title: scheduled ? "Update scheduled" : "Update published",
         description: "It is usually visible in the widget within a minute.",
@@ -499,7 +532,9 @@ export function ProductUpdatesTab({
         method: "POST",
         headers: {
           "Content-Type": file.type,
-          "If-Match": formatVersionEtag(selected.updated_at),
+          ...mutationVersionHeaders(
+            selectedVersionRef.current || selected.updated_at,
+          ),
         },
         body: file,
         },
@@ -604,7 +639,9 @@ export function ProductUpdatesTab({
         `/api/projects/${projectId}/updates/${selected.id}/image`,
         {
           method: "DELETE",
-          headers: { "If-Match": formatVersionEtag(selected.updated_at) },
+          headers: mutationVersionHeaders(
+            selectedVersionRef.current || selected.updated_at,
+          ),
         },
       );
       const result = mutation.data as { update: Partial<Update> };
@@ -639,7 +676,9 @@ export function ProductUpdatesTab({
         `/api/projects/${projectId}/updates/${selected.id}`,
         {
           method: "DELETE",
-          headers: { "If-Match": formatVersionEtag(selected.updated_at) },
+          headers: mutationVersionHeaders(
+            selectedVersionRef.current || selected.updated_at,
+          ),
         },
       );
       toast({ title: "Release note deleted" });
@@ -667,7 +706,7 @@ export function ProductUpdatesTab({
           headers: {
             "Content-Type": "application/json",
             ...(settingsVersion
-              ? { "If-Match": formatVersionEtag(settingsVersion) }
+              ? mutationVersionHeaders(settingsVersion)
               : {}),
           },
           body: JSON.stringify(next),
@@ -786,7 +825,7 @@ export function ProductUpdatesTab({
                 {
                   method: action === "delete" ? "DELETE" : "POST",
                   headers: {
-                    "If-Match": formatVersionEtag(update.updated_at),
+                    ...mutationVersionHeaders(update.updated_at),
                   },
                 },
               );

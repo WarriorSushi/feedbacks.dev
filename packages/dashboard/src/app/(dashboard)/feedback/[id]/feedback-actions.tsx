@@ -11,7 +11,7 @@ import type { FeedbackPriority, FeedbackStatus } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 import { AlertCircle, Archive, CheckCircle2, Loader2, RotateCcw, X } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
-import { formatVersionEtag } from '@/lib/optimistic-concurrency'
+import { mutationVersionHeaders } from '@/lib/optimistic-concurrency'
 
 const statuses: FeedbackStatus[] = ['new', 'reviewed', 'planned', 'in_progress', 'closed']
 
@@ -73,7 +73,7 @@ export function FeedbackActions({
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'If-Match': formatVersionEtag(feedbackVersionRef.current),
+        ...mutationVersionHeaders(feedbackVersionRef.current),
       },
       body: JSON.stringify(changes),
     })
