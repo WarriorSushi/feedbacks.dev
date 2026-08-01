@@ -245,6 +245,26 @@
   to { transform: scaleX(1); }
 }
 
+@keyframes landing-demo-reveal {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes landing-demo-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes landing-demo-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.78); }
+}
+
+@keyframes landing-demo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
 /* ─── Utilities ───────────────────────────────────────────────────────────── */
 
 @layer utilities {
@@ -331,11 +351,209 @@
 
 .landing-hero {
   isolation: isolate;
-  background: oklch(var(--surface-raised));
+  background:
+    radial-gradient(circle at 76% 32%, oklch(var(--primary) / 0.11), transparent 31rem),
+    oklch(var(--surface-raised));
 }
 
 .dark .landing-hero {
-  background: oklch(var(--surface-raised));
+  background:
+    radial-gradient(circle at 76% 32%, oklch(var(--primary) / 0.13), transparent 31rem),
+    oklch(var(--surface-raised));
+}
+
+.landing-demo-shell {
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 1rem;
+  background: rgb(12 13 15);
+  color: rgb(244 244 245);
+  box-shadow:
+    0 38px 100px rgb(8 12 7 / 0.26),
+    0 1px 0 rgb(255 255 255 / 0.08) inset;
+  animation: product-loop-enter 700ms var(--ease-out-expo) both;
+}
+
+.landing-demo-topbar {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+  padding: 0.625rem 0.875rem;
+  background: rgb(18 19 22);
+}
+
+.landing-demo-status {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgb(190 242 100);
+  box-shadow: 0 0 18px rgb(190 242 100 / 0.7);
+}
+
+.landing-demo-stage {
+  position: relative;
+  min-height: 390px;
+  overflow: hidden;
+  background: rgb(10 11 13);
+}
+
+.landing-demo-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 34px 34px;
+  -webkit-mask-image: radial-gradient(circle at 62% 56%, black, transparent 82%);
+  mask-image: radial-gradient(circle at 62% 56%, black, transparent 82%);
+}
+
+.landing-demo-glow {
+  position: absolute;
+  right: -15%;
+  bottom: -38%;
+  width: 72%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: rgb(190 242 100 / 0.11);
+  filter: blur(70px);
+}
+
+.landing-demo-scene {
+  position: absolute;
+  inset: 0;
+  animation: landing-demo-reveal 520ms var(--ease-out-expo) both;
+}
+
+.landing-demo-progress {
+  transform-origin: left;
+  animation: landing-demo-progress 4.3s linear both;
+}
+
+.landing-demo-pulse {
+  animation: landing-demo-pulse 1.7s ease-in-out infinite;
+}
+
+.landing-demo-code-window,
+.landing-demo-app-window,
+.landing-demo-inbox,
+.landing-demo-release-app {
+  position: absolute;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(20 21 24 / 0.97);
+  box-shadow: 0 22px 70px rgb(0 0 0 / 0.4);
+}
+
+.landing-demo-code-window {
+  left: 9%;
+  right: 9%;
+  bottom: 8%;
+  max-height: 255px;
+}
+
+.landing-demo-code {
+  max-height: 160px;
+  overflow: auto;
+  padding: 1rem;
+  background: rgb(7 8 9);
+  color: rgb(212 245 181);
+  font-size: 0.625rem;
+  line-height: 1.25rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.landing-demo-app-window {
+  left: 5%;
+  right: 19%;
+  bottom: 7%;
+}
+
+.landing-demo-feedback-card {
+  position: absolute;
+  right: 4%;
+  bottom: 4%;
+  z-index: 10;
+  width: min(268px, 56%);
+  overflow: hidden;
+  border: 1px solid rgb(0 0 0 / 0.13);
+  border-radius: 0.6rem;
+  background: rgb(250 250 249);
+  color: rgb(24 24 27);
+  box-shadow: 0 28px 80px rgb(0 0 0 / 0.5);
+}
+
+.landing-demo-inbox {
+  left: 6%;
+  right: 6%;
+  bottom: 7%;
+}
+
+.landing-demo-release-app {
+  left: 5%;
+  right: 17%;
+  bottom: 8%;
+  min-height: 245px;
+}
+
+.landing-demo-update-card {
+  position: absolute;
+  right: 5%;
+  bottom: 5%;
+  z-index: 10;
+  width: min(300px, 57%);
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 0.13);
+  border-radius: 0.65rem;
+  background: rgb(20 21 24);
+  box-shadow: 0 28px 80px rgb(0 0 0 / 0.52);
+}
+
+.landing-demo-float {
+  position: absolute;
+  z-index: 15;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(23 24 27);
+  padding: 0.65rem 0.8rem;
+  box-shadow: 0 18px 45px rgb(0 0 0 / 0.42);
+  animation: landing-demo-float 3.2s ease-in-out infinite;
+}
+
+.landing-demo-float-install {
+  right: 4%;
+  bottom: 15%;
+}
+
+.landing-demo-float-triage {
+  right: 3%;
+  bottom: 4%;
+  display: flex;
+}
+
+@media (max-width: 639px) {
+  .landing-demo-stage { min-height: 350px; }
+  .landing-demo-code-window { left: 4%; right: 4%; bottom: 5%; }
+  .landing-demo-code { max-height: 145px; font-size: 0.5625rem; line-height: 1.05rem; }
+  .landing-demo-feedback-card { right: 3%; width: 68%; }
+  .landing-demo-inbox { left: 3%; right: 3%; bottom: 4%; }
+  .landing-demo-float-triage { right: 2%; bottom: 2%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-demo-shell,
+  .landing-demo-scene,
+  .landing-demo-progress,
+  .landing-demo-pulse,
+  .landing-demo-float {
+    animation: none !important;
+  }
 }
 
 .landing-product-loop {
@@ -356,7 +574,10 @@
 
 .landing-carousel-progress,
 .landing-story-progress,
-.landing-install-progress { animation-duration: 8s; }
+.landing-install-progress { animation-duration: 6.2s; }
+
+.landing-carousel-progress,
+.landing-story-progress { animation-duration: 8s; }
 
 .landing-stage-grid {
   background-image:
@@ -627,9 +848,38 @@ html.windows98 {
 .windows98 [class~="bg-zinc-950"]:not(.widget-theme-preview *) {
   border: 0 !important;
   border-radius: 0 !important;
-  background: var(--surface-code) !important;
-  color: oklch(0.92 0.012 145) !important;
+  background: oklch(0.105 0.035 264) !important;
+  color: oklch(0.985 0.004 90) !important;
   box-shadow: var(--win98-sunken) !important;
+}
+
+.windows98 pre:not(.widget-theme-preview *) code,
+.windows98 [class~="bg-surface-code"]:not(.widget-theme-preview *) code {
+  color: oklch(0.985 0.004 90) !important;
+  text-shadow: none !important;
+}
+
+.windows98 [class~="bg-surface-code"]:not(.widget-theme-preview *) {
+  background: oklch(0.105 0.035 264) !important;
+  color: oklch(0.985 0.004 90) !important;
+}
+
+.windows98 .dashboard-scope-toggle {
+  border: 0 !important;
+  background: var(--win98-face) !important;
+  padding: 3px !important;
+  box-shadow: var(--win98-sunken) !important;
+}
+
+.windows98 .dashboard-scope-toggle > a {
+  color: var(--win98-text) !important;
+  box-shadow: none !important;
+}
+
+.windows98 .dashboard-scope-toggle > a[aria-current="page"] {
+  background: var(--win98-title) !important;
+  color: var(--win98-highlight) !important;
+  box-shadow: var(--win98-raised) !important;
 }
 
 .windows98 .skeleton,
