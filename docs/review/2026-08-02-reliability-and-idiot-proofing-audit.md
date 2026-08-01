@@ -97,4 +97,6 @@ The performance advisor reports INFO-only missing-primary-key notices for read-o
 | Dashboard route budgets | All 33 routes passing |
 | Dependency audit | No known vulnerabilities |
 | Live Supabase schema contract | Passing |
-| Production browser verification | Required immediately after merge/deploy |
+| Production browser verification | Passed on deployment `dpl_WorJLsV37GNqyBGEm9iPHRNyC7wD`: Save draft → replace/crop/upload → edit → Save draft succeeded; saved image appeared in the right preview; no conflict UI or 412 occurred |
+
+The isolated audit release note and its image were deleted after verification. The post-deploy Vercel scan found no error-level, HTTP 412, or HTTP 5xx logs in the verification window.
