@@ -149,8 +149,24 @@ Must support:
 - Browser and server conversion events must share a stable event identifier for provider deduplication.
 - Do not load advertising tags before consent or on customer widgets and public feedback boards.
 - Give each account one personal invite link with five verified new-account slots.
-- Atomically grant one complimentary Pro month after the fifth eligible signup; self-referrals, duplicate accounts, and repeated rewards must fail safely.
+- Count an invite only after verified email ownership, a 24-hour maturation period, and real first-project activation.
+- Treat short-lived hashed device and network signals as review inputs, not as a single IP-address ban; shared networks must not be rejected automatically.
+- Atomically grant one complimentary Pro month after the fifth eligible signup; self-referrals, duplicate identities, high-risk repeats, and repeated rewards must fail safely.
 - Project-scoped navigation without a project must explain the prerequisite and link directly to project creation.
+
+### Billing and downgrade lifecycle
+
+- Paid entitlements remain active through the provider-authoritative paid-through date, including after a scheduled cancellation.
+- Send one warning on each of the final three paid days when a cancellation is scheduled.
+- At expiry or immediate cancellation, restore Free branding and limits and disable paid-only features server-side.
+- Keep the Free project allowance active and freeze only deterministic excess projects without deleting their data.
+- Unfreeze downgrade-frozen projects automatically after a successful upgrade; users may still delete frozen projects themselves.
+
+### Customer feedback and product updates
+
+- Authenticated users can send a bounded suggestion, problem, question, or positive note from Settings.
+- Internal product feedback is routed into a private system project owned by the product administrator and excluded from customer plan usage.
+- Published updates from that project appear in the same Settings surface so the product team can close the loop.
 
 ## 8. UX requirements
 

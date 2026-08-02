@@ -4,7 +4,7 @@ import { hashProjectApiKey, isPrivateProjectApiKey } from '@/lib/project-api-key
 import type { Project } from '@/lib/types'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-export const SAFE_PROJECT_COLUMNS = 'id, owner_user_id, name, api_key_last_four, domain, webhooks, settings, environment, test_namespace, expires_at, quarantined_at, created_at, updated_at'
+export const SAFE_PROJECT_COLUMNS = 'id, owner_user_id, name, api_key_last_four, domain, webhooks, settings, environment, test_namespace, expires_at, quarantined_at, plan_frozen_at, plan_freeze_reason, created_at, updated_at'
 
 export type ProjectApiScope =
   | 'feedback:read'
@@ -53,7 +53,7 @@ export async function authenticateApiKey(
     .eq('id', keyRecord.project_id)
     .maybeSingle()
 
-  if (!project) return null
+  if (!project || project.plan_frozen_at) return null
 
   const lastUsedAt = keyRecord.last_used_at ? new Date(keyRecord.last_used_at).getTime() : 0
   if (Date.now() - lastUsedAt > 60 * 60 * 1000) {

@@ -22,6 +22,11 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   assert.match(source, /Under 20KB gzip/)
   assert.match(source, /Private feedback media/)
   assert.match(source, /Install in under 10 minutes/)
+  assert.match(source, /Different products\. The same need to hear users clearly\./)
+  assert.match(source, /Early-stage SaaS/)
+  assert.match(source, /Agencies with client apps/)
+  assert.match(source, /AI-assisted engineering/)
+  assert.match(source, /Internal tools/)
   assert.match(demo, /Orbit/)
   assert.match(demo, /Paste one snippet/)
   assert.match(demo, /landing-demo-tab-label/)
@@ -189,13 +194,63 @@ test('sidebar exposes a stable Home destination and groups project work by user 
   assert.ok(sidebar.indexOf('aria-controls="mobile-navigation-drawer"') < sidebar.indexOf('<BrandWordmark', sidebar.indexOf('Mobile top bar')))
 })
 
-test('sign-in explains account creation and the shared embed before setup', () => {
+test('sign-in stays concise while showing the shared embed and rotating use cases', () => {
   const source = read('../../src/app/auth/page.tsx')
 
-  assert.match(source, /Sign in or create an account/)
-  assert.match(source, /GitHub or a magic link creates your account/)
-  assert.match(source, /One embed for both/)
+  assert.match(source, /Continue to feedbacks\.dev/)
+  assert.match(source, /New accounts start Free/)
+  assert.match(source, /Install once\. Configure remotely\./)
+  assert.match(source, /Catch the invisible bug/)
+  assert.match(source, /Find the next useful bet/)
+  assert.match(source, /Close the loop/)
   assert.doesNotMatch(source, /data-api-url/)
+})
+
+test('settings reuses a private system project for product feedback and updates', () => {
+  const settings = read('../../src/app/(dashboard)/settings/page.tsx')
+  const panel = read('../../src/components/product-feedback-panel.tsx')
+  const route = read('../../src/app/api/product-feedback/route.ts')
+  const migration = read('../../../../sql/058_internal_product_feedback_project.sql')
+
+  assert.match(settings, /<ProductFeedbackPanel/)
+  assert.match(panel, /Suggestion/)
+  assert.match(panel, /Problem/)
+  assert.match(panel, /Updates from us/)
+  assert.match(route, /getUser\(\)/)
+  assert.match(route, /checkRateLimit\(request, 'product-feedback', 5, 10, user\.id\)/)
+  assert.match(route, /is_public: false/)
+  assert.match(route, /\.eq\('status', 'published'\)/)
+  assert.match(migration, /drsyedirfan93@gmail\.com/i)
+  assert.match(migration, /internal_feedback_project', true/i)
+  assert.match(migration, /api_key,\s+api_key_hash,\s+api_key_last_four/i)
+})
+
+test('downgraded accounts keep runtime feature limits, not just dashboard gates', () => {
+  const feedbackRoute = read('../../src/app/api/feedback/route.ts')
+  const v1Route = read('../../src/app/api/v1/feedback/route.ts')
+  const delivery = read('../../src/lib/webhook-delivery.ts')
+  const bootstrap = read('../../src/app/api/widget/bootstrap/route.ts')
+  const updates = read('../../src/app/api/widget/updates/route.ts')
+
+  assert.match(feedbackRoute, /webhookEndpointLimit/)
+  assert.match(v1Route, /webhookEndpointLimit/)
+  assert.match(delivery, /endpointLimit/)
+  assert.match(delivery, /enabledEndpointCount < endpointLimit/)
+  assert.match(bootstrap, /productUpdateActiveLimit/)
+  assert.match(updates, /productUpdateActiveLimit/)
+})
+
+test('widget attribution is conspicuous, linked, and controlled by server entitlements', () => {
+  const widget = read('../../../widget/src/widget.ts')
+  const styles = read('../../../widget/src/styles.css')
+  const bootstrap = read('../../src/app/api/widget/bootstrap/route.ts')
+
+  assert.match(widget, /https:\/\/www\.feedbacks\.dev\/\?utm_source=widget&utm_medium=powered_by/)
+  assert.match(widget, /rel="noopener noreferrer"/)
+  assert.match(styles, /\.fb-powered span \{[\s\S]*font-weight: 600/)
+  assert.match(styles, /\.fb-powered a \{[\s\S]*color: var\(--fb-primary/)
+  assert.match(styles, /font-weight: 800/)
+  assert.match(bootstrap, /showPoweredBy: !billing\.entitlements\.customBranding/)
 })
 
 test('theme tokens use perceptual OKLCH colors in both themes', () => {

@@ -34,7 +34,7 @@ export default async function DashboardLayout({
       .order('created_at', { ascending: false }),
     supabase
       .from('billing_accounts')
-      .select('plan_tier, billing_status, complimentary_pro_until')
+      .select('plan_tier, billing_status, complimentary_pro_until, grace_ends_at')
       .eq('user_id', user.id)
       .maybeSingle(),
     supabase

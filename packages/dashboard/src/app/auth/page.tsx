@@ -8,11 +8,36 @@ import { BrandWordmark } from '@/components/brand-wordmark'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, ArrowRight, Check, Github, KeyRound, Loader2, Mail, MessageSquare, Megaphone } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Bug, Github, KeyRound, Lightbulb, Loader2, Mail, MessageSquare, Megaphone } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { sanitizeRedirectPath } from '@/lib/redirects'
+import { AuthCaptcha } from '@/components/auth-captcha'
+
+const authStories = [
+  {
+    label: 'Catch the invisible bug',
+    title: 'The report arrives with the page and browser already attached.',
+    body: 'A user explains the problem once. Your inbox keeps the context your team needs to reproduce it.',
+    note: 'Useful for SaaS products and internal tools',
+    icon: Bug,
+  },
+  {
+    label: 'Find the next useful bet',
+    title: 'Turn scattered requests into a small, credible product signal.',
+    body: 'Collect ideas in-product, triage them privately, and publish the strongest ones to a voting board.',
+    note: 'Useful for founders and product engineers',
+    icon: Lightbulb,
+  },
+  {
+    label: 'Close the loop',
+    title: 'Tell the people who asked when the improvement is ready.',
+    body: 'Publish a concise product update through the same embed. No second installation or announcement tool.',
+    note: 'Useful for teams that ship every week',
+    icon: Megaphone,
+  },
+] as const
 
 function AuthPageInner() {
   const [email, setEmail] = React.useState('')
@@ -24,12 +49,19 @@ function AuthPageInner() {
   const [error, setError] = React.useState('')
   const [showPassword, setShowPassword] = React.useState(false)
   const [resendSeconds, setResendSeconds] = React.useState(0)
+  const [storyIndex, setStoryIndex] = React.useState(0)
+  const [captchaToken, setCaptchaToken] = React.useState<string | null>(null)
+  const [captchaResetKey, setCaptchaResetKey] = React.useState(0)
   const searchParams = useSearchParams()
   const redirect = sanitizeRedirectPath(searchParams.get('redirect'), '/projects/new')
   const encodedRedirect = encodeURIComponent(redirect)
   const supabase = React.useMemo(() => createClient(), [])
   const callbackError = searchParams.get('error')
   const invited = searchParams.get('invited') === '1'
+  const hcaptchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  const captchaProvider = hcaptchaSiteKey ? 'hcaptcha' : turnstileSiteKey ? 'turnstile' : null
+  const captchaSiteKey = hcaptchaSiteKey || turnstileSiteKey
 
   React.useEffect(() => {
     if (!callbackError) return
@@ -47,25 +79,51 @@ function AuthPageInner() {
     return () => window.clearTimeout(timer)
   }, [resendSeconds])
 
+  React.useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const timer = window.setTimeout(
+      () => setStoryIndex((current) => (current + 1) % authStories.length),
+      6_500,
+    )
+    return () => window.clearTimeout(timer)
+  }, [storyIndex])
+
   const handlePasswordSignIn = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (captchaProvider && !captchaToken) {
+      setError('Complete the short bot check, then continue.')
+      return
+    }
     setLoading(true)
     setError('')
-    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken: captchaToken || undefined },
+    })
     setLoading(false)
+    if (captchaProvider) setCaptchaResetKey((current) => current + 1)
     if (authError) return setError('The email or password was not accepted. Check both fields or request a secure sign-in link.')
     window.location.href = redirect
   }
 
   const handleMagicLink = async (event: React.FormEvent) => {
     event.preventDefault()
+    if (captchaProvider && !captchaToken) {
+      setError('Complete the short bot check, then continue.')
+      return
+    }
     setMagicLoading(true)
     setError('')
     const { error: authError } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodedRedirect}` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodedRedirect}`,
+        captchaToken: captchaToken || undefined,
+      },
     })
     setMagicLoading(false)
+    if (captchaProvider) setCaptchaResetKey((current) => current + 1)
     if (authError) setError('We could not send a sign-in link right now. Wait a moment, then try again or contact support.')
     else {
       setSent(true)
@@ -90,34 +148,40 @@ function AuthPageInner() {
             <BrandWordmark className="text-lg" markClassName="h-6 w-6" />
           </Link>
           <div className="my-auto max-w-xl py-16">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">First value in minutes</p>
-            <h2 className="mt-5 text-4xl font-semibold leading-[1.05] tracking-[-0.04em] xl:text-5xl">A small setup path.<br />A complete feedback loop.</h2>
-            <p className="mt-5 max-w-lg leading-7 text-muted-foreground">Sign in, create one project, install one shared embed, and send a test. Everything else can wait until the connection works.</p>
+            <p className="text-xs font-semibold text-primary">Feedback that earns its place in your product</p>
+            <h2 className="mt-5 text-4xl font-semibold leading-[1.04] tracking-[-0.045em] xl:text-5xl">Hear what matters.<br />Ship the right fix.</h2>
+            <p className="mt-5 max-w-lg leading-7 text-muted-foreground">One lightweight embed connects user reports, your triage inbox, and the update that closes the loop.</p>
 
-            <div className="mt-10 overflow-hidden border-y border-foreground/15">
-              <div className="grid sm:grid-cols-2">
-                <div className="border-b p-5 sm:border-b-0 sm:border-r">
-                  <div className="flex items-center gap-2 text-sm font-semibold"><MessageSquare className="h-4 w-4 text-primary" /> Feedback form</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">Users send bugs, ideas, questions, ratings, and screenshots to your inbox.</p>
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-2 text-sm font-semibold"><Megaphone className="h-4 w-4 text-amber-500" /> Updates for your users</div>
-                  <p className="mt-2 text-xs leading-5 text-muted-foreground">You publish clear “What’s new” announcements back inside your product.</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 border-t bg-primary/[0.035] px-5 py-4 text-xs text-muted-foreground">
-                <Check className="h-4 w-4 shrink-0 text-primary" /><span><strong className="text-foreground">One embed for both.</strong> Install it once and manage configuration remotely.</span>
-              </div>
+            <div className="mt-12 border-y border-foreground/15 py-7" aria-live="polite">
+              {(() => {
+                const story = authStories[storyIndex]
+                const StoryIcon = story.icon
+                return (
+                  <div key={story.label}>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-primary"><StoryIcon className="h-4 w-4" />{story.label}</div>
+                    <h3 className="mt-4 max-w-lg text-xl font-semibold leading-7 tracking-[-0.02em]">{story.title}</h3>
+                    <p className="mt-3 max-w-lg text-sm leading-6 text-muted-foreground">{story.body}</p>
+                    <p className="mt-5 text-xs text-muted-foreground">{story.note}</p>
+                  </div>
+                )
+              })()}
             </div>
 
-            <ol className="mt-8 grid grid-cols-3 border-y">
-              {['Create project', 'Install once', 'Verify a test'].map((step, index) => (
-                <li key={step} className="border-l px-3 py-4 first:border-l-0 first:pl-0">
-                  <span className="font-mono text-[10px] text-primary">0{index + 1}</span>
-                  <p className="mt-1 text-xs font-semibold">{step}</p>
-                </li>
-              ))}
-            </ol>
+            <div className="mt-5 flex items-center justify-between gap-4">
+              <div className="flex gap-2" aria-label="Choose a use case">
+                {authStories.map((story, index) => (
+                  <button
+                    key={story.label}
+                    type="button"
+                    aria-label={`Show ${story.label}`}
+                    aria-pressed={storyIndex === index}
+                    onClick={() => setStoryIndex(index)}
+                    className={cn('h-1.5 rounded-full transition-[width,background-color] duration-200', storyIndex === index ? 'w-8 bg-primary' : 'w-3 bg-foreground/20 hover:bg-foreground/35')}
+                  />
+                ))}
+              </div>
+              <p className="flex items-center gap-2 text-xs text-muted-foreground"><MessageSquare className="h-3.5 w-3.5 text-primary" />Install once. Configure remotely.</p>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">Public browser-safe keys only. Private credentials stay server-side.</p>
         </section>
@@ -130,10 +194,10 @@ function AuthPageInner() {
 
           <div className="mx-auto my-auto w-full max-w-[390px] py-12">
             <div className="mb-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Your workspace</p>
-              <h1 className="mt-3 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">{sent ? 'Check your inbox' : 'Sign in or create an account'}</h1>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{sent ? `We sent a secure sign-in link to ${email}.` : 'New here? GitHub or a magic link creates your account and opens project setup automatically.'}</p>
-              {invited && !sent && <p className="mt-3 rounded-md border border-primary/25 bg-primary/[0.05] px-3 py-2 text-xs text-foreground">You were invited by another feedbacks.dev user. Create a new account through this page and their invite progress updates automatically.</p>}
+              <p className="text-xs font-semibold text-primary">Your workspace</p>
+              <h1 className="mt-3 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">{sent ? 'Check your inbox' : 'Continue to feedbacks.dev'}</h1>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{sent ? `We sent a secure sign-in link to ${email}.` : 'Magic link or GitHub. New accounts start Free.'}</p>
+              {invited && !sent && <p className="mt-3 rounded-md border border-primary/25 bg-primary/[0.05] px-3 py-2 text-xs leading-5 text-foreground">You were invited by another feedbacks.dev user. Their invite qualifies after you verify your email and genuinely activate your first project.</p>}
             </div>
 
             {sent ? (
@@ -157,8 +221,16 @@ function AuthPageInner() {
               <div className="space-y-4">
                 <form onSubmit={handleMagicLink} className="space-y-4">
                   <div className="space-y-1.5"><Label htmlFor="email">Email address</Label><Input id="email" type="email" autoComplete="email" placeholder="you@company.com" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11" required autoFocus /></div>
+                  {captchaProvider && captchaSiteKey && (
+                    <AuthCaptcha
+                      provider={captchaProvider}
+                      siteKey={captchaSiteKey}
+                      resetKey={captchaResetKey}
+                      onToken={setCaptchaToken}
+                    />
+                  )}
                   {error && <p role="alert" aria-live="assertive" className="rounded-md border border-destructive/25 bg-destructive/5 px-3 py-2 text-xs text-destructive">{error}</p>}
-                  <Button className="h-11 w-full" type="submit" disabled={magicLoading || !email}>{magicLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}Email me a secure sign-in link</Button>
+                  <Button className="h-11 w-full" type="submit" disabled={magicLoading || !email}>{magicLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}Continue with email</Button>
                 </form>
 
                 <Button variant="outline" className="group h-11 w-full justify-between" onClick={handleGitHub} disabled={githubLoading}>
@@ -166,7 +238,7 @@ function AuthPageInner() {
                   <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
                 </Button>
 
-                <div className="flex items-center gap-3"><Separator className="flex-1" /><span className="text-[11px] text-muted-foreground">existing password account</span><Separator className="flex-1" /></div>
+                <div className="flex items-center gap-3"><Separator className="flex-1" /><span className="text-[11px] text-muted-foreground">Password</span><Separator className="flex-1" /></div>
 
                 {showPassword ? (
                   <form onSubmit={handlePasswordSignIn} className="space-y-3">
@@ -176,7 +248,6 @@ function AuthPageInner() {
                 ) : (
                   <Button variant="ghost" className={cn('h-10 w-full', !email && 'opacity-60')} type="button" disabled={!email} onClick={() => setShowPassword(true)}>Use password instead</Button>
                 )}
-                <p className="text-center text-xs leading-5 text-muted-foreground">A magic link creates your account if you are new and returns you to the page you requested.</p>
               </div>
             )}
 

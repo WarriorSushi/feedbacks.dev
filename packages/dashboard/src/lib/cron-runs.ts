@@ -5,6 +5,7 @@ export type CronJobName =
   | 'notification_digests'
   | 'account_deletions'
   | 'e2e_cleanup'
+  | 'billing_lifecycle'
 export type CronRunStatus = 'succeeded' | 'failed'
 
 export async function startCronRun(admin: SupabaseClient, jobName: CronJobName) {

@@ -244,7 +244,9 @@ export async function POST(request: NextRequest) {
       enqueueWebhookJobs(
         project.webhooks,
         feedbackRow,
-        { id: project.id, name: project.name }
+        { id: project.id, name: project.name },
+        'feedback.new',
+        entitlement.summary.entitlements.webhookEndpointLimit,
       )
         .then((jobIds) => {
           if (jobIds.length > 0) {

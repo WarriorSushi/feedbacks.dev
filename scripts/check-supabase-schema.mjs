@@ -42,7 +42,7 @@ const supabase = createClient(url, serviceRoleKey, {
 })
 
 const requiredColumns = {
-  projects: ['id', 'owner_user_id', 'api_key_hash', 'api_key_last_four', 'environment', 'test_namespace', 'expires_at', 'quarantined_at', 'creation_request_id'],
+  projects: ['id', 'owner_user_id', 'api_key_hash', 'api_key_last_four', 'environment', 'test_namespace', 'expires_at', 'quarantined_at', 'creation_request_id', 'plan_frozen_at', 'plan_freeze_reason'],
   project_api_keys: ['id', 'project_id', 'key_hash', 'key_last_four', 'scopes', 'expires_at', 'revoked_at', 'last_used_at'],
   project_api_key_events: ['id', 'project_id', 'api_key_id', 'event_type', 'metadata', 'created_at'],
   project_integration_secrets: ['id', 'project_id', 'endpoint_id', 'kind', 'ciphertext', 'initialization_vector', 'auth_tag', 'key_version', 'destination_hint'],
@@ -77,12 +77,13 @@ const requiredColumns = {
   ],
   board_follows: ['id', 'board_id', 'project_id', 'user_id', 'created_at'],
   feedback_watches: ['id', 'board_id', 'project_id', 'feedback_id', 'user_id', 'created_at'],
-  billing_accounts: ['user_id', 'plan_tier', 'billing_status', 'dodo_customer_id', 'last_event_at', 'recurring_amount', 'billing_currency', 'billing_interval', 'billing_interval_count', 'complimentary_pro_until', 'updated_at'],
+  billing_accounts: ['user_id', 'plan_tier', 'billing_status', 'dodo_customer_id', 'last_event_at', 'recurring_amount', 'billing_currency', 'billing_interval', 'billing_interval_count', 'complimentary_pro_until', 'grace_started_at', 'grace_ends_at', 'grace_cycle_id', 'downgrade_finalized_at', 'updated_at'],
   marketing_leads: ['id', 'email', 'email_hash', 'use_case', 'source', 'consent_version', 'consented_at', 'attribution', 'created_at', 'updated_at'],
   marketing_conversion_events: ['event_id', 'event_name', 'user_id', 'email_hash', 'source_url', 'attribution', 'consent_version', 'provider_results', 'status', 'attempt_count', 'created_at', 'delivered_at'],
-  user_acquisition: ['user_id', 'referral_code', 'attribution', 'consent_version', 'signup_event_id', 'signup_recorded_at', 'created_at'],
+  user_acquisition: ['user_id', 'referral_code', 'attribution', 'consent_version', 'signup_event_id', 'signup_recorded_at', 'network_hash', 'device_hash', 'created_at'],
   referral_programs: ['user_id', 'code', 'successful_referrals', 'reward_granted_at', 'reward_expires_at', 'created_at', 'updated_at'],
-  referral_signups: ['id', 'inviter_user_id', 'invited_user_id', 'referral_code', 'created_at'],
+  referral_signups: ['id', 'inviter_user_id', 'invited_user_id', 'referral_code', 'invited_email_hash', 'network_hash', 'device_hash', 'status', 'risk_score', 'risk_reasons', 'qualified_at', 'created_at'],
+  billing_lifecycle_notices: ['id', 'user_id', 'grace_cycle_id', 'notice_day', 'created_at'],
   billing_events: ['id', 'event_type', 'status', 'claim_token', 'locked_at', 'attempt_count', 'processing_error', 'occurred_at', 'processed_at'],
   account_deletion_jobs: ['id', 'user_id', 'user_email', 'status', 'claim_token', 'attempt_count', 'next_attempt_at', 'locked_at', 'last_error', 'updated_at'],
   api_idempotency_keys: ['project_id', 'route', 'key_hash', 'request_hash', 'status', 'response_status', 'response_body', 'expires_at'],
@@ -145,8 +146,14 @@ const requiredReadOnlyFunctions = [
     args: {},
   },
   {
-    name: 'claim_referral_signup',
-    args: { p_invited_user_id: probeProjectId, p_referral_code: 'invalid-code' },
+    name: 'register_referral_signup',
+    args: {
+      p_invited_user_id: probeProjectId,
+      p_referral_code: 'invalid-code',
+      p_invited_email_hash: '0'.repeat(64),
+      p_network_hash: null,
+      p_device_hash: null,
+    },
   },
 ]
 

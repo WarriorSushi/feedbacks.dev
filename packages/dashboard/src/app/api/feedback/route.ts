@@ -161,11 +161,12 @@ export async function POST(request: NextRequest) {
     if (!lookup) return jsonError('Invalid project key', 401)
     const { data: project } = await admin
       .from('projects')
-      .select('id, name, webhooks, settings, owner_user_id')
+      .select('id, name, webhooks, settings, owner_user_id, plan_frozen_at')
       .eq(lookup.column, lookup.value)
       .single()
 
     if (!project) return jsonError('Invalid project key', 401)
+    if (project.plan_frozen_at) return jsonError('This project is frozen because the workspace is over its current plan limit.', 403)
     const projectRate = await checkRateLimit(request, 'feedback-project', 30, 1, project.id)
     if (!projectRate.allowed) {
       return NextResponse.json(
@@ -183,6 +184,7 @@ export async function POST(request: NextRequest) {
       return jsonError('This site is not allowed to submit feedback for this project.', 403)
     }
 
+    let webhookEndpointLimit: number | null = null
     if (!hasE2EBypass(request)) {
       const entitlement = await assertCanReceiveFeedback(project.owner_user_id)
       if (!entitlement.allowed) {
@@ -194,6 +196,7 @@ export async function POST(request: NextRequest) {
           { status: 403, headers: CORS_HEADERS },
         )
       }
+      webhookEndpointLimit = entitlement.summary.entitlements.webhookEndpointLimit
     }
 
     // Validate message
@@ -480,7 +483,9 @@ export async function POST(request: NextRequest) {
       enqueueWebhookJobs(
         project.webhooks,
         feedbackRow,
-        { id: project.id, name: project.name }
+        { id: project.id, name: project.name },
+        'feedback.new',
+        webhookEndpointLimit,
       )
         .then((jobIds) => {
           if (jobIds.length > 0) {

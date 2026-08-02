@@ -55,11 +55,14 @@ export async function POST(
 
   const { data: projectOwner } = await admin
     .from('projects')
-    .select('owner_user_id')
+    .select('owner_user_id,plan_frozen_at')
     .eq('id', board.project_id)
     .single()
 
   if (!hasE2EBypass(req)) {
+    if (projectOwner?.plan_frozen_at) {
+      return NextResponse.json({ error: 'This project is frozen because the workspace is over its current plan limit.' }, { status: 403 })
+    }
     const entitlement = projectOwner
       ? await assertCanReceiveFeedback(projectOwner.owner_user_id)
       : null

@@ -41,6 +41,8 @@ export interface SavedWidgetConfig {
   cancelButtonText?: string
   successTitle?: string
   successDescription?: string
+  /** Server-authoritative entitlement output. Not emitted as a script attribute. */
+  showPoweredBy?: boolean
   openOnKey?: string
   openAfterMs?: number
 }
@@ -180,6 +182,7 @@ const PUBLIC_WIDGET_CONFIG_KEYS = new Set<keyof PublicWidgetConfig>([
   'cancelButtonText',
   'successTitle',
   'successDescription',
+  'showPoweredBy',
   'openOnKey',
   'openAfterMs',
 ])
@@ -328,6 +331,7 @@ export function sanitizeSavedWidgetConfig(
     cancelButtonText: sanitizeText(input.cancelButtonText, 80),
     successTitle: sanitizeText(input.successTitle, 120),
     successDescription: sanitizeText(input.successDescription, 240),
+    showPoweredBy: sanitizeBoolean(input.showPoweredBy),
     openOnKey: sanitizeText(input.openOnKey, 32),
     openAfterMs: clampNumber(input.openAfterMs, 0, 600000, { round: true }),
   }

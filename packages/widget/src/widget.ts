@@ -501,7 +501,7 @@ class FeedbacksWidget {
           </div>
         </form>
       </div>
-      <div class="fb-powered">Powered by <a href="https://feedbacks.dev" target="_blank" rel="noopener">feedbacks.dev</a></div>
+      ${t.showPoweredBy !== false ? '<div class="fb-powered"><span>Powered by</span> <a href="https://www.feedbacks.dev/?utm_source=widget&utm_medium=powered_by" target="_blank" rel="noopener noreferrer">feedbacks.dev</a></div>' : ''}
     `;
   }
 

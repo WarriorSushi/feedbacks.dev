@@ -285,6 +285,18 @@ Acceptance criteria:
 - generated install code remains stable after installation
 - saved browser-safe configuration is delivered remotely and matches the dashboard preview
 
+### US-9.3
+
+Story:
+As a cancelling customer, I want a predictable downgrade that preserves my work so I can return without rebuilding my projects.
+
+Acceptance criteria:
+- paid features remain available only through the paid-through date
+- cancellation warnings are sent during the final three paid days
+- Free branding and feature limits return at expiry
+- only projects above the Free allowance are frozen, and no project data is deleted automatically
+- upgrading restores projects that were frozen by the downgrade
+
 ## Epic 10: Discover and recommend the product
 
 ### US-10.1
@@ -319,6 +331,31 @@ Acceptance criteria:
 - customer widgets and public boards never contain advertising tags
 - privacy choices remain available after the first decision
 
+### US-10.4
+
+Story:
+As the product owner, I want complimentary Pro rewards protected from one person creating several accounts so the program remains sustainable.
+
+Acceptance criteria:
+- email ownership and real product activation are required before an invite qualifies
+- qualification matures for at least 24 hours
+- self-referrals and normalized duplicate identities are rejected
+- hashed device reuse and network velocity trigger graduated review instead of relying on IP alone
+- abuse signals are removed after 90 days
+
+## Epic 11: Talk with the feedbacks.dev team
+
+### US-11.1
+
+Story:
+As an authenticated user, I want to send product feedback and read recent updates in Settings so I can help shape the product and see what changed.
+
+Acceptance criteria:
+- suggestion, problem, question, and positive-note categories are available
+- submissions are private, authenticated, bounded, and rate limited
+- the internal project does not consume the administrator's customer project allowance
+- published product updates appear without adding a second messaging system
+
 ## Priority order
 
 ### Must-have for v1
@@ -340,6 +377,8 @@ Acceptance criteria:
 - US-10.1
 - US-10.2
 - US-10.3
+- US-10.4
+- US-11.1
 
 ### Should-have shortly after v1
 
@@ -349,6 +388,7 @@ Acceptance criteria:
 - US-7.2
 - US-8.1
 - US-9.2
+- US-9.3
 
 ### Nice-to-have later
 

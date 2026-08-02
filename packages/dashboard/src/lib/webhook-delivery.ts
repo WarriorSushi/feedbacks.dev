@@ -359,13 +359,15 @@ export async function enqueueWebhookJobs(
   webhooks: WebhookConfig,
   feedback: Partial<Feedback>,
   project: Pick<Project, 'id' | 'name'>,
-  event: WebhookPayload['event'] = 'feedback.new'
+  event: WebhookPayload['event'] = 'feedback.new',
+  endpointLimit: number | null = null,
 ) {
   const payload = buildPayload(feedback, project, event)
   const admin = await createAdminSupabase()
   const normalizedWebhooks = normalizeWebhookConfig(webhooks)
   const rows: Array<Record<string, unknown>> = []
   const digestRows: Array<Record<string, unknown>> = []
+  let enabledEndpointCount = 0
 
   for (const type of ['slack', 'discord', 'generic'] as const) {
     const group = normalizedWebhooks[type]
@@ -373,6 +375,9 @@ export async function enqueueWebhookJobs(
 
     for (const endpoint of group.endpoints) {
       if (!endpoint.enabled) continue
+      const withinPlan = endpointLimit === null || enabledEndpointCount < endpointLimit
+      enabledEndpointCount += 1
+      if (!withinPlan) continue
       if (!matchesWebhookRules(endpoint, feedback)) continue
       const row = {
         project_id: project.id,
@@ -394,6 +399,9 @@ export async function enqueueWebhookJobs(
   if (normalizedWebhooks.github?.endpoints) {
     for (const endpoint of normalizedWebhooks.github.endpoints) {
       if (!endpoint.enabled) continue
+      const withinPlan = endpointLimit === null || enabledEndpointCount < endpointLimit
+      enabledEndpointCount += 1
+      if (!withinPlan) continue
       if (!matchesWebhookRules(endpoint, feedback)) continue
       const row = {
         project_id: project.id,

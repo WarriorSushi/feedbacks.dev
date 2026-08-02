@@ -60,6 +60,10 @@ Recommended high-level shape:
 - server conversion payloads must use allowlisted events, hashed normalized match data, bounded attribution fields, and browser/server deduplication identifiers
 - referral qualification and reward application must be a single locked database operation callable only by the service role
 - complimentary access must augment, not overwrite, webhook-authoritative billing state
+- account-risk controls must layer verified identity, activation, maturation, velocity, and short-lived hashed device/network signals; IP addresses must never be the sole rejection rule
+- cancellation warnings run inside the final paid period; entitlements downgrade at the paid-through boundary with no synthetic Pro grace period
+- project downgrades are reversible state changes, not destructive retention jobs; only downgrade-frozen projects may be auto-restored
+- the internal feedback channel reuses the private project, feedback, and product-update models and is excluded from customer plan accounting
 
 ## Archived project note
 

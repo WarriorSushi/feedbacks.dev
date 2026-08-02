@@ -13,6 +13,7 @@ import { AlertTriangle, Loader2, Mail } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import Link from 'next/link'
 import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
+import { ProductFeedbackPanel } from '@/components/product-feedback-panel'
 
 export default function SettingsPage() {
   const supabase = React.useMemo(() => createClient(), [])
@@ -238,6 +239,8 @@ export default function SettingsPage() {
             </p>
           </div>
         </section>
+
+        <ProductFeedbackPanel />
 
         <section className="grid gap-6 p-5 sm:p-6 md:grid-cols-[150px_minmax(0,1fr)]">
           <div>

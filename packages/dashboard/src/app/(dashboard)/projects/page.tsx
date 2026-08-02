@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
 import type { Project } from '@/lib/types'
 import Link from 'next/link'
-import { AlertTriangle, ArrowRight, CheckCircle2, Code2, FolderOpen, Inbox, Plus } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CheckCircle2, Code2, FolderOpen, Inbox, LockKeyhole, Plus } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { CURRENT_PROJECT_COOKIE, getSelectedProject } from '@/lib/project-selection'
 import { PageHeader } from '@/components/ui/workspace-shell'
@@ -27,6 +27,9 @@ type ProjectHealth = {
 }
 
 function nextProjectAction(project: Project, health?: ProjectHealth) {
+  if (project.plan_frozen_at) {
+    return { label: 'Restore with Pro', href: '/billing', tone: 'attention' as const }
+  }
   if (!health?.embed_last_seen_at) {
     return { label: 'Install', href: `/projects/${project.id}/install`, tone: 'primary' as const }
   }
@@ -134,6 +137,7 @@ export default async function ProjectsPage() {
                   <FolderOpen className="h-4 w-4 shrink-0 text-primary" />
                   <h2 className="truncate text-base font-semibold">{project.name}</h2>
                   {project.id === currentProjectId && <Badge variant="outline">Current</Badge>}
+                  {project.plan_frozen_at && <Badge variant="secondary"><LockKeyhole className="mr-1 h-3 w-3" />Frozen</Badge>}
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                   <span>{project.domain || 'No domain set'}</span>
@@ -149,6 +153,7 @@ export default async function ProjectsPage() {
                     <span>{health.board_listed ? 'Board listed' : 'Board unlisted'}</span>
                   )}
                   {health?.updates_enabled && <span>Updates active</span>}
+                  {project.plan_frozen_at && <span>Data preserved, public collection paused</span>}
                 </div>
               </div>
 

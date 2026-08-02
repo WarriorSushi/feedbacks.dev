@@ -8,6 +8,7 @@ import { publicEnv } from '@/lib/public-env'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { isProductUpdateResponseBounded, mapProductUpdate, mapProductUpdateSettings, publicImageUrl } from '@/lib/product-update-service'
 import type { Project } from '@/lib/types'
+import { getBillingSummaryForUser } from '@/lib/billing'
 
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', Vary: 'Origin' }
 const cache = 'public, max-age=60, stale-while-revalidate=300'
@@ -24,36 +25,42 @@ export async function GET(request: NextRequest) {
   const admin = await createAdminSupabase()
   const lookup = await getPublicProjectLookup(projectKey!)
   if (!lookup) return NextResponse.json({ error: 'Invalid project key.' }, { status: 400, headers: cors })
-  const { data: project, error: projectError } = await admin.from('projects').select('id,settings').eq(lookup.column, lookup.value).maybeSingle()
+  const { data: project, error: projectError } = await admin.from('projects').select('id,settings,owner_user_id,plan_frozen_at').eq(lookup.column, lookup.value).maybeSingle()
   if (projectError) return NextResponse.json({ error: 'Bootstrap temporarily unavailable.' }, { status: 503, headers: cors })
   if (!project) {
     const unavailable: WidgetBootstrapResponse = {
       configVersion: 2,
       modules: { feedback: false, updates: false },
-      feedbackConfig: buildPublicWidgetConfig(projectKey!, {}, { appOrigin: publicEnv.NEXT_PUBLIC_APP_ORIGIN }),
+      feedbackConfig: { ...buildPublicWidgetConfig(projectKey!, {}, { appOrigin: publicEnv.NEXT_PUBLIC_APP_ORIGIN }), showPoweredBy: true },
     }
     return NextResponse.json(unavailable, { headers: { ...cors, 'Cache-Control': cache } })
   }
   if (!isWidgetRequestOriginAllowed(request, (project as Project).settings?.widget_origin_restriction, { trustedOrigins: [publicEnv.NEXT_PUBLIC_APP_ORIGIN] })) return NextResponse.json({ error: 'Origin not allowed.' }, { status: 403, headers: cors })
+  const billing = await getBillingSummaryForUser(project.owner_user_id)
+  const projectFrozen = Boolean(project.plan_frozen_at)
 
   const { data: updateSettings, error: updateSettingsError } = await admin.from('product_update_settings').select('*').eq('project_id', project.id).maybeSingle()
   if (updateSettingsError) return NextResponse.json({ error: 'Bootstrap temporarily unavailable.' }, { status: 503, headers: cors })
-  const feedback = (project as Project).settings?.widget_config?.feedbackEnabled !== false
-  const updates = updateSettings?.enabled === true
+  const feedback = !projectFrozen && (project as Project).settings?.widget_config?.feedbackEnabled !== false
+  const updates = !projectFrozen && updateSettings?.enabled === true
   const response: WidgetBootstrapResponse = {
     configVersion: 2,
     modules: { feedback, updates },
-    feedbackConfig: buildPublicWidgetConfig(
-      projectKey!,
-      (project as Project).settings?.widget_config,
-      { appOrigin: publicEnv.NEXT_PUBLIC_APP_ORIGIN },
-    ),
+    feedbackConfig: {
+      ...buildPublicWidgetConfig(
+        projectKey!,
+        (project as Project).settings?.widget_config,
+        { appOrigin: publicEnv.NEXT_PUBLIC_APP_ORIGIN },
+      ),
+      showPoweredBy: !billing.entitlements.customBranding,
+    },
   }
   if (updates) {
     const now = new Date().toISOString()
-    const { data, error } = await admin.from('product_updates').select('*').eq('project_id', project.id).eq('status', 'published').lte('published_at', now).or(`expires_at.is.null,expires_at.gt.${now}`).order('published_at', { ascending: false }).order('id', { ascending: false }).limit(20)
+    const publicUpdateLimit = billing.entitlements.productUpdateActiveLimit ?? 20
+    const { data, error } = await admin.from('product_updates').select('*').eq('project_id', project.id).eq('status', 'published').lte('published_at', now).or(`expires_at.is.null,expires_at.gt.${now}`).order('published_at', { ascending: false }).order('id', { ascending: false }).limit(publicUpdateLimit)
     if (error) return NextResponse.json({ error: 'Bootstrap temporarily unavailable.' }, { status: 503, headers: cors })
-    response.updates = { settings: mapProductUpdateSettings(updateSettings), updates: (data || []).map((row) => mapProductUpdate(row, publicImageUrl(admin, row.image_path))).filter((update) => !update.ctaUrl || Boolean(sanitizeProductUpdateCta(update.ctaUrl))) }
+    response.updates = { settings: { ...mapProductUpdateSettings(updateSettings), showPoweredBy: !billing.entitlements.customBranding }, updates: (data || []).map((row) => mapProductUpdate(row, publicImageUrl(admin, row.image_path))).filter((update) => !update.ctaUrl || Boolean(sanitizeProductUpdateCta(update.ctaUrl))) }
   }
   if (!isProductUpdateResponseBounded(response)) return NextResponse.json({ error: 'Response too large.' }, { status: 500, headers: cors })
 
