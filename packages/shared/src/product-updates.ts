@@ -92,7 +92,7 @@ const PUBLIC_WIDGET_CONFIG_KEYS = new Set([
   'enableType', 'enableRating', 'enableScreenshot', 'screenshotRequired', 'enableAttachment',
   'attachmentMaxMB', 'allowedAttachmentMimes', 'requireCaptcha', 'captchaProvider', 'turnstileSiteKey',
   'hcaptchaSiteKey', 'formTitle', 'formSubtitle', 'messageLabel', 'messagePlaceholder', 'emailLabel',
-  'submitButtonText', 'cancelButtonText', 'successTitle', 'successDescription', 'openOnKey', 'openAfterMs',
+  'submitButtonText', 'cancelButtonText', 'successTitle', 'successDescription', 'showPoweredBy', 'openOnKey', 'openAfterMs',
 ])
 
 function isHttpUrl(value: unknown): value is string {
@@ -117,7 +117,7 @@ function isPublicWidgetConfig(value: unknown): value is PublicWidgetConfig {
     || !['bottom-right', 'bottom-left', 'top-right', 'top-left'].includes(config.position as string)) return false
 
   const stringFields = ['target', 'buttonText', 'primaryColor', 'backgroundColor', 'captchaProvider', 'turnstileSiteKey', 'hcaptchaSiteKey', 'formTitle', 'formSubtitle', 'messageLabel', 'messagePlaceholder', 'emailLabel', 'submitButtonText', 'cancelButtonText', 'successTitle', 'successDescription', 'openOnKey']
-  const booleanFields = ['debug', 'requireEmail', 'enableType', 'enableRating', 'enableScreenshot', 'screenshotRequired', 'enableAttachment', 'requireCaptcha']
+  const booleanFields = ['debug', 'requireEmail', 'enableType', 'enableRating', 'enableScreenshot', 'screenshotRequired', 'enableAttachment', 'requireCaptcha', 'showPoweredBy']
   const numberFields = ['scale', 'modalWidth', 'attachmentMaxMB', 'openAfterMs']
   if (stringFields.some((field) => config[field] !== undefined && typeof config[field] !== 'string')) return false
   if (booleanFields.some((field) => config[field] !== undefined && typeof config[field] !== 'boolean')) return false

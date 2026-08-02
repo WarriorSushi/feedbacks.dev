@@ -174,6 +174,62 @@ export async function notifyUserOfBillingFailure(input: {
   }
 }
 
+export async function notifyUserOfDowngradeGrace(input: {
+  userId: string
+  billingEmail?: string | null
+  day: 1 | 2 | 3
+  graceEndsAt: string
+  freeProjectLimit: number
+}) {
+  try {
+    const { emailAddress } = await getUserNotificationSettings(input.userId)
+    const recipient = input.billingEmail || emailAddress
+    if (!recipient) return false
+    const endDate = new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' })
+      .format(new Date(input.graceEndsAt))
+    const messages = {
+      1: {
+        subject: 'Three days left on your Pro plan',
+        heading: 'Your paid Pro access ends in three days',
+        body: `Your Pro access is scheduled to move to Free ${endDate}. Your paid period or complimentary access remains active until then. If you stay on Free, your ${input.freeProjectLimit} most recently active projects remain live and additional projects are frozen, not deleted.`,
+        action: 'Renew before the paid-through date to keep every project live without interruption.',
+      },
+      2: {
+        subject: 'Two days left to keep every project live',
+        heading: 'A quick heads-up about your workspace',
+        body: `Your paid Pro period ends ${endDate}. At that time, Free limits apply automatically, including branding, dashboard history, usage quotas, and project limits.`,
+        action: 'Nothing is deleted. Renewing Pro restores all paid features immediately.',
+      },
+      3: {
+        subject: 'Final paid day of Pro access',
+        heading: 'Pro access ends today',
+        body: `At ${endDate}, feedbacks.dev will move your workspace to Free. Your ${input.freeProjectLimit} most recently active projects stay live; extra projects are frozen and can be restored by upgrading.`,
+        action: 'Renew before the deadline if you need uninterrupted collection across every project.',
+      },
+    } as const
+    const message = messages[input.day]
+    const billingUrl = `${env.NEXT_PUBLIC_APP_ORIGIN}/billing`
+    await sendResendEmail({
+      to: recipient,
+      subject: `[feedbacks.dev] ${message.subject}`,
+      text: `${message.heading}\n\n${message.body}\n\n${message.action}\n\nReview billing: ${billingUrl}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.55;color:#17211b;max-width:560px">
+          <p style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2f7d4a">Plan change notice, day ${input.day} of 3</p>
+          <h2>${escapeEmailHtml(message.heading)}</h2>
+          <p>${escapeEmailHtml(message.body)}</p>
+          <p>${escapeEmailHtml(message.action)}</p>
+          <p><a href="${escapeEmailHtml(billingUrl)}" style="display:inline-block;padding:10px 14px;border-radius:6px;background:#1f7a46;color:#f7fbf8;text-decoration:none;font-weight:700">Review billing</a></p>
+        </div>
+      `,
+    })
+    return true
+  } catch (error) {
+    console.error('Failed to send downgrade warning notification', error)
+    return false
+  }
+}
+
 async function getPublicBoardRecipientEmails(input: {
   boardId: string
   feedbackId: string

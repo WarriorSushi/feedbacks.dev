@@ -35,6 +35,8 @@ export interface Project {
   test_namespace?: string | null
   expires_at?: string | null
   quarantined_at?: string | null
+  plan_frozen_at?: string | null
+  plan_freeze_reason?: 'downgrade' | null
   created_at: string
   creation_request_id?: string | null
   updated_at: string
@@ -265,6 +267,10 @@ export interface BillingAccount {
   plan_tier: PlanTier
   billing_status: BillingStatus
   complimentary_pro_until: string | null
+  grace_started_at: string | null
+  grace_ends_at: string | null
+  grace_cycle_id: string | null
+  downgrade_finalized_at: string | null
   dodo_customer_id: string | null
   dodo_subscription_id: string | null
   dodo_product_id: string | null

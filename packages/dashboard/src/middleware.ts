@@ -17,6 +17,9 @@ function buildContentSecurityPolicy(nonce: string): string {
     ? 'https://live.dodopayments.com'
     : 'https://test.dodopayments.com'
   const developmentScriptSource = process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''
+  const turnstileOrigin = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? 'https://challenges.cloudflare.com' : ''
+  const hcaptchaOrigin = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY ? 'https://*.hcaptcha.com' : ''
+  const hcaptchaScriptOrigin = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY ? 'https://js.hcaptcha.com' : ''
   const trackingScriptSources = [
     process.env.NEXT_PUBLIC_GOOGLE_TAG_ID ? 'https://www.googletagmanager.com' : '',
     process.env.NEXT_PUBLIC_META_PIXEL_ID ? 'https://connect.facebook.net' : '',
@@ -34,13 +37,13 @@ function buildContentSecurityPolicy(nonce: string): string {
     "object-src 'none'",
     "frame-ancestors 'none'",
     "form-action 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${trackingScriptSources}${developmentScriptSource}`.trim(),
-    "style-src 'self' 'unsafe-inline'",
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' ${turnstileOrigin} ${hcaptchaOrigin} ${hcaptchaScriptOrigin} ${trackingScriptSources}${developmentScriptSource}`.trim(),
+    `style-src 'self' 'unsafe-inline' ${hcaptchaOrigin}`.trim(),
     `img-src 'self' data: blob: ${supabaseOrigin} ${trackingConnectSources}`.trim(),
     "font-src 'self' data:",
-    `connect-src 'self' ${appOrigin} ${supabaseOrigin} ${supabaseWsOrigin} ${dodoOrigin} ${trackingConnectSources}`.trim(),
+    `connect-src 'self' ${appOrigin} ${supabaseOrigin} ${supabaseWsOrigin} ${dodoOrigin} ${turnstileOrigin} ${hcaptchaOrigin} ${trackingConnectSources}`.trim(),
     "worker-src 'self' blob:",
-    "frame-src 'self'",
+    `frame-src 'self' ${turnstileOrigin} ${hcaptchaOrigin}`.trim(),
   ]
   if (process.env.NODE_ENV !== 'development') directives.push('upgrade-insecure-requests')
   return directives.join('; ')

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
 import type { BillingSummary } from '@/lib/types'
-import { Loader2 } from 'lucide-react'
+import { ArrowUpRight, Check, Loader2, ShieldCheck } from 'lucide-react'
 
 interface BillingClientProps {
   initialSummary: BillingSummary
@@ -130,21 +130,23 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
   const feedbackLimitText = summary.entitlements.feedbackMonthlyLimit
     ? `${summary.usage.feedbackThisMonth}/${summary.entitlements.feedbackMonthlyLimit}`
     : `${summary.usage.feedbackThisMonth}`
-  const webhookEndpointText =
-    summary.entitlements.webhookEndpointLimit === null
-      ? 'Unlimited active endpoints'
-      : `${summary.entitlements.webhookEndpointLimit} active endpoint`
-  const webhookHistoryText =
-    summary.entitlements.webhookDeliveryLogLimit === null
-      ? 'Full delivery history'
-      : `Latest ${summary.entitlements.webhookDeliveryLogLimit} deliveries`
   const complimentaryProActive = Boolean(
     summary.account.complimentary_pro_until &&
     new Date(summary.account.complimentary_pro_until).getTime() > Date.now(),
   )
   const paidProActive = summary.account.plan_tier === 'pro' &&
     (summary.account.billing_status === 'active' || summary.account.billing_status === 'trialing')
-  const effectivePro = paidProActive || complimentaryProActive
+  const cancellationScheduled = Boolean(
+    summary.account.cancel_at_period_end &&
+    summary.account.current_period_end &&
+    new Date(summary.account.current_period_end).getTime() > Date.now(),
+  )
+  const cancellationAccessEnd = cancellationScheduled
+    ? [summary.account.current_period_end, summary.account.grace_ends_at]
+        .filter((value): value is string => Boolean(value))
+        .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0]
+    : null
+  const effectivePro = summary.entitlements.planTier === 'pro'
 
   return (
     <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
@@ -154,13 +156,19 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
             <Badge variant={effectivePro ? 'default' : 'secondary'}>
               {summary.entitlements.label}
             </Badge>
-            <Badge variant="outline">{complimentaryProActive && !paidProActive ? 'referral reward' : summary.account.billing_status}</Badge>
+            <Badge variant="outline">{cancellationScheduled ? 'cancels soon' : complimentaryProActive && !paidProActive ? 'referral reward' : summary.account.billing_status}</Badge>
             {!customerBillingLive && <Badge variant="outline">Live checkout unavailable</Badge>}
           </div>
-          <h2 className="mt-3 text-lg font-semibold">Billing and plan</h2>
+          <h2 className="mt-3 text-xl font-semibold tracking-tight">{effectivePro ? 'Your feedback operation is fully unlocked' : 'Turn feedback into a shipping system'}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            See your plan, usage, limits, and renewal date in one place.
+            {effectivePro ? 'Every project, integration, history window, and branding control stays available.' : 'Pro removes the ceilings when feedback becomes part of how your product team ships.'}
           </p>
+          {cancellationScheduled && (
+            <div className="mt-4 flex items-start gap-3 border-y border-amber-500/30 bg-amber-500/10 px-3 py-3 text-sm">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <p><strong>Your data is safe.</strong> Your Pro access remains active through {formatPeriodEnd(cancellationAccessEnd)}. After that, Free limits return and extra projects are frozen, never deleted.</p>
+            </div>
+          )}
           {!customerBillingLive && !effectivePro && (
             <p className="mt-3 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-foreground">
               Pro checkout is paused while the live payment configuration is being verified. Your Free plan remains fully available and no test checkout will be shown in production.
@@ -180,11 +188,11 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
                 value: feedbackLimitText,
                 hint: summary.entitlements.feedbackMonthlyLimit ? 'Monthly quota' : 'Unlimited on Pro',
               },
-              ...(paidProActive
+              ...(paidProActive || cancellationScheduled
                 ? [
                     {
                       label: summary.account.cancel_at_period_end ? 'Access until' : 'Next charge',
-                      value: formatPeriodEnd(summary.account.current_period_end),
+                      value: formatPeriodEnd(cancellationAccessEnd || summary.account.current_period_end),
                       hint: summary.account.cancel_at_period_end ? 'Cancels after this period' : 'Subscription renewal date',
                     },
                     {
@@ -218,17 +226,17 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {paidProActive ? (
+            {paidProActive || cancellationScheduled ? (
               <Button onClick={openPortal} disabled={portalLoading || !summary.billingEnabled}>
                 {portalLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Manage billing
+                {cancellationScheduled ? 'Keep Pro active' : 'Manage billing'}
               </Button>
             ) : complimentaryProActive ? (
               <Button disabled>Referral Pro active</Button>
             ) : (
               <Button onClick={startCheckout} disabled={checkoutLoading || !customerBillingLive}>
                 {checkoutLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Upgrade to Pro
+                Upgrade to Pro, $19/month <ArrowUpRight className="ml-2 h-4 w-4" />
               </Button>
             )}
             <Button variant="outline" onClick={() => void refreshSummary()} disabled={syncing}>
@@ -241,31 +249,31 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
 
       <section className="border-t">
         <header className="border-b bg-surface-raised px-5 py-4 sm:px-6">
-          <h2 className="font-semibold">Plan capabilities</h2>
+          <h2 className="font-semibold">Free is for starting. Pro is for operating.</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Free includes the core setup tools with smaller limits. Pro raises those limits for teams.
+            The core workflow stays useful on Free. Pro removes the limits that interrupt an active product team.
           </p>
         </header>
-        <div className="grid p-5 sm:p-6 md:grid-cols-2 md:divide-x">
-          <div className="pb-4 text-sm md:pb-0 md:pr-6">
-            <p className="font-medium">Included now</p>
-            <ul className="mt-2 space-y-1 text-muted-foreground">
-              <li>REST API: {summary.entitlements.apiAccess ? 'Available' : 'Not included'}</li>
-              <li>Public boards: {summary.entitlements.publicBoards ? 'Available' : 'Not included'}</li>
-              <li>Webhooks: {summary.entitlements.webhooks ? webhookEndpointText : 'Not included'}</li>
-              <li>Webhook logs: {summary.entitlements.webhooks ? webhookHistoryText : 'Not included'}</li>
-              <li>MCP / AI agent API: {summary.entitlements.mcp ? 'Available' : 'Not included'}</li>
-              <li>Custom branding: {summary.entitlements.customBranding ? 'Available' : 'Upgrade to Pro'}</li>
-            </ul>
+        <div className="overflow-x-auto p-5 sm:p-6">
+          <div className="min-w-[620px] divide-y border-y text-sm">
+            <div className="grid grid-cols-[1fr_160px_180px] bg-muted/25 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground"><span>Capability</span><span>Free</span><span className="text-foreground">Pro, $19/month</span></div>
+            {[
+              ['Live projects', '2', 'Unlimited'],
+              ['Feedback volume', '500 / month', 'Unlimited'],
+              ['History', '30 days', 'Full history'],
+              ['Branding', 'feedbacks.dev attribution', 'Your brand only'],
+              ['Webhooks', '1 endpoint, 10 logs', 'Unlimited endpoints and logs'],
+              ['Product updates', '3 active, 7-day analytics', 'Unlimited, scheduling, 90-day analytics'],
+              ['API, MCP, and public boards', 'Included', 'Included'],
+            ].map(([feature, free, pro]) => (
+              <div key={feature} className="grid grid-cols-[1fr_160px_180px] items-center px-4 py-3">
+                <span className="font-medium">{feature}</span>
+                <span className="text-muted-foreground">{free}</span>
+                <span className="flex items-center gap-2 font-medium"><Check className="h-4 w-4 text-primary" />{pro}</span>
+              </div>
+            ))}
           </div>
-          <div className="border-t pt-4 text-sm md:border-t-0 md:pl-6 md:pt-0">
-            <p className="font-medium">Subscription help</p>
-            <ul className="mt-2 space-y-1 text-muted-foreground">
-              <li>Manage payment method, invoices, and cancellation from the billing portal.</li>
-              <li>Downgrades preserve data; Free limits visible history and higher quotas.</li>
-              <li>If a recent payment is missing, refresh status or contact support.</li>
-            </ul>
-          </div>
+          <p className="mt-4 text-xs leading-5 text-muted-foreground">Cancel any time in the billing portal. You keep Pro through the paid period and receive reminders on its final three days. Downgrades preserve all data and freeze only projects above the Free limit.</p>
         </div>
       </section>
     </div>

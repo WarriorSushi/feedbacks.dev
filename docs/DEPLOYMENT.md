@@ -78,6 +78,8 @@ For a new internal staging, recovery, or disposable verification project, run th
 54. `sql/054_multiple_product_update_ctas.sql` — supports multiple validated call-to-action links on Product Updates
 55. `sql/055_private_feedback_by_default.sql` — makes non-board feedback private by default and marks its collection source
 56. `sql/056_growth_referrals_and_marketing.sql` — adds consent-aware lead and conversion records, five-use referrals, a one-time complimentary Pro month, and service-only growth data access
+57. `sql/057_referral_and_downgrade_safeguards.sql` — adds layered referral qualification, final-three-paid-days cancellation warnings, reversible project freezing, and server-only lifecycle controls
+58. `sql/058_internal_product_feedback_project.sql` — creates the administrator-owned system project used by Settings feedback and product updates
 
 Hosted schema note, 1 August 2026: migrations through `056` are applied and verified on the live project. Product Updates tables and storage exist with RLS enabled, embed heartbeats are service-managed, module choices are atomic, public-directory pagination is snapshot-stable, stale writes and publications are rejected atomically, email bounces and complaints are replay-safe and suppress future sends, growth and referral data is service-only, generated types are current, and `pnpm supabase:check` passes. The remaining Supabase security advisory is the project-level leaked-password-protection setting, not a database migration issue.
 
@@ -90,6 +92,8 @@ Do not treat `sql/000_full_reset_v2-ran this one for v2. nothing else needed.sql
 ---
 
 ## Step 2: Supabase Auth Configuration
+
+For signup abuse protection, configure hCaptcha or Cloudflare Turnstile in Supabase Authentication → Bot and Abuse Protection, then set the matching `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` or `NEXT_PUBLIC_TURNSTILE_SITE_KEY` in the dashboard deployment. If both public site keys are set, auth follows the hCaptcha configuration. The auth page passes the resulting token directly to Supabase Auth. Never expose `HCAPTCHA_SECRET_KEY` or `TURNSTILE_SECRET_KEY` in a `NEXT_PUBLIC_` variable.
 
 Go to **Supabase Dashboard** → **Authentication**:
 

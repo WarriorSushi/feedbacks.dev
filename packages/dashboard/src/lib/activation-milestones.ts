@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { PRODUCT_UPDATE_ACTIVATION_EVENTS } from '@feedbacks/shared'
 import { createAdminSupabase } from '@/lib/supabase-server'
+import { qualifyReferralSignup } from '@/lib/referrals'
 
 export const ACTIVATION_MILESTONES = [
   'project_created',
@@ -35,6 +36,9 @@ export async function recordActivationMilestone({
       event_name: eventName,
       metadata,
     }, { onConflict: 'project_id,event_name', ignoreDuplicates: true })
+    if (eventName === 'verification_completed' || eventName === 'first_feedback_received') {
+      await qualifyReferralSignup(userId)
+    }
   } catch {
     // Product measurement must never change the product action's result.
   }

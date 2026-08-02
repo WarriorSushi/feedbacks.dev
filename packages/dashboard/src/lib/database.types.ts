@@ -225,6 +225,10 @@ export type Database = {
           billing_interval_count: number | null
           billing_status: string
           complimentary_pro_until: string | null
+          grace_started_at: string | null
+          grace_ends_at: string | null
+          grace_cycle_id: string | null
+          downgrade_finalized_at: string | null
           cancel_at_period_end: boolean
           created_at: string
           current_period_end: string | null
@@ -247,6 +251,10 @@ export type Database = {
           billing_interval_count?: number | null
           billing_status?: string
           complimentary_pro_until?: string | null
+          grace_started_at?: string | null
+          grace_ends_at?: string | null
+          grace_cycle_id?: string | null
+          downgrade_finalized_at?: string | null
           cancel_at_period_end?: boolean
           created_at?: string
           current_period_end?: string | null
@@ -269,6 +277,10 @@ export type Database = {
           billing_interval_count?: number | null
           billing_status?: string
           complimentary_pro_until?: string | null
+          grace_started_at?: string | null
+          grace_ends_at?: string | null
+          grace_cycle_id?: string | null
+          downgrade_finalized_at?: string | null
           cancel_at_period_end?: boolean
           created_at?: string
           current_period_end?: string | null
@@ -282,6 +294,33 @@ export type Database = {
           plan_tier?: string
           recurring_amount?: number | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      billing_lifecycle_notices: {
+        Row: {
+          created_at: string
+          grace_cycle_id: string
+          id: string
+          notice_day: number
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          grace_cycle_id: string
+          id?: string
+          notice_day: number
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          grace_cycle_id?: string
+          id?: string
+          notice_day?: number
+          sent_at?: string
           user_id?: string
         }
         Relationships: []
@@ -1325,6 +1364,8 @@ export type Database = {
           id: string
           name: string
           owner_user_id: string
+          plan_frozen_at: string | null
+          plan_freeze_reason: string | null
           quarantined_at: string | null
           settings: Json
           test_namespace: string | null
@@ -1343,6 +1384,8 @@ export type Database = {
           id?: string
           name: string
           owner_user_id: string
+          plan_frozen_at?: string | null
+          plan_freeze_reason?: string | null
           quarantined_at?: string | null
           settings?: Json
           test_namespace?: string | null
@@ -1361,6 +1404,8 @@ export type Database = {
           id?: string
           name?: string
           owner_user_id?: string
+          plan_frozen_at?: string | null
+          plan_freeze_reason?: string | null
           quarantined_at?: string | null
           settings?: Json
           test_namespace?: string | null
@@ -2004,24 +2049,51 @@ export type Database = {
       referral_signups: {
         Row: {
           created_at: string
+          device_hash: string | null
           id: string
+          invited_email_hash: string | null
           invited_user_id: string
           inviter_user_id: string
+          network_hash: string | null
+          qualification_milestone: string | null
+          qualified_at: string | null
+          rejected_at: string | null
           referral_code: string
+          risk_reasons: string[]
+          risk_score: number
+          status: string
         }
         Insert: {
           created_at?: string
+          device_hash?: string | null
           id?: string
+          invited_email_hash?: string | null
           invited_user_id: string
           inviter_user_id: string
+          network_hash?: string | null
+          qualification_milestone?: string | null
+          qualified_at?: string | null
+          rejected_at?: string | null
           referral_code: string
+          risk_reasons?: string[]
+          risk_score?: number
+          status?: string
         }
         Update: {
           created_at?: string
+          device_hash?: string | null
           id?: string
+          invited_email_hash?: string | null
           invited_user_id?: string
           inviter_user_id?: string
+          network_hash?: string | null
+          qualification_milestone?: string | null
+          qualified_at?: string | null
+          rejected_at?: string | null
           referral_code?: string
+          risk_reasons?: string[]
+          risk_score?: number
+          status?: string
         }
         Relationships: []
       }
@@ -2030,6 +2102,8 @@ export type Database = {
           attribution: Json
           consent_version: string | null
           created_at: string
+          device_hash: string | null
+          network_hash: string | null
           referral_code: string | null
           signup_event_id: string | null
           signup_recorded_at: string
@@ -2039,6 +2113,8 @@ export type Database = {
           attribution?: Json
           consent_version?: string | null
           created_at?: string
+          device_hash?: string | null
+          network_hash?: string | null
           referral_code?: string | null
           signup_event_id?: string | null
           signup_recorded_at?: string
@@ -2048,6 +2124,8 @@ export type Database = {
           attribution?: Json
           consent_version?: string | null
           created_at?: string
+          device_hash?: string | null
+          network_hash?: string | null
           referral_code?: string | null
           signup_event_id?: string | null
           signup_recorded_at?: string
@@ -2060,8 +2138,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      claim_referral_signup: {
-        Args: { p_invited_user_id: string; p_referral_code: string }
+      qualify_referral_signup: {
+        Args: { p_invited_user_id: string }
+        Returns: Json
+      }
+      reconcile_plan_projects: {
+        Args: { p_effective_pro: boolean; p_free_project_limit?: number; p_user_id: string }
+        Returns: Json
+      }
+      register_referral_signup: {
+        Args: {
+          p_device_hash: string | null
+          p_invited_email_hash: string
+          p_invited_user_id: string
+          p_network_hash: string | null
+          p_referral_code: string
+        }
         Returns: Json
       }
       apply_claimed_billing_event: {

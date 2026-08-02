@@ -15,3 +15,19 @@ test('nonce CSP uses request-aware rendering so Next can hydrate every route', (
   assert.match(layout, /\(await headers\(\)\)\.get\('x-nonce'\)/)
   assert.match(layout, /nonce=\{nonce\}/)
 })
+
+test('auth bot protection supports hCaptcha first and Turnstile as a fallback', () => {
+  const middleware = read('../../src/middleware.ts')
+  const auth = read('../../src/app/auth/page.tsx')
+  const captcha = read('../../src/components/auth-captcha.tsx')
+
+  assert.match(middleware, /NEXT_PUBLIC_HCAPTCHA_SITE_KEY/)
+  assert.match(middleware, /https:\/\/\*\.hcaptcha\.com/)
+  assert.match(middleware, /NEXT_PUBLIC_TURNSTILE_SITE_KEY/)
+  assert.match(middleware, /https:\/\/challenges\.cloudflare\.com/)
+  assert.match(auth, /hcaptchaSiteKey \? 'hcaptcha'/)
+  assert.match(auth, /captchaToken: captchaToken \|\| undefined/)
+  assert.match(auth, /AuthCaptcha/)
+  assert.match(captcha, /https:\/\/js\.hcaptcha\.com/)
+  assert.doesNotMatch(auth, /HCAPTCHA_SECRET_KEY|TURNSTILE_SECRET_KEY/)
+})

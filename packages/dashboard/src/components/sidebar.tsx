@@ -104,6 +104,7 @@ interface SidebarProps {
     plan_tier: PlanTier
     billing_status: BillingStatus
     complimentary_pro_until: string | null
+    grace_ends_at: string | null
   } | null
 }
 
@@ -152,7 +153,8 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   const showProBrand = Boolean(
     (billingAccount?.plan_tier === 'pro' &&
       (billingAccount.billing_status === 'active' || billingAccount.billing_status === 'trialing')) ||
-    (billingAccount?.complimentary_pro_until && new Date(billingAccount.complimentary_pro_until).getTime() > Date.now())
+    (billingAccount?.complimentary_pro_until && new Date(billingAccount.complimentary_pro_until).getTime() > Date.now()) ||
+    (billingAccount?.grace_ends_at && new Date(billingAccount.grace_ends_at).getTime() > Date.now())
   )
 
   const handleSignOut = async () => {

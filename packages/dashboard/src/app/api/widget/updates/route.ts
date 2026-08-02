@@ -8,6 +8,7 @@ import { publicEnv } from '@/lib/public-env'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { mapProductUpdate, mapProductUpdateSettings, publicImageUrl, isProductUpdateResponseBounded } from '@/lib/product-update-service'
 import type { Project } from '@/lib/types'
+import { getBillingSummaryForUser } from '@/lib/billing'
 
 const cors = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', Vary: 'Origin' }
 const projectKeyValid = (value: string | null) => Boolean(value && value.length <= 200 && /^[A-Za-z0-9_-]+$/.test(value))
@@ -16,14 +17,17 @@ export async function GET(request: NextRequest) {
   const projectKey = request.nextUrl.searchParams.get('projectKey'); if (!projectKeyValid(projectKey)) return NextResponse.json({ error: 'Invalid project key.' }, { status: 400, headers: cors })
   const rate = await checkRateLimit(request, 'product-updates-read', 60, 1, projectKey!); if (!rate.allowed) return NextResponse.json({ error: 'Too many requests.' }, { status: 429, headers: { ...cors, 'Retry-After': '60' } })
   const lookup = await getPublicProjectLookup(projectKey!); if (!lookup) return NextResponse.json({ error: 'Invalid project key.' }, { status: 400, headers: cors })
-  const admin = await createAdminSupabase(); const { data: project } = await admin.from('projects').select('id,settings').eq(lookup.column, lookup.value).maybeSingle()
+  const admin = await createAdminSupabase(); const { data: project } = await admin.from('projects').select('id,settings,owner_user_id,plan_frozen_at').eq(lookup.column, lookup.value).maybeSingle()
   if (!project) return NextResponse.json({ settings: mapProductUpdateSettings(), updates: [] }, { headers: { ...cors, 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' } })
+  if (project.plan_frozen_at) return NextResponse.json({ settings: mapProductUpdateSettings(), updates: [] }, { headers: { ...cors, 'Cache-Control': 'public, max-age=60, stale-while-revalidate=300' } })
   if (!isWidgetRequestOriginAllowed(request, (project as Project).settings?.widget_origin_restriction, { trustedOrigins: [publicEnv.NEXT_PUBLIC_APP_ORIGIN] })) return NextResponse.json({ error: 'Origin not allowed.' }, { status: 403, headers: cors })
   const { data: settings } = await admin.from('product_update_settings').select('*').eq('project_id', project.id).maybeSingle()
-  const response: ProductUpdatesPublicResponse = { settings: mapProductUpdateSettings(settings), updates: [] }
+  const billing = await getBillingSummaryForUser(project.owner_user_id)
+  const response: ProductUpdatesPublicResponse = { settings: { ...mapProductUpdateSettings(settings), showPoweredBy: !billing.entitlements.customBranding }, updates: [] }
   if (settings?.enabled) {
     const now = new Date().toISOString()
-    const { data } = await admin.from('product_updates').select('*').eq('project_id', project.id).eq('status', 'published').lte('published_at', now).or(`expires_at.is.null,expires_at.gt.${now}`).order('published_at', { ascending: false }).order('id', { ascending: false }).limit(20)
+    const publicUpdateLimit = billing.entitlements.productUpdateActiveLimit ?? 20
+    const { data } = await admin.from('product_updates').select('*').eq('project_id', project.id).eq('status', 'published').lte('published_at', now).or(`expires_at.is.null,expires_at.gt.${now}`).order('published_at', { ascending: false }).order('id', { ascending: false }).limit(publicUpdateLimit)
     response.updates = (data || []).map((row) => mapProductUpdate(row, publicImageUrl(admin, row.image_path))).filter((update) => !update.ctaUrl || Boolean(sanitizeProductUpdateCta(update.ctaUrl)))
   }
   if (!isProductUpdateResponseBounded(response)) return NextResponse.json({ error: 'Response too large.' }, { status: 500, headers: cors })

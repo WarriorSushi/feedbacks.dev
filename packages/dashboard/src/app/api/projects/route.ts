@@ -14,7 +14,7 @@ import { normalizeProjectDomain } from '@/lib/project-input'
 import { recordMarketingConversion } from '@/lib/marketing'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const SAFE_PROJECT_SELECT = 'id,owner_user_id,name,api_key_last_four,domain,webhooks,settings,environment,test_namespace,expires_at,quarantined_at,created_at,updated_at'
+const SAFE_PROJECT_SELECT = 'id,owner_user_id,name,api_key_last_four,domain,webhooks,settings,environment,test_namespace,expires_at,quarantined_at,plan_frozen_at,plan_freeze_reason,created_at,updated_at'
 
 export async function GET() {
   try {

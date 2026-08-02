@@ -3,6 +3,7 @@ import { createAdminSupabase } from '@/lib/supabase-server'
 import { verifyDodoWebhook, type DodoEventPayload } from '@/lib/dodo'
 import { extractBillingEventContext } from '@/lib/billing-webhooks'
 import { notifyUserOfBillingFailure } from '@/lib/notifications'
+import { applyBillingLifecycleEvent } from '@/lib/billing-lifecycle'
 
 export async function POST(request: Request) {
   let verified: Awaited<ReturnType<typeof verifyDodoWebhook>>
@@ -74,6 +75,15 @@ export async function POST(request: Request) {
       p_billing_interval_count: context.billingIntervalCount,
     })
     if (applyError || !applied) throw applyError || new Error('Billing event claim was lost')
+
+    if (userId) {
+      await applyBillingLifecycleEvent({
+        userId,
+        billingStatus: context.billingStatus,
+        cancelAtPeriodEnd: context.cancelAtPeriodEnd,
+        currentPeriodEnd: context.currentPeriodEnd,
+      })
+    }
 
     if (userId && context.billingStatus === 'past_due') {
       void notifyUserOfBillingFailure({

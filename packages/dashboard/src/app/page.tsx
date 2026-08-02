@@ -35,6 +35,29 @@ const installSnippet = generateInstallSnippets({
 const freePlan = PLAN_MATRIX.free
 const proPlan = PLAN_MATRIX.pro
 
+const useCases = [
+  {
+    audience: 'Early-stage SaaS',
+    moment: 'A user gets stuck during onboarding.',
+    outcome: 'Capture the page, browser, and their words before the moment turns into churn.',
+  },
+  {
+    audience: 'Agencies with client apps',
+    moment: 'Feedback arrives for three products at once.',
+    outcome: 'Keep every inbox separate and route the useful report to the right client workflow.',
+  },
+  {
+    audience: 'AI-assisted engineering',
+    moment: 'A coding agent finds a reproducible defect.',
+    outcome: 'Let the agent file structured context through the API, then query the same backlog through MCP.',
+  },
+  {
+    audience: 'Internal tools',
+    moment: 'A teammate spots friction nobody would open a ticket for.',
+    outcome: 'Give them a quiet in-product form and turn small complaints into an actionable queue.',
+  },
+] as const
+
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
   openGraph: {
@@ -100,6 +123,7 @@ export default function LandingPage() {
           </Link>
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
             <Link href="#product"><Button variant="ghost" size="sm">Product</Button></Link>
+            <Link href="#use-cases"><Button variant="ghost" size="sm">Use cases</Button></Link>
             <Link href="#setup"><Button variant="ghost" size="sm">How it works</Button></Link>
             <Link href="#pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
             <Link href="/docs" prefetch={false}><Button variant="ghost" size="sm">Docs</Button></Link>
@@ -110,6 +134,7 @@ export default function LandingPage() {
               <summary className="cursor-pointer list-none rounded-md px-2 py-2 text-sm font-medium hover:bg-accent">Menu</summary>
               <nav className="absolute right-0 top-11 z-50 grid min-w-44 gap-1 rounded-lg border bg-popover p-2 shadow-[var(--shadow-float)]" aria-label="Mobile navigation">
                 <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href="#product">Product</Link>
+                <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href="#use-cases">Use cases</Link>
                 <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href="#pricing">Pricing</Link>
                 <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href="/docs" prefetch={false}>Docs</Link>
                 <Link className="rounded-md px-3 py-2 text-sm hover:bg-accent" href={authHref}>Sign in</Link>
@@ -174,6 +199,28 @@ export default function LandingPage() {
               <p className="max-w-2xl leading-7 text-muted-foreground lg:justify-self-end">See exactly what the user sees, triage the message, and publish the update without losing the original context.</p>
             </div>
             <LandingFeedbackStory />
+          </div>
+        </section>
+
+        <section id="use-cases" className="border-b py-20 sm:py-28">
+          <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-6 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <p className="text-xs font-semibold text-primary">Made for the moments support forms miss</p>
+              <h2 className="mt-4 max-w-xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Different products. The same need to hear users clearly.</h2>
+              <p className="mt-5 max-w-lg leading-7 text-muted-foreground">The form stays small. The context and workflow adapt to the way your team ships.</p>
+            </div>
+            <div className="divide-y border-y">
+              {useCases.map((useCase, index) => (
+                <article key={useCase.audience} className="grid gap-3 py-6 sm:grid-cols-[46px_0.8fr_1.2fr] sm:gap-5 sm:py-7">
+                  <span className="font-mono text-xs text-primary">0{index + 1}</span>
+                  <div>
+                    <h3 className="text-sm font-semibold">{useCase.audience}</h3>
+                    <p className="mt-1 text-sm leading-6 text-foreground/75">{useCase.moment}</p>
+                  </div>
+                  <p className="text-sm leading-6 text-muted-foreground">{useCase.outcome}</p>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -253,6 +300,7 @@ export default function LandingPage() {
                 ['Can a visitor use the project key to read my inbox?', 'No. The embed key is publishable and is rejected by private REST and MCP endpoints.'],
                 ['How do I handle spam?', 'Start with project- and board-scoped rate limits. Add CAPTCHA or origin restrictions only when your traffic needs them.'],
                 ['Do I have to reinstall after changing the form?', 'No. The snippet stays the same; saved form and Product Update changes load remotely.'],
+                ['What happens if I cancel Pro?', `Pro stays active through the date you already paid for. We warn you during the final three days, then Free limits return. Your ${freePlan.projectLimit} most recently active projects stay live, extra projects are frozen, and nothing is deleted.`],
                 ['Can I leave the Free plan?', `Yes. Free includes ${freePlan.projectLimit} projects and ${freePlan.feedbackMonthlyLimit} feedback items per month. Pro adds more capacity, history, routing, scheduling, and branding controls.`],
               ].map(([question, answer]) => (
                 <details key={question} className="group py-5">
