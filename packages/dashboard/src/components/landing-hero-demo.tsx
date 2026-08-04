@@ -71,7 +71,6 @@ export function LandingHeroDemo({ installSnippet }: { installSnippet: string }) 
 
       <div className="landing-demo-stage">
         <div className="landing-demo-grid" aria-hidden="true" />
-        <div className="landing-demo-glow" aria-hidden="true" />
         <div key={active} className="landing-demo-scene">
           {active === 0 && <InstallScene installSnippet={installSnippet} />}
           {active === 1 && <CollectScene />}

@@ -8,6 +8,7 @@ import { LandingInstallStory } from '@/components/landing-install-story'
 import { LandingFeedbackStory } from '@/components/landing-feedback-story'
 import { LandingConnectionsStory } from '@/components/landing-connections-story'
 import { LandingScrollHeader } from '@/components/landing-scroll-header'
+import { LandingSectionObserver } from '@/components/landing-section-observer'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { publicEnv } from '@/lib/public-env'
 import { SITE_ORIGIN } from '@/lib/site'
@@ -149,6 +150,7 @@ export default function LandingPage() {
       </LandingScrollHeader>
 
       <main>
+        <LandingSectionObserver />
         <section className="landing-hero relative overflow-hidden border-b">
           <div className="landing-hero-grain pointer-events-none absolute inset-0" aria-hidden="true" />
           <div className="relative mx-auto grid max-w-[1600px] gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pt-20 2xl:grid-cols-[minmax(640px,0.9fr)_minmax(0,1.1fr)] 2xl:items-center 2xl:gap-12 2xl:pb-24 2xl:pt-24">
@@ -177,7 +179,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="setup" className="border-b py-20 sm:py-28">
+        <section id="setup" className="landing-section landing-section-warm landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-0 sm:px-6">
             <div className="mb-12 grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
               <div className="px-5 sm:px-0">
@@ -190,7 +192,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="product" className="border-b bg-muted/20 py-20 sm:py-28">
+        <section id="product" className="landing-section landing-section-mint landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-0 sm:px-6">
             <div className="mb-12 grid gap-6 px-5 sm:px-0 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
               <div>
@@ -203,7 +205,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="use-cases" className="border-b py-20 sm:py-28">
+        <section id="use-cases" className="landing-section landing-section-sky landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-6 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
             <div className="lg:sticky lg:top-24 lg:self-start">
               <p className="text-xs font-semibold text-primary">Made for the moments support forms miss</p>
@@ -212,7 +214,7 @@ export default function LandingPage() {
             </div>
             <div className="divide-y border-y">
               {useCases.map((useCase, index) => (
-                <article key={useCase.audience} className="grid gap-3 py-6 sm:grid-cols-[46px_0.8fr_1.2fr] sm:gap-5 sm:py-7">
+                <article key={useCase.audience} className="landing-use-case-row grid gap-3 py-6 sm:grid-cols-[46px_0.8fr_1.2fr] sm:gap-5 sm:py-7">
                   <span className="font-mono text-xs text-primary">0{index + 1}</span>
                   <div>
                     <h3 className="text-sm font-semibold">{useCase.audience}</h3>
@@ -225,7 +227,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section id="integrations" className="border-b py-20 sm:py-28">
+        <section id="integrations" className="landing-section landing-section-ink landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-0 sm:px-6">
             <div className="mb-12 grid gap-6 px-5 sm:px-0 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
               <div>
@@ -238,7 +240,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="border-b py-20 sm:py-28">
+        <section className="landing-section landing-section-lilac landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Designed for developer trust</p>
@@ -257,17 +259,17 @@ export default function LandingPage() {
                 [MousePointer2, 'Minimal install', 'One lightweight embed, no payment script, and no private credential in customer code.'],
               ].map(([Icon, title, body]) => {
                 const ItemIcon = Icon as typeof Inbox
-                return <div key={String(title)} className="rounded-xl border bg-card p-5"><ItemIcon className="h-4 w-4 text-primary" /><h3 className="mt-4 text-sm font-semibold">{String(title)}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{String(body)}</p></div>
+                return <div key={String(title)} className="landing-trust-card rounded-xl border bg-card p-5"><ItemIcon className="h-4 w-4 text-primary" /><h3 className="mt-4 text-sm font-semibold">{String(title)}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{String(body)}</p></div>
               })}
             </div>
           </div>
         </section>
 
-        <section id="pricing" className="border-b bg-muted/20 py-20 sm:py-28">
+        <section id="pricing" className="landing-section landing-section-mint landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto max-w-5xl px-5 sm:px-6">
             <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr]">
               <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Simple pricing</p><h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Start free. Pay when you grow.</h2><p className="mt-5 leading-7 text-muted-foreground">The feedback form, messages for users, setup, and inbox are ready from day one.</p></div>
-              <div className="overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)]">
+              <div className="landing-pricing-card overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)]">
                 <div className="grid md:grid-cols-2">
                   <div className="p-6 sm:p-8">
                     <p className="text-sm font-semibold">Free</p><p className="mt-3 text-4xl font-semibold tracking-tight">${freePlan.monthlyPrice}<span className="text-sm font-normal text-muted-foreground"> / month</span></p>
@@ -288,13 +290,13 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="border-b py-20 sm:py-28">
+        <section className="landing-section landing-section-warm landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto max-w-4xl px-5 sm:px-6">
             <div className="text-center">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Before you install</p>
               <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Questions developers ask first.</h2>
             </div>
-            <div className="mt-10 divide-y rounded-xl border bg-card px-5 sm:px-7">
+            <div className="landing-faq-card mt-10 divide-y rounded-xl border bg-card px-5 sm:px-7">
               {[
                 ['Will the widget slow down my app?', 'The production widget is under 20KB gzip, loads asynchronously, and is guarded by a CI size budget.'],
                 ['What data is collected automatically?', 'The current page URL and browser context can accompany feedback. Screenshot capture is optional and visible to the user.'],
@@ -304,7 +306,7 @@ export default function LandingPage() {
                 ['What happens if I cancel Pro?', `Pro stays active through the date you already paid for. We warn you during the final three days, then Free limits return. Your ${freePlan.projectLimit} most recently active projects stay live, extra projects are frozen, and nothing is deleted.`],
                 ['Can I leave the Free plan?', `Yes. Free includes ${freePlan.projectLimit} projects and ${freePlan.feedbackMonthlyLimit} feedback items per month. Pro adds more capacity, history, routing, scheduling, and branding controls.`],
               ].map(([question, answer]) => (
-                <details key={question} className="group py-5">
+                <details key={question} className="landing-faq-item group py-5">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">
                     {question}<span aria-hidden="true" className="text-primary group-open:rotate-45">+</span>
                   </summary>
@@ -315,7 +317,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="px-5 py-20 sm:px-6 sm:py-28">
+        <section className="landing-section landing-section-aurora landing-reveal px-5 py-20 sm:px-6 sm:py-28">
           <div className="mx-auto max-w-4xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Ready when you are</p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-5xl">Hear your users today.</h2>

@@ -67,13 +67,22 @@ const useCases = [
   },
 ] as const
 
-export function AuthUseCaseCarousel() {
+type AuthUseCaseCarouselProps = {
+  compact?: boolean
+  displayMode?: 'desktop' | 'mobile'
+}
+
+const AUTO_ADVANCE_MS = 4_800
+
+export function AuthUseCaseCarousel({
+  compact = false,
+  displayMode = 'desktop',
+}: AuthUseCaseCarouselProps) {
   const [activeIndex, setActiveIndex] = React.useState(0)
   const [rotationEnabled, setRotationEnabled] = React.useState(true)
-  const [hoverPaused, setHoverPaused] = React.useState(false)
   const [pageVisible, setPageVisible] = React.useState(true)
   const [reducedMotion, setReducedMotion] = React.useState(false)
-  const carouselRef = React.useRef<HTMLDivElement>(null)
+  const [viewportActive, setViewportActive] = React.useState(true)
 
   React.useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -90,13 +99,21 @@ export function AuthUseCaseCarousel() {
     return () => document.removeEventListener('visibilitychange', updateVisibility)
   }, [])
 
-  const rotating = rotationEnabled && !hoverPaused && pageVisible && !reducedMotion
+  React.useEffect(() => {
+    const media = window.matchMedia('(min-width: 1024px)')
+    const updateViewport = () => setViewportActive(displayMode === 'desktop' ? media.matches : !media.matches)
+    updateViewport()
+    media.addEventListener('change', updateViewport)
+    return () => media.removeEventListener('change', updateViewport)
+  }, [displayMode])
+
+  const rotating = rotationEnabled && viewportActive && pageVisible && !reducedMotion
 
   React.useEffect(() => {
     if (!rotating) return
     const timer = window.setTimeout(
       () => setActiveIndex((current) => (current + 1) % useCases.length),
-      5_800,
+      AUTO_ADVANCE_MS,
     )
     return () => window.clearTimeout(timer)
   }, [activeIndex, rotating])
@@ -111,13 +128,15 @@ export function AuthUseCaseCarousel() {
 
   return (
     <div
-      ref={carouselRef}
-      className="auth-use-case-carousel my-auto min-w-0 py-14"
+      className={cn('auth-use-case-carousel min-w-0', compact ? 'py-4' : 'my-auto py-10')}
+      data-compact={compact ? 'true' : 'false'}
+      data-display-mode={displayMode}
       role="region"
       aria-roledescription="carousel"
       aria-label="Ways to use feedbacks.dev"
-      onMouseEnter={() => setHoverPaused(true)}
-      onMouseLeave={() => setHoverPaused(false)}
+      onClickCapture={(event) => {
+        if (!(event.target as Element).closest('[data-rotation-control]')) setRotationEnabled(false)
+      }}
       onFocusCapture={(event) => {
         if (!(event.target as Element).closest('[data-rotation-control]')) setRotationEnabled(false)
       }}
@@ -139,14 +158,14 @@ export function AuthUseCaseCarousel() {
           className="auth-rotation-control inline-flex min-h-9 items-center gap-2 rounded-full border bg-background/65 px-3 text-[11px] font-semibold text-muted-foreground shadow-sm backdrop-blur-sm hover:text-foreground disabled:cursor-default disabled:opacity-55"
         >
           {rotationEnabled && !reducedMotion ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-          {reducedMotion ? 'Motion reduced' : rotationEnabled ? hoverPaused ? 'Paused on hover' : 'Auto-playing' : 'Play stories'}
+          {reducedMotion ? 'Motion reduced' : rotationEnabled ? 'Auto-playing' : 'Play stories'}
         </button>
       </div>
 
       <div className="auth-use-case-viewport">
         <div
           className="auth-use-case-track"
-          style={{ transform: `translate3d(calc(${activeIndex * 2.5}rem - ${activeIndex * 100}%), 0, 0)` }}
+          style={{ transform: `translate3d(calc(${activeIndex * (compact ? 0.625 : 2.5)}rem - ${activeIndex * 100}%), 0, 0)` }}
           aria-live={rotating ? 'off' : 'polite'}
           aria-atomic="false"
         >
@@ -172,7 +191,7 @@ export function AuthUseCaseCarousel() {
                   </span>
                   <span className="auth-card-signal-spark" />
                 </div>
-                <div className="relative z-[1] flex h-full flex-col">
+                <div className="auth-use-case-copy relative z-[1] flex h-full flex-col">
                   <div className="flex items-center justify-between gap-4">
                     <span className="inline-flex items-center gap-2 text-xs font-semibold text-primary">
                       <Icon className="h-4 w-4" />
@@ -182,13 +201,13 @@ export function AuthUseCaseCarousel() {
                       {String(index + 1).padStart(2, '0')} / {String(useCases.length).padStart(2, '0')}
                     </span>
                   </div>
-                  <h2 className="mt-9 max-w-lg text-3xl font-semibold leading-[1.08] tracking-[-0.04em] xl:text-[2.15rem]">
+                  <h2 className="auth-use-case-title mt-7 max-w-lg text-3xl font-semibold leading-[1.08] tracking-[-0.04em] xl:text-[2.05rem]">
                     {useCase.title}
                   </h2>
-                  <p className="mt-5 max-w-lg text-sm leading-6 text-muted-foreground">
+                  <p className="auth-use-case-body mt-4 max-w-lg text-sm leading-6 text-muted-foreground">
                     {useCase.body}
                   </p>
-                  <ul className="mt-auto grid gap-2 pt-9 text-xs text-foreground/80 sm:grid-cols-3">
+                  <ul className="auth-use-case-benefits mt-auto grid gap-2 pt-7 text-xs text-foreground/80 sm:grid-cols-3">
                     {useCase.benefits.map((benefit) => (
                       <li key={benefit} className="flex items-start gap-1.5">
                         <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
