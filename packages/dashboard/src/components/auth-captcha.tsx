@@ -65,15 +65,6 @@ export function AuthCaptcha({
   }, [captchaTheme, getApi, onToken, siteKey])
 
   React.useEffect(() => {
-    const api = getApi()
-    if (!api || !widgetIdRef.current) return
-    api.remove(widgetIdRef.current)
-    widgetIdRef.current = null
-    onToken(null)
-    renderWidget()
-  }, [captchaTheme, getApi, onToken, renderWidget])
-
-  React.useEffect(() => {
     return () => {
       const api = getApi()
       if (api && widgetIdRef.current) api.remove(widgetIdRef.current)
