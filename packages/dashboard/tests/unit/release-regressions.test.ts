@@ -41,7 +41,7 @@ test('triage mutations use the latest version and conflict retries can reapply t
 
 test('new product update drafts move to their durable editor URL', () => {
   const updates = read('../../src/components/product-updates/ProductUpdatesTab.tsx')
-  assert.match(updates, /router\.replace\(`\/projects\/\$\{projectId\}\/release-notes\/\$\{data\.update\.id\}`\)/)
+  assert.match(updates, /window\.history\.replaceState\([\s\S]*`\/projects\/\$\{projectId\}\/release-notes\/\$\{data\.update\.id\}`/)
 })
 
 test('invalid profile, board, and widget values identify the field that needs attention', () => {

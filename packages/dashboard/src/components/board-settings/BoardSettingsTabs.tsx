@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import { useRouter } from 'next/navigation'
 import type { BoardReport, Project } from '@/lib/types'
 import type { BoardAnnouncement, BoardBranding } from '@/lib/public-board'
 import { Button } from '@/components/ui/button'
@@ -103,7 +102,6 @@ interface BoardSettingsTabsProps {
 }
 
 export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
-  const router = useRouter()
   const [loading, setLoading] = React.useState(true)
   const [loadError, setLoadError] = React.useState('')
   const [reloadKey, setReloadKey] = React.useState(0)
@@ -254,7 +252,6 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
       }
 
       toast({ title: successTitle })
-      router.refresh()
     } catch {
       setSaveError('Board settings could not be saved. Check your connection and try again.')
     } finally {

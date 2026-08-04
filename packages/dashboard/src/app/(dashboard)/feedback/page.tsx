@@ -77,10 +77,12 @@ function FeedbackInboxInner() {
   const [defaultProjectId, setDefaultProjectId] = React.useState('')
   const [billingSummary, setBillingSummary] = React.useState<BillingSummary | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [refreshing, setRefreshing] = React.useState(false)
   const [total, setTotal] = React.useState(0)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [bulkLoading, setBulkLoading] = React.useState(false)
   const [activeRowId, setActiveRowId] = React.useState<string | null>(null)
+  const hasLoadedRef = React.useRef(false)
 
   const requestedPage = Number(searchParams.get('page') || '1')
   const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1
@@ -194,7 +196,9 @@ function FeedbackInboxInner() {
 
   const fetchFeedback = React.useCallback(async (signal?: AbortSignal) => {
     if (!projectsLoaded) return
-    setLoading(true)
+    const showInitialLoading = !hasLoadedRef.current
+    if (showInitialLoading) setLoading(true)
+    else setRefreshing(true)
     let query = supabase
       .from('feedback')
       .select('*, projects(id, name)', { count: 'exact' })
@@ -221,7 +225,8 @@ function FeedbackInboxInner() {
     const { data, count, error } = await query
     if (signal?.aborted) return
     if (error) {
-      setLoading(false)
+      if (showInitialLoading) setLoading(false)
+      else setRefreshing(false)
       toast({
         title: 'Could not load feedback',
         description: 'The list may be out of date. Check your connection and retry.',
@@ -232,7 +237,9 @@ function FeedbackInboxInner() {
     setFeedbacks((data as Feedback[]) || [])
     setTotal(count || 0)
     setSelected(new Set())
-    setLoading(false)
+    hasLoadedRef.current = true
+    if (showInitialLoading) setLoading(false)
+    else setRefreshing(false)
   }, [supabase, page, projectId, projectsLoaded, status, tag, type, search, agent, publicOnly, priority, read, sort, billingSummary])
 
   React.useEffect(() => {
@@ -248,7 +255,7 @@ function FeedbackInboxInner() {
       else params.delete(k)
     })
     if (updates.page === undefined) params.set('page', '1')
-    router.push(`/feedback?${params.toString()}`)
+    window.history.pushState(null, '', `/feedback?${params.toString()}`)
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -303,7 +310,15 @@ function FeedbackInboxInner() {
         })
       })
     }
-    fetchFeedback()
+    const selectedIds = new Set(selected)
+    setFeedbacks((current) => current
+      .map((feedback) => selectedIds.has(feedback.id)
+        ? { ...feedback, status: newStatus, updated_at: new Date().toISOString() }
+        : feedback)
+      .filter((feedback) => !status || feedback.status === status))
+    if (status && status !== newStatus) setTotal((current) => Math.max(0, current - selectedIds.size))
+    setSelected(new Set())
+    void fetchFeedback()
   }
 
   const bulkUpdateTags = async (action: 'add' | 'remove') => {
@@ -341,7 +356,25 @@ function FeedbackInboxInner() {
       title: action === 'add' ? 'Tag added to selected items' : 'Tag removed from selected items',
     })
     setBulkTagInput('')
-    fetchFeedback()
+    const selectedIds = new Set(selected)
+    setFeedbacks((current) => current
+      .map((feedback) => {
+        if (!selectedIds.has(feedback.id)) return feedback
+        const currentTags = Array.from(new Set((feedback.tags || []).map(normalizeTag)))
+        return {
+          ...feedback,
+          tags: action === 'add'
+            ? Array.from(new Set([...currentTags, nextTag])).slice(0, 10)
+            : currentTags.filter((tagValue) => tagValue !== nextTag),
+          updated_at: new Date().toISOString(),
+        }
+      })
+      .filter((feedback) => !tag || feedback.tags?.includes(tag)))
+    if (tag && action === 'remove' && tag === nextTag) {
+      setTotal((current) => Math.max(0, current - selectedIds.size))
+    }
+    setSelected(new Set())
+    void fetchFeedback()
   }
 
   const bulkMarkUnread = async () => {
@@ -357,7 +390,12 @@ function FeedbackInboxInner() {
       return
     }
     toast({ title: `${selected.size} item${selected.size > 1 ? 's' : ''} marked unread` })
-    fetchFeedback()
+    const selectedIds = new Set(selected)
+    setFeedbacks((current) => current.map((feedback) =>
+      selectedIds.has(feedback.id) ? { ...feedback, read_at: null } : feedback,
+    ))
+    setSelected(new Set())
+    void fetchFeedback()
   }
 
   const clearBulkSelection = () => setSelected(new Set())
@@ -493,7 +531,17 @@ function FeedbackInboxInner() {
       </div>
 
       {/* ─── Main List ────────────────────────────────────── */}
-      <section data-tour="inbox-list" className="overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]">
+      <section
+        data-tour="inbox-list"
+        aria-busy={loading || refreshing}
+        className="relative overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]"
+      >
+        {refreshing ? (
+          <div className="absolute right-3 top-2.5 z-10 inline-flex items-center gap-1.5 rounded-md border bg-background/95 px-2 py-1 text-[11px] font-medium text-muted-foreground shadow-sm" role="status">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Updating results
+          </div>
+        ) : null}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />

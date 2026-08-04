@@ -7,6 +7,7 @@ import {
   CalendarClock,
   Eye,
   ImagePlus,
+  Loader2,
   Plus,
   RefreshCw,
   Settings2,
@@ -89,8 +90,12 @@ export function ProductUpdatesTab({
   const [previewMobile, setPreviewMobile] = React.useState(false);
   const [previewDark, setPreviewDark] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [saving, setSaving] = React.useState(false);
+  const [pendingListActions, setPendingListActions] = React.useState<
+    Record<string, "archive" | "restore" | "delete" | "visibility">
+  >({});
   const [imageStatus, setImageStatus] = React.useState<{
     kind: "idle" | "uploading" | "success" | "error";
     message?: string;
@@ -112,6 +117,7 @@ export function ProductUpdatesTab({
   const savedFormRef = React.useRef<FormValues | null>(null);
   const selectedVersionRef = React.useRef<string | null>(null);
   const conflictToastIdRef = React.useRef<string | null>(null);
+  const hasLoadedRef = React.useRef(false);
   const [modules, setModules] = React.useState<Modules | null>(null);
   const [embedStatus, setEmbedStatus] = React.useState<EmbedStatus | null>(
     null,
@@ -124,14 +130,36 @@ export function ProductUpdatesTab({
   const [publishReview, setPublishReview] = React.useState<
     "now" | "scheduled" | null
   >(null);
+  const [deletedToOverview, setDeletedToOverview] = React.useState(false);
+  const [deleteReview, setDeleteReview] = React.useState(false);
+  const [removeImageReview, setRemoveImageReview] = React.useState(false);
   const selected = updates.find((update) => update.id === selectedId) || null;
+
+  const mergeSavedUpdate = React.useCallback((saved: Partial<Update> & { id: string }) => {
+    setUpdates((current) => {
+      const existing = current.find((item) => item.id === saved.id);
+      if (!existing) {
+        return [{
+          ...saved,
+          metrics: saved.metrics || { impressions: 0, dismissals: 0, ctaClicks: 0 },
+        } as Update, ...current];
+      }
+      return current.map((item) =>
+        item.id === saved.id
+          ? { ...item, ...saved, metrics: saved.metrics || item.metrics }
+          : item,
+      );
+    });
+  }, []);
 
   React.useEffect(() => {
     if (view === "settings") setSettingsOpen(true);
   }, [view]);
 
-  const load = React.useCallback(async () => {
-    setLoading(true);
+  const load = React.useCallback(async ({ foreground = false }: { foreground?: boolean } = {}) => {
+    const showForeground = foreground || !hasLoadedRef.current;
+    if (showForeground) setLoading(true);
+    else setRefreshing(true);
     setLoadError(null);
     try {
       const [response, modulesResponse, statusResponse] = await Promise.all([
@@ -158,21 +186,27 @@ export function ProductUpdatesTab({
           ? statusData
           : { state: "not_detected", lastSeenAt: null },
       );
+      hasLoadedRef.current = true;
     } catch (error) {
       const message = error instanceof Error ? error.message : "Try again.";
-      setLoadError(message);
+      if (showForeground) setLoadError(message);
       toast({
-        title: "Could not load updates for users",
-        description: message,
+        title: showForeground
+          ? "Could not load updates for users"
+          : "Could not refresh updates",
+        description: showForeground
+          ? message
+          : "The current list is still available. Try syncing again in a moment.",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      if (showForeground) setLoading(false);
+      else setRefreshing(false);
     }
   }, [projectId]);
 
   React.useEffect(() => {
-    void load();
+    void load({ foreground: true });
   }, [load]);
   React.useEffect(() => {
     void fetch(`/api/projects/${projectId}/activation`, {
@@ -400,15 +434,15 @@ export function ProductUpdatesTab({
           });
       if (!selected && data.update?.id) {
         setSelectedId(data.update.id);
-        router.replace(`/projects/${projectId}/release-notes/${data.update.id}`);
+        window.history.replaceState(
+          null,
+          "",
+          `/projects/${projectId}/release-notes/${data.update.id}`,
+        );
       }
       if (typeof data.update?.updated_at === "string") {
         selectedVersionRef.current = data.update.updated_at;
-        setUpdates((current) =>
-          current.map((item) =>
-            item.id === data.update.id ? { ...item, ...data.update } : item,
-          ),
-        );
+        mergeSavedUpdate(data.update);
       }
       toast({ title: selected ? "Release note saved" : "Draft saved" });
       savedFormRef.current = {
@@ -420,7 +454,6 @@ export function ProductUpdatesTab({
         dismissToast(conflictToastIdRef.current);
         conflictToastIdRef.current = null;
       }
-      await load();
     } catch (error) {
       const conflicted = captureEditConflict(error);
       const errors =
@@ -488,6 +521,7 @@ export function ProductUpdatesTab({
       );
       if (typeof data.update?.updated_at === "string") {
         selectedVersionRef.current = data.update.updated_at;
+        mergeSavedUpdate(data.update);
       }
       toast({
         title: scheduled ? "Update scheduled" : "Update published",
@@ -495,7 +529,6 @@ export function ProductUpdatesTab({
       });
       setPublishConfirmation(scheduled ? "scheduled" : "published");
       setPublishReview(null);
-      await load();
     } catch (error) {
       if (!captureEditConflict(error)) {
         toast({
@@ -522,7 +555,13 @@ export function ProductUpdatesTab({
   }
 
   async function setUpdateVisibility(update: Update, enabled: boolean) {
-    setSaving(true);
+    const previousEnabled = update.is_enabled;
+    setPendingListActions((current) => ({ ...current, [update.id]: "visibility" }));
+    setUpdates((current) =>
+      current.map((item) =>
+        item.id === update.id ? { ...item, is_enabled: enabled } : item,
+      ),
+    );
     try {
       const data = await request(
         `/api/projects/${projectId}/updates/${update.id}/visibility`,
@@ -555,15 +594,26 @@ export function ProductUpdatesTab({
     } catch (error) {
       const conflicted = selectedId === update.id && captureEditConflict(error);
       if (!conflicted) {
+        setUpdates((current) =>
+          current.map((item) =>
+            item.id === update.id
+              ? { ...item, is_enabled: previousEnabled }
+              : item,
+          ),
+        );
         toast({
           title: "Could not change release-note visibility",
           description: error instanceof Error ? error.message : "Try again.",
           variant: "destructive",
         });
-        await load();
+        void load();
       }
     } finally {
-      setSaving(false);
+      setPendingListActions((current) => {
+        const next = { ...current };
+        delete next[update.id];
+        return next;
+      });
     }
   }
 
@@ -696,7 +746,6 @@ export function ProductUpdatesTab({
 
   async function removeImage() {
     if (!selected?.imageUrl) return;
-    if (!window.confirm("Remove this image from the release note?")) return;
     setSaving(true);
     try {
       const mutation = await requestWithFreshVersion(
@@ -711,6 +760,7 @@ export function ProductUpdatesTab({
       const result = mutation.data as { update: Partial<Update> };
       applyMediaMutation(result.update, mutation.recoveredFromConflict);
       setForm((current) => ({ ...current, imageUrl: "" }));
+      setRemoveImageReview(false);
       setImageStatus({ kind: "success", message: "Image removed." });
       toast({ title: "Image removed" });
     } catch (error) {
@@ -728,12 +778,6 @@ export function ProductUpdatesTab({
 
   async function deleteSelectedUpdate() {
     if (!selected) return;
-    if (
-      !window.confirm(
-        `Delete “${selected.title}”? This release note and its metrics will be permanently removed.`,
-      )
-    )
-      return;
     setSaving(true);
     try {
       await requestWithFreshVersion(
@@ -745,8 +789,12 @@ export function ProductUpdatesTab({
           ),
         },
       );
+      setUpdates((current) => current.filter((item) => item.id !== selected.id));
+      setSelectedId(null);
+      setDeletedToOverview(true);
+      setDeleteReview(false);
       toast({ title: "Release note deleted" });
-      router.push(`/projects/${projectId}/release-notes`);
+      window.history.replaceState(null, "", `/projects/${projectId}/release-notes`);
     } catch (error) {
       if (!captureEditConflict(error)) {
         toast({
@@ -794,7 +842,7 @@ export function ProductUpdatesTab({
   function closeSettings() {
     setSettingsOpen(false);
     if (view === "settings") {
-      router.replace(`/projects/${projectId}/release-notes`);
+      window.history.replaceState(null, "", `/projects/${projectId}/release-notes`);
     }
   }
 
@@ -866,7 +914,7 @@ export function ProductUpdatesTab({
     />
   ) : null;
 
-  if (view === "overview" || view === "settings") {
+  if (deletedToOverview || view === "overview" || view === "settings") {
     return (
       <>
         <ProductUpdatesOverview
@@ -878,14 +926,9 @@ export function ProductUpdatesTab({
           onSettings={() => setSettingsOpen(true)}
           onVisibilityChange={setUpdateVisibility}
           onAction={async (update, action) => {
-            if (
-              action === "delete" &&
-              !window.confirm(`Delete “${update.title}”? This cannot be undone.`)
-            )
-              return;
-            setSaving(true);
+            setPendingListActions((current) => ({ ...current, [update.id]: action }));
             try {
-              await request(
+              const result = await request(
                 `/api/projects/${projectId}/updates/${update.id}${action === "archive" || action === "restore" ? `/${action}` : ""}`,
                 {
                   method: action === "delete" ? "DELETE" : "POST",
@@ -894,6 +937,17 @@ export function ProductUpdatesTab({
                   },
                 },
               );
+              if (action === "delete") {
+                setUpdates((current) =>
+                  current.filter((item) => item.id !== update.id),
+                );
+              } else if (result.update) {
+                mergeSavedUpdate({
+                  ...update,
+                  ...result.update,
+                  metrics: update.metrics,
+                });
+              }
               toast({
                 title:
                   action === "delete"
@@ -902,7 +956,6 @@ export function ProductUpdatesTab({
                       ? "Update archived"
                       : "Update restored",
               });
-              await load();
             } catch (error) {
               toast({
                 title: `Could not ${action} update`,
@@ -910,12 +963,17 @@ export function ProductUpdatesTab({
                   error instanceof Error ? error.message : "Try again.",
                 variant: "destructive",
               });
-              await load();
+              void load();
             } finally {
-              setSaving(false);
+              setPendingListActions((current) => {
+                const next = { ...current };
+                delete next[update.id];
+                return next;
+              });
             }
           }}
-          busy={saving}
+          pendingActions={pendingListActions}
+          refreshing={refreshing}
         />
         {settingsPanel}
       </>
@@ -1053,12 +1111,28 @@ export function ProductUpdatesTab({
           >
             Back to updates
           </Button>
-          {selected ? (
+          {selected && deleteReview ? (
+            <div className="flex flex-wrap items-center gap-1 rounded-md border border-destructive/30 bg-destructive/5 p-1" role="alert">
+              <span className="px-2 text-xs font-medium text-destructive">Delete this release note permanently?</span>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={saving || Boolean(editorConflict)}
+                onClick={() => void deleteSelectedUpdate()}
+              >
+                {saving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Trash2 className="mr-1.5 h-3.5 w-3.5" />}
+                {saving ? "Deleting…" : "Confirm delete"}
+              </Button>
+              <Button variant="ghost" size="sm" disabled={saving} onClick={() => setDeleteReview(false)}>
+                Cancel
+              </Button>
+            </div>
+          ) : selected ? (
             <Button
               variant="ghost"
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"
               disabled={saving || Boolean(editorConflict)}
-              onClick={() => void deleteSelectedUpdate()}
+              onClick={() => setDeleteReview(true)}
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete release note
@@ -1195,17 +1269,30 @@ export function ProductUpdatesTab({
                       alt={form.imageAltText || "Current release note image"}
                       className="aspect-video w-full max-w-md rounded-md border object-cover"
                     />
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                      disabled={saving || Boolean(editorConflict)}
-                      onClick={() => void removeImage()}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Remove image
-                    </Button>
+                    {removeImageReview ? (
+                      <div className="flex items-center gap-1 rounded-md border border-destructive/30 bg-destructive/5 p-1" role="alert">
+                        <span className="px-1 text-xs font-medium text-destructive">Remove image?</span>
+                        <Button type="button" size="sm" variant="destructive" disabled={saving || Boolean(editorConflict)} onClick={() => void removeImage()}>
+                          {saving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                          Confirm
+                        </Button>
+                        <Button type="button" size="sm" variant="ghost" disabled={saving} onClick={() => setRemoveImageReview(false)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        disabled={saving || Boolean(editorConflict)}
+                        onClick={() => setRemoveImageReview(true)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Remove image
+                      </Button>
+                    )}
                   </div>
                   <ProductUpdateField label="Image description" error={fieldErrors.imageAltText}>
                     <Input

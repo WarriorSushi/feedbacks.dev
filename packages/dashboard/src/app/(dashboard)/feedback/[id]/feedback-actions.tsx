@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { AlertCircle, Archive, CheckCircle2, Loader2, RotateCcw, X } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { mutationVersionHeaders } from '@/lib/optimistic-concurrency'
+import { useFeedbackLiveActions, type FeedbackActivity } from './feedback-live-state'
 
 const statuses: FeedbackStatus[] = ['new', 'reviewed', 'planned', 'in_progress', 'closed']
 
@@ -27,6 +28,16 @@ interface FeedbackActionsProps {
 
 function normalizeTag(value: string): string {
   return value.trim().toLowerCase().replace(/\s+/g, '-')
+}
+
+function liveActivity(eventType: string, fromValue: unknown, toValue: unknown): FeedbackActivity {
+  return {
+    id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${eventType}`,
+    event_type: eventType,
+    from_value: fromValue,
+    to_value: toValue,
+    created_at: new Date().toISOString(),
+  }
 }
 
 export function FeedbackActions({
@@ -54,6 +65,7 @@ export function FeedbackActions({
   const mutationInFlightRef = React.useRef(false)
   const router = useRouter()
   const supabase = React.useMemo(() => createClient(), [])
+  const announceFeedbackUpdate = useFeedbackLiveActions()
 
   React.useEffect(() => {
     setTags(currentTags || [])
@@ -127,6 +139,10 @@ export function FeedbackActions({
       mutationInFlightRef.current = false
       return
     }
+    announceFeedbackUpdate({
+      status: newStatus,
+      activity: liveActivity('status_changed', previousStatus, newStatus),
+    })
     markSaved()
     if (newStatus !== 'new') {
       void fetch(`/api/projects/${projectId}/activation`, {
@@ -135,7 +151,6 @@ export function FeedbackActions({
         body: JSON.stringify({ event: 'first_feedback_triaged' }),
       })
     }
-    router.refresh()
     mutationInFlightRef.current = false
   }
 
@@ -161,8 +176,11 @@ export function FeedbackActions({
       mutationInFlightRef.current = false
       return
     }
+    announceFeedbackUpdate({
+      priority: newPriority,
+      activity: liveActivity('priority_changed', previousPriority, newPriority),
+    })
     markSaved()
-    router.refresh()
     mutationInFlightRef.current = false
   }
 
@@ -193,11 +211,15 @@ export function FeedbackActions({
     const {
       data: { user },
     } = await supabase.auth.getUser()
-    const { error } = await supabase.from('feedback_notes').insert({
-      feedback_id: feedbackId,
-      user_id: user!.id,
-      content: note.trim(),
-    })
+    const { data: createdNote, error } = await supabase
+      .from('feedback_notes')
+      .insert({
+        feedback_id: feedbackId,
+        user_id: user!.id,
+        content: note.trim(),
+      })
+      .select('*')
+      .single()
     setSaving(false)
     if (error) {
       const message = 'The note was not added. Your draft is still here - try again.'
@@ -210,8 +232,13 @@ export function FeedbackActions({
     }
     markSaved()
     toast({ title: 'Note added' })
+    if (createdNote) {
+      announceFeedbackUpdate({
+        note: createdNote,
+        activity: liveActivity('note_added', null, null),
+      })
+    }
     setNote('')
-    router.refresh()
   }
 
   const updateTags = async (nextTags: string[], title: string) => {
@@ -241,9 +268,12 @@ export function FeedbackActions({
       return
     }
     setTags(nextTags)
+    announceFeedbackUpdate({
+      tags: nextTags,
+      activity: liveActivity('tags_changed', tags, nextTags),
+    })
     markSaved()
     toast({ title })
-    router.refresh()
     mutationInFlightRef.current = false
   }
 
@@ -432,8 +462,10 @@ export function FeedbackActions({
                     return
                   }
                   setArchived(false)
+                  announceFeedbackUpdate({
+                    activity: liveActivity('restored', true, false),
+                  })
                   markSaved()
-                  router.refresh()
                   mutationInFlightRef.current = false
                 }}
               >
@@ -467,6 +499,9 @@ export function FeedbackActions({
                 return
               }
               setArchived(true)
+              announceFeedbackUpdate({
+                activity: liveActivity('archived', false, true),
+              })
               markSaved()
               mutationInFlightRef.current = false
             }}

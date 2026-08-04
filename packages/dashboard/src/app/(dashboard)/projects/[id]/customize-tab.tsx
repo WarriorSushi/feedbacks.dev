@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import { buildRuntimeWidgetConfig, buildWidgetEditorConfig, getDefaultWidgetTarget, getWidgetModeLabel, type EmbedMode } from '@feedbacks/shared'
-import { useRouter } from 'next/navigation'
 import type { Project, WidgetConfig } from '@/lib/types'
 import { publicEnv } from '@/lib/public-env'
 import { Button } from '@/components/ui/button'
@@ -58,7 +57,6 @@ export function CustomizeTab({
   project,
   projectKey,
 }: CustomizeTabProps) {
-  const router = useRouter()
   const appOrigin = publicEnv.NEXT_PUBLIC_APP_ORIGIN
   const previewProjectKey = projectKey
   const [saving, setSaving] = React.useState(false)
@@ -370,7 +368,6 @@ export function CustomizeTab({
             ? 'The installed host now renders the inline form remotely. Move only the host element if you want the form somewhere else.'
             : 'Installed embeds will use this floating-button configuration remotely. No code change is required.',
       })
-      router.refresh()
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : 'Feedback form settings could not be saved. Check your connection and try again.')
     } finally {

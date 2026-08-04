@@ -76,7 +76,6 @@ export function ProjectTabs({ project, billingSummary, initialTab, updatesView, 
 
 function ProjectTabsInner({ project, billingSummary, initialTab, updatesView, updateId }: ProjectTabsProps) {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const [isInteractive, setIsInteractive] = React.useState(false)
   const [apiKey, setApiKey] = React.useState<string | null>(null)
   const [rotatingApiKey, setRotatingApiKey] = React.useState(false)
@@ -108,7 +107,6 @@ function ProjectTabsInner({ project, billingSummary, initialTab, updatesView, up
         title: 'New API key generated',
         description: 'This key is visible once. Copy it into your app or agent config now.',
       })
-      router.refresh()
     } catch (error) {
       toast({
         title: 'Failed to rotate API key',
@@ -212,8 +210,10 @@ function SettingsTab({ project }: { project: Project }) {
         return
       }
       setProjectVersion(payload.updated_at)
+      window.dispatchEvent(new CustomEvent('feedbacks:project-updated', {
+        detail: { projectId: project.id, name: payload.name || name.trim() },
+      }))
       toast({ title: 'Project settings saved' })
-      router.refresh()
     } catch {
       setSaveError('Project settings could not be saved. Check your connection and try again.')
     } finally {
@@ -235,7 +235,6 @@ function SettingsTab({ project }: { project: Project }) {
         new CustomEvent('feedbacks:project-deleted', { detail: { projectId: project.id } }),
       )
       router.replace('/projects')
-      router.refresh()
     } catch {
       setDeleteError('The project could not be deleted. Check your connection and try again.')
     } finally {
@@ -245,7 +244,7 @@ function SettingsTab({ project }: { project: Project }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow={project.name} title="Project settings" description="Manage identity, allowed origins, and project lifecycle." />
+      <PageHeader eyebrow={name.trim() || project.name} title="Project settings" description="Manage identity, allowed origins, and project lifecycle." />
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Project details</CardTitle>

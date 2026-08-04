@@ -188,6 +188,31 @@ test('release note editor exposes recovery and destructive actions without vague
   assert.doesNotMatch(imageEditor, /Horizontal crop position/)
 })
 
+test('dashboard mutations preserve mounted content and scope progress to the affected item', () => {
+  const updates = read('../../src/components/product-updates/ProductUpdatesTab.tsx')
+  const updatesOverview = read('../../src/components/product-updates/ProductUpdatesOverview.tsx')
+  const inbox = read('../../src/app/(dashboard)/feedback/page.tsx')
+  const feedbackActions = read('../../src/app/(dashboard)/feedback/[id]/feedback-actions.tsx')
+  const projectSettings = read('../../src/app/(dashboard)/projects/[id]/project-tabs.tsx')
+  const customize = read('../../src/app/(dashboard)/projects/[id]/customize-tab.tsx')
+  const boardSettings = read('../../src/components/board-settings/BoardSettingsTabs.tsx')
+
+  assert.match(updates, /pendingListAction/)
+  assert.match(updates, /current\.filter\(\(item\) => item\.id !== update\.id\)/)
+  assert.match(updates, /window\.history\.replaceState/)
+  assert.match(updatesOverview, /data-pending-action/)
+  assert.match(updatesOverview, /aria-busy=\{rowBusy\}/)
+  assert.match(updatesOverview, /Delete\?/)
+  assert.doesNotMatch(updates, /window\.confirm/)
+  assert.match(inbox, /hasLoadedRef/)
+  assert.match(inbox, /window\.history\.pushState/)
+  assert.match(inbox, /Updating results/)
+  assert.doesNotMatch(feedbackActions, /router\.refresh\(/)
+  assert.doesNotMatch(projectSettings, /router\.refresh\(/)
+  assert.doesNotMatch(customize, /router\.refresh\(/)
+  assert.doesNotMatch(boardSettings, /router\.refresh\(/)
+})
+
 test('feedback form editor refreshes stale baselines and exposes explicit recovery', () => {
   const editor = read('../../src/app/(dashboard)/projects/[id]/customize-tab.tsx')
 

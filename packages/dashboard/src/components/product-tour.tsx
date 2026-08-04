@@ -334,7 +334,6 @@ export function ProductTour({
     if (pathname === '/dashboard' && searchParams.get('tour') === '1') {
       router.replace('/dashboard')
     }
-    router.refresh()
   }, [pathname, router, searchParams])
 
   const goToStep = (nextIndex: number) => {

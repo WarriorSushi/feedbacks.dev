@@ -145,8 +145,30 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
       setProjectOpen(false)
     }
 
+    const updateProject = (event: Event) => {
+      const detail = (event as CustomEvent<{ projectId?: string; name?: string }>).detail
+      if (!detail?.projectId || !detail.name) return
+      setVisibleProjects((current) => current.map((project) =>
+        project.id === detail.projectId ? { ...project, name: detail.name! } : project,
+      ))
+    }
+
+    const addProject = (event: Event) => {
+      const project = (event as CustomEvent<{ project?: SidebarProject }>).detail?.project
+      if (!project?.id || !project.name) return
+      setVisibleProjects((current) =>
+        current.some((item) => item.id === project.id) ? current : [...current, project],
+      )
+    }
+
     window.addEventListener('feedbacks:project-deleted', removeDeletedProject)
-    return () => window.removeEventListener('feedbacks:project-deleted', removeDeletedProject)
+    window.addEventListener('feedbacks:project-updated', updateProject)
+    window.addEventListener('feedbacks:project-created', addProject)
+    return () => {
+      window.removeEventListener('feedbacks:project-deleted', removeDeletedProject)
+      window.removeEventListener('feedbacks:project-updated', updateProject)
+      window.removeEventListener('feedbacks:project-created', addProject)
+    }
   }, [])
 
   const currentProject = visibleProjects.find((p) => p.id === resolvedCurrentProjectId) || visibleProjects[0]

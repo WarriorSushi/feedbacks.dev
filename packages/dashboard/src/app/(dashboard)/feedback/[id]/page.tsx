@@ -3,7 +3,7 @@ import { getCurrentUserBillingSummary, getHistoryCutoff } from '@/lib/billing'
 import { notFound } from 'next/navigation'
 import type { Feedback, FeedbackNote } from '@/lib/types'
 import { getFeedbackReadAtUpdate } from '@/lib/feedback-read-state'
-import { cn, formatDate, getTypeColor, statusConfig } from '@/lib/utils'
+import { cn, formatDate, getTypeColor } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -21,7 +21,6 @@ import {
   ImageIcon,
   Paperclip,
   StickyNote,
-  Circle,
   Bug,
   Lightbulb,
   Smile,
@@ -31,12 +30,16 @@ import {
 import { FeedbackActions } from './feedback-actions'
 import { FeedbackScreenshot } from './feedback-screenshot'
 import { PageHeader } from '@/components/ui/workspace-shell'
+import {
+  FeedbackActivityTimeline,
+  FeedbackHeadlineState,
+  FeedbackLiveProvider,
+  FeedbackNotesList,
+  FeedbackTagsState,
+  type FeedbackActivity,
+} from './feedback-live-state'
 
 export const metadata = { title: 'Feedback Details' }
-
-const statusDotColor = Object.fromEntries(
-  Object.entries(statusConfig).map(([k, v]) => [k, v.dot])
-)
 
 const typeIcons = {
   bug: Bug,
@@ -46,41 +49,9 @@ const typeIcons = {
   other: MessageSquare,
 }
 
-type FeedbackActivity = {
-  id: string
-  event_type: string
-  from_value: unknown
-  to_value: unknown
-  created_at: string
-}
-
 function TypeIcon({ type, className }: { type?: string | null; className?: string }) {
   const Icon = typeIcons[(type || 'other') as keyof typeof typeIcons] || MessageSquare
   return <Icon className={cn('h-4 w-4', className)} />
-}
-
-function activityValue(value: unknown): string {
-  if (Array.isArray(value)) return value.length ? value.join(', ') : 'none'
-  if (typeof value === 'string') return value.replaceAll('_', ' ')
-  if (typeof value === 'boolean') return value ? 'public' : 'private'
-  if (value === null || value === undefined) return 'none'
-  return String(value)
-}
-
-function activityLabel(event: FeedbackActivity): string {
-  const from = activityValue(event.from_value)
-  const to = activityValue(event.to_value)
-  switch (event.event_type) {
-    case 'status_changed': return `Status changed from ${from} to ${to}`
-    case 'priority_changed': return `Priority changed from ${from} to ${to}`
-    case 'tags_changed': return `Tags changed from ${from} to ${to}`
-    case 'archived': return 'Archived'
-    case 'restored': return 'Restored'
-    case 'visibility_changed': return `Visibility changed from ${from} to ${to}`
-    case 'note_added': return 'Internal note added'
-    case 'public_reply_added': return 'Public reply added'
-    default: return 'Feedback updated'
-  }
 }
 
 export default async function FeedbackDetailPage({
@@ -159,6 +130,15 @@ export default async function FeedbackDetailPage({
   )
 
   return (
+    <FeedbackLiveProvider
+      key={fb.id}
+      initialStatus={fb.status}
+      initialPriority={fb.priority}
+      initialTags={fb.tags || []}
+      initialNotes={(notes as FeedbackNote[] | null) || []}
+      initialActivity={(activity as FeedbackActivity[] | null) || []}
+      createdAt={fb.created_at}
+    >
     <div className="space-y-6">
       <PageHeader
         eyebrow="Inbox"
@@ -184,17 +164,7 @@ export default async function FeedbackDetailPage({
                     {fb.type}
                   </Badge>
                 )}
-                <span className="flex items-center gap-1.5">
-                  <span className={`inline-block h-2 w-2 rounded-full ${statusDotColor[fb.status]}`} />
-                  <span className="text-sm capitalize text-muted-foreground">
-                    {fb.status.replace('_', ' ')}
-                  </span>
-                </span>
-                {fb.priority && (
-                  <Badge variant={fb.priority === 'critical' ? 'destructive' : 'outline'}>
-                    {fb.priority}
-                  </Badge>
-                )}
+                <FeedbackHeadlineState />
               </div>
             </CardHeader>
             <CardContent>
@@ -289,24 +259,7 @@ export default async function FeedbackDetailPage({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {notes && notes.length > 0 ? (
-                <div className="space-y-3">
-                  {(notes as FeedbackNote[]).map((note) => (
-                    <div
-                      key={note.id}
-                      className="rounded-lg border border-primary/20 bg-primary/[0.04] p-3"
-                    >
-                      <p className="text-sm leading-relaxed">{note.content}</p>
-                      <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-2.5 w-2.5" />
-                        {formatDate(note.created_at)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No notes yet.</p>
-              )}
+              <FeedbackNotesList />
               <Separator className="my-4" />
               <FeedbackActions
                 feedbackId={fb.id}
@@ -391,29 +344,19 @@ export default async function FeedbackDetailPage({
                     </span>
                   </div>
                 )}
-                {fb.tags && fb.tags.length > 0 && (
-                  <div className="py-3">
-                    <span className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                      <Tag className="h-3.5 w-3.5" />
-                      Tags
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {fb.tags.map((tag) => (
-                        <Link key={tag} href={`/feedback?tag=${encodeURIComponent(tag)}`}>
-                          <Badge variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
               ) : (
                 <div className="rounded-lg border border-dashed bg-muted/10 p-4 text-sm text-muted-foreground">
                   No contact, page, browser, or tag context was captured for this submission.
                 </div>
               )}
+              <div className="mt-3 border-t py-3">
+                <span className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                  <Tag className="h-3.5 w-3.5" />
+                  Tags
+                </span>
+                <FeedbackTagsState />
+              </div>
             </CardContent>
           </Card>
 
@@ -425,29 +368,13 @@ export default async function FeedbackDetailPage({
               <CardTitle className="text-sm">Timeline</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="relative space-y-4 pl-4 before:absolute before:bottom-0 before:left-[7px] before:top-0 before:w-px before:bg-border">
-                <div className="relative">
-                  <Circle className="absolute -left-4 top-0.5 h-3.5 w-3.5 fill-blue-500 text-blue-500" />
-                  <p className="text-xs font-medium">Created</p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDate(fb.created_at)}
-                  </p>
-                </div>
-                {(activity as FeedbackActivity[] | null)?.map((event) => (
-                  <div key={event.id} className="relative">
-                    <Circle className="absolute -left-4 top-0.5 h-3.5 w-3.5 fill-primary text-primary" />
-                    <p className="text-xs font-medium">{activityLabel(event)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatDate(event.created_at)}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              <FeedbackActivityTimeline />
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
+    </FeedbackLiveProvider>
   )
 }
 
