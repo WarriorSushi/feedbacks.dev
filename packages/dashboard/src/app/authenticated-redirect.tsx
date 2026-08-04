@@ -1,9 +1,12 @@
 'use client'
 
 import { useEffect } from 'react'
+import { shouldProbeAppSession } from '@/lib/auth-redirect'
 
 export function AuthenticatedRedirect({ appOrigin }: { appOrigin: string }) {
   useEffect(() => {
+    if (!shouldProbeAppSession(window.location.origin, appOrigin)) return
+
     const controller = new AbortController()
 
     void fetch(`${appOrigin}/api/auth-status`, {

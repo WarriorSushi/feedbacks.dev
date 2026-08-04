@@ -2159,6 +2159,10 @@ export type Database = {
         }
         Returns: Json
       }
+      resolve_referral_review: {
+        Args: { p_approved: boolean; p_signup_id: string }
+        Returns: Json
+      }
       apply_claimed_billing_event: {
         Args: {
           p_billing_email: string | null

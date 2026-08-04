@@ -261,12 +261,15 @@ export function ApiDocs({
             Add this to your <code className="bg-muted px-1 rounded">.mcp.json</code> or Claude Code settings:
           </p>
           <CodeBlock language="json" code={`{
-  "feedbacks": {
-    "command": "npm",
-    "args": ["exec", "--yes", "--package=${mcpPackageUrl}", "--", "feedbacks-mcp"],
-    "env": {
-      "FEEDBACKS_API_KEY": "${exampleApiKey}",
-      "FEEDBACKS_API_URL": "${baseUrl}"
+  "mcpServers": {
+    "feedbacks": {
+      "type": "stdio",
+      "command": "npm",
+      "args": ["exec", "--yes", "--package=${mcpPackageUrl}", "--", "feedbacks-mcp"],
+      "env": {
+        "FEEDBACKS_API_KEY": "${exampleApiKey}",
+        "FEEDBACKS_API_URL": "${baseUrl}"
+      }
     }
   }
 }`} />

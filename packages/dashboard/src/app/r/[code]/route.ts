@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { getAppOrigin } from '@/lib/domain-routing'
 import { REFERRAL_COOKIE } from '@/lib/marketing'
+import {
+  getOrCreateReferralDevice,
+  REFERRAL_DEVICE_COOKIE,
+  REFERRAL_DEVICE_COOKIE_MAX_AGE,
+} from '@/lib/referrals'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params
@@ -29,13 +34,25 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   authUrl.searchParams.set('invited', '1')
   const response = NextResponse.redirect(authUrl)
   const hostname = request.nextUrl.hostname.toLowerCase()
+  const cookieDomain = hostname === 'feedbacks.dev' || hostname.endsWith('.feedbacks.dev')
+    ? { domain: '.feedbacks.dev' }
+    : {}
   response.cookies.set(REFERRAL_COOKIE, normalizedCode, {
     httpOnly: true,
     secure: request.nextUrl.protocol === 'https:',
     sameSite: 'lax',
     path: '/',
     maxAge: 60 * 60 * 24 * 7,
-    ...(hostname === 'feedbacks.dev' || hostname.endsWith('.feedbacks.dev') ? { domain: '.feedbacks.dev' } : {}),
+    ...cookieDomain,
+  })
+  const referralDevice = getOrCreateReferralDevice(request)
+  response.cookies.set(REFERRAL_DEVICE_COOKIE, referralDevice.value, {
+    httpOnly: true,
+    secure: request.nextUrl.protocol === 'https:',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: REFERRAL_DEVICE_COOKIE_MAX_AGE,
+    ...cookieDomain,
   })
   return response
 }

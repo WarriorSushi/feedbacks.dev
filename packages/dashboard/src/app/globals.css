@@ -172,10 +172,12 @@
 /* Motion tokens */
 :root {
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.18, 1.34, 0.35, 1);
+  /* Legacy name retained for marketing selectors; the curve no longer overshoots. */
+  --ease-spring: var(--ease-out-quint);
   --duration-fast: 150ms;
   --duration-base: 240ms;
   --duration-slow: 520ms;
@@ -331,9 +333,8 @@
 }
 
 @keyframes toast-enter {
-  0% { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.96); }
-  70% { opacity: 1; transform: translate3d(0, -2px, 0) scale(1.01); }
-  100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  from { opacity: 0; transform: translate3d(0, 10px, 0) scale(0.98); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
 /* ─── Utilities ───────────────────────────────────────────────────────────── */
@@ -414,16 +415,16 @@
   }
 
   .animate-toast-in {
-    animation: toast-enter 420ms var(--ease-spring) both;
+    animation: toast-enter 220ms var(--ease-out-quint) both;
   }
 }
 
 .workspace-route-enter {
-  animation: workspace-route-enter 360ms var(--ease-out-expo) both;
+  animation: workspace-route-enter 180ms var(--ease-out-quart) both;
 }
 
 .workspace-page-header {
-  animation: workspace-route-enter 420ms var(--ease-out-expo) both;
+  animation: none;
 }
 
 .workspace-panel {
@@ -457,7 +458,7 @@
 }
 
 .dashboard-shell input:is([type="checkbox"], [type="radio"]) {
-  transition: transform var(--duration-fast) var(--ease-spring), filter var(--duration-fast) var(--ease-standard);
+  transition: transform var(--duration-fast) var(--ease-out-quint), filter var(--duration-fast) var(--ease-standard);
 }
 
 .dashboard-shell input:is([type="checkbox"], [type="radio"]):active {

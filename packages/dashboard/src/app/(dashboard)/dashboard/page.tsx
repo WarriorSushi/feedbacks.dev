@@ -28,13 +28,6 @@ import {
 
 export const metadata = { title: 'Dashboard' }
 
-function getGreeting() {
-  const h = new Date().getHours()
-  if (h < 12) return 'morning'
-  if (h < 17) return 'afternoon'
-  return 'evening'
-}
-
 const typeIcons = {
   bug: Bug,
   idea: Lightbulb,
@@ -229,7 +222,7 @@ export default async function DashboardPage({
       <div className="mx-auto max-w-4xl space-y-6">
         <PageHeader
           eyebrow="Welcome"
-          title={`Good ${getGreeting()}, ${displayName}`}
+          title={`Welcome, ${displayName}`}
           description="Create one project, copy one snippet, and send one test. That is the whole first run."
         />
         <SectionPanel contentClassName="p-0">
@@ -275,7 +268,7 @@ export default async function DashboardPage({
   return (
     <div className="space-y-5">
       <PageHeader
-        title={`Good ${getGreeting()}, ${displayName}`}
+        title={`Welcome back, ${displayName}`}
         description={unread > 0
           ? `${unread} unread ${unread === 1 ? 'item needs' : 'items need'} review.`
           : total > 0
@@ -521,10 +514,10 @@ export default async function DashboardPage({
                         <div className="h-1 overflow-hidden rounded-full bg-muted">
                           <div
                             className={cn(
-                              'h-full rounded-full transition-all duration-700',
+                              'h-full w-full origin-left rounded-full transition-transform duration-300 [transition-timing-function:var(--ease-out-quart)]',
                               typeColorMap[type] || 'bg-zinc-400'
                             )}
-                            style={{ width: `${pct}%` }}
+                            style={{ transform: `scaleX(${pct / 100})` }}
                           />
                         </div>
                       </div>
@@ -552,7 +545,7 @@ export default async function DashboardPage({
                 const heightPct = Math.max((count / sparkMax) * 100, 4)
                 const isToday = i === days7.length - 1
                 return (
-                  <div key={day} className="group flex flex-1 flex-col items-center gap-1">
+                  <div key={day} className="group flex h-full flex-1 flex-col items-center gap-1">
                     <span
                       className={cn(
                         'text-[11px] tabular-nums',
@@ -561,15 +554,17 @@ export default async function DashboardPage({
                     >
                       {count || '0'}
                     </span>
-                    <div
-                      className={cn(
-                        'w-full rounded-[3px] transition-all duration-300',
-                        isToday
-                          ? 'bg-primary/70'
-                          : 'bg-primary/28 group-hover:bg-primary/50'
-                      )}
-                      style={{ height: `${heightPct}%` }}
-                    />
+                    <div className="relative min-h-1 w-full flex-1 overflow-hidden rounded-[3px] bg-primary/[0.06]" aria-hidden="true">
+                      <div
+                        className={cn(
+                          'absolute inset-0 origin-bottom transition-[transform,background-color] duration-300 [transition-timing-function:var(--ease-out-quart)]',
+                          isToday
+                            ? 'bg-primary/70'
+                            : 'bg-primary/28 group-hover:bg-primary/50'
+                        )}
+                        style={{ transform: `scaleY(${heightPct / 100})` }}
+                      />
+                    </div>
                     <span
                       className={cn(
                         'text-[11px] font-medium uppercase',

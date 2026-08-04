@@ -444,6 +444,16 @@ test('public docs use the stable canonical embed and remote customization langua
   assert.doesNotMatch(source, /data-config-version/)
 })
 
+test('dashboard MCP setup emits a valid project-scoped client configuration', () => {
+  const apiDocs = read('../../src/app/(dashboard)/projects/[id]/api-docs.tsx')
+
+  assert.match(apiDocs, /"mcpServers": \{/)
+  assert.match(apiDocs, /"feedbacks": \{/)
+  assert.match(apiDocs, /"type": "stdio"/)
+  assert.match(apiDocs, /FEEDBACKS_API_KEY/)
+  assert.match(apiDocs, /FEEDBACKS_API_URL/)
+})
+
 test('public board directory owns a main landmark without nesting one in the dashboard', () => {
   const directorySurface = read('../../src/app/boards/board-directory-surface.tsx')
 

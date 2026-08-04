@@ -24,7 +24,9 @@ test('growth data is service-only and referral credit is atomic and one-time', (
 
 test('referral rewards mature after real activation and use layered risk signals', () => {
   const migration = read('../../../../sql/057_referral_and_downgrade_safeguards.sql')
+  const reviewMigration = read('../../../../sql/060_referral_review_resolution.sql')
   const referrals = read('../../src/lib/referrals.ts')
+  const inviteRoute = read('../../src/app/r/[code]/route.ts')
 
   assert.match(migration, /status in \('pending', 'qualified', 'review', 'rejected'\)/i)
   assert.match(migration, /invited_email_hash/i)
@@ -39,6 +41,15 @@ test('referral rewards mature after real activation and use layered risk signals
   assert.match(referrals, /p_user_id: result\.inviter_user_id/)
   assert.match(referrals, /createHmac\('sha256'/)
   assert.doesNotMatch(referrals, /networkPrefix[^\n]*\.insert/)
+  assert.match(inviteRoute, /REFERRAL_DEVICE_COOKIE/)
+  assert.match(referrals, /timingSafeEqual/)
+  assert.match(referrals, /referralDeviceId[\s\S]*deviceHash/)
+  assert.match(reviewMigration, /status <> 'review'/i)
+  assert.match(reviewMigration, /set status = 'pending'/i)
+  assert.match(reviewMigration, /qualify_referral_signup\(v_signup\.invited_user_id\)/i)
+  assert.match(reviewMigration, /set status = 'rejected'/i)
+  assert.match(reviewMigration, /revoke execute on function public\.resolve_referral_review/i)
+  assert.match(reviewMigration, /grant execute on function public\.resolve_referral_review\(uuid, boolean\)\s+to service_role/i)
 })
 
 test('downgrades are reversible, preserve data, and freeze only excess projects', () => {

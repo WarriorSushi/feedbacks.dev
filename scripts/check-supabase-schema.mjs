@@ -155,6 +155,14 @@ const requiredReadOnlyFunctions = [
       p_device_hash: null,
     },
   },
+  {
+    name: 'qualify_referral_signup',
+    args: { p_invited_user_id: probeProjectId },
+  },
+  {
+    name: 'resolve_referral_review',
+    args: { p_signup_id: probeProjectId, p_approved: false },
+  },
 ]
 
 function fail(message, failures) {

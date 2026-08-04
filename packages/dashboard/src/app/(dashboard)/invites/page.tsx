@@ -5,6 +5,7 @@ import { getReferralProgramSummary } from '@/lib/referrals'
 import { getMarketingOrigin } from '@/lib/domain-routing'
 import { PageHeader } from '@/components/ui/workspace-shell'
 import { InviteLink } from './invite-link'
+import { InviteGuide } from './invite-guide'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Invite friends' }
@@ -19,7 +20,12 @@ export default async function InvitesPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow="Invite program" title="Give feedbacks.dev a proper introduction" description="Five genuinely activated accounts unlock one complimentary month of Pro. Email confirmation alone does not fill a spot." />
+      <PageHeader
+        eyebrow="Invite program"
+        title="Give feedbacks.dev a proper introduction"
+        description="Five genuinely activated accounts unlock one complimentary month of Pro. Email confirmation alone does not fill a spot."
+        action={<InviteGuide />}
+      />
 
       <section className="overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-soft)]">
         <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1fr_240px] lg:items-center">
@@ -35,6 +41,7 @@ export default async function InvitesPage() {
               {Array.from({ length: 5 }, (_, index) => <span key={index} className={`flex h-8 items-center justify-center rounded-md border ${index < count ? 'border-primary/30 bg-primary/10 text-primary' : 'bg-muted/30 text-muted-foreground/40'}`}>{index < count ? <Check className="h-4 w-4" /> : index + 1}</span>)}
             </div>
             {program.pending_referrals > 0 && <p className="mt-3 text-xs text-muted-foreground">{program.pending_referrals} {program.pending_referrals === 1 ? 'invite is' : 'invites are'} completing the safety check.</p>}
+            {program.review_referrals > 0 && <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{program.review_referrals} {program.review_referrals === 1 ? 'invite needs' : 'invites need'} a manual safety review.</p>}
           </div>
         </div>
         <div className="border-t bg-muted/20 px-5 py-4 sm:px-6">
@@ -45,6 +52,14 @@ export default async function InvitesPage() {
           )}
         </div>
       </section>
+
+      {(program.pending_referrals > 0 || program.review_referrals > 0) && (
+        <section aria-label="Invitation status legend" className="flex flex-wrap gap-x-5 gap-y-2 border-y py-3 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-primary" />Qualified and counted</span>
+          <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-sky-500" />Activation or 24-hour check pending</span>
+          {program.review_referrals > 0 && <span className="inline-flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-amber-500" />Manual safety review</span>}
+        </section>
+      )}
 
       <section className="grid gap-4 sm:grid-cols-3">
         <div className="border-t pt-4"><p className="text-sm font-semibold">Five spots total</p><p className="mt-1 text-xs leading-5 text-muted-foreground">The program is intentionally small and personal, not an unlimited affiliate scheme.</p></div>

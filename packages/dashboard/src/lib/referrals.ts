@@ -1,4 +1,4 @@
-import { createHmac, randomBytes } from 'node:crypto'
+import { createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto'
 import type { User } from '@supabase/supabase-js'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import {
@@ -54,6 +54,10 @@ export async function getReferralProgramSummary(userId: string) {
   }
 }
 
+export const REFERRAL_DEVICE_COOKIE = 'feedbacks_referral_device'
+export const REFERRAL_DEVICE_COOKIE_MAX_AGE = 60 * 60 * 24 * 90
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
 function normalizeReferralEmail(value: string) {
   const normalized = value.trim().toLowerCase()
   const at = normalized.lastIndexOf('@')
@@ -76,6 +80,48 @@ function digestReferralSignal(value: string) {
   return createHmac('sha256', referralSalt()).update(value).digest('hex')
 }
 
+function signReferralDeviceId(deviceId: string) {
+  return createHmac('sha256', referralSalt()).update(`v1.${deviceId}`).digest('base64url')
+}
+
+function readRequestCookie(request: Request, name: string) {
+  for (const item of (request.headers.get('cookie') || '').split(';')) {
+    const [cookieName, ...parts] = item.trim().split('=')
+    if (cookieName !== name) continue
+    try {
+      return decodeURIComponent(parts.join('='))
+    } catch {
+      return null
+    }
+  }
+  return null
+}
+
+function readReferralDeviceId(request: Request) {
+  const encoded = readRequestCookie(request, REFERRAL_DEVICE_COOKIE)
+  if (!encoded) return null
+  const [version, deviceId, signature] = encoded.split('.')
+  if (version !== 'v1' || !UUID_RE.test(deviceId || '') || !signature) return null
+
+  const expected = Buffer.from(signReferralDeviceId(deviceId), 'base64url')
+  let received: Buffer
+  try {
+    received = Buffer.from(signature, 'base64url')
+  } catch {
+    return null
+  }
+  return received.length === expected.length && timingSafeEqual(received, expected) ? deviceId : null
+}
+
+export function getOrCreateReferralDevice(request: Request) {
+  const existingId = readReferralDeviceId(request)
+  const deviceId = existingId || randomUUID()
+  return {
+    isNew: !existingId,
+    value: `v1.${deviceId}.${signReferralDeviceId(deviceId)}`,
+  }
+}
+
 function requestIpPrefix(request: Request) {
   const raw = (request.headers.get('x-forwarded-for')?.split(',')[0]
     || request.headers.get('x-real-ip')
@@ -89,12 +135,17 @@ function requestIpPrefix(request: Request) {
 
 function referralSignals(request: Request, email: string) {
   const networkPrefix = requestIpPrefix(request)
+  const referralDeviceId = readReferralDeviceId(request)
   const userAgent = request.headers.get('user-agent')?.slice(0, 400) || 'unknown'
   const language = request.headers.get('accept-language')?.slice(0, 120) || 'unknown'
   return {
     emailHash: digestReferralSignal(`email:${normalizeReferralEmail(email)}`),
     networkHash: networkPrefix ? digestReferralSignal(`network:${networkPrefix}`) : null,
-    deviceHash: digestReferralSignal(`device:${networkPrefix || 'unknown'}:${userAgent}:${language}`),
+    // The signed first-party ID distinguishes coworkers on the same network.
+    // The bounded browser fallback is retained for old invite links only.
+    deviceHash: digestReferralSignal(referralDeviceId
+      ? `device:${referralDeviceId}`
+      : `legacy-device:${userAgent}:${language}`),
   }
 }
 

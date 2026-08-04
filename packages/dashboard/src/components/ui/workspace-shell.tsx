@@ -26,7 +26,7 @@ export function PageHeader({
             {eyebrow}
           </p>
         )}
-        <h1 className="text-2xl font-semibold tracking-[-0.035em] text-foreground sm:text-[1.75rem]">
+        <h1 className="[overflow-wrap:anywhere] text-2xl font-semibold tracking-[-0.035em] text-foreground sm:text-[1.75rem]">
           {title}
         </h1>
         {description && (
@@ -36,7 +36,7 @@ export function PageHeader({
         )}
         {meta && <div className="mt-3">{meta}</div>}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="w-full shrink-0 sm:w-auto">{action}</div>}
     </header>
   )
 }
