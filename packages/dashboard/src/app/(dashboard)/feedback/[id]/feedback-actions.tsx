@@ -200,7 +200,7 @@ export function FeedbackActions({
     })
     setSaving(false)
     if (error) {
-      const message = 'The note was not added. Your draft is still here—try again.'
+      const message = 'The note was not added. Your draft is still here - try again.'
       toast({ title: 'Could not add note', description: message, variant: 'destructive' })
       markError(message, async () => {
         const form = document.querySelector<HTMLFormElement>('[data-note-form]')

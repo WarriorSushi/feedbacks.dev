@@ -255,7 +255,7 @@ export function ProjectVerifyClient({
               ? 'Diagnostic packet copied. It contains the public project key but no private API key.'
               : diagnosticCopyState === 'error'
                 ? 'Clipboard access was denied. Copy the visible status details manually.'
-                : 'The packet contains connection status and public install information only—never private credentials.'}
+                : 'The packet contains connection status and public install information only - never private credentials.'}
           </p>
         </div>
       </details>

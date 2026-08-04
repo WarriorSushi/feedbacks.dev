@@ -1,8 +1,8 @@
-# Boards System Overhaul — Implementation Plan
+# Boards System Overhaul - Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Redesign the entire boards system — public board page, dashboard settings, navigation, custom naming, and a new public board directory — with a warm, friendly aesthetic.
+**Goal:** Redesign the entire boards system - public board page, dashboard settings, navigation, custom naming, and a new public board directory - with a warm, friendly aesthetic.
 
 **Architecture:** Break the 970-line public-board.tsx monolith into focused components under `components/boards/`. Restructure board-settings.tsx into tabbed sections under `components/board-settings/`. Add `display_name` column to the DB. Create a new `/boards` directory page. All existing API routes stay intact; only the GET `/api/boards/[slug]` and GET/PUT `/api/projects/[id]/board` routes need minor updates to include `display_name`.
 
@@ -49,7 +49,7 @@
 
 ---
 
-## Task 1: Database Migration — Add `display_name`
+## Task 1: Database Migration - Add `display_name`
 
 **Files:**
 - Create: `sql/008_board_display_name.sql`
@@ -334,7 +334,7 @@ Search input + sort dropdown + type filter pills. Receives: `showTypes`, `filter
 
 Individual feedback card. Extract from existing `FeedbackCard` function. Horizontal card: vote button left, title+snippet+pills center, click to expand with full description + admin comments. Moderation panel only if `canModerate`. Report moved to "..." context menu (three-dot button).
 
-Keep the exact same props/behavior as existing `FeedbackCard` but remove the "Watch" button from the card header (simplification — watches stay as backend feature). Keep the report as a simple text button in the expanded view.
+Keep the exact same props/behavior as existing `FeedbackCard` but remove the "Watch" button from the card header (simplification - watches stay as backend feature). Keep the report as a simple text button in the expanded view.
 
 - [ ] **Step 4: Create BoardFeedbackList.tsx**
 
@@ -389,7 +389,7 @@ Replace the 970-line file with a composition of the new components. The new file
 2. Keep the same state management (feedback, comments, votedIds, etc.) in the main `PublicBoard` export
 3. Keep the same API call handlers (handleVote, refreshBoard, handleModeration, etc.)
 4. Compose the UI from: `BoardHero` → `BoardAnnouncements` → `BoardFilters` → `BoardFeedbackList` (with `BoardFeedbackCard` for each item) → recommended boards section → `BoardFooter`
-5. Remove the sidebar (trust signals + moderation text) — the stats are now in the hero pills
+5. Remove the sidebar (trust signals + moderation text) - the stats are now in the hero pills
 6. Remove the "Browse boards" and "Report board" buttons from the hero (report moved to footer "..." or separate link; browse boards is the directory link in footer)
 7. Apply the warm, immersive design: accent-color gradient page background, rounded cards with subtle shadows
 
@@ -523,7 +523,7 @@ export async function GET(request: NextRequest) {
 
 - [ ] **Step 2: Create directory page**
 
-`packages/dashboard/src/app/boards/page.tsx` — SSR page that loads all directory boards and renders them. Contains:
+`packages/dashboard/src/app/boards/page.tsx` - SSR page that loads all directory boards and renders them. Contains:
 - Hero: "Discover Feedback Boards" with subtitle and search bar
 - Filter bar: category pills (aggregated from all boards), sort dropdown
 - Grid of board cards: logo emoji, display name, tagline, category tags, feedback count
@@ -549,7 +549,7 @@ git commit -m "feat: add public board directory page with search and filtering"
 ## Task 8: Final Integration & Polish
 
 **Files:**
-- Various — connecting everything together
+- Various - connecting everything together
 
 - [ ] **Step 1: Add `.superpowers/` to .gitignore**
 
@@ -586,7 +586,7 @@ Fix any build errors.
 
 ```bash
 git add -A
-git commit -m "feat: complete boards system overhaul — directory, naming, redesign"
+git commit -m "feat: complete boards system overhaul - directory, naming, redesign"
 ```
 
 ---
@@ -595,11 +595,11 @@ git commit -m "feat: complete boards system overhaul — directory, naming, rede
 
 After all tasks are complete:
 
-1. **`pnpm type-check`** — must pass with no errors
-2. **`pnpm build`** — must build successfully
-3. **Public board** (`/p/[slug]`) — renders with new warm design, hero with stats, voting works, submit works, footer shows powered-by
-4. **Board settings** (`/projects/[id]?tab=board`) — shows 4 tabs (Identity, Content, Visibility, Advanced), save works, display name persists
-5. **Board directory** (`/boards`) — shows public boards with search/filter, cards link to individual boards
-6. **Owner navigation** — logged-in owner sees "Dashboard" link on public board footer
-7. **Display name** — shows in hero, directory cards, browser tab title
-8. **No regressions** — voting, submissions, moderation, reports, announcements all still work
+1. **`pnpm type-check`** - must pass with no errors
+2. **`pnpm build`** - must build successfully
+3. **Public board** (`/p/[slug]`) - renders with new warm design, hero with stats, voting works, submit works, footer shows powered-by
+4. **Board settings** (`/projects/[id]?tab=board`) - shows 4 tabs (Identity, Content, Visibility, Advanced), save works, display name persists
+5. **Board directory** (`/boards`) - shows public boards with search/filter, cards link to individual boards
+6. **Owner navigation** - logged-in owner sees "Dashboard" link on public board footer
+7. **Display name** - shows in hero, directory cards, browser tab title
+8. **No regressions** - voting, submissions, moderation, reports, announcements all still work

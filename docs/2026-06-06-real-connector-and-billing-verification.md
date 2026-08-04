@@ -1,4 +1,4 @@
-# Real Connector And Billing Verification — 6th June 2026
+# Real Connector And Billing Verification - 6th June 2026
 
 ## Purpose
 

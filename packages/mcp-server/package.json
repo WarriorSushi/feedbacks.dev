@@ -1,7 +1,7 @@
 {
   "name": "@feedbacks/mcp-server",
   "version": "1.0.0",
-  "description": "MCP server for feedbacks.dev — submit and manage feedback from AI agents",
+  "description": "MCP server for feedbacks.dev - submit and manage feedback from AI agents",
   "license": "FSL-1.1-MIT",
   "type": "module",
   "files": [

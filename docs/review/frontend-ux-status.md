@@ -5,7 +5,7 @@
 | 1 | Silent error swallowing on ALL mutations | Done | Added toast.error/toast.success to all mutation handlers in feedback-actions, project-tabs, board-settings, settings/page, feedback/page |
 | 2 | Account deletion is fake | Done | Replaced delete section with "contact support" note |
 | 3 | Delete project confirmation has no name-match input | Done | Added text input that must match project.name before enabling delete |
-| 4 | No success toast after saving | Done | Covered by #1 — all save operations now show toast.success |
+| 4 | No success toast after saving | Done | Covered by #1 - all save operations now show toast.success |
 | 5 | Project tabs overflow on mobile | Done | Added overflow-x-auto to container, flex-shrink-0 whitespace-nowrap to tabs |
 | 6 | Public board submit modal no focus trap | Done | Added role="dialog", aria-modal, aria-labelledby, focus trap (Tab key), Escape to close, focus restore on close |
 | 7 | Missing aria-labels on icon-only buttons | Done | Added aria-labels to: WidgetDemo close, ApiKeyBadge copy, CopyButton in api-docs, FilterPill aria-pressed, footer GitHub link |

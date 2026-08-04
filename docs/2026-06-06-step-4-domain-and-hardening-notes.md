@@ -1,4 +1,4 @@
-# Step 4 Domain And Hardening Notes — 6th June 2026
+# Step 4 Domain And Hardening Notes - 6th June 2026
 
 ## Current Step
 

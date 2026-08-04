@@ -2,7 +2,7 @@
 
 ## Delivery Philosophy
 
-Ship in phases. Each phase is **independently useful** — no phase depends on a future phase to deliver value. Users can pay after Phase 1.
+Ship in phases. Each phase is **independently useful** - no phase depends on a future phase to deliver value. Users can pay after Phase 1.
 
 ---
 
@@ -49,10 +49,10 @@ Ship in phases. Each phase is **independently useful** — no phase depends on a
 - [ ] Sort by date, rating
 
 ### API
-- [ ] `POST /api/v1/feedback` — submit (API key auth, rate limited)
-- [ ] `GET /api/v1/widget/config/:slug` — widget config
-- [ ] `GET /api/v1/feedback` — list with filters (session auth)
-- [ ] `PATCH /api/v1/feedback/:id` — update status
+- [ ] `POST /api/v1/feedback` - submit (API key auth, rate limited)
+- [ ] `GET /api/v1/widget/config/:slug` - widget config
+- [ ] `GET /api/v1/feedback` - list with filters (session auth)
+- [ ] `PATCH /api/v1/feedback/:id` - update status
 
 **Deliverable**: Developer installs widget on their site, users submit feedback, developer triages in dashboard.
 
@@ -83,7 +83,7 @@ Ship in phases. Each phase is **independently useful** — no phase depends on a
 
 ### API
 - [ ] `CRUD /api/v1/tags`
-- [ ] `PUT /api/v1/widget/config` — update widget settings
+- [ ] `PUT /api/v1/widget/config` - update widget settings
 - [ ] Upload endpoint for attachments
 
 **Deliverable**: Full feedback workflow with rich data. Widget looks and behaves exactly how the developer wants.
@@ -148,17 +148,17 @@ Ship in phases. Each phase is **independently useful** — no phase depends on a
 
 These are real features, not just a wish list. Prioritized by user demand.
 
-- **Team collaboration** — invite team members, assign feedback, internal notes
-- **Email digest** — daily/weekly summary instead of per-feedback notifications
-- **Webhook delivery logs** — retry failed deliveries
-- **API tokens** — programmatic access to dashboard data
-- **React/Vue/Svelte components** — framework-specific widget wrappers
-- **Changelog feature** — close the loop with users ("you asked, we built")
-- **User identification** — track feedback by logged-in user across sessions
-- **Voting/upvotes** — let users vote on existing feedback
-- **Custom forms** — build your own feedback form fields
-- **White-labeling** — remove feedbacks.dev branding (enterprise)
-- **Realtime updates** — live feedback feed via Supabase Realtime
+- **Team collaboration** - invite team members, assign feedback, internal notes
+- **Email digest** - daily/weekly summary instead of per-feedback notifications
+- **Webhook delivery logs** - retry failed deliveries
+- **API tokens** - programmatic access to dashboard data
+- **React/Vue/Svelte components** - framework-specific widget wrappers
+- **Changelog feature** - close the loop with users ("you asked, we built")
+- **User identification** - track feedback by logged-in user across sessions
+- **Voting/upvotes** - let users vote on existing feedback
+- **Custom forms** - build your own feedback form fields
+- **White-labeling** - remove feedbacks.dev branding (enterprise)
+- **Realtime updates** - live feedback feed via Supabase Realtime
 
 ---
 

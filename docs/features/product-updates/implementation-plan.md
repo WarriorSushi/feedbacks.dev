@@ -30,7 +30,7 @@ Repository-level `AGENTS.md` instructions and the documents listed there remain 
 - Do not increase the widget's 20 KB gzip limit without explicit approval.
 - Do not silently relax a requirement to make a test pass. Record any necessary product decision in these planning documents.
 
-## 3. Phase 0 — establish a clean baseline
+## 3. Phase 0 - establish a clean baseline
 
 ### Read
 
@@ -76,12 +76,12 @@ Never rename or replay already-applied migrations merely to make numbering look 
 
 No code commit unless a baseline-only test fixture or documentation correction is required.
 
-## 4. Phase 1 — shared contracts, validation, and entitlements
+## 4. Phase 1 - shared contracts, validation, and entitlements
 
 ### Primary files
 
-- `packages/shared/src/product-updates.ts` — new
-- `packages/shared/src/product-updates.test.ts` — new, following repository test naming
+- `packages/shared/src/product-updates.ts` - new
+- `packages/shared/src/product-updates.test.ts` - new, following repository test naming
 - `packages/shared/src/index.ts`
 - `packages/shared/src/plans.ts`
 - existing plan/entitlement tests
@@ -134,7 +134,7 @@ No code commit unless a baseline-only test fixture or documentation correction i
 
 `feat(shared): add product update contracts and entitlements`
 
-## 5. Phase 2 — database schema, RLS, RPC, and storage contract
+## 5. Phase 2 - database schema, RLS, RPC, and storage contract
 
 ### Primary files
 
@@ -191,7 +191,7 @@ Against an isolated local or development database:
 
 `feat(db): add product update schema and policies`
 
-## 6. Phase 3 — authenticated owner APIs
+## 6. Phase 3 - authenticated owner APIs
 
 ### Primary files
 
@@ -199,8 +199,8 @@ Against an isolated local or development database:
 - `packages/dashboard/src/app/api/projects/[id]/updates/[updateId]/route.ts`
 - action Route Handlers under the same tree
 - settings and image Route Handlers under the same tree
-- `packages/dashboard/src/lib/product-update-entitlements.ts` — new
-- `packages/dashboard/src/lib/product-update-service.ts` — new if it prevents Route Handler duplication
+- `packages/dashboard/src/lib/product-update-entitlements.ts` - new
+- `packages/dashboard/src/lib/product-update-service.ts` - new if it prevents Route Handler duplication
 - relevant API tests
 
 ### Tasks
@@ -255,7 +255,7 @@ Against an isolated local or development database:
 
 `feat(api): add owner product update workflows`
 
-## 7. Phase 4 — dashboard Product Updates experience
+## 7. Phase 4 - dashboard Product Updates experience
 
 ### Primary files
 
@@ -303,7 +303,7 @@ Against an isolated local or development database:
 
 `feat(dashboard): add product update authoring`
 
-## 8. Phase 5 — public widget APIs
+## 8. Phase 5 - public widget APIs
 
 ### Primary files
 
@@ -350,7 +350,7 @@ Against an isolated local or development database:
 
 `feat(api): serve safe public product updates`
 
-## 9. Phase 6 — widget runtime, installation, and wrappers
+## 9. Phase 6 - widget runtime, installation, and wrappers
 
 ### Primary files
 
@@ -424,7 +424,7 @@ Against an isolated local or development database:
 
 `feat(widget): show product updates in installed apps`
 
-## 10. Phase 7 — metrics dashboard and cleanup paths
+## 10. Phase 7 - metrics dashboard and cleanup paths
 
 ### Primary files
 
@@ -452,7 +452,7 @@ Against an isolated local or development database:
 
 `feat(updates): add metrics and deletion cleanup`
 
-## 11. Phase 8 — generated types, documentation, and full verification
+## 11. Phase 8 - generated types, documentation, and full verification
 
 ### Tasks
 

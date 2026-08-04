@@ -2,7 +2,7 @@
 -- Security and consistency fixes
 
 -- ==========================================================================
--- 1. Fix vote DELETE RLS policy — restrict to voter's own votes
+-- 1. Fix vote DELETE RLS policy - restrict to voter's own votes
 -- ==========================================================================
 
 -- Drop and recreate with a more descriptive name.
@@ -36,7 +36,7 @@ BEGIN
 END $$;
 
 -- ==========================================================================
--- 3. Fix duplicate vote triggers — drop 002's trigger, keep 004's
+-- 3. Fix duplicate vote triggers - drop 002's trigger, keep 004's
 -- ==========================================================================
 
 -- Drop the trigger created by 002 (uses update_vote_count function)
@@ -78,7 +78,7 @@ CREATE TRIGGER trigger_update_vote_count
   EXECUTE FUNCTION update_feedback_vote_count();
 
 -- ==========================================================================
--- 4. Fix is_public default — should be true for new feedback
+-- 4. Fix is_public default - should be true for new feedback
 -- ==========================================================================
 
 ALTER TABLE public.feedback ALTER COLUMN is_public SET DEFAULT true;

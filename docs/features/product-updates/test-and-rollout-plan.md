@@ -322,7 +322,7 @@ Before rollout, a reviewer must answer yes to every item:
 
 The feature cannot advance if any gate fails.
 
-### Gate A — merge-ready
+### Gate A - merge-ready
 
 - all unit, integration, component, and existing regression tests pass;
 - migration and RLS tests pass in development;
@@ -331,7 +331,7 @@ The feature cannot advance if any gate fails.
 - accessibility automated checks pass;
 - privacy/security checklist is complete.
 
-### Gate B — preview-ready
+### Gate B - preview-ready
 
 - Vercel preview uses the development Supabase project;
 - plain script, React, and Vue host fixtures pass cross-origin flows;
@@ -340,7 +340,7 @@ The feature cannot advance if any gate fails.
 - metrics appear approximately in the owner dashboard;
 - feedback submission remains healthy when updates API and metrics API are deliberately failed.
 
-### Gate C — dogfood-ready
+### Gate C - dogfood-ready
 
 - production migration is reviewed and backed up according to the normal deployment procedure;
 - feature is default off;
@@ -349,7 +349,7 @@ The feature cannot advance if any gate fails.
 - operational dashboard/log queries are prepared;
 - a responsible person is available during the first release window.
 
-### Gate D — beta-ready
+### Gate D - beta-ready
 
 - feedbacks.dev has used at least two updates without a critical issue;
 - frequency and seen behavior feel non-intrusive;
@@ -357,7 +357,7 @@ The feature cannot advance if any gate fails.
 - no unresolved P0/P1 issue;
 - support documentation states the limitations and one-time install flag clearly.
 
-### Gate E — general-availability-ready
+### Gate E - general-availability-ready
 
 - at least three beta projects have published more than one update;
 - public fetch success is at least 95% over the beta window, excluding clearly invalid requests;
@@ -368,13 +368,13 @@ The feature cannot advance if any gate fails.
 
 ## 9. Staged rollout
 
-### Stage 0 — merged but dormant
+### Stage 0 - merged but dormant
 
 - Deploy schema and code with Product Updates settings disabled by default.
 - Do not emit `enableUpdates` in existing snippets.
 - Confirm existing widgets make no new update request.
 
-### Stage 1 — feedbacks.dev dogfood
+### Stage 1 - feedbacks.dev dogfood
 
 - Enable the runtime flag on feedbacks.dev's own application.
 - Enable one internal project in dashboard settings.
@@ -382,21 +382,21 @@ The feature cannot advance if any gate fails.
 - Observe public API errors, widget errors, feedback submission health, and qualitative annoyance.
 - Run for at least several normal product sessions, not only a scripted test.
 
-### Stage 2 — invited beta
+### Stage 2 - invited beta
 
 - Invite up to five projects representing plain script, React, and Vue installs.
 - Keep enablement explicit per project.
 - Collect setup time, publish time, visual issues, and frequency feedback.
 - Do not add deferred features during beta unless they block the MVP's core job.
 
-### Stage 3 — controlled availability
+### Stage 3 - controlled availability
 
 - Expose the Updates tab to all projects.
 - Keep project settings and runtime flag off until an owner opts in.
 - Add install documentation and plan-limit copy.
 - Monitor errors and feedback health for one release cycle.
 
-### Stage 4 — general availability
+### Stage 4 - general availability
 
 - Announce the feature after Gate E passes.
 - Keep one-time runtime enablement explicit; do not silently make every historical widget fetch updates.

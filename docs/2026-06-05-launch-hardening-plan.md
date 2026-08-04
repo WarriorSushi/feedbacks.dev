@@ -1,4 +1,4 @@
-# feedbacks.dev Launch Hardening Plan — 5th June 2026
+# feedbacks.dev Launch Hardening Plan - 5th June 2026
 
 ## Why This Plan Exists
 
@@ -151,7 +151,7 @@ Recommended UI/UX improvements to include in the launch work:
 
 ## Sequential 5-Step Plan
 
-### Step 1 — Baseline Cleanup And Trust Check
+### Step 1 - Baseline Cleanup And Trust Check
 
 Purpose:
 
@@ -181,7 +181,7 @@ Acceptance criteria:
 - Unit tests, type-check, lint, and build pass.
 - Any generated artifacts are ignored or cleaned.
 
-### Step 2 — Stabilize Full Browser Acceptance
+### Step 2 - Stabilize Full Browser Acceptance
 
 Purpose:
 
@@ -213,7 +213,7 @@ Acceptance criteria:
 - Failing specs no longer need to be rerun individually to prove confidence.
 - The exact E2E env requirements are documented.
 
-### Step 3 — Real Connector And Billing Verification
+### Step 3 - Real Connector And Billing Verification
 
 Purpose:
 
@@ -268,7 +268,7 @@ Acceptance criteria:
 - Dodo webhook verification is proven against real Dodo payloads.
 - Free/Pro gating is verified through UI and server routes.
 
-### Step 4 — Launch Hardening And Docs Alignment
+### Step 4 - Launch Hardening And Docs Alignment
 
 Purpose:
 
@@ -323,7 +323,7 @@ Acceptance criteria:
 - Production secrets and integrations have a clear security posture.
 - Design guidance exists outside memory and screenshots.
 
-### Step 5 — MCP And Impeccable Product Polish
+### Step 5 - MCP And Impeccable Product Polish
 
 Purpose:
 

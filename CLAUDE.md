@@ -1,4 +1,4 @@
-# feedbacks.dev v2 — Full-Ass Rebuild
+# feedbacks.dev v2 - Full-Ass Rebuild
 
 ## Project Overview
 Developer-first feedback collection product: embeddable widget + dashboard + API, powered by Supabase.
@@ -21,8 +21,8 @@ pnpm type-check             # TypeScript validation
 ## Architecture
 ```
 packages/
-  dashboard/    # Next.js 15 app — auth, inbox, project management, integrations
-  widget/       # Embeddable feedback widget — modal, inline, trigger modes
+  dashboard/    # Next.js 15 app - auth, inbox, project management, integrations
+  widget/       # Embeddable feedback widget - modal, inline, trigger modes
   mcp-server/   # MCP server for AI agent integration
   shared/       # Shared types
 sql/            # Supabase migration files (run in order)
@@ -41,8 +41,8 @@ archived_project/  # Previous v1 implementation (reference only)
 ## Architecture
 ```
 packages/
-  dashboard/    # Next.js 15 app — auth, inbox, project management, integrations
-  widget/       # Embeddable feedback widget — modal, inline, trigger modes
+  dashboard/    # Next.js 15 app - auth, inbox, project management, integrations
+  widget/       # Embeddable feedback widget - modal, inline, trigger modes
   mcp-server/   # MCP server for AI agent integration
   shared/       # Shared types
 sql/            # Supabase migration files (run in order)
@@ -51,36 +51,36 @@ archived_project/  # Previous v1 implementation (reference only)
 ```
 
 ## Supabase Tables
-- `projects` — User projects with API keys
-- `feedback` — Submitted feedback with full context + agent metadata
-- `widget_configs` — Widget configuration versions
-- `webhook_deliveries` — Webhook delivery logs
-- `rate_limits` — Rate limiting records
-- `user_settings` — User preferences
-- `feedback_notes` — Internal team notes on feedback
-- `public_board_settings` — Public feature board config per project
-- `votes` — Upvotes/downvotes on feedback items
+- `projects` - User projects with API keys
+- `feedback` - Submitted feedback with full context + agent metadata
+- `widget_configs` - Widget configuration versions
+- `webhook_deliveries` - Webhook delivery logs
+- `rate_limits` - Rate limiting records
+- `user_settings` - User preferences
+- `feedback_notes` - Internal team notes on feedback
+- `public_board_settings` - Public feature board config per project
+- `votes` - Upvotes/downvotes on feedback items
 
 ## API Routes
 
 ### Widget/Dashboard
-- `POST /api/feedback` — Public widget submission endpoint (CORS enabled)
-- `GET/POST /api/projects` — Project CRUD
-- `GET/PATCH/DELETE /api/projects/[id]` — Single project
-- `GET/PUT/POST /api/projects/[id]/webhooks` — Webhook config
-- `GET /api/auth-status` — Current user
-- `POST /api/sign-out` — Sign out
+- `POST /api/feedback` - Public widget submission endpoint (CORS enabled)
+- `GET/POST /api/projects` - Project CRUD
+- `GET/PATCH/DELETE /api/projects/[id]` - Single project
+- `GET/PUT/POST /api/projects/[id]/webhooks` - Webhook config
+- `GET /api/auth-status` - Current user
+- `POST /api/sign-out` - Sign out
 
-### AI Agent API (v1) — API key auth via X-API-Key header
-- `GET/POST /api/v1/feedback` — List/submit feedback
-- `GET /api/v1/projects` — List projects
-- `GET /api/v1/projects/[id]` — Project details + stats
-- `GET/PATCH /api/v1/projects/[id]/feedback` — List/update project feedback
+### AI Agent API (v1) - API key auth via X-API-Key header
+- `GET/POST /api/v1/feedback` - List/submit feedback
+- `GET /api/v1/projects` - List projects
+- `GET /api/v1/projects/[id]` - Project details + stats
+- `GET/PATCH /api/v1/projects/[id]/feedback` - List/update project feedback
 
 ### Public Feature Board
-- `GET /api/boards/[slug]` — Public board data
-- `POST /api/boards/[slug]/vote` — Vote on feedback
-- `POST /api/boards/[slug]/submit` — Submit feedback to board
+- `GET /api/boards/[slug]` - Public board data
+- `POST /api/boards/[slug]/vote` - Vote on feedback
+- `POST /api/boards/[slug]/submit` - Submit feedback to board
 
 ## MCP Server
 AI agents (Claude Code, etc.) can interact via `@feedbacks/mcp-server`:
@@ -93,5 +93,5 @@ AI agents (Claude Code, etc.) can interact via `@feedbacks/mcp-server`:
 
 ## Design Rules
 - Always use the Impeccable Design skill/plugin for any UI/UX work (non-negotiable)
-- Premium visual quality — no generic AI aesthetics
+- Premium visual quality - no generic AI aesthetics
 - Mobile-first, responsive everything

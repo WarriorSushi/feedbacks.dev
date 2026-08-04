@@ -180,7 +180,7 @@ export default function LandingPage() {
               <div className="px-5 sm:px-0">
                 <h2 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Install it once. See the first report arrive.</h2>
               </div>
-              <p className="max-w-2xl px-5 text-base leading-7 text-muted-foreground sm:px-0 lg:justify-self-end">Paste the snippet, send a test from your app, then shape the form from your dashboard—without touching the installed code again.</p>
+              <p className="max-w-2xl px-5 text-base leading-7 text-muted-foreground sm:px-0 lg:justify-self-end">Paste the snippet, send a test from your app, then shape the form from your dashboard - without touching the installed code again.</p>
             </div>
             <LandingInstallStory snippet={installSnippet} />
           </div>

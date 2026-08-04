@@ -4,7 +4,7 @@
 
 ### The feedback stack for developers who ship.
 
-Embeddable widget + triage dashboard + public voting boards + AI agent API — a full-surface feedback product for teams that want fast setup without giving up operational depth.
+Embeddable widget + triage dashboard + public voting boards + AI agent API - a full-surface feedback product for teams that want fast setup without giving up operational depth.
 
 [![FSL-1.1-MIT](https://img.shields.io/badge/license-FSL--1.1--MIT-blue?style=flat-square)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/WarriorSushi/Feedbacks.dev/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/WarriorSushi/Feedbacks.dev/actions)
@@ -25,7 +25,7 @@ Embeddable widget + triage dashboard + public voting boards + AI agent API — a
 
 Most feedback tools are either too heavy for small teams or too simple to be useful. You end up with a bloated enterprise tool nobody opens, or a basic form that dumps feedback into a void.
 
-**feedbacks.dev sits in the middle** — lightweight enough to install in one line, structured enough to help you ship what users actually want.
+**feedbacks.dev sits in the middle** - lightweight enough to install in one line, structured enough to help you ship what users actually want.
 
 ---
 
@@ -171,8 +171,8 @@ pnpm add @feedbacks/widget-vue
 
 ```
 packages/
-  dashboard/      # Next.js 15 app — auth, inbox, projects, boards, integrations
-  widget/         # Embeddable feedback widget — modal, inline, trigger modes
+  dashboard/      # Next.js 15 app - auth, inbox, projects, boards, integrations
+  widget/         # Embeddable feedback widget - modal, inline, trigger modes
   widget-react/   # React wrapper component
   widget-vue/     # Vue wrapper component
   shared/         # Shared TypeScript types
@@ -230,10 +230,10 @@ feedbacks.dev is licensed under the [Functional Source License, Version 1.1, MIT
 
 **What this means:**
 
-- **Source available today** — you can read, audit, and contribute to the code.
-- **FSL first, MIT later** — each covered version becomes MIT after the two-year FSL period.
-- **Hosted product focus** — the service customers should use is feedbacks.dev / app.feedbacks.dev.
-- **No competing hosted service during the FSL period** — do not offer feedbacks.dev, or a substantially similar hosted feedback product based on it, as a competing service.
+- **Source available today** - you can read, audit, and contribute to the code.
+- **FSL first, MIT later** - each covered version becomes MIT after the two-year FSL period.
+- **Hosted product focus** - the service customers should use is feedbacks.dev / app.feedbacks.dev.
+- **No competing hosted service during the FSL period** - do not offer feedbacks.dev, or a substantially similar hosted feedback product based on it, as a competing service.
 
 This section is a plain-language summary, not a replacement for the license text.
 
@@ -241,7 +241,7 @@ This section is a plain-language summary, not a replacement for the license text
 
 <div align="center">
 
-**[feedbacks.dev](https://feedbacks.dev)** — Stop guessing what to build.
+**[feedbacks.dev](https://feedbacks.dev)** - Stop guessing what to build.
 
 If this project is useful to you, consider giving it a star. It helps others find it.
 

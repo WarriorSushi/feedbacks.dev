@@ -363,7 +363,7 @@
     animation: slide-in 0.3s var(--ease-out-expo) both;
   }
 
-  /* Shimmer — good for empty state overlays */
+  /* Shimmer - good for empty state overlays */
   .animate-shimmer {
     animation: shimmer 2.5s linear infinite;
     background: linear-gradient(
@@ -375,7 +375,7 @@
     background-size: 200% 100%;
   }
 
-  /* Subtle pulse — for status indicators, badges */
+  /* Subtle pulse - for status indicators, badges */
   .animate-pulse-subtle {
     animation: pulse-subtle 2.2s ease-in-out infinite;
   }

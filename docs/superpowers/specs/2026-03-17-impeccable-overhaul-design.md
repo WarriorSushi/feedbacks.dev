@@ -1,4 +1,4 @@
-# Feedbacks.dev — Impeccable Design Overhaul + Critical Fixes
+# Feedbacks.dev - Impeccable Design Overhaul + Critical Fixes
 
 **Date**: 2026-03-17
 **Status**: Approved
@@ -6,7 +6,7 @@
 ## Workstream 1: Critical Fixes (must be first)
 
 ### Schema Fixes
-- Table name: dashboard uses `feedbacks`, API uses `feedback` — standardize to `feedback`
+- Table name: dashboard uses `feedbacks`, API uses `feedback` - standardize to `feedback`
 - Add `is_public` boolean column to feedback table (default true)
 - Add `vote_count` integer column to feedback table (default 0, updated by trigger)
 - Create trigger: on vote insert/delete, update feedback.vote_count

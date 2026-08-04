@@ -1,4 +1,4 @@
-# feedbacks.dev — Recovery Checklist
+# feedbacks.dev - Recovery Checklist
 
 This file is advisory planning context, not the product source of truth.
 

@@ -1,4 +1,4 @@
-# Design and edge-case sweep — 2026-08-04
+# Design and edge-case sweep - 2026-08-04
 
 ## Direction
 

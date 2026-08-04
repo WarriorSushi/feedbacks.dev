@@ -24,11 +24,11 @@ After the shared embed is installed, activating or publishing later updates must
 
 An implementation agent must read these files in order before editing code:
 
-1. `README.md` — decisions, scope, and completion contract
-2. `product-spec.md` — user behavior and product requirements
-3. `technical-design.md` — schema, API, widget, security, and file boundaries
-4. `implementation-plan.md` — ordered implementation tasks
-5. `test-and-rollout-plan.md` — verification, rollout, and rollback
+1. `README.md` - decisions, scope, and completion contract
+2. `product-spec.md` - user behavior and product requirements
+3. `technical-design.md` - schema, API, widget, security, and file boundaries
+4. `implementation-plan.md` - ordered implementation tasks
+5. `test-and-rollout-plan.md` - verification, rollout, and rollback
 
 The repository-level `AGENTS.md` and its required product documents still apply.
 

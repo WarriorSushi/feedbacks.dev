@@ -1,4 +1,4 @@
-# Live Supabase Schema Audit — 6th June 2026
+# Live Supabase Schema Audit - 6th June 2026
 
 ## Scope
 

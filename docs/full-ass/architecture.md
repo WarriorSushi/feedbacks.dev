@@ -224,9 +224,9 @@ Uses Supabase session cookies.
 
 Three layers, applied at the API route level:
 
-1. **Rate limiting** — IP-based, 10 submissions per minute per project
-2. **Honeypot field** — Hidden form field, bots fill it, humans don't
-3. **CAPTCHA** — Turnstile (free) or hCaptcha, optional per project
+1. **Rate limiting** - IP-based, 10 submissions per minute per project
+2. **Honeypot field** - Hidden form field, bots fill it, humans don't
+3. **CAPTCHA** - Turnstile (free) or hCaptcha, optional per project
 
 ## Widget Architecture
 

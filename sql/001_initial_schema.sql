@@ -1,5 +1,5 @@
 -- 001_initial_schema.sql
--- Feedbacks.dev v2 — complete database schema
+-- Feedbacks.dev v2 - complete database schema
 -- Run in Supabase SQL Editor on a fresh project
 -- ==========================================================================
 
@@ -139,7 +139,7 @@ create policy "feedback_update_owned" on public.feedback for update
     )
   );
 
--- Inserts happen via service role (API route) — no user insert policy needed.
+-- Inserts happen via service role (API route) - no user insert policy needed.
 -- Service role bypasses RLS automatically.
 
 -- ==========================================================================
@@ -274,7 +274,7 @@ create table public.rate_limits (
 
 create index idx_rate_limits_lookup on public.rate_limits(key, route, created_at desc);
 
--- RLS enabled but no user policies — service role only
+-- RLS enabled but no user policies - service role only
 alter table public.rate_limits enable row level security;
 
 create policy "rate_limits_deny_all" on public.rate_limits for all
@@ -309,7 +309,7 @@ create policy "user_settings_update_own" on public.user_settings for update
   with check ((select auth.uid()) = user_id);
 
 -- ==========================================================================
--- 7. feedback_notes (NEW — internal team notes on feedback items)
+-- 7. feedback_notes (NEW - internal team notes on feedback items)
 -- ==========================================================================
 
 create table public.feedback_notes (
@@ -374,7 +374,7 @@ create policy "widget_presets_read" on public.widget_presets for select
   using (true);
 
 -- ==========================================================================
--- Seed data — widget presets
+-- Seed data - widget presets
 -- ==========================================================================
 
 insert into public.widget_presets (slug, name, description, category, config)
@@ -453,7 +453,7 @@ values
   (
     'popover-compact',
     'Popover Compact',
-    'Tiny popover that expands on click — great for SaaS navbars.',
+    'Tiny popover that expands on click - great for SaaS navbars.',
     'popover',
     jsonb_build_object(
       'embedMode',    'popover',

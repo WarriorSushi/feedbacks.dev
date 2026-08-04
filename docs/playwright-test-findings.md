@@ -1,4 +1,4 @@
-# Playwright E2E Test Findings — 2026-03-18
+# Playwright E2E Test Findings - 2026-03-18
 
 > Historical snapshot. Later launch-hardening work superseded this checklist. Current shipped status lives in `docs/product-status.md`.
 
@@ -20,7 +20,7 @@
 
 ## 2. Dashboard (Empty State)
 - [x] Greeting shows "Good evening, test" (uses first name from metadata)
-- [x] Stats cards render: Feedback (0), Unread (0), Avg Rating (—), Projects (0), Via Agent (0)
+- [x] Stats cards render: Feedback (0), Unread (0), Avg Rating ( - ), Projects (0), Via Agent (0)
 - [x] "New Project" and "Inbox" CTA buttons present
 - [x] Recent Activity shows empty state with "Create a project" CTA
 - [x] By Type chart shows empty state
@@ -111,8 +111,8 @@
 - [x] Full message display with timestamp
 - [x] Internal Notes section
 - [x] Change Status dropdown (new, reviewed, planned, in progress, closed)
-- [x] Status change works — updates badge and adds timeline entry
-- [x] Add internal note works — note appears with timestamp
+- [x] Status change works - updates badge and adds timeline entry
+- [x] Add internal note works - note appears with timestamp
 - [x] Archive button present
 - [x] Details sidebar: Project link, Browser (user-agent)
 - [x] Timeline: Created and Updated entries with timestamps
@@ -139,9 +139,9 @@
 | # | Severity | Area | Description |
 |---|----------|------|-------------|
 | 1 | Low | Auth | favicon.ico returns 404 |
-| 2 | Medium | API | Intermittent "Failed to save feedback" when `metadata` field missing from POST /api/v1/feedback — should default to `{}` |
+| 2 | Medium | API | Intermittent "Failed to save feedback" when `metadata` field missing from POST /api/v1/feedback - should default to `{}` |
 | 3 | Low | Public Board | Console 404 error when loading Public Board tab for first time (no board settings exist yet) |
-| 4 | Low | Auth | Password login is temporary — remember to remove before production |
+| 4 | Low | Auth | Password login is temporary - remember to remove before production |
 
 ## Summary
 The application is **solid and production-ready** for its core flows:

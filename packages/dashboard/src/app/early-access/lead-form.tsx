@@ -58,7 +58,7 @@ export function LeadForm() {
       <div className="border-y border-primary/25 bg-primary/[0.045] px-5 py-8 text-center sm:rounded-xl sm:border">
         <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary"><Check className="h-5 w-5" /></span>
         <h2 className="mt-4 text-xl font-semibold tracking-tight">You’re on the list.</h2>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted-foreground">We’ll send practical launch notes and meaningful product updates—not a generic drip campaign.</p>
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted-foreground">We’ll send practical launch notes and meaningful product updates - not a generic drip campaign.</p>
         <Button asChild className="mt-5"><a href="https://app.feedbacks.dev/auth">Create your free project now <ArrowRight className="ml-2 h-4 w-4" /></a></Button>
       </div>
     )

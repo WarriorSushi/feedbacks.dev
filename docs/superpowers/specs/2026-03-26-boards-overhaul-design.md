@@ -1,4 +1,4 @@
-# Boards System Overhaul — Design Spec
+# Boards System Overhaul - Design Spec
 
 **Date:** 2026-03-26
 **Status:** Approved
@@ -11,8 +11,8 @@ Redesign the entire boards system: public board page, dashboard settings, naviga
 ## Design Decisions
 
 - **1 project = 1 board**, with a custom display name
-- **Immersive List layout** for the public board — branded hero with stats, search bar, vote sidebar, CTA button
-- **Warm & friendly aesthetic** — like ProductHunt meets Nolt
+- **Immersive List layout** for the public board - branded hero with stats, search bar, vote sidebar, CTA button
+- **Warm & friendly aesthetic** - like ProductHunt meets Nolt
 - **Powered-by footer** + owner-only dashboard link for navigation
 - **Board directory** at `/boards` for discovery
 
@@ -35,15 +35,15 @@ ALTER TABLE public_board_settings
 ### No other schema changes needed
 
 Existing columns cover everything:
-- `slug` — URL identifier
-- `title` — hero headline (can differ from display_name)
-- `visibility` — public/unlisted/private
-- `directory_opt_in` — controls directory listing
-- `accent_color`, `logo_emoji`, `tagline`, etc. — branding
+- `slug` - URL identifier
+- `title` - hero headline (can differ from display_name)
+- `visibility` - public/unlisted/private
+- `directory_opt_in` - controls directory listing
+- `accent_color`, `logo_emoji`, `tagline`, etc. - branding
 
 ---
 
-## 2. Public Board Page (`/p/[slug]`) — Redesign
+## 2. Public Board Page (`/p/[slug]`) - Redesign
 
 ### Layout (top to bottom)
 
@@ -80,7 +80,7 @@ Existing columns cover everything:
    - Honey pot spam protection (existing)
 
 6. **Footer**
-   - "Powered by feedbacks.dev" — links to feedbacks.dev landing page
+   - "Powered by feedbacks.dev" - links to feedbacks.dev landing page
    - If owner is logged in: "Manage Board" link to dashboard
 
 ### Simplifications from Current
@@ -94,21 +94,21 @@ Existing columns cover everything:
 
 ```
 packages/dashboard/src/components/boards/
-  BoardLayout.tsx          — page wrapper, accent color theming
-  BoardHero.tsx            — branded hero with stats, owner link
-  BoardFilters.tsx         — search + sort + type pills
-  BoardFeedbackList.tsx    — list container with loading/empty states
-  BoardFeedbackCard.tsx    — individual item with vote, expand, tags
-  BoardSubmitForm.tsx      — feedback submission form
-  BoardAnnouncements.tsx   — collapsible updates section
-  BoardFooter.tsx          — powered-by + owner nav
+  BoardLayout.tsx - page wrapper, accent color theming
+  BoardHero.tsx - branded hero with stats, owner link
+  BoardFilters.tsx - search + sort + type pills
+  BoardFeedbackList.tsx - list container with loading/empty states
+  BoardFeedbackCard.tsx - individual item with vote, expand, tags
+  BoardSubmitForm.tsx - feedback submission form
+  BoardAnnouncements.tsx - collapsible updates section
+  BoardFooter.tsx - powered-by + owner nav
 ```
 
 The current 970-line `public-board.tsx` will be replaced by `BoardLayout.tsx` composing these components.
 
 ---
 
-## 3. Dashboard Board Settings — Redesign
+## 3. Dashboard Board Settings - Redesign
 
 ### Structure: 4 Tabbed Sections
 
@@ -119,8 +119,8 @@ Replace the current single-scroll form with tabs.
 - Stats cards: Followers, Watched Posts, Open Reports
 
 **Tab 1: Identity**
-- Display Name (text, 60 char max) — the public product name
-- Slug (auto-generated from display name, editable) — the URL path
+- Display Name (text, 60 char max) - the public product name
+- Slug (auto-generated from display name, editable) - the URL path
 - Logo Emoji (emoji picker)
 - Accent Color (color picker + hex input)
 - Website URL (optional)
@@ -149,11 +149,11 @@ Replace the current single-scroll form with tabs.
 
 ```
 packages/dashboard/src/components/board-settings/
-  BoardSettingsTabs.tsx        — tab container
-  BoardIdentitySection.tsx     — display name, slug, logo, color, URL
-  BoardContentSection.tsx      — hero text, types, submissions, announcements
-  BoardVisibilitySection.tsx   — enable, visibility, directory, categories
-  BoardAdvancedSection.tsx     — CSS, reports queue
+  BoardSettingsTabs.tsx - tab container
+  BoardIdentitySection.tsx - display name, slug, logo, color, URL
+  BoardContentSection.tsx - hero text, types, submissions, announcements
+  BoardVisibilitySection.tsx - enable, visibility, directory, categories
+  BoardAdvancedSection.tsx - CSS, reports queue
 ```
 
 The current `board-settings.tsx` monolith will be replaced.
@@ -207,7 +207,7 @@ ORDER BY feedback_count DESC;
 
 ### API Route
 
-`GET /api/boards` — returns paginated list of public directory boards with feedback counts.
+`GET /api/boards` - returns paginated list of public directory boards with feedback counts.
 
 ---
 
@@ -245,7 +245,7 @@ New flow: "Project Name" + optional "Public Board Name" → create
 
 ### Public Board → feedbacks.dev (Everyone)
 
-- **Footer:** "Powered by feedbacks.dev" — links to `https://feedbacks.dev`
+- **Footer:** "Powered by feedbacks.dev" - links to `https://feedbacks.dev`
 
 ### Dashboard → Public Board
 
@@ -293,18 +293,18 @@ New flow: "Project Name" + optional "Public Board Name" → create
 - `packages/dashboard/src/components/board-settings/BoardContentSection.tsx`
 - `packages/dashboard/src/components/board-settings/BoardVisibilitySection.tsx`
 - `packages/dashboard/src/components/board-settings/BoardAdvancedSection.tsx`
-- `packages/dashboard/src/app/boards/page.tsx` — board directory page
-- `packages/dashboard/src/app/api/boards/route.ts` — directory API endpoint
-- `sql/008_board_display_name.sql` — migration
+- `packages/dashboard/src/app/boards/page.tsx` - board directory page
+- `packages/dashboard/src/app/api/boards/route.ts` - directory API endpoint
+- `sql/008_board_display_name.sql` - migration
 
 ### Modified Files
-- `packages/dashboard/src/app/p/[slug]/public-board.tsx` — replace with component composition
-- `packages/dashboard/src/app/p/[slug]/page.tsx` — update to pass display_name
-- `packages/dashboard/src/app/(dashboard)/projects/[id]/board-settings.tsx` — replace with tabbed settings
-- `packages/dashboard/src/app/api/boards/[slug]/route.ts` — include display_name in response
-- `packages/dashboard/src/app/api/projects/[id]/board/route.ts` — handle display_name in GET/PUT
-- `packages/dashboard/src/lib/types.ts` — add display_name to board types
-- `packages/dashboard/src/lib/public-board.ts` — add display_name to branding parsing
+- `packages/dashboard/src/app/p/[slug]/public-board.tsx` - replace with component composition
+- `packages/dashboard/src/app/p/[slug]/page.tsx` - update to pass display_name
+- `packages/dashboard/src/app/(dashboard)/projects/[id]/board-settings.tsx` - replace with tabbed settings
+- `packages/dashboard/src/app/api/boards/[slug]/route.ts` - include display_name in response
+- `packages/dashboard/src/app/api/projects/[id]/board/route.ts` - handle display_name in GET/PUT
+- `packages/dashboard/src/lib/types.ts` - add display_name to board types
+- `packages/dashboard/src/lib/public-board.ts` - add display_name to branding parsing
 
 ### Deleted Files
 - None (old files get replaced in-place)

@@ -1,8 +1,32 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import test from 'node:test'
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
+
+test('tracked project files do not contain em dashes', () => {
+  const repositoryRoot = fileURLToPath(new URL('../../../../', import.meta.url))
+  const trackedFiles = execFileSync('git', ['ls-files', '-z'], {
+    cwd: repositoryRoot,
+    encoding: 'utf8',
+  }).split('\0').filter(Boolean)
+  const literalDash = String.fromCodePoint(0x2014)
+  const escapedDash = ['\\', 'u2014'].join('')
+  const htmlDash = /&(?:mdash|#8212|#x2014);/i
+
+  for (const file of trackedFiles) {
+    const contents = readFileSync(join(repositoryRoot, file))
+    if (contents.includes(0)) continue
+
+    const text = contents.toString('utf8')
+    assert.equal(text.includes(literalDash), false, `${file} contains a literal em dash`)
+    assert.equal(text.includes(escapedDash), false, `${file} contains an escaped em dash`)
+    assert.equal(htmlDash.test(text), false, `${file} contains an HTML em dash`)
+  }
+})
 
 test('landing page explains both sides of the feedback loop and keeps the install-once architecture', () => {
   const source = read('../../src/app/page.tsx')

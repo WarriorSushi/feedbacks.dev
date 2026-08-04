@@ -1,5 +1,5 @@
 -- ============================================================================
--- feedbacks.dev v2 — FULL DATABASE RESET
+-- feedbacks.dev v2 - FULL DATABASE RESET
 -- Run this ONCE in Supabase SQL Editor to set up the v2 schema from scratch.
 -- WARNING: This drops ALL existing tables and data!
 -- ============================================================================
@@ -519,7 +519,7 @@ END;
 $$;
 
 -- ============================================================================
--- 12. SEED DATA — Widget Presets
+-- 12. SEED DATA - Widget Presets
 -- ============================================================================
 
 INSERT INTO public.widget_presets (slug, name, description, category, config)
@@ -534,7 +534,7 @@ VALUES
     jsonb_build_object('embedMode','inline','target','#feedback-widget','backgroundColor','#FFFFFF','spacing',24,'enableScreenshot',true)),
   ('inline-highlight', 'Inline Highlight', 'High-contrast inline section suited for landing pages.', 'inline',
     jsonb_build_object('embedMode','inline','target','#feedback-widget','backgroundColor','#DBDDE1','primaryColor','#242424','headerLayout','icon-left','headerIcon','star')),
-  ('popover-compact', 'Popover Compact', 'Tiny popover that expands on click — great for SaaS navbars.', 'popover',
+  ('popover-compact', 'Popover Compact', 'Tiny popover that expands on click - great for SaaS navbars.', 'popover',
     jsonb_build_object('embedMode','popover','position','bottom-left','buttonText','?','enableRating',false,'enableType',false,'compact',true))
 ON CONFLICT (slug) DO UPDATE SET
   name = EXCLUDED.name,

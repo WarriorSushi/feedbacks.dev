@@ -1,4 +1,4 @@
-# Backend Code Review — feedbacks.dev
+# Backend Code Review - feedbacks.dev
 
 **Date:** 2026-03-17
 **Reviewer:** Automated deep-read audit
@@ -19,7 +19,7 @@
 
 ## CRITICAL
 
-### C-1: Rate limiting is trivially bypassable — `unknown` IP key collision
+### C-1: Rate limiting is trivially bypassable - `unknown` IP key collision
 **File:** `src/lib/rate-limit.ts` line 14–32
 **File:** `src/app/api/feedback/route.ts` line 63–65
 
@@ -28,20 +28,20 @@ When `x-forwarded-for` and `x-real-ip` are both absent (e.g. direct calls, some 
 - On serverless (Vercel), local development, or behind certain proxies, **all anonymous callers share one 10-req/min bucket**. Legitimate users can be rate-limited by an unrelated request.
 - An attacker who can strip those headers completely bypasses per-IP limiting (they share with everyone else, not with themselves).
 
-Additionally, the rate limit implementation performs a DELETE then INSERT on every allowed request — two sequential DB writes — with no locking. Under concurrent load the count read and insert are not atomic, so the window can be exceeded.
+Additionally, the rate limit implementation performs a DELETE then INSERT on every allowed request - two sequential DB writes - with no locking. Under concurrent load the count read and insert are not atomic, so the window can be exceeded.
 
 **Fix:** Require a real IP; reject or use a project-scoped key as fallback. Use an atomic upsert or a Postgres advisory lock.
 
 ---
 
-### C-2: Captcha failure-open — verification service error silently allows through
+### C-2: Captcha failure-open - verification service error silently allows through
 **File:** `src/app/api/feedback/route.ts` line 27–58
 
 ```typescript
   } catch {
-    // Verification service failure — allow through
+    // Verification service failure - allow through
   }
-  return true   // <— always true on network error
+  return true   // < - always true on network error
 ```
 
 If the Turnstile or hCaptcha endpoint is unreachable (even briefly), `verifyCaptcha` returns `true`, bypassing captcha entirely. This defeats the spam protection completely during any outage of Cloudflare/hCaptcha.
@@ -50,7 +50,7 @@ If the Turnstile or hCaptcha endpoint is unreachable (even briefly), `verifyCapt
 
 ---
 
-### C-3: Vote deletion has no ownership check — anyone can delete any vote
+### C-3: Vote deletion has no ownership check - anyone can delete any vote
 **File:** `src/app/api/boards/[slug]/vote/route.ts` line 72–74
 **File:** `sql/004_fix_public_board.sql` line 57–60
 
@@ -92,7 +92,7 @@ This is called inside `deliverSingle`, which is called for every endpoint on eve
 
 The table schema defines columns: `endpoint_id`, `event`, `kind`, `url`, `status`, `status_code`, `error`, `payload`, `response_time_ms`, `response_body`, `attempt`.
 
-The insert in code uses: `endpoint_type`, `endpoint_url`, `response_code`, `attempts` — **none of these column names match the schema**. Every webhook delivery log insert will fail silently (errors are explicitly ignored with the comment `// ignore insert errors`).
+The insert in code uses: `endpoint_type`, `endpoint_url`, `response_code`, `attempts` - **none of these column names match the schema**. Every webhook delivery log insert will fail silently (errors are explicitly ignored with the comment `// ignore insert errors`).
 
 This means webhook delivery history is never actually recorded.
 
@@ -100,7 +100,7 @@ This means webhook delivery history is never actually recorded.
 
 ---
 
-### H-3: Schema mismatch — `rate_limits` table has `key`/`route` columns; code uses `ip`
+### H-3: Schema mismatch - `rate_limits` table has `key`/`route` columns; code uses `ip`
 **File:** `src/lib/rate-limit.ts` lines 12–36
 **File:** `sql/001_initial_schema.sql` lines 268–276
 
@@ -112,7 +112,7 @@ The table also has an index on `(key, route, created_at)` but the code queries `
 
 ---
 
-### H-4: Project deletion is not atomic — partial deletes possible on error
+### H-4: Project deletion is not atomic - partial deletes possible on error
 **File:** `src/app/api/projects/[id]/route.ts` lines 95–99
 
 ```typescript
@@ -121,7 +121,7 @@ await admin.from('webhook_deliveries').delete().eq('project_id', id)
 const { error } = await admin.from('projects').delete().eq('id', id)
 ```
 
-These three statements run sequentially with no transaction. If the projects delete fails, feedback and deliveries are already deleted with no rollback. The feedback `ON DELETE CASCADE` on `project_id` means the projects delete would cascade anyway — making the manual feedback delete redundant AND creating a window where feedback is deleted but the project persists.
+These three statements run sequentially with no transaction. If the projects delete fails, feedback and deliveries are already deleted with no rollback. The feedback `ON DELETE CASCADE` on `project_id` means the projects delete would cascade anyway - making the manual feedback delete redundant AND creating a window where feedback is deleted but the project persists.
 
 **Fix:** Remove the manual deletes (rely on `ON DELETE CASCADE`), or wrap in a Postgres RPC that runs in a transaction.
 
@@ -135,7 +135,7 @@ These three statements run sequentially with no transaction. If the projects del
 Three problems:
 1. Board submissions insert `board:{slug}` which will **fail the URL constraint**, causing all public board submissions to silently error with 500.
 2. If the widget sends no URL, the code inserts an empty string `''` which also **fails the constraint** (not `https://`).
-3. The v1 API inserts `url: body.url?.trim() || ''` — same empty-string problem.
+3. The v1 API inserts `url: body.url?.trim() || ''` - same empty-string problem.
 
 **Fix:** Make `url` nullable in the schema, or default to an empty string and remove the `https?://` check, or validate that a URL is always provided.
 
@@ -157,7 +157,7 @@ The same pattern is used in `get_project_stats`.
 
 ---
 
-### H-7: No pagination on public board feedback — unbounded query
+### H-7: No pagination on public board feedback - unbounded query
 **File:** `src/app/api/boards/[slug]/route.ts` lines 24–35
 
 ```typescript
@@ -181,9 +181,9 @@ A project with thousands of public feedback items will return all of them in one
 **File:** `sql/002_public_board_voting.sql` line 33: `ALTER TABLE public.feedback ADD COLUMN IF NOT EXISTS is_public boolean DEFAULT false;`
 **File:** `sql/004_fix_public_board.sql` line 6: `ALTER TABLE feedback ADD COLUMN IF NOT EXISTS is_public boolean DEFAULT true;`
 
-Migration 002 sets `DEFAULT false`; migration 004 (run after) tries to set `DEFAULT true` via `ADD COLUMN IF NOT EXISTS` — but since the column already exists from migration 002, the `IF NOT EXISTS` means the default is never updated. So `is_public` stays `DEFAULT false` on the actual table.
+Migration 002 sets `DEFAULT false`; migration 004 (run after) tries to set `DEFAULT true` via `ADD COLUMN IF NOT EXISTS` - but since the column already exists from migration 002, the `IF NOT EXISTS` means the default is never updated. So `is_public` stays `DEFAULT false` on the actual table.
 
-This means all widget-submitted feedback has `is_public = false` by default, and the public board will never show it unless the owner explicitly makes items public. The code in `feedback/route.ts` does not set `is_public` at all (no field in `feedbackRow`), so it relies entirely on the DB default — which is `false`.
+This means all widget-submitted feedback has `is_public = false` by default, and the public board will never show it unless the owner explicitly makes items public. The code in `feedback/route.ts` does not set `is_public` at all (no field in `feedbackRow`), so it relies entirely on the DB default - which is `false`.
 
 **Fix:** Run `ALTER TABLE feedback ALTER COLUMN is_public SET DEFAULT true` explicitly, and decide which default is correct. Also explicitly set `is_public` in the insert for widget submissions.
 
@@ -212,7 +212,7 @@ The server accepts `question` as a valid feedback type, but the widget UI only o
 
 ---
 
-### M-3: `search` query parameter is passed directly to `ilike` — no length cap
+### M-3: `search` query parameter is passed directly to `ilike` - no length cap
 **File:** `src/app/api/v1/feedback/route.ts` line 142
 **File:** `src/app/api/v1/projects/[id]/feedback/route.ts` line 58
 
@@ -236,7 +236,7 @@ Any JSON shape can be stored. No validation that `settings` matches `ProjectSett
 
 ---
 
-### M-5: Code duplication — `getAuthedUserAndProject` repeated across multiple route files
+### M-5: Code duplication - `getAuthedUserAndProject` repeated across multiple route files
 **Files:** `src/app/api/projects/[id]/route.ts`, `src/app/api/projects/[id]/webhooks/route.ts`, `src/app/api/projects/[id]/feedback.csv/route.ts`
 
 Three separate route files implement their own version of "get authed user, verify project ownership, return 401/404". This should be a single shared helper. Any auth logic change requires updating multiple files.
@@ -269,11 +269,11 @@ const supabase = await createServerSupabase()  // anon/user client
 const { data } = await supabase.from('feedback').select(...)
 ```
 
-All other project-feedback routes use `createAdminSupabase`. This relies on RLS policies to scope the result. The RLS policy for `feedback` requires a subquery join to `projects` on every row — this is potentially much slower than using the admin client with an explicit `eq('owner_user_id', user.id)` at the project level. Also inconsistent with the rest of the API pattern.
+All other project-feedback routes use `createAdminSupabase`. This relies on RLS policies to scope the result. The RLS policy for `feedback` requires a subquery join to `projects` on every row - this is potentially much slower than using the admin client with an explicit `eq('owner_user_id', user.id)` at the project level. Also inconsistent with the rest of the API pattern.
 
 ---
 
-### M-9: `verifyCaptcha` has no timeout — can hang the entire feedback request
+### M-9: `verifyCaptcha` has no timeout - can hang the entire feedback request
 **File:** `src/app/api/feedback/route.ts` lines 27–58
 
 The captcha verification `fetch` calls have no timeout or `AbortController`. If the Turnstile/hCaptcha endpoint hangs, the serverless function will block until the platform's default timeout (typically 10–30s on Vercel), degrading the widget experience for all users.
@@ -313,7 +313,7 @@ The `openOnKey` listener added at line 100 and the ESC listener added at line 23
 
 ---
 
-### L-4: `createAdminSupabase` uses a dynamic import on every call — unnecessary overhead
+### L-4: `createAdminSupabase` uses a dynamic import on every call - unnecessary overhead
 **File:** `src/lib/supabase-server.ts` lines 29–35
 
 ```typescript
@@ -343,13 +343,13 @@ SELECT COALESCE(SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE -1 END), 0)
 
 The trigger sums up-votes as +1 and all non-up-votes as -1. A `vote_type = 'down'` entry (which the schema allows via `CHECK (vote_type IN ('up', 'down'))`) will produce negative vote counts. The public board API returns `vote_count` directly to clients. The vote route only ever inserts `'up'` votes, but the schema allows down-votes from direct DB access.
 
-Migration 004 defines a different trigger (`update_feedback_vote_count`) that counts `up` votes minus `down` votes separately — two different trigger implementations exist for the same table, both named differently. **Both triggers will fire on every vote insert/delete**, causing the vote_count to be updated twice (double-counting).
+Migration 004 defines a different trigger (`update_feedback_vote_count`) that counts `up` votes minus `down` votes separately - two different trigger implementations exist for the same table, both named differently. **Both triggers will fire on every vote insert/delete**, causing the vote_count to be updated twice (double-counting).
 
 **Fix:** Drop one of the two triggers. Keep the one in migration 002 (more correct), and ensure migration 004 removes the old trigger definition before creating a new one.
 
 ---
 
-### L-7: MCP server has no `get_project_stats_by_session` tool — listed in CLAUDE.md but missing
+### L-7: MCP server has no `get_project_stats_by_session` tool - listed in CLAUDE.md but missing
 **File:** `packages/mcp-server/src/index.ts`
 **File:** `CLAUDE.md` listing under MCP Server tools: `submit_feedback, list_feedback, update_feedback_status, get_project_stats, search_feedback`
 
@@ -366,13 +366,13 @@ The five listed tools all exist. No gap from the stated spec. (This is a clean-b
 Promise.allSettled(promises).catch(() => {})
 ```
 
-In a serverless environment (Vercel Edge/Node), the function response is returned immediately, but the platform may kill the process before the promises resolve. Webhook deliveries that take longer than the response time will be silently dropped. This is a known serverless limitation — the comment says "fire and forget" but the platform does not guarantee the work completes.
+In a serverless environment (Vercel Edge/Node), the function response is returned immediately, but the platform may kill the process before the promises resolve. Webhook deliveries that take longer than the response time will be silently dropped. This is a known serverless limitation - the comment says "fire and forget" but the platform does not guarantee the work completes.
 
 **Fix:** Use Vercel `waitUntil` (from `@vercel/functions`) to extend function lifetime, or queue webhook delivery via a separate background job (Supabase Edge Function, queue, etc.).
 
 ---
 
-### OA-2: `feedback/route.ts` — base64 screenshot size is not bounded
+### OA-2: `feedback/route.ts` - base64 screenshot size is not bounded
 **File:** `src/app/api/feedback/route.ts` line 175
 
 A base64-encoded screenshot string in `fields.screenshot` has no size check before being decoded and uploaded. A malicious client could send a 50MB base64 string, consuming server memory and Supabase Storage quota.
@@ -384,7 +384,7 @@ A base64-encoded screenshot string in `fields.screenshot` has no size check befo
 ### OA-3: `CORS_HEADERS` uses `Access-Control-Allow-Origin: *` on the feedback submission endpoint
 **File:** `src/app/api/feedback/route.ts` line 8
 
-This is intentional for an embeddable widget, but it means **any site can submit feedback to any project** using that project's API key if they obtain it (the key is shipped in the widget script). There is no `domain` allowlist check in the CORS origin validation — the `domain` field on the project is stored but never enforced in the CORS headers.
+This is intentional for an embeddable widget, but it means **any site can submit feedback to any project** using that project's API key if they obtain it (the key is shipped in the widget script). There is no `domain` allowlist check in the CORS origin validation - the `domain` field on the project is stored but never enforced in the CORS headers.
 
 **Fix:** If `project.domain` is set, use it as the `Access-Control-Allow-Origin` value instead of `*`. This prevents other sites from submitting to that project's endpoint.
 

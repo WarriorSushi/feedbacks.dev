@@ -653,7 +653,7 @@ class FeedbacksWidget {
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.showError(container, 'Email: enter a valid address.', emailInput); return; }
       if (!this.cfg.projectKey) { this.showError(container, 'Widget is missing a project key.'); return; }
       if (navigator.onLine === false) {
-        this.showError(container, 'You appear to be offline. Your draft is saved in this tab—reconnect and try again.');
+        this.showError(container, 'You appear to be offline. Your draft is saved in this tab - reconnect and try again.');
         return;
       }
 

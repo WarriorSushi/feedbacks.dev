@@ -1,4 +1,4 @@
-# feedbacks.dev v2 — Production Readiness Action Plan
+# feedbacks.dev v2 - Production Readiness Action Plan
 
 **Generated:** 2026-03-17
 **Source:** 5 independent review agents (Feature, Security, Backend, Frontend UX, Architecture)
@@ -12,27 +12,27 @@ Issues are **deduplicated** across all 5 reviews and grouped into **phases** by 
 
 ---
 
-## Phase 1: CRITICAL — Must Fix Before Launch
+## Phase 1: CRITICAL - Must Fix Before Launch
 
 These are bugs that will cause data loss, security breaches, or core features to silently fail.
 
 ### 1.1 Rate Limiting is Completely Broken
 **Effort: M** | Backend, Security
 - `rate_limits` table has `key`/`route` columns; code queries non-existent `ip` column
-- All rate limit checks silently fail — every request is allowed through
+- All rate limit checks silently fail - every request is allowed through
 - `x-forwarded-for` is client-spoofable; fallback `"unknown"` shares one bucket for all
 - **Fix:** Rewrite `rate-limit.ts` to use `key`/`route` columns, use Vercel's `x-vercel-forwarded-for`, reject requests with no IP, consider atomic Postgres RPC
 
 ### 1.2 Captcha Failure-Open
 **Effort: S** | Security
-- `verifyCaptcha` catches errors and returns `true` — any outage bypasses captcha entirely
+- `verifyCaptcha` catches errors and returns `true` - any outage bypasses captcha entirely
 - Missing env vars send empty secret, which errors, which allows through
 - **Fix:** Return `false` in catch block. Check for secret key existence before calling.
 
 ### 1.3 Account Deletion is Fake
 **Effort: M** | Feature, Frontend
-- `handleDeleteAccount` only calls `signOut()` — no data or account deleted
-- UI says "irreversible" and "all data will be deleted" — this is misleading
+- `handleDeleteAccount` only calls `signOut()` - no data or account deleted
+- UI says "irreversible" and "all data will be deleted" - this is misleading
 - **Fix:** Either implement real deletion (Supabase admin API `deleteUser` + cascade) or remove the button and show "Contact support to delete account"
 
 ### 1.4 Middleware Breaks API Routes
@@ -58,10 +58,10 @@ These are bugs that will cause data loss, security breaches, or core features to
 - DB compromise = instant access to all projects
 - **Fix:** Hash keys with SHA-256 on storage, compare hashed values on lookup. Show raw key only once at creation.
 
-### 1.8 Webhook SSRF — No URL Validation
+### 1.8 Webhook SSRF - No URL Validation
 **Effort: M** | Security
 - Users can set webhook URLs to internal IPs (169.254.x, 10.x, localhost)
-- Server makes POST and stores response body — cloud metadata exfiltration possible
+- Server makes POST and stores response body - cloud metadata exfiltration possible
 - **Fix:** Validate URLs are `https://` only, blocklist private IP ranges, don't store response bodies
 
 ### 1.9 Silent Error Swallowing on All Mutations
@@ -72,7 +72,7 @@ These are bugs that will cause data loss, security breaches, or core features to
 
 ---
 
-## Phase 2: HIGH — Required for Production Quality
+## Phase 2: HIGH - Required for Production Quality
 
 ### 2.1 Webhook System is Broken End-to-End
 **Effort: L** | Backend, Feature
@@ -102,7 +102,7 @@ These are bugs that will cause data loss, security breaches, or core features to
 - Widget feedback never appears on public board; no way to promote it from dashboard
 - **Fix:** Run `ALTER TABLE feedback ALTER COLUMN is_public SET DEFAULT true` or add a toggle in dashboard to make items public
 
-### 2.5 Duplicate Vote Triggers — Double-Counting
+### 2.5 Duplicate Vote Triggers - Double-Counting
 **Effort: S** | Backend
 - Migrations 002 and 004 each create a vote count trigger; both fire on every vote
 - `vote_count` gets updated twice per vote operation
@@ -185,7 +185,7 @@ These are bugs that will cause data loss, security breaches, or core features to
 
 ---
 
-## Phase 3: MEDIUM — Polish for Production
+## Phase 3: MEDIUM - Polish for Production
 
 ### 3.1 CSV Export Has No UI Button
 - Add export button to project feedback list or settings tab
@@ -203,7 +203,7 @@ These are bugs that will cause data loss, security breaches, or core features to
 - Pass filter params in back link or use `router.back()`
 
 ### 3.6 `currentProjectId` Never Passed to Sidebar
-- Layout doesn't pass `currentProjectId` — sidebar always highlights first project
+- Layout doesn't pass `currentProjectId` - sidebar always highlights first project
 
 ### 3.7 Webhook URL Inputs Have No Format Validation
 - Add client-side URL format validation on webhook inputs
@@ -211,7 +211,7 @@ These are bugs that will cause data loss, security breaches, or core features to
 ### 3.8 Status Colors Defined in 3 Places
 - Consolidate into single `statusConfig` in `lib/utils.ts`
 
-### 3.9 Type Drift — Shared Package Not Wired Up
+### 3.9 Type Drift - Shared Package Not Wired Up
 - Wire `@feedbacks/shared` as dependency in dashboard and widget packages
 
 ### 3.10 `Math.random()` in Loading Skeleton Causes Hydration Mismatch
@@ -249,7 +249,7 @@ These are bugs that will cause data loss, security breaches, or core features to
 
 ---
 
-## Phase 4: LOW — Nice to Have
+## Phase 4: LOW - Nice to Have
 
 - Free tier limits not enforced (1 project, 500/month, 30-day history)
 - No Stripe integration for Pro tier

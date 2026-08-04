@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-30
 
-**Status:** Remediation implementation record — completed except where explicitly marked blocked, modified, or deferred
+**Status:** Remediation implementation record - completed except where explicitly marked blocked, modified, or deferred
 **Scope:** Landing page, authentication, dashboard, every project workspace, inbox and detail flows, public boards and directory, widget, product updates, integrations, REST/MCP, billing, settings, documentation, legal surfaces, API routes, database, storage, security, performance, accessibility, responsive behavior, motion, content, onboarding, and monetization.
 
 **Outcome legend:** `[fixed]` means implemented and verified; `[modified: …]` means the risk was materially reduced but a narrower follow-up remains; `[blocked: …]` requires external credentials, paid infrastructure, provider-console access, or a real transaction; `[deferred: …]` is intentionally outside the validated MVP thesis. Statuses were added only after implementation and verification.
@@ -28,7 +28,7 @@
 
 ## 1. Executive verdict
 
-feedbacks.dev has a real, broad product—not a prototype. It has a working embeddable widget, a useful feedback inbox, public boards, updates, integrations, REST/MCP access, billing, documentation, and a meaningful automated test suite. Type-checking, linting, unit tests, production build, widget size checks, and schema checks all pass.
+feedbacks.dev has a real, broad product - not a prototype. It has a working embeddable widget, a useful feedback inbox, public boards, updates, integrations, REST/MCP access, billing, documentation, and a meaningful automated test suite. Type-checking, linting, unit tests, production build, widget size checks, and schema checks all pass.
 
 The repository-owned product is now **launch-ready for free activation and controlled customer use**. Paid acquisition remains gated by the controlled Dodo live-mode transaction, not by an unresolved code or UX blocker.
 
@@ -114,7 +114,7 @@ This review used:
 
 ### Important limitations
 
-- This is a code, system, and UX audit—not a penetration test. No vulnerable path was exploited.
+- This is a code, system, and UX audit - not a penetration test. No vulnerable path was exploited.
 - No customer interviews, session recordings, support tickets, conversion data, or production performance traces were supplied.
 - The review therefore separates observed facts from hypotheses that require measurement.
 - The automated Impeccable detector was not present in the installed skill bundle. Visual review was performed manually and sequentially.
@@ -166,7 +166,7 @@ Do not use the current activation dataset for decisions until test data is quara
 
 ## 4. P0 findings: contain before growth
 
-### P0-01 — Split the public widget key from the private API credential [fixed]
+### P0-01 - Split the public widget key from the private API credential [fixed]
 
 **Observed**
 
@@ -208,7 +208,7 @@ Any visitor to an instrumented customer site can inspect the widget key. If that
 
 ---
 
-### P0-02 — Isolate production, preview, development, and E2E data [modified: all active fixtures and test boards are quarantined/unpublished, E2E is fail-closed against production, and TTL cleanup exists; three paid Supabase branches remain blocked pending explicit recurring-cost approval]
+### P0-02 - Isolate production, preview, development, and E2E data [modified: all active fixtures and test boards are quarantined/unpublished, E2E is fail-closed against production, and TTL cleanup exists; three paid Supabase branches remain blocked pending explicit recurring-cost approval]
 
 **Observed live data**
 
@@ -258,7 +258,7 @@ The public directory displayed 193 boards and was dominated by test fixtures.
 
 ---
 
-### P0-03 — Clear known production dependency vulnerabilities [fixed]
+### P0-03 - Clear known production dependency vulnerabilities [fixed]
 
 `pnpm audit --prod` reported 18 findings: 8 high, 9 moderate, and 1 low.
 
@@ -286,7 +286,7 @@ Moderate findings include Hono/Node server and additional Next.js advisories.
 
 ---
 
-### P0-04 — Stop storing and returning integration secrets in plaintext project JSON [fixed]
+### P0-04 - Stop storing and returning integration secrets in plaintext project JSON [fixed]
 
 **Observed**
 
@@ -319,7 +319,7 @@ Database reads, browser state, logs, support screenshots, RLS mistakes, and job 
 
 ---
 
-### P0-05 — Make feedback screenshots and attachments private [fixed]
+### P0-05 - Make feedback screenshots and attachments private [fixed]
 
 **Observed**
 
@@ -538,7 +538,7 @@ Dodo test and live modes use separate API keys, webhooks, and data. Current stat
 **Redesign**
 
 1. Hero: one promise, one supporting sentence, primary “Start free,” secondary “See 90-second demo.”
-2. Trust strip: no credit card, framework support, widget gzip size, privacy statement—only verifiable claims.
+2. Trust strip: no credit card, framework support, widget gzip size, privacy statement - only verifiable claims.
 3. Three-step mechanism: install, collect context, route/decide.
 4. One interactive product story rather than several repeated mockups.
 5. Integration proof.
@@ -568,7 +568,7 @@ Dodo test and live modes use separate API keys, webhooks, and data. Current stat
 - Keep only project name and optional site URL.
 - Infer a slug/domain where safe but never block on it.
 - Remove or defer “choose another first goal”; defaults can come later.
-- After submit, land directly in install—not a project overview.
+- After submit, land directly in install - not a project overview.
 - Explain that the name is editable.
 - Handle duplicate names, Unicode, maximum length, slow network, double submit, and project-plan limits.
 
@@ -646,7 +646,7 @@ The redesign is substantially cleaner than the original screenshot, but:
   - test feedback received.
 - Diagnose common blockers: wrong key, cache, CSP, ad blocker, route transition, origin restriction, script loaded twice.
 - Provide a copyable diagnostic packet without secrets.
-- Once verified, automatically advance and celebrate briefly—then show the inbox item.
+- Once verified, automatically advance and celebrate briefly - then show the inbox item.
 
 ### 6.10 Inbox `/feedback` [fixed]
 
@@ -670,7 +670,7 @@ The redesign is substantially cleaner than the original screenshot, but:
 - Project scope inside the filter sheet on mobile.
 - Saved views in a compact menu.
 - Bulk bar appears only after selection and stays near selected rows.
-- Each row shows type, concise message, project only when cross-project, status/priority, age, and meaningful context—not every metadata field.
+- Each row shows type, concise message, project only when cross-project, status/priority, age, and meaningful context - not every metadata field.
 - Preserve filters in the URL and browser history.
 
 ### 6.11 Feedback detail `/feedback/[id]` [fixed]
@@ -684,7 +684,7 @@ The redesign is substantially cleaner than the original screenshot, but:
 
 - Sticky primary triage controls.
 - Timeline events for status, priority, tags, note, integration delivery, public visibility, and archive.
-- Explicit “Saving… / Saved / Couldn’t save—Retry.”
+- Explicit “Saving… / Saved / Couldn’t save - Retry.”
 - Suggested existing tags to prevent taxonomy drift.
 - Safe media viewer with download controls and redaction warning.
 - Keyboard actions for status/priority/archive.
@@ -854,7 +854,7 @@ Rules:
 - Use spacing and typography before adding another border/card.
 - A section inside a card should usually be an inset or divider, not another identical card.
 - Borders should be more legible in dark mode; shadows alone disappear.
-- Green is for primary action, active selection, or success—not every label and border.
+- Green is for primary action, active selection, or success - not every label and border.
 - Validate all foreground/background pairs against WCAG contrast.
 
 ### 7.2 Typography [fixed]
@@ -1041,7 +1041,7 @@ Required:
 
 ### 8.1 Architecture [fixed]
 
-The monorepo split—Next.js dashboard, Vanilla TypeScript widget, React/Vue wrappers, shared library, and MCP package—is sensible. The widget is appropriately framework-light.
+The monorepo split - Next.js dashboard, Vanilla TypeScript widget, React/Vue wrappers, shared library, and MCP package - is sensible. The widget is appropriately framework-light.
 
 Maintainability pressure is visible in large files:
 
@@ -1230,7 +1230,7 @@ Add:
 
 Never log secret keys, webhook tokens, signing secrets, full attachment URLs, or unredacted feedback content by default.
 
-### 8.11 Testing and CI [modified: 153 unit tests plus type, lint, production build, live-schema, advisor, dependency, widget, route-budget, responsive/WCAG source, and production-safe E2E guards pass; CI explicitly reports—not disguises—a skipped Playwright run until an isolated paid backend is approved, and manual screen-reader/device verification remains]
+### 8.11 Testing and CI [modified: 153 unit tests plus type, lint, production build, live-schema, advisor, dependency, widget, route-budget, responsive/WCAG source, and production-safe E2E guards pass; CI explicitly reports - not disguises - a skipped Playwright run until an isolated paid backend is approved, and manual screen-reader/device verification remains]
 
 Current strengths:
 
@@ -1251,7 +1251,7 @@ Required improvements:
 - Mobile visual regression for the high-risk screens.
 - Bundle and query-count budgets.
 - Migration up/down or forward-only verification on a disposable database.
-- Production smoke tests that are read-only and use synthetic monitoring—not E2E fixtures.
+- Production smoke tests that are read-only and use synthetic monitoring - not E2E fixtures.
 
 ---
 
@@ -1422,7 +1422,7 @@ The displayed Free plan includes roughly:
 
 Pro at $19 mainly adds unlimited capacity/history, custom branding, scheduling, and more routing. That can work for high-volume users, but it gives many small teams little reason to pay and exposes expensive/support-heavy features on Free.
 
-### 10.2 Recommended hypothesis—not an immediate pricing decree
+### 10.2 Recommended hypothesis - not an immediate pricing decree
 
 After trust fixes and clean measurement, test:
 
@@ -1447,7 +1447,7 @@ After trust fixes and clean measurement, test:
 - Scoped API/MCP.
 - Priority support or stronger operational guarantees only if support can deliver them.
 
-**Team—later**
+**Team - later**
 
 - Seats, roles, assignments, mentions, audit log, SSO/SCIM only after those features are built and demanded.
 
@@ -1483,7 +1483,7 @@ Copy patterns, not visual costumes. feedbacks.dev should remain its own focused 
 
 ## 11. Prioritized action plan
 
-### Phase 0 — Containment and truth (0–72 hours)
+### Phase 0 - Containment and truth (0–72 hours)
 
 | ID | Action | Owner profile | Effort | Acceptance/impact |
 |---|---|---|---:|---|
@@ -1495,7 +1495,7 @@ Copy patterns, not visual costumes. feedbacks.dev should remain its own focused 
 | P0-06 | Verify Dodo production mode/products/webhook [blocked: code is fail-closed and idempotent; controlled live proof requires live Dodo credentials/product configuration] | Billing/platform | S | Controlled real transaction and idempotent state |
 | P0-07 | Correct or temporarily remove false landing/docs claims [fixed] | Product/content | S | Public copy matches current truth |
 
-### Phase 1 — Activation and trust (week 1–2)
+### Phase 1 - Activation and trust (week 1–2)
 
 | ID | Action | Effort | Acceptance/impact |
 |---|---|---:|---|
@@ -1507,7 +1507,7 @@ Copy patterns, not visual costumes. feedbacks.dev should remain its own focused 
 | A6 | Privacy/security page and corrected collection disclosure [fixed] | M | Users can understand data before install |
 | A7 | Clean analytics implementation with test exclusion [fixed] | M | Reliable milestone funnel and time-to-value |
 
-### Phase 2 — UI consistency, accessibility, and performance (week 2–4)
+### Phase 2 - UI consistency, accessibility, and performance (week 2–4)
 
 | ID | Action | Effort | Acceptance/impact |
 |---|---|---:|---|
@@ -1520,7 +1520,7 @@ Copy patterns, not visual costumes. feedbacks.dev should remain its own focused 
 | U7 | Server-paginate and aggregate directory/comments [fixed] | L | Bounded queries and payloads |
 | U8 | Motion and reduced-motion audit [fixed] | S | All animation purposeful; smooth scroll disabled when reduced |
 
-### Phase 3 — Reliability and monetization (week 4–8)
+### Phase 3 - Reliability and monetization (week 4–8)
 
 | ID | Action | Effort | Acceptance/impact |
 |---|---|---:|---|
@@ -1532,7 +1532,7 @@ Copy patterns, not visual costumes. feedbacks.dev should remain its own focused 
 | R6 | Retention/export/deletion lifecycle [fixed] | L | Accurate policy and reliable customer control |
 | R7 | Landing narrative/proof/conversion experiments [modified: narrative, proof hierarchy, and conversion instrumentation are fixed; experiments require real traffic] | M | Measured CTA→signup→activation improvement |
 
-### Phase 4 — Only after activation and retention evidence [deferred: intentionally gated on clean activation and retention evidence]
+### Phase 4 - Only after activation and retention evidence [deferred: intentionally gated on clean activation and retention evidence]
 
 - First-class Linear integration.
 - Team membership, roles, assignments, and mentions.

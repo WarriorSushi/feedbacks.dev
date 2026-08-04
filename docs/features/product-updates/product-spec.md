@@ -153,11 +153,11 @@ Fields and limits:
 
 Actions:
 
-- **Save draft** — never makes content public.
-- **Publish now** — validates all publish requirements and sets `published_at` to now.
-- **Schedule** — Pro only; sets `published_at` in the future.
-- **Update live post** — edits the live record without marking it unseen again.
-- **Archive** — makes it ineligible at the origin immediately; a client or CDN with a cached response may retain it for up to 60 seconds.
+- **Save draft** - never makes content public.
+- **Publish now** - validates all publish requirements and sets `published_at` to now.
+- **Schedule** - Pro only; sets `published_at` in the future.
+- **Update live post** - edits the live record without marking it unseen again.
+- **Archive** - makes it ineligible at the origin immediately; a client or CDN with a cached response may retain it for up to 60 seconds.
 
 Editing the title or body of an existing live update must not reset visitor seen state because seen state is keyed by update ID.
 
@@ -325,9 +325,9 @@ Mark an update seen after it is visibly open for 750 ms, immediately when its CT
 
 The owner receives approximate daily aggregate counts:
 
-- `impression` — dialog became visible;
-- `dismissal` — user closed without CTA click;
-- `cta_click` — CTA was activated.
+- `impression` - dialog became visible;
+- `dismissal` - user closed without CTA click;
+- `cta_click` - CTA was activated.
 
 Do not store raw viewer-event rows.
 

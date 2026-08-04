@@ -1,4 +1,4 @@
-# Security Audit — feedbacks.dev
+# Security Audit - feedbacks.dev
 
 **Date:** 2026-03-17
 **Auditor:** Claude (automated static analysis)
@@ -14,7 +14,7 @@
 | F-01 | CRITICAL | Captcha failure-open: verification errors silently allow all requests | `app/api/feedback/route.ts:54-57` |
 | F-02 | CRITICAL | API key stored and compared in plaintext | `lib/api-auth.ts:11-14`, `app/api/projects/route.ts:44` |
 | F-03 | HIGH | Wildcard CORS (`*`) on authenticated v1 API endpoints | `app/api/v1/*/route.ts` |
-| F-04 | HIGH | Webhook SSRF — no URL allowlist, private IPs reachable | `lib/webhook-delivery.ts:120`, `app/api/projects/[id]/webhooks/route.ts:72-78` |
+| F-04 | HIGH | Webhook SSRF - no URL allowlist, private IPs reachable | `lib/webhook-delivery.ts:120`, `app/api/projects/[id]/webhooks/route.ts:72-78` |
 | F-05 | HIGH | `custom_css` from public board returned to client without sanitisation | `app/api/boards/[slug]/route.ts:48` |
 | F-06 | HIGH | Rate-limit key space pollution and bypass via `x-forwarded-for` spoofing | `lib/rate-limit.ts`, all public routes |
 | F-07 | HIGH | `metadata` and `structured_data` stored as arbitrary JSON with no schema | `app/api/v1/feedback/route.ts:62-63` |
@@ -23,10 +23,10 @@
 | F-10 | MEDIUM | API key generated with `crypto.randomUUID()` (128-bit entropy but no prefix/rotation mechanism) | `app/api/projects/route.ts:44` |
 | F-11 | MEDIUM | Hardcoded vote salt in source code | `app/api/boards/[slug]/vote/route.ts:25` |
 | F-12 | MEDIUM | Base64 screenshot upload skips file-size check | `app/api/feedback/route.ts:175-189` |
-| F-13 | MEDIUM | Attachment filename stored verbatim — path traversal in storage key unlikely but name untrusted | `app/api/feedback/route.ts:198,209` |
-| F-14 | MEDIUM | Middleware does not protect `/api/*` routes — API routes rely solely on per-handler auth | `middleware.ts:55-58` |
+| F-13 | MEDIUM | Attachment filename stored verbatim - path traversal in storage key unlikely but name untrusted | `app/api/feedback/route.ts:198,209` |
+| F-14 | MEDIUM | Middleware does not protect `/api/*` routes - API routes rely solely on per-handler auth | `middleware.ts:55-58` |
 | F-15 | MEDIUM | `email` field not validated in board submit route | `app/api/boards/[slug]/submit/route.ts:39,58` |
-| F-16 | LOW | `x-forwarded-for` chain not normalised — leftmost-IP strategy correct but falls back to `'unknown'` sharing one rate-limit slot | `lib/rate-limit.ts`, multiple routes |
+| F-16 | LOW | `x-forwarded-for` chain not normalised - leftmost-IP strategy correct but falls back to `'unknown'` sharing one rate-limit slot | `lib/rate-limit.ts`, multiple routes |
 | F-17 | LOW | Internal Supabase error message leaked to client in project routes | `app/api/projects/route.ts:17,53`, `[id]/route.ts:79` |
 | F-18 | LOW | `sign-out` only clears two hardcoded cookie names; Supabase SSR may use different/dynamic names | `app/api/sign-out/route.ts:12-15` |
 | F-19 | LOW | CSV export does not guard against CSV injection (formula injection) | `app/api/projects/[id]/feedback.csv/route.ts:38-54` |
@@ -36,14 +36,14 @@
 
 ## Critical Findings
 
-### F-01 — CRITICAL: Captcha Failure-Open
+### F-01 - CRITICAL: Captcha Failure-Open
 
 **File:** `packages/dashboard/src/app/api/feedback/route.ts:27-58`
 
 ```ts
 // line 54-57
 } catch {
-  // Verification service failure — allow through
+  // Verification service failure - allow through
 }
 return true   // <-- failure returns true = verified
 ```
@@ -62,11 +62,11 @@ When the Cloudflare Turnstile or hCaptcha verification endpoint is unreachable (
 
 ---
 
-### F-02 — CRITICAL: API Keys Stored and Compared in Plaintext
+### F-02 - CRITICAL: API Keys Stored and Compared in Plaintext
 
 **Files:**
-- `packages/dashboard/src/app/api/projects/route.ts:44` — key generated as raw UUID
-- `packages/dashboard/src/lib/api-auth.ts:11-14` — full key queried directly from DB
+- `packages/dashboard/src/app/api/projects/route.ts:44` - key generated as raw UUID
+- `packages/dashboard/src/lib/api-auth.ts:11-14` - full key queried directly from DB
 
 ```ts
 // projects/route.ts:44
@@ -91,7 +91,7 @@ The API key is stored as plaintext in the `projects` table. If the database is c
 
 ## High Severity Findings
 
-### F-03 — HIGH: Wildcard CORS on Authenticated API v1 Endpoints
+### F-03 - HIGH: Wildcard CORS on Authenticated API v1 Endpoints
 
 **Files:** All files under `packages/dashboard/src/app/api/v1/`
 
@@ -104,7 +104,7 @@ const CORS_HEADERS = {
 
 The v1 API is authenticated via `X-API-Key` headers, so wildcard CORS is less dangerous than for cookie-based auth. However, `app/api/v1/projects/route.ts` also accepts **session-based (cookie) auth** as a fallback (lines 33-49). With `Access-Control-Allow-Origin: *`, cookies are not sent cross-origin (because `withCredentials` would be blocked), so the cookie fallback is safe for now. But the architecture creates a trap: any future developer adding cookie-reliant logic to these routes will silently have it exposed.
 
-Additionally, returning `*` on all v1 routes means any website can make credentialless requests and read responses — acceptable for a public API but you should be deliberate about it.
+Additionally, returning `*` on all v1 routes means any website can make credentialless requests and read responses - acceptable for a public API but you should be deliberate about it.
 
 **Remediation:**
 - For the v1 API-key-only endpoints, `*` CORS is acceptable. Document this explicitly.
@@ -112,7 +112,7 @@ Additionally, returning `*` on all v1 routes means any website can make credenti
 
 ---
 
-### F-04 — HIGH: Webhook SSRF — No URL Validation
+### F-04 - HIGH: Webhook SSRF - No URL Validation
 
 **Files:**
 - `packages/dashboard/src/lib/webhook-delivery.ts:120`
@@ -144,7 +144,7 @@ The test webhook route (POST `/api/projects/[id]/webhooks`) is the most dangerou
 
 ---
 
-### F-05 — HIGH: Unsanitised `custom_css` Returned to Client
+### F-05 - HIGH: Unsanitised `custom_css` Returned to Client
 
 **File:** `packages/dashboard/src/app/api/boards/[slug]/route.ts:48`
 
@@ -171,7 +171,7 @@ This is a stored XSS-equivalent risk depending on how the frontend consumes this
 
 ---
 
-### F-06 — HIGH: Rate-Limit Bypass via `x-forwarded-for` Spoofing
+### F-06 - HIGH: Rate-Limit Bypass via `x-forwarded-for` Spoofing
 
 **File:** `packages/dashboard/src/lib/rate-limit.ts:3-7`, used in all public routes.
 
@@ -187,7 +187,7 @@ const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
 X-Forwarded-For: 1.2.3.4, attacker-real-ip
 ```
 
-The handler takes `split(',')[0]` — `1.2.3.4` — as the IP to rate-limit, allowing unlimited requests from the attacker's real IP by cycling through spoofed values.
+The handler takes `split(',')[0]` - `1.2.3.4` - as the IP to rate-limit, allowing unlimited requests from the attacker's real IP by cycling through spoofed values.
 
 Additionally, when IP extraction fails and the fallback is `'unknown'`, **all clients with non-extractable IPs share a single rate-limit bucket**, meaning a single bot can starve every legitimate anonymous user.
 
@@ -198,7 +198,7 @@ Additionally, when IP extraction fails and the fallback is `'unknown'`, **all cl
 
 ---
 
-### F-07 — HIGH: Arbitrary JSON Stored in `metadata` and `structured_data`
+### F-07 - HIGH: Arbitrary JSON Stored in `metadata` and `structured_data`
 
 **File:** `packages/dashboard/src/app/api/v1/feedback/route.ts:62-63`
 
@@ -212,7 +212,7 @@ Both fields are passed through without any size limit, depth limit, or schema va
 Risks:
 - **Denial of service** via deeply nested JSON or extremely large payloads consuming database storage.
 - **Prototype pollution** if these objects are ever merged with other objects server-side.
-- **Data exfiltration** — an agent key holder can store arbitrary data in your database at no cost to them.
+- **Data exfiltration** - an agent key holder can store arbitrary data in your database at no cost to them.
 
 **Remediation:**
 - Enforce a maximum byte size on these fields (e.g., 10KB for `structured_data`, 4KB for `metadata`).
@@ -223,7 +223,7 @@ Risks:
 
 ## Medium Severity Findings
 
-### F-08 — MEDIUM: Unvalidated `settings` and `webhooks` PATCH
+### F-08 - MEDIUM: Unvalidated `settings` and `webhooks` PATCH
 
 **File:** `packages/dashboard/src/app/api/projects/[id]/route.ts:75-76`
 
@@ -238,7 +238,7 @@ An authenticated project owner can PATCH `settings` and `webhooks` with **any ar
 - Setting `settings.widget_config.captchaProvider` to an unexpected value to confuse the captcha check.
 - Growing the JSONB columns unboundedly in the database.
 
-The `PUT /api/projects/[id]/webhooks` route has the same issue — it inserts the raw parsed JSON body as the entire webhook config with no validation.
+The `PUT /api/projects/[id]/webhooks` route has the same issue - it inserts the raw parsed JSON body as the entire webhook config with no validation.
 
 **Remediation:**
 - Validate `settings` and `webhooks` against strict TypeScript-runtime schemas (use `zod` or a similar validator).
@@ -246,7 +246,7 @@ The `PUT /api/projects/[id]/webhooks` route has the same issue — it inserts th
 
 ---
 
-### F-09 — MEDIUM: Missing CSRF Protection on Cookie-Auth State-Changing Routes
+### F-09 - MEDIUM: Missing CSRF Protection on Cookie-Auth State-Changing Routes
 
 **Files:**
 - `packages/dashboard/src/app/api/projects/[id]/route.ts` (PATCH, DELETE)
@@ -265,7 +265,7 @@ Note: Modern SameSite cookie defaults (`SameSite=Lax`) mitigate most CSRF for to
 
 ---
 
-### F-10 — MEDIUM: Weak API Key Format and No Rotation Mechanism
+### F-10 - MEDIUM: Weak API Key Format and No Rotation Mechanism
 
 **File:** `packages/dashboard/src/app/api/projects/route.ts:44`
 
@@ -277,7 +277,7 @@ api_key: crypto.randomUUID(),
 
 1. UUIDs have a well-known hyphenated format (`xxxxxxxx-xxxx-4xxx-...`) which reduces effective search space if an attacker knows the format.
 2. There is no prefix, making it impossible to identify which service a leaked key belongs to (hinders secret-scanning tools like GitHub's secret scanning or trufflehog).
-3. There is no key rotation endpoint — once a key is compromised, the only option is to delete/recreate the project.
+3. There is no key rotation endpoint - once a key is compromised, the only option is to delete/recreate the project.
 
 **Remediation:**
 - Use a prefixed, base62-encoded random key: e.g., `fb_live_<32 random bytes base62>`.
@@ -286,7 +286,7 @@ api_key: crypto.randomUUID(),
 
 ---
 
-### F-11 — MEDIUM: Hardcoded Vote Salt in Source Code
+### F-11 - MEDIUM: Hardcoded Vote Salt in Source Code
 
 **File:** `packages/dashboard/src/app/api/boards/[slug]/vote/route.ts:25`
 
@@ -307,7 +307,7 @@ The salt is a hardcoded string in the source. Anyone with read access to this re
 
 ---
 
-### F-12 — MEDIUM: Base64 Screenshot Skips File-Size Check
+### F-12 - MEDIUM: Base64 Screenshot Skips File-Size Check
 
 **File:** `packages/dashboard/src/app/api/feedback/route.ts:175-189`
 
@@ -336,7 +336,7 @@ The multipart `File` upload path checks `MAX_ATTACHMENT_SIZE` (5MB), but the bas
 
 ---
 
-### F-13 — MEDIUM: Attachment Filename Stored Verbatim
+### F-13 - MEDIUM: Attachment Filename Stored Verbatim
 
 **File:** `packages/dashboard/src/app/api/feedback/route.ts:198,209`
 
@@ -360,7 +360,7 @@ The storage key itself uses `crypto.randomUUID()` so path traversal in storage i
 
 ---
 
-### F-14 — MEDIUM: Middleware Explicitly Excludes All `/api/*` Routes
+### F-14 - MEDIUM: Middleware Explicitly Excludes All `/api/*` Routes
 
 **File:** `packages/dashboard/src/middleware.ts:55-58`
 
@@ -372,7 +372,7 @@ export const config = {
 }
 ```
 
-The negative lookahead `api/feedback` only excludes `/api/feedback` from middleware. But the full pattern `(?!...).*` effectively means the middleware only runs on **non-API routes** — it matches paths that don't start with `_next/static`, `_next/image`, `favicon.ico`, `api/feedback`, or `cdn/`. All other `/api/*` routes (e.g., `/api/projects`, `/api/v1/*`, `/api/boards/*`) are also excluded from middleware because the matcher pattern as written does not positively include them.
+The negative lookahead `api/feedback` only excludes `/api/feedback` from middleware. But the full pattern `(?!...).*` effectively means the middleware only runs on **non-API routes** - it matches paths that don't start with `_next/static`, `_next/image`, `favicon.ico`, `api/feedback`, or `cdn/`. All other `/api/*` routes (e.g., `/api/projects`, `/api/v1/*`, `/api/boards/*`) are also excluded from middleware because the matcher pattern as written does not positively include them.
 
 This means authentication enforcement is entirely per-route with no defense-in-depth. A missed `auth.getUser()` call in any route handler results in a completely unprotected endpoint.
 
@@ -382,7 +382,7 @@ This means authentication enforcement is entirely per-route with no defense-in-d
 
 ---
 
-### F-15 — MEDIUM: Email Not Validated in Board Submit
+### F-15 - MEDIUM: Email Not Validated in Board Submit
 
 **File:** `packages/dashboard/src/app/api/boards/[slug]/submit/route.ts:39,58`
 
@@ -402,7 +402,7 @@ The widget feedback route (`/api/feedback`) validates email format with a regex.
 
 ## Low Severity Findings
 
-### F-16 — LOW: All Unknown IPs Share One Rate-Limit Bucket
+### F-16 - LOW: All Unknown IPs Share One Rate-Limit Bucket
 
 **File:** `packages/dashboard/src/lib/rate-limit.ts:3-8`
 
@@ -412,11 +412,11 @@ The fallback `'unknown'` means every request where IP extraction fails counts ag
 
 ---
 
-### F-17 — LOW: Supabase Error Messages Leaked to Client
+### F-17 - LOW: Supabase Error Messages Leaked to Client
 
 **Files:**
-- `packages/dashboard/src/app/api/projects/route.ts:17` — `error.message` returned directly
-- `packages/dashboard/src/app/api/projects/[id]/route.ts:79` — `error.message` returned directly
+- `packages/dashboard/src/app/api/projects/route.ts:17` - `error.message` returned directly
+- `packages/dashboard/src/app/api/projects/[id]/route.ts:79` - `error.message` returned directly
 
 ```ts
 if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -428,7 +428,7 @@ Raw Supabase/PostgreSQL error messages can reveal table names, column names, con
 
 ---
 
-### F-18 — LOW: Sign-Out Clears Only Two Hardcoded Cookie Names
+### F-18 - LOW: Sign-Out Clears Only Two Hardcoded Cookie Names
 
 **File:** `packages/dashboard/src/app/api/sign-out/route.ts:12-15`
 
@@ -442,7 +442,7 @@ The Supabase SSR client (`@supabase/ssr`) uses project-ref-based cookie names (e
 
 ---
 
-### F-19 — LOW: CSV Export Vulnerable to Formula Injection
+### F-19 - LOW: CSV Export Vulnerable to Formula Injection
 
 **File:** `packages/dashboard/src/app/api/projects/[id]/feedback.csv/route.ts:38-54`
 
@@ -454,7 +454,7 @@ Example payload: `=HYPERLINK("http://evil.com","click me")`
 
 ---
 
-### F-20 — LOW: Widget `url` Field Accepted Without Protocol Restriction
+### F-20 - LOW: Widget `url` Field Accepted Without Protocol Restriction
 
 **File:** `packages/dashboard/src/app/api/feedback/route.ts:121-124`
 
@@ -475,7 +475,7 @@ if (url) {
 
 ### No RLS on `rate_limits`, `webhook_deliveries` Tables
 
-These tables are managed exclusively via the service role client (`createAdminSupabase`), so RLS may intentionally be off. Confirm that direct Supabase dashboard access to these tables is restricted to the service role only, and that anonymous/anon-key access cannot read delivery logs (which contain webhook URLs and partial response bodies — potential credential leakage if webhook tokens appear in responses).
+These tables are managed exclusively via the service role client (`createAdminSupabase`), so RLS may intentionally be off. Confirm that direct Supabase dashboard access to these tables is restricted to the service role only, and that anonymous/anon-key access cannot read delivery logs (which contain webhook URLs and partial response bodies - potential credential leakage if webhook tokens appear in responses).
 
 ### Service Role Key Handling
 
@@ -489,7 +489,7 @@ Outgoing webhooks (Slack, Discord, generic) have no HMAC signature header. Recip
 
 ## Recommended Remediation Priority
 
-1. **Immediately:** Fix F-01 (captcha fail-open) — single line change, critical impact.
+1. **Immediately:** Fix F-01 (captcha fail-open) - single line change, critical impact.
 2. **This sprint:** F-02 (plaintext API keys), F-04 (webhook SSRF), F-06 (rate-limit spoofing).
 3. **Next sprint:** F-03, F-05, F-07, F-08, F-09, F-12.
 4. **Backlog:** F-10 through F-20.

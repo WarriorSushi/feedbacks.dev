@@ -1,4 +1,4 @@
-# feedbacks.dev — Hosted Production Deployment Guide
+# feedbacks.dev - Hosted Production Deployment Guide
 
 This is a maintainer/operator runbook for the official hosted feedbacks.dev service. It is not customer setup documentation. Customers should create an account on `https://feedbacks.dev` and install the hosted widget from `https://app.feedbacks.dev`.
 
@@ -22,65 +22,65 @@ For the official hosted production project, do not replay the full SQL chain. Th
 
 For a new internal staging, recovery, or disposable verification project, run these files in order:
 
-1. `sql/001_initial_schema.sql` — base tables (projects, feedback, webhook_deliveries, etc.)
-2. `sql/002_public_board_voting.sql` — public board settings, votes, board indexes, and initial board RLS
-3. `sql/003_agent_support.sql` — agent fields and indexes for AI/API submissions
-4. `sql/004_fix_public_board.sql` — public board consistency fixes, vote-count trigger repair, and public defaults
-5. `sql/005_security_fixes.sql` — security fixes, vote-count repair, and API key hardening prerequisites
-6. `sql/006_public_board_comments.sql` — public admin comments on board items
-7. `sql/007_phase6_hardening.sql` — typed board profile fields, announcements, follows, watches, reports, and durable webhook jobs
-8. `sql/008_board_display_name.sql` — public board display name support
-9. `sql/009_billing_and_entitlements.sql` — billing accounts, events, usage counters, and quota helpers
-10. `sql/010_api_key_hardening.sql` — final API-key storage hardening
-11. `sql/011_notification_digests.sql` — digest scheduling support
-12. `sql/012_project_stats_and_digest_rls.sql` — project stats RPCs and notification digest RLS coverage
-13. `sql/013_launch_security_hardening.sql` — atomic rate-limit RPC, function exposure hardening, advisor indexes, and RLS cleanup
-14. `sql/014_fix_rate_limit_uuid_generation.sql` — fixes rate-limit UUID generation on locked function search paths
-15. `sql/015_server_managed_votes.sql` — removes direct client vote writes; board votes go through server API routes
-16. `sql/016_agent_setup_audit.sql` — audit log for short-lived AI setup packet creation and reads
-17. `sql/017_agent_setup_token_revocation.sql` — revocable agent setup packet token registry
-18. `sql/018_feedback_read_state.sql` — adds `feedback.read_at` so inbox read state stays separate from workflow status
-19. `sql/019_feedback_read_state_backfill.sql` — marks existing non-`new` feedback as read so triaged items do not appear unread
-20. `sql/020_optimize_agent_setup_rls.sql` — wraps agent setup owner checks in `(select auth.uid())` to clear per-row RLS auth evaluation
-21. `sql/021_split_usage_counter_write_rls.sql` — splits usage counter write-deny policies away from SELECT to reduce RLS advisor noise
-22. `sql/022_consolidate_public_board_read_rls.sql` — consolidates public board/announcement/note SELECT policies and splits owner writes
-23. `sql/023_cron_run_audit.sql` — adds service-role cron run audit rows for webhook and notification digest heartbeat checks
-24. `sql/024_webhook_digest_items.sql` — adds the durable webhook digest queue for daily batched endpoint delivery
-25. `sql/025_dashboard_stats.sql` — adds a service-only, owner-scoped aggregate for fast project and all-project dashboards
-26. `sql/026_activation_milestones.sql` — adds privacy-preserving, one-time activation funnel milestones without page-view or visitor tracking
-27. `sql/027_operational_health_indexes.sql` — keeps delivery and installation-health probes indexed as history grows
-28. `sql/028_product_updates.sql` — Product Updates settings, owner-authored releases, daily aggregate metrics, RLS, service-only RPCs, and the `product_update_images` bucket
-29. `sql/029_project_embed_installations.sql` — privacy-preserving current-embed heartbeat and module detection
-30. `sql/030_product_update_activation_events.sql` — aggregate Updates activation milestones
-31. `sql/031_atomic_project_modules.sql` — atomically saves Feedback and Updates module choices through a service-only RPC
-32. `sql/032_plan_foreign_key_indexes.sql` — indexes plan and entitlement relationship lookups
-33. `sql/033_split_publishable_and_private_project_keys.sql` — separates browser-safe publishable keys from hashed private credentials
-34. `sql/034_encrypt_integration_secrets.sql` — encrypts integration credentials at rest
-35. `sql/035_redact_integration_operational_data.sql` — removes credentials from browser, queue, and delivery-log surfaces
-36. `sql/036_project_environment_isolation.sql` — separates production, test, and expiring verification projects
-37. `sql/037_quarantine_legacy_production_e2e_data.sql` — quarantines historical production test fixtures
-38. `sql/038_activation_environment_partition.sql` — excludes test environments from activation metrics
-39. `sql/039_private_feedback_media.sql` — stores feedback media privately with explicit scan state
-40. `sql/040_atomic_billing_event_processing.sql` — makes billing webhook processing safely claimable and retryable
-41. `sql/041_audit_integration_secret_changes.sql` — records integration secret lifecycle events
-42. `sql/042_billing_customer_summary.sql` — exposes a bounded customer billing summary
-43. `sql/043_durable_account_deletion_jobs.sql` — creates resumable, auditable account-deletion work
-44. `sql/044_public_board_directory_migration_marker.sql` — records the hosted directory migration boundary
-45. `sql/045_bounded_public_board_directory.sql` — moves public directory ranking and totals into a bounded service-only aggregate
-46. `sql/046_feedback_activity_and_update_accessibility.sql` — records feedback history and update accessibility metadata
-47. `sql/047_api_idempotency_keys.sql` — prevents duplicate API mutations on retries
-48. `sql/048_idempotency_request_fingerprint.sql` — rejects idempotency-key reuse with a different request
-49. `sql/049_idempotent_project_creation.sql` — makes project creation retry-safe and uniquely keyed
-50. `sql/050_cursor_public_board_directory.sql` — adds snapshot-stable keyset pagination to public-board discovery
-51. `sql/051_advisor_security_hardening.sql` — removes remaining callable trigger internals, makes service-only RLS intent explicit, and fixes advisor indexes
-52. `sql/052_resend_delivery_events.sql` — records signed Resend delivery events and suppresses bounced or complained recipients without storing plaintext email addresses
-53. `sql/053_versioned_product_update_publish.sql` — rejects stale Product Update publication requests inside the database lock
-54. `sql/054_multiple_product_update_ctas.sql` — supports multiple validated call-to-action links on Product Updates
-55. `sql/055_private_feedback_by_default.sql` — makes non-board feedback private by default and marks its collection source
-56. `sql/056_growth_referrals_and_marketing.sql` — adds consent-aware lead and conversion records, five-use referrals, a one-time complimentary Pro month, and service-only growth data access
-57. `sql/057_referral_and_downgrade_safeguards.sql` — adds layered referral qualification, final-three-paid-days cancellation warnings, reversible project freezing, and server-only lifecycle controls
-58. `sql/058_internal_product_feedback_project.sql` — creates the administrator-owned system project used by Settings feedback and product updates
-59. `sql/059_product_update_visibility_toggle.sql` — adds independent release-note visibility and an atomic service-only toggle that preserves publication and seen-state identity
+1. `sql/001_initial_schema.sql` - base tables (projects, feedback, webhook_deliveries, etc.)
+2. `sql/002_public_board_voting.sql` - public board settings, votes, board indexes, and initial board RLS
+3. `sql/003_agent_support.sql` - agent fields and indexes for AI/API submissions
+4. `sql/004_fix_public_board.sql` - public board consistency fixes, vote-count trigger repair, and public defaults
+5. `sql/005_security_fixes.sql` - security fixes, vote-count repair, and API key hardening prerequisites
+6. `sql/006_public_board_comments.sql` - public admin comments on board items
+7. `sql/007_phase6_hardening.sql` - typed board profile fields, announcements, follows, watches, reports, and durable webhook jobs
+8. `sql/008_board_display_name.sql` - public board display name support
+9. `sql/009_billing_and_entitlements.sql` - billing accounts, events, usage counters, and quota helpers
+10. `sql/010_api_key_hardening.sql` - final API-key storage hardening
+11. `sql/011_notification_digests.sql` - digest scheduling support
+12. `sql/012_project_stats_and_digest_rls.sql` - project stats RPCs and notification digest RLS coverage
+13. `sql/013_launch_security_hardening.sql` - atomic rate-limit RPC, function exposure hardening, advisor indexes, and RLS cleanup
+14. `sql/014_fix_rate_limit_uuid_generation.sql` - fixes rate-limit UUID generation on locked function search paths
+15. `sql/015_server_managed_votes.sql` - removes direct client vote writes; board votes go through server API routes
+16. `sql/016_agent_setup_audit.sql` - audit log for short-lived AI setup packet creation and reads
+17. `sql/017_agent_setup_token_revocation.sql` - revocable agent setup packet token registry
+18. `sql/018_feedback_read_state.sql` - adds `feedback.read_at` so inbox read state stays separate from workflow status
+19. `sql/019_feedback_read_state_backfill.sql` - marks existing non-`new` feedback as read so triaged items do not appear unread
+20. `sql/020_optimize_agent_setup_rls.sql` - wraps agent setup owner checks in `(select auth.uid())` to clear per-row RLS auth evaluation
+21. `sql/021_split_usage_counter_write_rls.sql` - splits usage counter write-deny policies away from SELECT to reduce RLS advisor noise
+22. `sql/022_consolidate_public_board_read_rls.sql` - consolidates public board/announcement/note SELECT policies and splits owner writes
+23. `sql/023_cron_run_audit.sql` - adds service-role cron run audit rows for webhook and notification digest heartbeat checks
+24. `sql/024_webhook_digest_items.sql` - adds the durable webhook digest queue for daily batched endpoint delivery
+25. `sql/025_dashboard_stats.sql` - adds a service-only, owner-scoped aggregate for fast project and all-project dashboards
+26. `sql/026_activation_milestones.sql` - adds privacy-preserving, one-time activation funnel milestones without page-view or visitor tracking
+27. `sql/027_operational_health_indexes.sql` - keeps delivery and installation-health probes indexed as history grows
+28. `sql/028_product_updates.sql` - Product Updates settings, owner-authored releases, daily aggregate metrics, RLS, service-only RPCs, and the `product_update_images` bucket
+29. `sql/029_project_embed_installations.sql` - privacy-preserving current-embed heartbeat and module detection
+30. `sql/030_product_update_activation_events.sql` - aggregate Updates activation milestones
+31. `sql/031_atomic_project_modules.sql` - atomically saves Feedback and Updates module choices through a service-only RPC
+32. `sql/032_plan_foreign_key_indexes.sql` - indexes plan and entitlement relationship lookups
+33. `sql/033_split_publishable_and_private_project_keys.sql` - separates browser-safe publishable keys from hashed private credentials
+34. `sql/034_encrypt_integration_secrets.sql` - encrypts integration credentials at rest
+35. `sql/035_redact_integration_operational_data.sql` - removes credentials from browser, queue, and delivery-log surfaces
+36. `sql/036_project_environment_isolation.sql` - separates production, test, and expiring verification projects
+37. `sql/037_quarantine_legacy_production_e2e_data.sql` - quarantines historical production test fixtures
+38. `sql/038_activation_environment_partition.sql` - excludes test environments from activation metrics
+39. `sql/039_private_feedback_media.sql` - stores feedback media privately with explicit scan state
+40. `sql/040_atomic_billing_event_processing.sql` - makes billing webhook processing safely claimable and retryable
+41. `sql/041_audit_integration_secret_changes.sql` - records integration secret lifecycle events
+42. `sql/042_billing_customer_summary.sql` - exposes a bounded customer billing summary
+43. `sql/043_durable_account_deletion_jobs.sql` - creates resumable, auditable account-deletion work
+44. `sql/044_public_board_directory_migration_marker.sql` - records the hosted directory migration boundary
+45. `sql/045_bounded_public_board_directory.sql` - moves public directory ranking and totals into a bounded service-only aggregate
+46. `sql/046_feedback_activity_and_update_accessibility.sql` - records feedback history and update accessibility metadata
+47. `sql/047_api_idempotency_keys.sql` - prevents duplicate API mutations on retries
+48. `sql/048_idempotency_request_fingerprint.sql` - rejects idempotency-key reuse with a different request
+49. `sql/049_idempotent_project_creation.sql` - makes project creation retry-safe and uniquely keyed
+50. `sql/050_cursor_public_board_directory.sql` - adds snapshot-stable keyset pagination to public-board discovery
+51. `sql/051_advisor_security_hardening.sql` - removes remaining callable trigger internals, makes service-only RLS intent explicit, and fixes advisor indexes
+52. `sql/052_resend_delivery_events.sql` - records signed Resend delivery events and suppresses bounced or complained recipients without storing plaintext email addresses
+53. `sql/053_versioned_product_update_publish.sql` - rejects stale Product Update publication requests inside the database lock
+54. `sql/054_multiple_product_update_ctas.sql` - supports multiple validated call-to-action links on Product Updates
+55. `sql/055_private_feedback_by_default.sql` - makes non-board feedback private by default and marks its collection source
+56. `sql/056_growth_referrals_and_marketing.sql` - adds consent-aware lead and conversion records, five-use referrals, a one-time complimentary Pro month, and service-only growth data access
+57. `sql/057_referral_and_downgrade_safeguards.sql` - adds layered referral qualification, final-three-paid-days cancellation warnings, reversible project freezing, and server-only lifecycle controls
+58. `sql/058_internal_product_feedback_project.sql` - creates the administrator-owned system project used by Settings feedback and product updates
+59. `sql/059_product_update_visibility_toggle.sql` - adds independent release-note visibility and an atomic service-only toggle that preserves publication and seen-state identity
 
 Hosted schema note, 4 August 2026: migrations through `059` are applied and verified on the live project. Product Updates tables and storage exist with RLS enabled, embed heartbeats are service-managed, module choices are atomic, public-directory pagination is snapshot-stable, stale writes, publications, and visibility changes are rejected atomically, email bounces and complaints are replay-safe and suppress future sends, referral and downgrade safeguards are active, the internal product-feedback project exists, generated types are current, and `pnpm supabase:check` passes. The remaining Supabase security advisory is the project-level leaked-password-protection setting, not a database migration issue.
 

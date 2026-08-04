@@ -1,4 +1,4 @@
-# Reliability and idiot-proofing audit — 2026-08-02
+# Reliability and idiot-proofing audit - 2026-08-02
 
 ## Scope and method
 
@@ -24,7 +24,7 @@ The primary acceptance rule is simple: a successful action performed in the same
 
 ## Findings and remediation status
 
-### P1-01 — Standard `If-Match` is intercepted before app recovery [fixed]
+### P1-01 - Standard `If-Match` is intercepted before app recovery [fixed]
 
 **Evidence:** In production, image upload returned 200 and the immediately following draft PATCH returned 412. The app's route code emits 409 for edit conflicts and contains no 412 response. The 412 therefore bypasses the JSON `EDIT_CONFLICT` envelope, current-version value, recovery banner, and safe retry code. The same header is used across release notes, feedback triage, customization, project settings, and update display settings.
 
@@ -32,7 +32,7 @@ The primary acceptance rule is simple: a successful action performed in the same
 
 **Remediation:** All authenticated browser clients now send `X-Feedbacks-Version`. All eight protected handlers parse the shared application header and retain legacy ETag parsing only for backward compatibility. Standard ETag response headers remain intact.
 
-### P1-02 — Media mutations leave the release-note editor on a render-stale version [fixed]
+### P1-02 - Media mutations leave the release-note editor on a render-stale version [fixed]
 
 **Evidence:** `applyMediaMutation` updates React state after upload/remove, while the next action reads `selected.updated_at` from the render that initiated the media request. A fast or immediate Save draft therefore sends the pre-upload version even though the same editor just received the new version.
 
@@ -40,7 +40,7 @@ The primary acceptance rule is simple: a successful action performed in the same
 
 **Remediation:** The composer now maintains `selectedVersionRef`, advances it synchronously after save, publish, upload, and remove, and merges media responses against the latest state item. Every following mutation reads that ref.
 
-### P1-03 — The exact successful-action → next-action sequence lacked regression coverage [fixed]
+### P1-03 - The exact successful-action → next-action sequence lacked regression coverage [fixed]
 
 **Evidence:** Existing concurrency tests verify stale-request rejection and media tests verify upload/delete independently, but no test asserts Save draft → Upload image → Save draft, Upload → Remove, or one mutation immediately following another with the returned version.
 
@@ -48,7 +48,7 @@ The primary acceptance rule is simple: a successful action performed in the same
 
 **Remediation:** Added shared-header round-trip coverage, a source boundary test that rejects browser `If-Match` writes, and an end-to-end assertion for image upload followed immediately by a successful draft save.
 
-### P2-01 — Transport-level 412 responses degrade to a vague generic error [fixed]
+### P2-01 - Transport-level 412 responses degrade to a vague generic error [fixed]
 
 **Evidence:** The composer request helper recognizes only a JSON `EDIT_CONFLICT` code. A bodyless/non-JSON 412 becomes “The server rejected this request,” even though the user's recovery banner is available elsewhere.
 
@@ -56,7 +56,7 @@ The primary acceptance rule is simple: a successful action performed in the same
 
 **Remediation:** The release-note request layer normalizes both 409 and 412 to `EDIT_CONFLICT`, reads a current version from JSON or ETag when available, preserves the form, and activates the existing top and bottom recovery actions.
 
-### P2-02 — Version transport logic is duplicated across four clients and eight API handlers [fixed]
+### P2-02 - Version transport logic is duplicated across four clients and eight API handlers [fixed]
 
 **Evidence:** Header formatting/parsing and conflict branching are repeated in release-note, feedback, customize, project-settings, settings, publish, archive, restore, image, and delete paths. Duplication allowed server/client semantics to drift.
 
@@ -64,7 +64,7 @@ The primary acceptance rule is simple: a successful action performed in the same
 
 **Remediation:** `mutationVersionHeaders` and `parseMutationVersion` now own the client/server contract. The test suite enforces their use at every owner-editable mutation boundary.
 
-### P2-03 — Supabase leaked-password protection is disabled [blocked; platform setting]
+### P2-03 - Supabase leaked-password protection is disabled [blocked; platform setting]
 
 **Evidence:** The live Supabase security advisor reports `auth_leaked_password_protection` as WARN. Schema/RLS checks pass, and no application dependency vulnerability was found.
 
@@ -72,7 +72,7 @@ The primary acceptance rule is simple: a successful action performed in the same
 
 **Status:** No repository or schema change can enable this account-level Auth option through the connected database tooling. It remains the only security-advisor warning and is documented rather than falsely marked fixed.
 
-### P3-01 — Advisor noise from quarantine snapshots and unused indexes [accepted]
+### P3-01 - Advisor noise from quarantine snapshots and unused indexes [accepted]
 
 The performance advisor reports INFO-only missing-primary-key notices for read-only `quarantine.e2e_*_20260730` snapshot tables and unused-index notices. Snapshot tables are deliberately non-production reference data. Unused-index removal is not justified from a short activity window and could harm less-frequent jobs, so no destructive database change is warranted in this audit.
 
