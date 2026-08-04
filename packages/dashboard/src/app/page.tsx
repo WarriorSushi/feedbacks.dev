@@ -38,24 +38,20 @@ const proPlan = PLAN_MATRIX.pro
 
 const useCases = [
   {
-    audience: 'Early-stage SaaS',
-    moment: 'A user gets stuck during onboarding.',
-    outcome: 'Capture the page, browser, and their words before the moment turns into churn.',
+    situation: 'A user hits a broken screen after your latest deploy.',
+    outcome: 'They send a short note from that page. You get the URL, browser, device, and optional screenshot automatically.',
   },
   {
-    audience: 'Agencies with client apps',
-    moment: 'Feedback arrives for three products at once.',
-    outcome: 'Keep every inbox separate and route the useful report to the right client workflow.',
+    situation: 'Someone testing your vibe-coded app says, “it does not work.”',
+    outcome: 'Open one report with the screen and technical context attached instead of guessing what happened.',
   },
   {
-    audience: 'AI-assisted engineering',
-    moment: 'A coding agent finds a reproducible defect.',
-    outcome: 'Let the agent file structured context through the API, then query the same backlog through MCP.',
+    situation: 'Three customers ask for the same small feature.',
+    outcome: 'Keep their requests together, decide if it is worth building, and reply when it ships.',
   },
   {
-    audience: 'Internal tools',
-    moment: 'A teammate spots friction nobody would open a ticket for.',
-    outcome: 'Give them a quiet in-product form and turn small complaints into an actionable queue.',
+    situation: 'A client reports a bug in the app you built for them.',
+    outcome: 'Keep that project separate and send the useful report to GitHub, Slack, Discord, or a webhook.',
   },
 ] as const
 
@@ -155,13 +151,12 @@ export default function LandingPage() {
           <div className="landing-hero-grain pointer-events-none absolute inset-0" aria-hidden="true" />
           <div className="relative mx-auto grid max-w-[1600px] gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pt-20 2xl:grid-cols-[minmax(640px,0.9fr)_minmax(0,1.1fr)] 2xl:items-center 2xl:gap-12 2xl:pb-24 2xl:pt-24">
             <div className="min-w-0 lg:pb-6">
-              <p className="inline-flex items-center gap-2 text-xs font-semibold text-foreground/70"><span className="h-1.5 w-1.5 rounded-full bg-primary" /> In-app feedback for developer-led teams</p>
-              <h1 className="mt-5 max-w-2xl text-[2.55rem] font-semibold leading-[0.98] tracking-[-0.055em] sm:text-[4.25rem] 2xl:text-[3.75rem]">
+              <h1 className="max-w-2xl text-[2.55rem] font-semibold leading-[0.98] tracking-[-0.055em] sm:text-[4.25rem] 2xl:text-[3.75rem]">
                 <span className="block 2xl:whitespace-nowrap">Find what users need.</span>
                 <span className="mt-1 block 2xl:whitespace-nowrap">Show what you fixed.</span>
               </h1>
               <p className="mt-6 max-w-[570px] text-base leading-7 text-muted-foreground sm:text-lg">
-                Add a lightweight feedback widget to your app. Every message reaches one focused inbox with the page, browser, and optional screenshot attached.
+                Add one feedback button to your app. Users send a short note without leaving the page, and you receive the page, browser, device, and optional screenshot with it.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Link href={authHref}>
@@ -183,10 +178,9 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-0 sm:px-6">
             <div className="mb-12 grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
               <div className="px-5 sm:px-0">
-                <p className="text-xs font-semibold text-primary">Setup without setup fatigue</p>
-                <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Copy. Verify. Start listening.</h2>
+                <h2 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Add feedback to your app in three steps.</h2>
               </div>
-              <p className="max-w-2xl px-5 text-base leading-7 text-muted-foreground sm:px-0 lg:justify-self-end">Create a project, paste the recommended snippet, and send one private test. Customize after the connection works.</p>
+              <p className="max-w-2xl px-5 text-base leading-7 text-muted-foreground sm:px-0 lg:justify-self-end">Create a project, paste the snippet, and send one test report. Change the form later from the dashboard.</p>
             </div>
             <LandingInstallStory snippet={installSnippet} />
           </div>
@@ -196,10 +190,9 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-0 sm:px-6">
             <div className="mb-12 grid gap-6 px-5 sm:px-0 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
               <div>
-                <p className="text-xs font-semibold text-primary">The product loop</p>
-                <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">A clear path from problem to shipped fix.</h2>
+                <h2 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">See the report. Fix it. Tell the user.</h2>
               </div>
-              <p className="max-w-2xl leading-7 text-muted-foreground lg:justify-self-end">See exactly what the user sees, triage the message, and publish the update without losing the original context.</p>
+              <p className="max-w-2xl leading-7 text-muted-foreground lg:justify-self-end">Every report stays connected to its page and technical details. When the fix ships, publish a short update inside the same app.</p>
             </div>
             <LandingFeedbackStory />
           </div>
@@ -208,18 +201,14 @@ export default function LandingPage() {
         <section id="use-cases" className="landing-section landing-section-sky landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-6 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
             <div className="lg:sticky lg:top-24 lg:self-start">
-              <p className="text-xs font-semibold text-primary">Made for the moments support forms miss</p>
-              <h2 className="mt-4 max-w-xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Different products. The same need to hear users clearly.</h2>
-              <p className="mt-5 max-w-lg leading-7 text-muted-foreground">The form stays small. The context and workflow adapt to the way your team ships.</p>
+              <h2 className="max-w-xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">When a user says “it does not work,” get the details you need.</h2>
+              <p className="mt-5 max-w-lg leading-7 text-muted-foreground">The user writes a short note. feedbacks.dev adds the page and browser details that make the report useful.</p>
             </div>
             <div className="divide-y border-y">
               {useCases.map((useCase, index) => (
-                <article key={useCase.audience} className="landing-use-case-row grid gap-3 py-6 sm:grid-cols-[46px_0.8fr_1.2fr] sm:gap-5 sm:py-7">
+                <article key={useCase.situation} className="landing-use-case-row grid gap-3 py-6 sm:grid-cols-[46px_0.9fr_1.1fr] sm:gap-5 sm:py-7">
                   <span className="font-mono text-xs text-primary">0{index + 1}</span>
-                  <div>
-                    <h3 className="text-sm font-semibold">{useCase.audience}</h3>
-                    <p className="mt-1 text-sm leading-6 text-foreground/75">{useCase.moment}</p>
-                  </div>
+                  <h3 className="text-sm font-semibold leading-6">{useCase.situation}</h3>
                   <p className="text-sm leading-6 text-muted-foreground">{useCase.outcome}</p>
                 </article>
               ))}
@@ -231,10 +220,9 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-0 sm:px-6">
             <div className="mb-12 grid gap-6 px-5 sm:px-0 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
               <div>
-                <p className="text-xs font-semibold text-primary">Route the signal</p>
-                <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Feedback goes where work already happens.</h2>
+                <h2 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Send important feedback to the tools you already use.</h2>
               </div>
-              <p className="max-w-2xl leading-7 text-muted-foreground lg:justify-self-end">Send selected feedback to Slack, Discord, GitHub, or any webhook. Use REST or MCP when a trusted coding agent needs the same context.</p>
+              <p className="max-w-2xl leading-7 text-muted-foreground lg:justify-self-end">Forward a report to Slack, Discord, GitHub, or a webhook. Use the API or MCP when your coding agent needs the same backlog.</p>
             </div>
             <LandingConnectionsStory />
           </div>
@@ -243,9 +231,8 @@ export default function LandingPage() {
         <section className="landing-section landing-section-lilac landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Designed for developer trust</p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Public in the browser. Private on the server.</h2>
-              <p className="mt-5 max-w-2xl leading-7 text-muted-foreground">The embed uses a publishable project key that cannot authorize private API access. API credentials are created separately, integration secrets are encrypted, and feedback images require an authenticated download.</p>
+              <h2 className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Your public project key cannot open your inbox.</h2>
+              <p className="mt-5 max-w-2xl leading-7 text-muted-foreground">The widget uses a browser-safe key. Private API keys are separate, integration secrets are encrypted, and screenshots require an authenticated owner.</p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link href="/privacy"><Button variant="outline">How data is handled</Button></Link>
                 <Link href="/docs/operate/security" prefetch={false}><Button variant="ghost">Security guide</Button></Link>
@@ -268,7 +255,7 @@ export default function LandingPage() {
         <section id="pricing" className="landing-section landing-section-mint landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto max-w-5xl px-5 sm:px-6">
             <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr]">
-              <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Simple pricing</p><h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Start free. Pay when you grow.</h2><p className="mt-5 leading-7 text-muted-foreground">The feedback form, messages for users, setup, and inbox are ready from day one.</p></div>
+              <div><h2 className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Use it free. Upgrade when feedback grows.</h2><p className="mt-5 leading-7 text-muted-foreground">The Free plan includes the feedback form, inbox, product updates, and the same simple setup.</p></div>
               <div className="landing-pricing-card overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-card)]">
                 <div className="grid md:grid-cols-2">
                   <div className="p-6 sm:p-8">
@@ -293,8 +280,7 @@ export default function LandingPage() {
         <section className="landing-section landing-section-warm landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto max-w-4xl px-5 sm:px-6">
             <div className="text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Before you install</p>
-              <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">Questions developers ask first.</h2>
+              <h2 className="text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">What you need to know before installing.</h2>
             </div>
             <div className="landing-faq-card mt-10 divide-y rounded-xl border bg-card px-5 sm:px-7">
               {[
@@ -319,9 +305,8 @@ export default function LandingPage() {
 
         <section className="landing-section landing-section-aurora landing-reveal px-5 py-20 sm:px-6 sm:py-28">
           <div className="mx-auto max-w-4xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Ready when you are</p>
-            <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-5xl">Hear your users today.</h2>
-            <p className="mx-auto mt-5 max-w-xl leading-7 text-muted-foreground">Create a project, paste one safe code block, and send a test. We guide you through each step.</p>
+            <h2 className="text-3xl font-semibold tracking-[-0.035em] sm:text-5xl">Add a feedback button to your app today.</h2>
+            <p className="mx-auto mt-5 max-w-xl leading-7 text-muted-foreground">Create a project, paste one code block, and send a test report. You can start free.</p>
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Link href={authHref}><Button size="lg" className="h-12 w-full gap-2 px-7 sm:w-auto">Create a free project <ArrowRight className="h-4 w-4" /></Button></Link><Link href="/docs" prefetch={false}><Button size="lg" variant="outline" className="h-12 w-full px-7 sm:w-auto">Read the docs</Button></Link></div>
           </div>
         </section>

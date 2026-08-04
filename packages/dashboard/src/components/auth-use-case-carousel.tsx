@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Bug,
-  Check,
   Code2,
   Lightbulb,
   Map,
@@ -18,50 +17,38 @@ import { cn } from '@/lib/utils'
 
 const useCases = [
   {
-    label: 'Reproduce bugs faster',
-    title: 'Bug reports arrive with the context your team needs.',
-    body: 'Users describe the problem once. The page, browser, device, and optional screenshot stay attached to the report.',
-    benefits: ['Less back-and-forth', 'Faster reproduction', 'One focused inbox'],
+    title: 'A user found a bug you cannot reproduce.',
+    body: 'Page, browser, screenshot, and message arrive together.',
     icon: Bug,
     hue: 136,
   },
   {
-    label: 'Choose the next useful bet',
-    title: 'Turn scattered feature requests into credible product signal.',
-    body: 'Collect ideas where they happen, group similar requests, and see which problems keep appearing before you commit a sprint.',
-    benefits: ['Requests in context', 'Clearer prioritization', 'Private triage first'],
+    title: 'Three users asked for the same feature.',
+    body: 'See every request before you decide what to build.',
     icon: Lightbulb,
     hue: 74,
   },
   {
-    label: 'Close the loop',
-    title: 'Show customers when the improvement they asked for ships.',
-    body: 'Publish a concise update through the same embed and connect it to the original feedback, without installing another announcement tool.',
-    benefits: ['Updates in your product', 'Original request preserved', 'Trust after the fix'],
+    title: 'You fixed the problem they reported.',
+    body: 'Tell affected users with one short in-app update.',
     icon: Megaphone,
     hue: 198,
   },
   {
-    label: 'Keep the useful details',
-    title: 'Capture technical context without making users fill a support form.',
-    body: 'The form stays lightweight while feedbacks.dev quietly records the environment details that make a report actionable.',
-    benefits: ['Small user-facing form', 'Automatic environment data', 'Optional screenshot capture'],
+    title: 'A beta tester got stuck on one screen.',
+    body: 'See their screen before asking a follow-up question.',
     icon: ScanSearch,
     hue: 302,
   },
   {
-    label: 'Invite customers into the roadmap',
-    title: 'Publish a feedback board that still feels like your product.',
-    body: 'Share selected ideas, collect votes and replies, and keep internal triage separate from the public conversation.',
-    benefits: ['Curated public board', 'Votes with context', 'Private work stays private'],
+    title: 'Your client wants one place for feedback.',
+    body: 'Share one board for ideas, votes, replies, and status.',
     icon: Map,
     hue: 32,
   },
   {
-    label: 'Stay simple as you grow',
-    title: 'Install once. Change the workflow without shipping new frontend code.',
-    body: 'Start with the recommended snippet, then manage forms, boards, updates, and routing from the dashboard when you need them.',
-    benefits: ['Copy-paste setup', 'Remote configuration', 'No all-in-one setup maze'],
+    title: 'Your AI-built app changes every week.',
+    body: 'Change forms and routing without reinstalling anything.',
     icon: Code2,
     hue: 158,
   },
@@ -141,31 +128,10 @@ export function AuthUseCaseCarousel({
         if (!(event.target as Element).closest('[data-rotation-control]')) setRotationEnabled(false)
       }}
     >
-      <div className="mb-3 flex items-center justify-between gap-4">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Built for the whole feedback loop
-        </p>
-        <button
-          type="button"
-          data-rotation-control
-          disabled={reducedMotion}
-          onClick={() => setRotationEnabled((enabled) => !enabled)}
-          aria-label={reducedMotion
-            ? 'Automatic story rotation is unavailable while reduced motion is enabled'
-            : rotationEnabled
-              ? 'Stop automatic story rotation'
-              : 'Start automatic story rotation'}
-          className="auth-rotation-control inline-flex min-h-9 items-center gap-2 rounded-full border bg-background/65 px-3 text-[11px] font-semibold text-muted-foreground shadow-sm backdrop-blur-sm hover:text-foreground disabled:cursor-default disabled:opacity-55"
-        >
-          {rotationEnabled && !reducedMotion ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-          {reducedMotion ? 'Motion reduced' : rotationEnabled ? 'Auto-playing' : 'Play stories'}
-        </button>
-      </div>
-
       <div className="auth-use-case-viewport">
         <div
           className="auth-use-case-track"
-          style={{ transform: `translate3d(calc(${activeIndex * (compact ? 0.625 : 2.5)}rem - ${activeIndex * 100}%), 0, 0)` }}
+          style={{ transform: `translate3d(-${activeIndex * 100}%, 0, 0)` }}
           aria-live={rotating ? 'off' : 'polite'}
           aria-atomic="false"
         >
@@ -174,47 +140,28 @@ export function AuthUseCaseCarousel({
             const active = activeIndex === index
             return (
               <article
-                key={useCase.label}
+                key={useCase.title}
                 className="auth-use-case-card"
                 aria-hidden={!active}
-                aria-label={`${index + 1} of ${useCases.length}: ${useCase.label}`}
+                aria-label={`${index + 1} of ${useCases.length}: ${useCase.title}`}
                 aria-roledescription="slide"
                 role="group"
                 data-active={active}
                 style={{ '--auth-card-hue': useCase.hue } as React.CSSProperties}
               >
-                <div className="auth-card-signal" aria-hidden="true">
-                  <span className="auth-card-signal-glow" />
-                  <span className="auth-card-signal-disc">
-                    <span className="auth-card-signal-ring" />
-                    <span className="auth-card-signal-core"><Icon className="h-5 w-5" /></span>
-                  </span>
-                  <span className="auth-card-signal-spark" />
-                </div>
                 <div className="auth-use-case-copy relative z-[1] flex h-full flex-col">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="inline-flex items-center gap-2 text-xs font-semibold text-primary">
-                      <Icon className="h-4 w-4" />
-                      {useCase.label}
-                    </span>
-                    <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                      {String(index + 1).padStart(2, '0')} / {String(useCases.length).padStart(2, '0')}
-                    </span>
-                  </div>
-                  <h2 className="auth-use-case-title mt-7 max-w-lg text-3xl font-semibold leading-[1.08] tracking-[-0.04em] xl:text-[2.05rem]">
+                  <h2 className="auth-use-case-title max-w-xl text-3xl font-semibold leading-[1.08] tracking-[-0.04em] xl:text-[2.05rem]">
                     {useCase.title}
                   </h2>
-                  <p className="auth-use-case-body mt-4 max-w-lg text-sm leading-6 text-muted-foreground">
+                  <p className="auth-use-case-body mt-3 max-w-xl truncate text-sm leading-6 text-muted-foreground">
                     {useCase.body}
                   </p>
-                  <ul className="auth-use-case-benefits mt-auto grid gap-2 pt-7 text-xs text-foreground/80 sm:grid-cols-3">
-                    {useCase.benefits.map((benefit) => (
-                      <li key={benefit} className="flex items-start gap-1.5">
-                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                        <span>{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="auth-card-signal" aria-hidden="true">
+                    <span className="auth-card-signal-disc">
+                      <span className="auth-card-signal-ring" />
+                      <span className="auth-card-signal-core"><Icon className="h-5 w-5" /></span>
+                    </span>
+                  </div>
                 </div>
               </article>
             )
@@ -226,9 +173,9 @@ export function AuthUseCaseCarousel({
         <div className="flex items-center gap-1.5" aria-label="Choose a use case">
           {useCases.map((useCase, index) => (
             <button
-              key={useCase.label}
+              key={useCase.title}
               type="button"
-              aria-label={`Show slide ${index + 1}: ${useCase.label}`}
+              aria-label={`Show slide ${index + 1}: ${useCase.title}`}
               aria-pressed={activeIndex === index}
               onClick={() => setActiveIndex(index)}
               className={cn(
@@ -249,6 +196,21 @@ export function AuthUseCaseCarousel({
           ))}
         </div>
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            data-rotation-control
+            disabled={reducedMotion}
+            onClick={() => setRotationEnabled((enabled) => !enabled)}
+            aria-label={reducedMotion
+              ? 'Automatic story rotation is unavailable while reduced motion is enabled'
+              : rotationEnabled
+                ? 'Stop automatic story rotation'
+                : 'Start automatic story rotation'}
+            title={reducedMotion ? 'Motion reduced' : rotationEnabled ? 'Pause stories' : 'Play stories'}
+            className="auth-rotation-control inline-flex h-9 w-9 items-center justify-center rounded-md border bg-background/70 text-foreground disabled:cursor-default disabled:opacity-50"
+          >
+            {rotationEnabled && !reducedMotion ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </button>
           <button
             type="button"
             onClick={showPrevious}

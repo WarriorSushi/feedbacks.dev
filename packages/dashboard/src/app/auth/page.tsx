@@ -4,7 +4,6 @@ import * as React from 'react'
 import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
-import { BrandWordmark } from '@/components/brand-wordmark'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -113,26 +112,22 @@ function AuthPageInner() {
   return (
     <main className="auth-shell relative min-h-screen overflow-hidden bg-background">
       <div className="auth-shell-atmosphere pointer-events-none absolute inset-0" aria-hidden="true" />
-      <div className="relative mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1fr_0.85fr]">
-        <section className="auth-story-pane hidden min-w-0 overflow-hidden border-r px-10 py-9 lg:flex lg:flex-col xl:px-16">
-          <Link href={marketingHomeHref} className="inline-flex w-fit font-semibold transition-[opacity,transform] hover:-translate-y-0.5 hover:opacity-80">
-            <BrandWordmark className="text-lg" markClassName="h-6 w-6" />
-          </Link>
-          <AuthUseCaseCarousel displayMode="desktop" />
-          <p className="text-xs text-muted-foreground">Public browser-safe keys only. Private credentials stay server-side.</p>
+      <Link href={marketingHomeHref} className="auth-back-home group absolute left-5 top-5 z-30 inline-flex items-center gap-1.5 rounded-md border bg-background/90 px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm transition-[background-color,color,border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-background hover:text-foreground sm:left-8 sm:top-8">
+        <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" /> Back to home
+      </Link>
+
+      <div className="relative grid min-h-screen w-full lg:grid-cols-[minmax(0,1.05fr)_minmax(440px,0.95fr)]">
+        <section className="auth-story-pane hidden min-w-0 overflow-hidden border-r px-10 py-20 lg:flex lg:flex-col xl:px-16">
+          <div className="mx-auto flex w-full max-w-[720px] flex-1">
+            <AuthUseCaseCarousel displayMode="desktop" />
+          </div>
         </section>
 
-        <section className="auth-form-pane relative flex min-w-0 flex-col px-5 py-6 sm:px-8 lg:justify-center lg:px-12 xl:px-20">
-          <div className="flex items-center justify-between lg:absolute lg:right-8 lg:top-8 lg:justify-end xl:right-12">
-            <Link href={marketingHomeHref} className="font-semibold lg:hidden"><BrandWordmark className="text-lg" markClassName="h-6 w-6" /></Link>
-            <Link href={marketingHomeHref} className="group inline-flex items-center gap-1.5 rounded-full border bg-background/75 px-3.5 py-2 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-[background-color,color,border-color,transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:bg-background hover:text-foreground hover:shadow-md"><ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" /> Back to home</Link>
-          </div>
-
-          <div className="auth-form-wrap mx-auto my-auto w-full max-w-[390px] py-12">
+        <section className="auth-form-pane relative flex min-w-0 flex-col px-5 pb-6 pt-20 sm:px-8 sm:pt-24 lg:justify-center lg:px-12 lg:py-20 xl:px-20">
+          <div className="auth-form-wrap mx-auto my-auto w-full max-w-[390px] py-8 lg:py-12">
             <div className="mb-8">
-              <p className="text-xs font-semibold text-primary">Your workspace</p>
-              <h1 className="mt-3 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">{sent ? 'Check your inbox' : 'Continue to feedbacks.dev'}</h1>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{sent ? `We sent a secure sign-in link to ${email}.` : 'Magic link or GitHub. New accounts start Free.'}</p>
+              <h1 className="text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">{sent ? 'Check your inbox' : 'Sign in or create an account'}</h1>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{sent ? `We sent a secure sign-in link to ${email}.` : 'Use email or GitHub. New accounts start on the Free plan.'}</p>
               {invited && !sent && <p className="mt-3 rounded-md border border-primary/25 bg-primary/[0.05] px-3 py-2 text-xs leading-5 text-foreground">You were invited by another feedbacks.dev user. Their invite qualifies after you verify your email and genuinely activate your first project.</p>}
             </div>
 
