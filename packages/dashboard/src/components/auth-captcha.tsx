@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Script from 'next/script'
+import { useTheme } from 'next-themes'
 
 type CaptchaProvider = 'hcaptcha' | 'turnstile'
 
@@ -10,7 +11,7 @@ type CaptchaApi = {
     container: HTMLElement,
     options: {
       sitekey: string
-      theme: 'auto'
+      theme: 'auto' | 'light' | 'dark'
       callback: (token: string) => void
       'expired-callback': () => void
       'error-callback': () => void
@@ -45,6 +46,8 @@ export function AuthCaptcha({
 }) {
   const hostRef = React.useRef<HTMLDivElement>(null)
   const widgetIdRef = React.useRef<string | null>(null)
+  const { resolvedTheme } = useTheme()
+  const captchaTheme = provider === 'turnstile' ? 'auto' : resolvedTheme === 'dark' ? 'dark' : 'light'
 
   const getApi = React.useCallback(() => window[provider], [provider])
 
@@ -54,12 +57,21 @@ export function AuthCaptcha({
 
     widgetIdRef.current = api.render(hostRef.current, {
       sitekey: siteKey,
-      theme: 'auto',
+      theme: captchaTheme,
       callback: (token) => onToken(token),
       'expired-callback': () => onToken(null),
       'error-callback': () => onToken(null),
     })
-  }, [getApi, onToken, siteKey])
+  }, [captchaTheme, getApi, onToken, siteKey])
+
+  React.useEffect(() => {
+    const api = getApi()
+    if (!api || !widgetIdRef.current) return
+    api.remove(widgetIdRef.current)
+    widgetIdRef.current = null
+    onToken(null)
+    renderWidget()
+  }, [captchaTheme, getApi, onToken, renderWidget])
 
   React.useEffect(() => {
     return () => {
