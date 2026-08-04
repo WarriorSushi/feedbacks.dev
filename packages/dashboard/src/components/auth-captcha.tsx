@@ -25,12 +25,13 @@ declare global {
   interface Window {
     hcaptcha?: CaptchaApi
     turnstile?: CaptchaApi
+    feedbacksCaptchaReady?: () => void
   }
 }
 
 const providerScripts: Record<CaptchaProvider, string> = {
-  hcaptcha: 'https://js.hcaptcha.com/1/api.js?render=explicit',
-  turnstile: 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit',
+  hcaptcha: 'https://js.hcaptcha.com/1/api.js?render=explicit&onload=feedbacksCaptchaReady',
+  turnstile: 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=feedbacksCaptchaReady',
 }
 
 export function AuthCaptcha({
@@ -46,6 +47,7 @@ export function AuthCaptcha({
 }) {
   const hostRef = React.useRef<HTMLDivElement>(null)
   const widgetIdRef = React.useRef<string | null>(null)
+  const [scriptReady, setScriptReady] = React.useState(false)
   const { resolvedTheme } = useTheme()
   const captchaTheme = provider === 'turnstile' ? 'auto' : resolvedTheme === 'dark' ? 'dark' : 'light'
 
@@ -65,6 +67,14 @@ export function AuthCaptcha({
   }, [captchaTheme, getApi, onToken, siteKey])
 
   React.useEffect(() => {
+    window.feedbacksCaptchaReady = renderWidget
+    setScriptReady(true)
+    return () => {
+      if (window.feedbacksCaptchaReady === renderWidget) delete window.feedbacksCaptchaReady
+    }
+  }, [renderWidget])
+
+  React.useEffect(() => {
     return () => {
       const api = getApi()
       if (api && widgetIdRef.current) api.remove(widgetIdRef.current)
@@ -82,7 +92,7 @@ export function AuthCaptcha({
 
   return (
     <>
-      <Script src={providerScripts[provider]} strategy="afterInteractive" onReady={renderWidget} />
+      {scriptReady ? <Script src={providerScripts[provider]} strategy="afterInteractive" /> : null}
       <div ref={hostRef} className="flex min-h-[78px] justify-center" />
     </>
   )
