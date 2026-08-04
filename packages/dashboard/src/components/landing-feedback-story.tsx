@@ -59,7 +59,7 @@ export function LandingFeedbackStory() {
                 <h3 className="mt-3 text-2xl font-semibold tracking-[-0.035em]">They tell you without leaving your app.</h3>
                 <p className="mt-3 text-sm leading-6 text-zinc-400">The message comes with the page, browser, rating, and screenshot. Your team sees where the problem happened.</p>
               </div>
-              <div className="relative mx-auto w-full max-w-lg border border-white/10 bg-[#1a1b1e] p-5 shadow-2xl">
+              <div className="landing-feedback-capture-card relative mx-auto w-full max-w-lg border border-white/10 bg-[#1a1b1e] p-5 shadow-2xl">
                 <div className="flex items-center justify-between border-b border-white/10 pb-4"><span className="text-xs font-semibold">Orbit / Deployment #8421</span><span className="text-[10px] text-zinc-400">production</span></div>
                 <div className="mt-5 border border-rose-400/35 bg-rose-400/[0.07] p-4">
                   <div className="flex items-center gap-2 text-[10px] font-semibold text-rose-300"><CircleDot className="h-3 w-3" /> BUILD STALLED</div>
@@ -71,7 +71,7 @@ export function LandingFeedbackStory() {
           )}
 
           {active === 1 && (
-            <div className="w-full max-w-5xl border border-white/10 bg-[#18191c] shadow-2xl">
+            <div className="landing-feedback-inbox w-full max-w-5xl border border-white/10 bg-[#18191c] shadow-2xl">
               <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><div><p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-lime-300">Your feedback inbox</p><p className="mt-1 text-sm font-semibold">Orbit</p></div><span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] text-zinc-400">1 new message</span></div>
               <div className="grid md:grid-cols-[0.86fr_1.14fr]">
                 <div className="border-b border-white/10 md:border-b-0 md:border-r">
@@ -96,7 +96,7 @@ export function LandingFeedbackStory() {
                 <h3 className="mt-3 text-2xl font-semibold tracking-[-0.035em]">Show the fix inside your app.</h3>
                 <p className="mt-3 text-sm leading-6 text-zinc-400">Write one short message in feedbacks.dev. Your app shows it with the code you already added.</p>
               </div>
-              <div className="relative mx-auto w-full max-w-md overflow-hidden border border-white/10 bg-[#1a1b1e] shadow-2xl">
+              <div className="landing-feedback-update relative mx-auto w-full max-w-md overflow-hidden border border-white/10 bg-[#1a1b1e] shadow-2xl">
                 <div className="bg-violet-300 p-5 text-[#1b1328]"><p className="text-[9px] font-black uppercase tracking-[0.14em]">New in Orbit</p><p className="mt-3 text-xl font-bold">Live build logs are here</p></div>
                 <div className="p-5"><p className="text-xs leading-5 text-zinc-400">Watch each build step. When a build fails, Orbit now tells you what to fix.</p><div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4"><span className="inline-flex items-center gap-1 text-[10px] text-lime-300"><Check className="h-3 w-3" /> Shown in Orbit</span><button type="button" onClick={() => setActive(0)} className="inline-flex items-center gap-1 text-[10px] font-semibold text-zinc-200 transition-colors hover:text-lime-300">Start again <ArrowRight className="h-3 w-3" /></button></div></div>
               </div>

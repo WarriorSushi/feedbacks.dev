@@ -178,9 +178,9 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-0 sm:px-6">
             <div className="mb-12 grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end">
               <div className="px-5 sm:px-0">
-                <h2 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Add feedback to your app in three steps.</h2>
+                <h2 className="max-w-2xl text-3xl font-semibold tracking-[-0.04em] sm:text-4xl xl:text-[2.75rem] xl:leading-[1.05]">Install it once. See the first report arrive.</h2>
               </div>
-              <p className="max-w-2xl px-5 text-base leading-7 text-muted-foreground sm:px-0 lg:justify-self-end">Create a project, paste the snippet, and send one test report. Change the form later from the dashboard.</p>
+              <p className="max-w-2xl px-5 text-base leading-7 text-muted-foreground sm:px-0 lg:justify-self-end">Paste the snippet, send a test from your app, then shape the form from your dashboard—without touching the installed code again.</p>
             </div>
             <LandingInstallStory snippet={installSnippet} />
           </div>

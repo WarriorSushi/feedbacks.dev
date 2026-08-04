@@ -18,7 +18,7 @@ const destinations = [
 
 export function LandingConnectionsStory() {
   return (
-    <div className="overflow-hidden border-y border-foreground/15 bg-[#111214] text-zinc-100 shadow-[var(--shadow-float)] sm:rounded-[16px] sm:border">
+    <div className="landing-connections-story overflow-hidden border-y border-foreground/15 bg-[#111214] text-zinc-100 shadow-[var(--shadow-float)] sm:rounded-[16px] sm:border">
       <div className="grid lg:grid-cols-[0.92fr_1.08fr]">
         <div className="border-b border-white/10 p-6 sm:p-8 lg:border-b-0 lg:border-r lg:p-10">
           <div className="flex items-start gap-3 border-b border-white/10 pb-6">
@@ -36,7 +36,7 @@ export function LandingConnectionsStory() {
             <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-zinc-400">Send it where work happens</p>
             <div className="mt-4 divide-y divide-white/[0.08] border-y border-white/10">
               {destinations.map(({ label, detail, Icon, tone }, index) => (
-                <div key={label} className="flex items-center gap-3 py-3.5">
+                <div key={label} className="landing-connection-destination flex items-center gap-3 py-3.5">
                   <Icon className={`h-4 w-4 shrink-0 ${tone}`} />
                   <span className="text-xs font-semibold">{label}</span>
                   <span className="ml-auto text-[11px] text-zinc-400">{detail}</span>
@@ -50,7 +50,7 @@ export function LandingConnectionsStory() {
         </div>
 
         <div className="grid sm:grid-rows-2">
-          <div className="border-b border-white/10 p-6 sm:p-8">
+          <div className="landing-connection-agent border-b border-white/10 p-6 sm:p-8">
             <div className="flex items-center gap-3">
               <Bot className="h-5 w-5 text-lime-300" />
               <div>
@@ -64,7 +64,7 @@ export function LandingConnectionsStory() {
             </div>
           </div>
 
-          <div className="p-6 sm:p-8">
+          <div className="landing-connection-board p-6 sm:p-8">
             <div className="flex items-center gap-3">
               <Globe2 className="h-5 w-5 text-lime-300" />
               <div>
