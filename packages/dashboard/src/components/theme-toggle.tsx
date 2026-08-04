@@ -4,6 +4,7 @@ import * as React from 'react'
 import { flushSync } from 'react-dom'
 import { Laptop, Moon, Palette, Sun } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { normalizeAppearanceTheme, persistSharedAppearance, type AppearanceTheme } from '@/lib/appearance'
 import { cn } from '@/lib/utils'
 
 type ViewTransition = {
@@ -56,6 +57,8 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
+    const storedTheme = normalizeAppearanceTheme(window.localStorage.getItem('theme'))
+    if (storedTheme) persistSharedAppearance(storedTheme)
     setMounted(true)
   }, [])
 
@@ -69,10 +72,12 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
   const nextOption = APPEARANCE_OPTIONS[(currentIndex + 1) % APPEARANCE_OPTIONS.length]
 
   const changeTheme = async (
-    nextTheme: (typeof APPEARANCE_OPTIONS)[number]['value'],
+    nextTheme: AppearanceTheme,
     target: HTMLElement,
   ) => {
     if (nextTheme === currentTheme) return
+
+    persistSharedAppearance(nextTheme)
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const viewTransitionDocument = document as ViewTransitionDocument

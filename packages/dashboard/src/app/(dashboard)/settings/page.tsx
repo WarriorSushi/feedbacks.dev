@@ -14,6 +14,7 @@ import { toast } from '@/hooks/use-toast'
 import Link from 'next/link'
 import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
 import { ProductFeedbackPanel } from '@/components/product-feedback-panel'
+import { persistSharedAppearance } from '@/lib/appearance'
 
 export default function SettingsPage() {
   const supabase = React.useMemo(() => createClient(), [])
@@ -340,7 +341,10 @@ export default function SettingsPage() {
                 aria-checked={theme === value}
                 variant={theme === value ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setTheme(value)}
+                onClick={() => {
+                  persistSharedAppearance(value)
+                  setTheme(value)
+                }}
               >
                 {label}
               </Button>

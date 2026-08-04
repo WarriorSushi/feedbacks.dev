@@ -26,6 +26,14 @@ export function PublicThemeControl() {
 
   if (hasLandingAppearanceControl || hasDashboardAppearanceControl) return null
 
+  if (pathname === '/auth') {
+    return (
+      <div className="auth-theme-control fixed right-5 top-5 z-[70] sm:right-8 sm:top-8">
+        <ThemeToggle landing />
+      </div>
+    )
+  }
+
   return (
     <div className="public-theme-control fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[70] w-11 rounded-lg border bg-popover p-1 shadow-[var(--shadow-float)]">
       <ThemeToggle collapsed />

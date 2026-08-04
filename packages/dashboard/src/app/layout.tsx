@@ -2,6 +2,7 @@ import '@/lib/env' // validate env vars at startup
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { headers } from 'next/headers'
+import { cookies } from 'next/headers'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { PublicThemeControl } from '@/components/public-theme-control'
@@ -11,6 +12,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { MarketingMeasurement } from '@/components/marketing-measurement'
 import { Suspense } from 'react'
+import { APPEARANCE_COOKIE_NAME, normalizeAppearanceTheme } from '@/lib/appearance'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -51,11 +53,18 @@ export default async function RootLayout({
   // the middleware nonce to framework and hydration scripts.
   const nonce = (await headers()).get('x-nonce') || undefined
   const pathname = (await headers()).get('x-pathname') || '/'
+  const sharedAppearance = normalizeAppearanceTheme((await cookies()).get(APPEARANCE_COOKIE_NAME)?.value)
   const showMarketingConsent = pathname === '/' || pathname === '/auth' || pathname.startsWith('/early-access')
+  const appearanceSyncScript = sharedAppearance
+    ? `try{localStorage.setItem('theme',${JSON.stringify(sharedAppearance)})}catch{}`
+    : ''
 
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className={inter.className}>
+        {appearanceSyncScript && (
+          <script nonce={nonce} dangerouslySetInnerHTML={{ __html: appearanceSyncScript }} />
+        )}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
