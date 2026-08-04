@@ -314,8 +314,9 @@
 }
 
 @keyframes auth-pane-flow {
-  0% { background-position: 0% 0%, 100% 100%; }
-  100% { background-position: 18% 8%, 82% 92%; }
+  0% { background-position: 0% 0%, 100% 100%, 50% 50%, 0% 100%; }
+  50% { background-position: 7% 5%, 94% 91%, 54% 45%, 10% 88%; }
+  100% { background-position: 15% 9%, 84% 92%, 46% 56%, 18% 78%; }
 }
 
 @keyframes auth-card-arrive {
@@ -729,23 +730,43 @@
 
 .auth-shell-atmosphere {
   background:
-    radial-gradient(circle at 8% 12%, oklch(0.88 0.085 88 / 0.42), transparent 34%),
-    radial-gradient(circle at 92% 86%, oklch(0.82 0.075 194 / 0.27), transparent 36%);
-  background-size: 118% 118%, 122% 122%;
+    radial-gradient(ellipse 56% 82% at 2% 0%, oklch(0.88 0.14 86 / 0.62), transparent 68%),
+    radial-gradient(ellipse 54% 76% at 98% 100%, oklch(0.74 0.12 205 / 0.42), transparent 66%),
+    radial-gradient(ellipse 46% 68% at 48% 46%, oklch(0.79 0.12 146 / 0.34), transparent 72%),
+    linear-gradient(118deg, oklch(0.95 0.036 92), oklch(0.94 0.028 132) 48%, oklch(0.93 0.032 196));
+  background-size: 112% 112%, 116% 116%, 124% 124%, 100% 100%;
   animation: auth-pane-flow 18s var(--ease-in-out) infinite alternate;
 }
 
 .auth-story-pane,
 .auth-form-pane {
   position: relative;
+  isolation: isolate;
+}
+
+.auth-story-pane::after,
+.auth-form-pane::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='auth-noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.76' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23auth-noise)' opacity='.58'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: multiply;
+  opacity: 0.16;
 }
 
 .auth-story-pane {
-  background: oklch(0.95 0.018 98 / 0.32);
+  background:
+    linear-gradient(115deg, oklch(0.9 0.07 84 / 0.22), transparent 45%),
+    linear-gradient(180deg, rgb(255 255 255 / 0.08), oklch(0.82 0.05 143 / 0.08));
 }
 
 .auth-form-pane {
-  background: oklch(0.98 0.006 145 / 0.72);
+  background:
+    radial-gradient(ellipse at 100% 100%, oklch(0.74 0.1 204 / 0.13), transparent 62%),
+    linear-gradient(135deg, oklch(0.98 0.008 115 / 0.7), oklch(0.95 0.025 183 / 0.46));
 }
 
 .dark .auth-shell {
@@ -754,17 +775,29 @@
 
 .dark .auth-shell-atmosphere {
   background:
-    radial-gradient(circle at 8% 12%, oklch(0.46 0.07 82 / 0.23), transparent 36%),
-    radial-gradient(circle at 94% 88%, oklch(0.4 0.065 202 / 0.21), transparent 38%);
-  background-size: 118% 118%, 122% 122%;
+    radial-gradient(ellipse 58% 86% at 0% -4%, oklch(0.55 0.115 84 / 0.42), transparent 67%),
+    radial-gradient(ellipse 56% 82% at 102% 102%, oklch(0.49 0.105 207 / 0.36), transparent 65%),
+    radial-gradient(ellipse 52% 72% at 48% 46%, oklch(0.45 0.09 148 / 0.27), transparent 70%),
+    linear-gradient(118deg, oklch(0.105 0.024 84), oklch(0.09 0.018 146) 49%, oklch(0.095 0.024 205));
+  background-size: 112% 112%, 116% 116%, 124% 124%, 100% 100%;
+}
+
+.dark .auth-story-pane::after,
+.dark .auth-form-pane::after {
+  mix-blend-mode: soft-light;
+  opacity: 0.32;
 }
 
 .dark .auth-story-pane {
-  background: oklch(0.12 0.012 120 / 0.38);
+  background:
+    linear-gradient(112deg, oklch(0.4 0.09 80 / 0.18), transparent 44%),
+    linear-gradient(180deg, oklch(0.13 0.02 122 / 0.18), oklch(0.08 0.012 150 / 0.32));
 }
 
 .dark .auth-form-pane {
-  background: oklch(0.09 0.009 160 / 0.56);
+  background:
+    radial-gradient(ellipse at 100% 100%, oklch(0.38 0.085 206 / 0.18), transparent 62%),
+    linear-gradient(132deg, oklch(0.075 0.012 132 / 0.72), oklch(0.1 0.026 192 / 0.5));
 }
 
 .auth-form-wrap {
@@ -792,14 +825,22 @@
   padding: clamp(1.5rem, 3vw, 2rem);
   border: 1px solid oklch(var(--foreground) / 0.11);
   border-radius: 0.9rem;
-  background: oklch(var(--card) / 0.88);
+  background:
+    linear-gradient(145deg, oklch(var(--surface-overlay) / 0.88), oklch(var(--surface-raised) / 0.76));
   box-shadow:
-    0 24px 64px -38px rgb(0 0 0 / 0.3),
-    inset 0 1px 0 rgb(255 255 255 / 0.48);
+    0 30px 82px -38px oklch(0.24 0.045 var(--auth-card-hue) / 0.32),
+    0 14px 34px -26px rgb(0 0 0 / 0.2),
+    inset 0 1px 0 rgb(255 255 255 / 0.58);
 }
 
 .auth-use-case-card::before {
-  display: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 86% 8%, oklch(0.73 0.13 var(--auth-card-hue) / 0.18), transparent 34%),
+    radial-gradient(circle at 8% 112%, oklch(0.76 0.08 calc(var(--auth-card-hue) + 58) / 0.12), transparent 42%);
+  pointer-events: none;
 }
 
 .auth-use-case-card::after {
@@ -832,6 +873,15 @@
     transform 520ms var(--ease-out-expo);
 }
 
+.auth-card-signal::before {
+  content: "";
+  position: absolute;
+  inset: 18%;
+  border-radius: 1.5rem;
+  background: oklch(0.68 0.14 var(--auth-card-hue) / 0.24);
+  filter: blur(16px);
+}
+
 .auth-use-case-card[data-active="true"] .auth-card-signal {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1) rotate(0);
@@ -850,7 +900,9 @@
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 0.48);
   border-radius: 1.35rem;
-  background: oklch(0.88 0.055 var(--auth-card-hue) / 0.78);
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 0.5), rgb(255 255 255 / 0.12)),
+    oklch(0.78 0.09 var(--auth-card-hue) / 0.72);
   box-shadow:
     0 16px 34px -20px oklch(0.35 0.08 var(--auth-card-hue) / 0.48),
     inset 0 1px 0 rgb(255 255 255 / 0.58);
@@ -970,15 +1022,19 @@
 
 .dark .auth-use-case-card {
   border-color: rgb(255 255 255 / 0.11);
-  background: oklch(0.15 0.01 145 / 0.9);
+  background:
+    linear-gradient(145deg, oklch(0.17 0.022 var(--auth-card-hue) / 0.92), oklch(0.115 0.016 162 / 0.88));
   box-shadow:
-    0 24px 64px -38px rgb(0 0 0 / 0.72),
+    0 32px 84px -36px oklch(0.3 0.07 var(--auth-card-hue) / 0.46),
+    0 18px 42px -28px rgb(0 0 0 / 0.72),
     inset 0 1px 0 rgb(255 255 255 / 0.08);
 }
 
 .dark .auth-card-signal-disc {
   border-color: rgb(255 255 255 / 0.14);
-  background: oklch(0.32 0.06 var(--auth-card-hue));
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 0.14), rgb(255 255 255 / 0.025)),
+    oklch(0.31 0.075 var(--auth-card-hue));
 }
 
 .dark .auth-card-signal-core {
