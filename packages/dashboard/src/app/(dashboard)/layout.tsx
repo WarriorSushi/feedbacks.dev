@@ -88,7 +88,7 @@ export default async function DashboardLayout({
         billingAccount={billingAccount}
       />
       <main className="min-h-0 flex-1 overflow-y-auto bg-background pb-[env(safe-area-inset-bottom,0px)]">
-        <div key={pathname} className="workspace-route-enter mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 md:px-8 md:py-7">{children}</div>
+        <div className="workspace-route-enter mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 md:px-8 md:py-7">{children}</div>
       </main>
       <ProductTour
         initialOpen={false}

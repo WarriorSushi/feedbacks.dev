@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import test from 'node:test'
@@ -18,7 +18,9 @@ test('tracked project files do not contain em dashes', () => {
   const htmlDash = /&(?:mdash|#8212|#x2014);/i
 
   for (const file of trackedFiles) {
-    const contents = readFileSync(join(repositoryRoot, file))
+    const absolutePath = join(repositoryRoot, file)
+    if (!existsSync(absolutePath)) continue
+    const contents = readFileSync(absolutePath)
     if (contents.includes(0)) continue
 
     const text = contents.toString('utf8')
@@ -213,6 +215,33 @@ test('dashboard mutations preserve mounted content and scope progress to the aff
   assert.doesNotMatch(boardSettings, /router\.refresh\(/)
 })
 
+test('dashboard navigation retains the mounted workspace and uses route prefetching', () => {
+  const layout = read('../../src/app/(dashboard)/layout.tsx')
+  const sidebar = read('../../src/components/sidebar.tsx')
+  const dashboardRoot = new URL('../../src/app/(dashboard)/', import.meta.url)
+  const loadingBoundaries = [
+    'loading.tsx',
+    'api-docs/loading.tsx',
+    'billing/loading.tsx',
+    'dashboard/boards/loading.tsx',
+    'feedback/loading.tsx',
+    'feedback/[id]/loading.tsx',
+    'integrations/loading.tsx',
+    'projects/loading.tsx',
+    'projects/new/loading.tsx',
+    'projects/[id]/loading.tsx',
+    'projects/[id]/verify/loading.tsx',
+    'settings/loading.tsx',
+  ]
+
+  assert.doesNotMatch(layout, /key=\{pathname\}/)
+  assert.match(sidebar, /router\.prefetch\(href\)/)
+  assert.doesNotMatch(sidebar, /prefetch=\{false\}/)
+  for (const path of loadingBoundaries) {
+    assert.equal(existsSync(new URL(path, dashboardRoot)), false, `${path} should not replace mounted dashboard content`)
+  }
+})
+
 test('feedback form editor refreshes stale baselines and exposes explicit recovery', () => {
   const editor = read('../../src/app/(dashboard)/projects/[id]/customize-tab.tsx')
 
@@ -317,7 +346,7 @@ test('marketing hero and workspace states share the new motion and texture langu
   assert.match(css, /\.workspace-route-enter/)
   assert.match(css, /prefers-reduced-motion/)
   assert.match(emptyState, /workspace-empty-state/)
-  assert.match(layout, /key=\{pathname\}/)
+  assert.doesNotMatch(layout, /key=\{pathname\}/)
 })
 
 test('settings reuses a private system project for product feedback and updates', () => {

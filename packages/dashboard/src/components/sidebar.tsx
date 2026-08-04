@@ -333,7 +333,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
         >
           <Link
             href="/dashboard"
-            prefetch={false}
             onClick={() => beginNavigation('/dashboard')}
             onMouseEnter={() => router.prefetch('/dashboard')}
             onFocus={() => router.prefetch('/dashboard')}
@@ -401,7 +400,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                     <Link
                       key={p.id}
                       href={destination}
-                      prefetch={false}
                       onClick={() => {
                         rememberProject(p.id)
                         beginNavigation(destination)
@@ -434,7 +432,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                 <div className="border-t border-border/80 p-1">
                   <Link
                     href="/projects"
-                    prefetch={false}
                     onClick={() => beginNavigation('/projects')}
                     className="flex min-h-9 items-center rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
                   >
@@ -442,7 +439,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                   </Link>
                   <Link
                     href="/projects/new"
-                    prefetch={false}
                     onClick={() => beginNavigation('/projects/new')}
                     className="flex min-h-9 items-center rounded-md px-2 text-xs font-medium text-primary hover:bg-accent"
                   >
@@ -459,7 +455,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
         <div className="shrink-0 border-b border-border/80 p-2.5">
           <Link
             href="/projects/new"
-            prefetch={false}
             onClick={() => beginNavigation('/projects/new')}
             onMouseEnter={() => router.prefetch('/projects/new')}
             onFocus={() => router.prefetch('/projects/new')}
@@ -503,7 +498,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                     key={item.href}
                     href={scopedHref}
                     data-tour={item.tourId}
-                    prefetch={false}
                     title={collapsed ? item.label : undefined}
                     aria-label={collapsed ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
@@ -576,7 +570,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                     key={item.href}
                     href={item.href}
                     data-tour={item.tourId}
-                    prefetch={false}
                     title={collapsed ? item.label : undefined}
                     aria-label={collapsed ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
@@ -653,7 +646,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
 
         <Link
           href="/dashboard?tour=1"
-          prefetch={false}
           title={collapsed ? 'Take product tour' : undefined}
           aria-label={collapsed ? 'Take product tour' : undefined}
           data-tour="take-product-tour"
@@ -703,7 +695,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
         </Button>
         <Link
           href="/dashboard"
-          prefetch={false}
           onClick={() => beginNavigation('/dashboard')}
           className="font-semibold transition-opacity active:opacity-70"
         >
