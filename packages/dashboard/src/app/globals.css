@@ -582,67 +582,52 @@
   mask-image: linear-gradient(90deg, transparent, black 20%, black 80%, transparent);
 }
 
-.landing-section-warm {
-  background-color: oklch(0.975 0.014 83);
+.landing-section-warm,
+.landing-section-mint,
+.landing-section-sky,
+.landing-section-ink,
+.landing-section-lilac,
+.landing-section-aurora {
+  background-color: oklch(0.972 0.01 105);
 }
 
 .landing-section-warm::before {
   background:
-    radial-gradient(ellipse 38% 52% at 5% 12%, oklch(0.89 0.095 73 / 0.35), transparent 70%),
-    radial-gradient(ellipse 34% 48% at 94% 82%, oklch(0.9 0.07 125 / 0.24), transparent 72%);
-}
-
-.landing-section-mint {
-  background-color: oklch(0.97 0.016 145);
+    radial-gradient(ellipse 38% 52% at 5% 12%, oklch(0.9 0.075 82 / 0.22), transparent 72%),
+    radial-gradient(ellipse 34% 48% at 94% 82%, oklch(0.88 0.055 128 / 0.15), transparent 74%);
 }
 
 .landing-section-mint::before {
   background:
-    radial-gradient(ellipse 46% 62% at 96% 8%, oklch(0.83 0.11 151 / 0.32), transparent 70%),
-    radial-gradient(ellipse 35% 48% at 4% 92%, oklch(0.9 0.08 95 / 0.24), transparent 72%);
+    radial-gradient(ellipse 46% 62% at 96% 8%, oklch(0.86 0.07 143 / 0.2), transparent 72%),
+    radial-gradient(ellipse 35% 48% at 4% 92%, oklch(0.9 0.06 94 / 0.15), transparent 74%);
   animation-direction: alternate-reverse;
-}
-
-.landing-section-sky {
-  background-color: oklch(0.972 0.013 218);
 }
 
 .landing-section-sky::before {
   background:
-    radial-gradient(ellipse 42% 62% at 8% 78%, oklch(0.84 0.095 218 / 0.3), transparent 72%),
-    radial-gradient(ellipse 30% 46% at 92% 12%, oklch(0.9 0.085 145 / 0.23), transparent 70%);
-}
-
-.landing-section-ink {
-  background-color: oklch(0.955 0.019 172);
+    radial-gradient(ellipse 42% 62% at 8% 78%, oklch(0.86 0.055 168 / 0.16), transparent 74%),
+    radial-gradient(ellipse 30% 46% at 92% 12%, oklch(0.9 0.06 128 / 0.14), transparent 72%);
 }
 
 .landing-section-ink::before {
   background:
-    radial-gradient(ellipse 52% 72% at 94% 46%, oklch(0.78 0.105 171 / 0.29), transparent 73%),
-    radial-gradient(ellipse 35% 52% at 3% 8%, oklch(0.86 0.08 223 / 0.22), transparent 70%);
-}
-
-.landing-section-lilac {
-  background-color: oklch(0.97 0.013 304);
+    radial-gradient(ellipse 52% 72% at 94% 46%, oklch(0.83 0.065 153 / 0.18), transparent 75%),
+    radial-gradient(ellipse 35% 52% at 3% 8%, oklch(0.89 0.05 91 / 0.13), transparent 72%);
 }
 
 .landing-section-lilac::before {
   background:
-    radial-gradient(ellipse 44% 64% at 9% 82%, oklch(0.86 0.085 306 / 0.28), transparent 72%),
-    radial-gradient(ellipse 36% 54% at 92% 10%, oklch(0.9 0.08 92 / 0.24), transparent 70%);
+    radial-gradient(ellipse 44% 64% at 9% 82%, oklch(0.88 0.05 128 / 0.15), transparent 74%),
+    radial-gradient(ellipse 36% 54% at 92% 10%, oklch(0.91 0.055 88 / 0.16), transparent 72%);
   animation-direction: alternate-reverse;
-}
-
-.landing-section-aurora {
-  background-color: oklch(0.945 0.03 147);
 }
 
 .landing-section-aurora::before {
   background:
-    radial-gradient(ellipse 42% 100% at 9% 50%, oklch(0.79 0.13 151 / 0.43), transparent 74%),
-    radial-gradient(ellipse 42% 100% at 91% 40%, oklch(0.84 0.115 84 / 0.38), transparent 74%),
-    radial-gradient(ellipse 30% 72% at 52% 98%, oklch(0.79 0.09 221 / 0.26), transparent 74%);
+    radial-gradient(ellipse 42% 100% at 9% 50%, oklch(0.82 0.085 145 / 0.25), transparent 76%),
+    radial-gradient(ellipse 42% 100% at 91% 40%, oklch(0.87 0.08 84 / 0.23), transparent 76%),
+    radial-gradient(ellipse 30% 72% at 52% 98%, oklch(0.84 0.055 174 / 0.12), transparent 76%);
   animation-duration: 16s;
 }
 

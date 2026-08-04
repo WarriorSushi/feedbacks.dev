@@ -243,6 +243,7 @@ test('marketing hero and workspace states share the new motion and texture langu
   assert.match(css, /--ease-spring:/)
   assert.match(css, /@keyframes hero-color-breathe/)
   assert.match(css, /feTurbulence/)
+  assert.match(css, /\.landing-section-warm,[\s\S]*\.landing-section-aurora\s*\{\s*background-color: oklch\(0\.972 0\.01 105\)/)
   assert.match(css, /\.auth-story-pane::after/)
   assert.match(css, /\.dark \.auth-story-pane::after/)
   assert.match(css, /auth-noise/)
