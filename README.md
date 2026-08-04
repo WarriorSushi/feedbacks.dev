@@ -60,7 +60,7 @@ Each board gets its own public URL at `www.feedbacks.dev/p/your-product` with:
 - Announcements and changelog
 
 ### Release notes (opt-in)
-Publish concise in-product “What’s New” announcements through the shared embed. The dashboard supports project-scoped drafts, publishing, basic settings, and aggregate metrics. The embed is installed once; product activation and feedback-form configuration are delivered remotely without replacement snippets.
+Publish concise in-product “What’s New” announcements through the shared embed. The dashboard supports project-scoped drafts, publishing, per-note visibility, basic settings, and aggregate metrics. Turning a release note off hides it without deleting its content, metrics, or seen state. Editing or re-enabling the same note does not re-announce it to people who already saw it; create a new release note for a new announcement. The embed is installed once; product activation and feedback-form configuration are delivered remotely without replacement snippets.
 
 ### Board Directory
 Discover what other products are building. Browse public boards, filter by category, find inspiration.

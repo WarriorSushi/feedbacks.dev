@@ -27,6 +27,7 @@ test('all API route bodies use bounded readers instead of request.json', () => {
     '../../src/app/api/billing/checkout/route.ts',
     '../../src/app/api/projects/[id]/updates/route.ts',
     '../../src/app/api/projects/[id]/updates/[updateId]/route.ts',
+    '../../src/app/api/projects/[id]/updates/[updateId]/visibility/route.ts',
     '../../src/app/api/projects/[id]/updates/settings/route.ts',
     '../../src/app/api/projects/[id]/modules/route.ts',
     '../../src/app/api/projects/[id]/activation/route.ts',
@@ -45,6 +46,7 @@ test('owner-editable project, feedback, and Product Update routes require versio
     '../../src/app/api/projects/[id]/updates/[updateId]/archive/route.ts',
     '../../src/app/api/projects/[id]/updates/[updateId]/restore/route.ts',
     '../../src/app/api/projects/[id]/updates/[updateId]/image/route.ts',
+    '../../src/app/api/projects/[id]/updates/[updateId]/visibility/route.ts',
     '../../src/app/api/projects/[id]/updates/settings/route.ts',
   ]
   for (const route of routes) {

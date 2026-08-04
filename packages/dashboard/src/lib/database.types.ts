@@ -1077,6 +1077,7 @@ export type Database = {
           id: string
           image_path: string | null
           image_alt_text: string | null
+          is_enabled: boolean
           project_id: string
           published_at: string | null
           status: string
@@ -1096,6 +1097,7 @@ export type Database = {
           id?: string
           image_path?: string | null
           image_alt_text?: string | null
+          is_enabled?: boolean
           project_id: string
           published_at?: string | null
           status?: string
@@ -1115,6 +1117,7 @@ export type Database = {
           id?: string
           image_path?: string | null
           image_alt_text?: string | null
+          is_enabled?: boolean
           project_id?: string
           published_at?: string | null
           status?: string
@@ -2323,6 +2326,40 @@ export type Database = {
           highlights: string[]
           id: string
           image_path: string | null
+          is_enabled: boolean
+          project_id: string
+          published_at: string | null
+          status: string
+          summary: string
+          title: string
+          updated_at: string
+          version_label: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "product_updates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      set_product_update_visibility: {
+        Args: {
+          p_active_limit: number
+          p_enabled: boolean
+          p_expected_updated_at: string
+          p_project_id: string
+          p_update_id: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          cta_url: string | null
+          expires_at: string | null
+          highlights: string[]
+          id: string
+          image_path: string | null
+          is_enabled: boolean
           project_id: string
           published_at: string | null
           status: string

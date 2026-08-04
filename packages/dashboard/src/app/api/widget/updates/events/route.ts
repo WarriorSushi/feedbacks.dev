@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
   const { data: settings } = await admin.from('product_update_settings').select('enabled').eq('project_id', project.id).maybeSingle()
   if (!settings?.enabled) return new NextResponse(null, { status: 202, headers: cors })
   const now = new Date().toISOString()
-  const { data: updates } = await admin.from('product_updates').select('id').eq('project_id', project.id).eq('status', 'published').lte('published_at', now).or(`expires_at.is.null,expires_at.gt.${now}`).in('id', events.map((event) => event.updateId))
+  const { data: updates } = await admin.from('product_updates').select('id').eq('project_id', project.id).eq('status', 'published').eq('is_enabled', true).lte('published_at', now).or(`expires_at.is.null,expires_at.gt.${now}`).in('id', events.map((event) => event.updateId))
   if ((updates || []).length !== events.length) return NextResponse.json({ error: 'Unknown update.' }, { status: 400, headers: cors })
   await Promise.all(events.map((event) => admin.rpc('increment_product_update_metric', { p_project_id: project.id, p_update_id: event.updateId, p_event_type: event.type })))
   if (events.some((event) => event.type === 'impression')) void recordActivationMilestone({ projectId: project.id, userId: project.owner_user_id, eventName: 'updates_first_impression_received', admin })

@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
   if (updates) {
     const now = new Date().toISOString()
     const publicUpdateLimit = billing.entitlements.productUpdateActiveLimit ?? 20
-    const { data, error } = await admin.from('product_updates').select('*').eq('project_id', project.id).eq('status', 'published').lte('published_at', now).or(`expires_at.is.null,expires_at.gt.${now}`).order('published_at', { ascending: false }).order('id', { ascending: false }).limit(publicUpdateLimit)
+    const { data, error } = await admin.from('product_updates').select('*').eq('project_id', project.id).eq('status', 'published').eq('is_enabled', true).lte('published_at', now).or(`expires_at.is.null,expires_at.gt.${now}`).order('published_at', { ascending: false }).order('id', { ascending: false }).limit(publicUpdateLimit)
     if (error) return NextResponse.json({ error: 'Bootstrap temporarily unavailable.' }, { status: 503, headers: cors })
     response.updates = { settings: { ...mapProductUpdateSettings(updateSettings), showPoweredBy: !billing.entitlements.customBranding }, updates: (data || []).map((row) => mapProductUpdate(row, publicImageUrl(admin, row.image_path))).filter((update) => !update.ctaUrl || Boolean(sanitizeProductUpdateCta(update.ctaUrl))) }
   }

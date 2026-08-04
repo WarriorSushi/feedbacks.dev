@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   if (settings?.enabled) {
     const now = new Date().toISOString()
     const publicUpdateLimit = billing.entitlements.productUpdateActiveLimit ?? 20
-    const { data } = await admin.from('product_updates').select('*').eq('project_id', project.id).eq('status', 'published').lte('published_at', now).or(`expires_at.is.null,expires_at.gt.${now}`).order('published_at', { ascending: false }).order('id', { ascending: false }).limit(publicUpdateLimit)
+    const { data } = await admin.from('product_updates').select('*').eq('project_id', project.id).eq('status', 'published').eq('is_enabled', true).lte('published_at', now).or(`expires_at.is.null,expires_at.gt.${now}`).order('published_at', { ascending: false }).order('id', { ascending: false }).limit(publicUpdateLimit)
     response.updates = (data || []).map((row) => mapProductUpdate(row, publicImageUrl(admin, row.image_path))).filter((update) => !update.ctaUrl || Boolean(sanitizeProductUpdateCta(update.ctaUrl)))
   }
   if (!isProductUpdateResponseBounded(response)) return NextResponse.json({ error: 'Response too large.' }, { status: 500, headers: cors })

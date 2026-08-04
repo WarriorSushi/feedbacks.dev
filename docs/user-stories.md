@@ -356,6 +356,20 @@ Acceptance criteria:
 - the internal project does not consume the administrator's customer project allowance
 - published product updates appear without adding a second messaging system
 
+## Epic 12: Control release-note visibility safely
+
+### US-12.1
+
+Story:
+As a product owner, I want to hide and restore a published release note without losing its history so I can control what is currently shown without corrupting metrics or repeatedly notifying users.
+
+Acceptance criteria:
+- every release note has an on/off control in both the overview and editor
+- turning a note off preserves its content, publication time, metrics, and visitor seen state
+- turning the same note on again does not re-announce it to visitors who already saw it
+- owners see a clear warning before first publication and when editing a published note
+- the editor explains that a new release note is required for a new announcement
+
 ## Priority order
 
 ### Must-have for v1
@@ -377,6 +391,7 @@ Acceptance criteria:
 - US-10.1
 - US-10.2
 - US-10.3
+- US-12.1
 - US-10.4
 - US-11.1
 

@@ -11,6 +11,10 @@ const multipleCtasMigration = new URL(
   '../../../../sql/054_multiple_product_update_ctas.sql',
   import.meta.url,
 )
+const visibilityMigration = new URL(
+  '../../../../sql/059_product_update_visibility_toggle.sql',
+  import.meta.url,
+)
 
 test('product update migration preserves RLS, service-only RPCs, and atomic publish limits', async () => {
   const sql = await readFile(migration, 'utf8')
@@ -45,4 +49,35 @@ test('product update publication rejects a stale editor inside the database lock
     sql,
     /revoke all on function public\.publish_product_update\([\s\S]+service_role/i,
   )
+})
+
+test('release-note visibility is atomic, service-only, and independent from publication identity', async () => {
+  const sql = await readFile(visibilityMigration, 'utf8')
+
+  assert.match(sql, /add column if not exists is_enabled boolean not null default true/i)
+  assert.match(sql, /set_product_update_visibility/i)
+  assert.match(sql, /pg_advisory_xact_lock/i)
+  assert.match(sql, /for update/i)
+  assert.match(sql, /target\.updated_at <> p_expected_updated_at/i)
+  assert.match(sql, /set is_enabled = p_enabled/i)
+  assert.match(sql, /grant execute on function public\.set_product_update_visibility[\s\S]+to service_role/i)
+  assert.doesNotMatch(
+    sql.match(/create or replace function public\.set_product_update_visibility[\s\S]+?\$function\$/i)?.[0] || '',
+    /published_at\s*=/i,
+  )
+})
+
+test('every public product-update query excludes notes that are turned off', async () => {
+  const routes = await Promise.all(
+    [
+      '../../src/app/api/widget/bootstrap/route.ts',
+      '../../src/app/api/widget/updates/route.ts',
+      '../../src/app/api/widget/updates/events/route.ts',
+      '../../src/app/api/product-feedback/route.ts',
+    ].map((route) => readFile(new URL(route, import.meta.url), 'utf8')),
+  )
+
+  for (const route of routes) {
+    assert.match(route, /\.eq\(['"]is_enabled['"], true\)/)
+  }
 })

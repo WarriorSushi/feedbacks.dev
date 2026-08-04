@@ -150,6 +150,7 @@ export default function LandingPage() {
 
       <main>
         <section className="landing-hero relative overflow-hidden border-b">
+          <div className="landing-hero-grain pointer-events-none absolute inset-0" aria-hidden="true" />
           <div className="relative mx-auto grid max-w-[1600px] gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pt-20 2xl:grid-cols-[minmax(640px,0.9fr)_minmax(0,1.1fr)] 2xl:items-center 2xl:gap-12 2xl:pb-24 2xl:pt-24">
             <div className="min-w-0 lg:pb-6">
               <p className="inline-flex items-center gap-2 text-xs font-semibold text-foreground/70"><span className="h-1.5 w-1.5 rounded-full bg-primary" /> In-app feedback for developer-led teams</p>

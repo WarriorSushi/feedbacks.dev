@@ -3,7 +3,7 @@ import Image from 'next/image'
 
 export default function DashboardLoading() {
   return (
-    <div className="space-y-7 animate-pulse">
+    <div className="space-y-7" aria-label="Loading workspace" role="status">
       <div className="flex items-center justify-center py-2">
         <Image
           src="/new_logo_feedbacks.dev.svg"

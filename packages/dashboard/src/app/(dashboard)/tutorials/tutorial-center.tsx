@@ -56,7 +56,7 @@ export function TutorialCenter({
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      <div className="max-w-2xl rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
+      <div className="workspace-panel max-w-2xl rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:p-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">Tutorials</p>
         <h1 className="mt-2 text-2xl font-bold">Learn one job at a time</h1>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -64,7 +64,7 @@ export function TutorialCenter({
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between">
+      <div className="workspace-panel flex flex-col gap-3 rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold">Your progress</p>
           <p className="mt-1 text-sm text-muted-foreground">{completed} of {GUIDED_TUTORIALS.length} tutorials completed</p>
@@ -85,9 +85,9 @@ export function TutorialCenter({
           const href = tutorialHref(tutorial.id, tutorial.steps[0].href, defaultProjectId)
 
           return (
-            <article key={tutorial.id} className="flex min-h-48 flex-col rounded-lg border bg-card p-5 shadow-[var(--shadow-card)]">
+            <article key={tutorial.id} className="workspace-panel group flex min-h-48 flex-col rounded-lg border bg-card p-5 shadow-[var(--shadow-card)] md:hover:-translate-y-1 md:hover:border-foreground/20 md:hover:shadow-[var(--shadow-float)]">
               <div className="flex items-start justify-between gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-md border bg-background text-primary">
+                <span className="flex h-9 w-9 items-center justify-center rounded-md border bg-background text-primary transition-transform duration-300 [transition-timing-function:var(--ease-spring)] group-hover:-rotate-3 group-hover:scale-105">
                   <Icon className="h-4 w-4" />
                 </span>
                 {isComplete && <span className="inline-flex items-center gap-1 text-xs font-medium text-primary"><Check className="h-3.5 w-3.5" /> Completed</span>}
@@ -101,7 +101,7 @@ export function TutorialCenter({
                 ) : (
                   <Link href={href} className={cn('inline-flex min-h-10 items-center gap-1.5 rounded-md px-3 text-sm font-semibold', isComplete ? 'border' : 'bg-primary text-primary-foreground')}>
                     {isComplete ? 'Retake' : canResume ? 'Resume' : 'Start'}
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
                   </Link>
                 )}
               </div>

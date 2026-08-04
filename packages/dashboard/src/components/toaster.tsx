@@ -8,12 +8,12 @@ export function Toaster() {
   const { toasts, dismiss } = useToast()
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
+    <div className="fixed inset-x-4 bottom-4 z-50 flex flex-col items-end gap-2 sm:left-auto sm:right-4 sm:max-w-sm" aria-live="polite" aria-atomic="true">
       {toasts.map((t) => (
         <div
           key={t.id}
           className={cn(
-            'rounded-lg border px-4 py-3 shadow-lg animate-fade-in',
+            'animate-toast-in w-full rounded-xl border px-4 py-3 shadow-[var(--shadow-float)] backdrop-blur-xl',
             t.variant === 'destructive'
               ? 'border-destructive/50 bg-destructive text-destructive-foreground'
               : 'border bg-background text-foreground'
@@ -27,8 +27,10 @@ export function Toaster() {
               )}
             </div>
             <button
+              type="button"
               onClick={() => dismiss(t.id)}
-              className="opacity-50 hover:opacity-100"
+              className="rounded-md p-1 opacity-50 transition-[opacity,transform] duration-200 hover:rotate-6 hover:opacity-100"
+              aria-label="Dismiss notification"
             >
               <X className="h-4 w-4" />
             </button>

@@ -33,6 +33,7 @@ export async function GET() {
       .select('*')
       .eq('project_id', project.id)
       .eq('status', 'published')
+      .eq('is_enabled', true)
       .lte('published_at', now)
       .or(`expires_at.is.null,expires_at.gt.${now}`)
       .order('published_at', { ascending: false })

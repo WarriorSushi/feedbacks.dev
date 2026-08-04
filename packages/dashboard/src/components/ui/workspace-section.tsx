@@ -23,7 +23,7 @@ export function WorkspaceSection({
   return (
     <section
       className={cn(
-        'win98-window overflow-hidden rounded-lg border bg-card text-card-foreground shadow-[var(--shadow-card)]',
+        'workspace-panel win98-window overflow-hidden rounded-lg border bg-card text-card-foreground shadow-[var(--shadow-card)]',
         tone === 'danger' && 'border-destructive/35',
         className,
       )}

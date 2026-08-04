@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>feedbacks.dev setup flow alternatives</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: oklch(0.16 0.008 155);
+      color: oklch(0.94 0.008 155);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    }
+    button { font: inherit; }
+    .page { min-height: 100vh; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid oklch(0.32 0.012 155);
+      background: oklch(0.16 0.008 155 / 0.96);
+      padding: 18px 24px;
+    }
+    .topbar-inner, .content { width: min(1220px, calc(100% - 32px)); margin: 0 auto; }
+    .eyebrow { color: oklch(0.73 0.14 155); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 6px; font-size: 24px; line-height: 1.2; letter-spacing: -0.02em; }
+    .lede { margin: 0; max-width: 72ch; color: oklch(0.72 0.012 155); }
+    .content { padding: 24px 0 64px; }
+    .finding {
+      display: grid;
+      grid-template-columns: 140px minmax(0, 1fr);
+      gap: 20px;
+      border: 1px solid oklch(0.42 0.08 80);
+      background: oklch(0.22 0.025 80);
+      padding: 18px;
+    }
+    .finding strong { color: oklch(0.86 0.11 80); }
+    .finding p { margin: 0; color: oklch(0.82 0.018 80); }
+    .flow-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      margin: 24px 0;
+      padding-bottom: 4px;
+    }
+    .flow-tab {
+      min-width: 185px;
+      border: 1px solid oklch(0.32 0.012 155);
+      border-radius: 7px;
+      background: oklch(0.2 0.008 155);
+      color: oklch(0.72 0.012 155);
+      padding: 10px 12px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .flow-tab:hover { border-color: oklch(0.48 0.05 155); color: oklch(0.91 0.01 155); }
+    .flow-tab.active { border-color: oklch(0.67 0.16 155); background: oklch(0.25 0.045 155); color: oklch(0.96 0.01 155); }
+    .flow-tab span { display: block; color: inherit; font-size: 11px; opacity: 0.72; }
+    .flow-tab b { display: block; margin-top: 2px; }
+    .flow-panel { display: none; }
+    .flow-panel.active { display: block; }
+    .option-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      gap: 24px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+    .option-head h2 { margin-bottom: 8px; font-size: 22px; }
+    .option-head p { max-width: 72ch; color: oklch(0.72 0.012 155); }
+    .verdict { border-top: 1px solid oklch(0.34 0.012 155); padding-top: 12px; color: oklch(0.78 0.012 155); }
+    .verdict b { color: oklch(0.93 0.01 155); }
+    .product-frame {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      min-height: 610px;
+      overflow: hidden;
+      border: 1px solid oklch(0.34 0.012 155);
+      border-radius: 9px;
+      background: oklch(0.19 0.007 155);
+      box-shadow: 0 24px 70px oklch(0.06 0.008 155 / 0.42);
+    }
+    .sidebar { border-right: 1px solid oklch(0.3 0.01 155); background: oklch(0.17 0.008 155); padding: 16px 12px; }
+    .brand { margin: 0 8px 18px; font-weight: 760; letter-spacing: -0.02em; }
+    .project-select { margin-bottom: 14px; border: 1px solid oklch(0.31 0.012 155); border-radius: 6px; background: oklch(0.21 0.008 155); padding: 9px; }
+    .project-select small { display: block; color: oklch(0.62 0.01 155); }
+    .nav-label { margin: 16px 8px 6px; color: oklch(0.56 0.01 155); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+    .nav-item { display: block; margin: 2px 0; border-radius: 5px; padding: 8px 9px; color: oklch(0.68 0.01 155); }
+    .nav-item.active { background: oklch(0.27 0.035 155); color: oklch(0.92 0.05 155); }
+    .screen { min-width: 0; padding: 26px 28px 42px; }
+    .screen-head { display: flex; justify-content: space-between; gap: 24px; align-items: start; margin-bottom: 24px; }
+    .screen h3 { margin-bottom: 5px; font-size: 20px; letter-spacing: -0.015em; }
+    .muted { color: oklch(0.68 0.012 155); }
+    .plain-feature { max-width: 62ch; margin: 0; color: oklch(0.72 0.012 155); }
+    .status { display: inline-flex; align-items: center; gap: 7px; color: oklch(0.78 0.12 155); white-space: nowrap; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: oklch(0.7 0.17 155); }
+    .flowline { display: flex; align-items: center; margin: 0 0 22px; overflow-x: auto; }
+    .flowstep { min-width: 122px; border: 1px solid oklch(0.32 0.012 155); padding: 10px 12px; color: oklch(0.65 0.01 155); }
+    .flowstep:first-child { border-radius: 6px 0 0 6px; }
+    .flowstep:last-child { border-radius: 0 6px 6px 0; }
+    .flowstep + .flowstep { border-left: 0; }
+    .flowstep.done { color: oklch(0.78 0.12 155); }
+    .flowstep.current { background: oklch(0.25 0.04 155); color: oklch(0.94 0.02 155); }
+    .section { border-top: 1px solid oklch(0.3 0.01 155); padding: 18px 0; }
+    .section:first-of-type { border-top: 0; padding-top: 0; }
+    .section-title { margin-bottom: 4px; font-size: 15px; font-weight: 700; }
+    .row { display: flex; justify-content: space-between; gap: 20px; align-items: center; padding: 12px 0; border-bottom: 1px solid oklch(0.27 0.008 155); }
+    .row:last-child { border-bottom: 0; }
+    .row p { margin: 2px 0 0; color: oklch(0.65 0.01 155); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; border: 1px solid oklch(0.38 0.014 155); border-radius: 5px; background: oklch(0.22 0.008 155); color: oklch(0.9 0.01 155); padding: 7px 12px; font-weight: 650; cursor: pointer; }
+    .btn.primary { border-color: oklch(0.65 0.15 155); background: oklch(0.62 0.16 155); color: oklch(0.17 0.02 155); }
+    .btn.quiet { border-color: transparent; background: transparent; color: oklch(0.73 0.12 155); }
+    .code { overflow-x: auto; border: 1px solid oklch(0.3 0.01 155); border-radius: 6px; background: oklch(0.13 0.006 155); padding: 14px; color: oklch(0.78 0.07 155); font: 12px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre; }
+    .callout { border: 1px solid oklch(0.43 0.08 80); border-radius: 6px; background: oklch(0.22 0.025 80); padding: 12px 14px; color: oklch(0.84 0.02 80); }
+    .callout.good { border-color: oklch(0.42 0.08 155); background: oklch(0.22 0.03 155); color: oklch(0.84 0.05 155); }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .choice { border: 1px solid oklch(0.32 0.012 155); border-radius: 7px; padding: 18px; }
+    .choice.selected { border-color: oklch(0.62 0.13 155); background: oklch(0.22 0.025 155); }
+    .choice h4 { margin: 0 0 5px; font-size: 16px; }
+    .choice p { min-height: 44px; color: oklch(0.68 0.01 155); }
+    .preview-shell { display: grid; grid-template-columns: 1fr 280px; gap: 18px; }
+    .preview-canvas { position: relative; min-height: 280px; border: 1px solid oklch(0.3 0.01 155); border-radius: 6px; background: oklch(0.22 0.008 155); padding: 20px; }
+    .fake-product { height: 10px; width: 58%; background: oklch(0.35 0.01 155); margin-bottom: 12px; }
+    .fake-product.short { width: 36%; }
+    .launcher { position: absolute; right: 18px; bottom: 18px; border-radius: 5px; background: oklch(0.62 0.16 155); color: oklch(0.15 0.02 155); padding: 9px 13px; font-weight: 700; }
+    .release-popup { position: absolute; right: 22px; top: 40px; width: 230px; border: 1px solid oklch(0.4 0.02 155); border-radius: 7px; background: oklch(0.19 0.008 155); padding: 14px; box-shadow: 0 18px 40px oklch(0.08 0.01 155 / 0.55); }
+    .release-popup small { color: oklch(0.68 0.11 155); font-weight: 700; }
+    .release-popup h4 { margin: 4px 0 6px; }
+    .release-popup p { color: oklch(0.68 0.01 155); font-size: 12px; }
+    .diff { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; }
+    .version { border: 1px solid oklch(0.31 0.012 155); border-radius: 6px; padding: 14px; }
+    .version b { display: block; margin-bottom: 5px; }
+    .version small { color: oklch(0.63 0.01 155); }
+    .arrow { color: oklch(0.62 0.11 155); font-size: 20px; }
+    .product-row { display: grid; grid-template-columns: 140px minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 18px 0; border-bottom: 1px solid oklch(0.29 0.01 155); }
+    .product-visual { min-height: 84px; position: relative; border: 1px solid oklch(0.3 0.01 155); border-radius: 6px; background: oklch(0.22 0.008 155); }
+    .product-visual .launcher { right: 9px; bottom: 9px; font-size: 11px; padding: 6px 8px; }
+    .product-visual .release-popup { top: 9px; right: 9px; width: 115px; padding: 8px; }
+    .product-visual .release-popup h4 { font-size: 11px; }
+    .product-visual .release-popup p, .product-visual .release-popup small { display: none; }
+    .matrix-wrap { max-width: 100%; margin-top: 28px; overflow-x: auto; }
+    .matrix { width: 100%; min-width: 760px; border-collapse: collapse; }
+    .matrix th, .matrix td { border-bottom: 1px solid oklch(0.29 0.01 155); padding: 12px 10px; text-align: left; vertical-align: top; }
+    .matrix th { color: oklch(0.62 0.01 155); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .pickbar { position: sticky; bottom: 16px; display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-top: 24px; border: 1px solid oklch(0.41 0.06 155); border-radius: 7px; background: oklch(0.2 0.025 155 / 0.96); padding: 12px 14px; box-shadow: 0 16px 50px oklch(0.06 0.01 155 / 0.55); }
+    .pickbar p { margin: 0; }
+    .pickbar span { color: oklch(0.72 0.01 155); }
+    @media (max-width: 820px) {
+      .finding, .option-head, .product-frame, .split, .preview-shell, .diff { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .option-head { gap: 6px; }
+      .screen { padding: 20px 16px 32px; }
+      .product-row { grid-template-columns: 100px minmax(0, 1fr); }
+      .product-row .btn { grid-column: 1 / -1; }
+      .arrow { transform: rotate(90deg); text-align: center; }
+      .pickbar { align-items: stretch; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="eyebrow">UX decision prototype</div>
+        <h1>Five clearer setup flows for feedbacks.dev</h1>
+        <p class="lede">Each option distinguishes feedback collection from in-app release announcements and makes code deployment consequences explicit.</p>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="finding">
+        <strong>Confirmed issue</strong>
+        <p>Most feedback-form appearance and field settings live in snippet attributes. If someone customizes after installing, they usually must replace the snippet. The current flow says “optional after success” without making that redeployment cost obvious. Release announcements already work remotely after the shared embed connects.</p>
+      </section>
+
+      <nav class="flow-tabs" aria-label="Flow alternatives">
+        <button class="flow-tab active" data-target="flow-1"><span>Option 1 · recommended</span><b>Install once, manage remotely</b></button>
+        <button class="flow-tab" data-target="flow-2"><span>Option 2 · quickest correction</span><b>Configure before install</b></button>
+        <button class="flow-tab" data-target="flow-3"><span>Option 3 · safest current model</span><b>Draft and deployed versions</b></button>
+        <button class="flow-tab" data-target="flow-4"><span>Option 4 · choice at entry</span><b>Quick or guided setup</b></button>
+        <button class="flow-tab" data-target="flow-5"><span>Option 5 · clearest IA</span><b>Product homes plus embed</b></button>
+      </nav>
+
+      <section class="flow-panel active" id="flow-1">
+        <div class="option-head">
+          <div>
+            <div class="eyebrow">Option 1</div>
+            <h2>Install once, manage remotely</h2>
+            <p>The snippet contains only the project key and script URL. The widget fetches its complete configuration from feedbacks.dev. After the first install, placement, labels, fields, colors, captcha, and release announcements update without another code deployment.</p>
+          </div>
+          <div class="verdict"><b>Best long-term experience.</b><br>Requires extending the bootstrap API and carefully preserving legacy snippet attributes.</div>
+        </div>
+        <div class="product-frame">
+          <aside class="sidebar">
+            <div class="brand">feedbacks.dev</div>
+            <div class="project-select"><small>Project</small>Acme app</div>
+            <div class="nav-label">Collect</div>
+            <div class="nav-item">Feedback inbox</div>
+            <div class="nav-item">Feedback form</div>
+            <div class="nav-label">Communicate</div>
+            <div class="nav-item">Release notes</div>
+            <div class="nav-label">Setup</div>
+            <div class="nav-item active">Embed installation</div>
+            <div class="nav-item">Integrations</div>
+          </aside>
+          <div class="screen">
+            <div class="screen-head">
+              <div><h3>Embed installation</h3><p class="plain-feature">One shared embed powers the feedback form and in-app release announcements.</p></div>
+              <div class="status"><span class="dot"></span> Connected 2 minutes ago</div>
+            </div>
+            <div class="flowline">
+              <div class="flowstep done">1. Install embed</div>
+              <div class="flowstep done">2. Verify connection</div>
+              <div class="flowstep current">3. Manage remotely</div>
+            </div>
+            <div class="section">
+              <div class="section-title">Your embed is live</div>
+              <p class="muted">This code does not change when you edit either product.</p>
+              <div class="code">&lt;script src="https://app.feedbacks.dev/widget/latest.js"
+  data-project="fb_acme_••••" defer&gt;&lt;/script&gt;</div>
+            </div>
+            <div class="section">
+              <div class="row"><div><b>Feedback form</b><p>Collect bug reports, ideas, questions, and ratings.</p></div><button class="btn">Edit form</button></div>
+              <div class="row"><div><b>Release notes</b><p>Show “What’s new” announcements inside your users’ product.</p></div><button class="btn">Manage announcements</button></div>
+            </div>
+            <div class="callout good">Changes publish remotely. No snippet replacement or application deployment is required.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="flow-panel" id="flow-2">
+        <div class="option-head">
+          <div>
+            <div class="eyebrow">Option 2</div>
+            <h2>Configure before install</h2>
+            <p>Restore the earlier logic: decide what the feedback form should look like, then generate and install the final snippet. Keep release announcements outside this wizard because they are a separate product capability.</p>
+          </div>
+          <div class="verdict"><b>Fastest safe correction.</b><br>Works with today’s architecture, but later visual changes still require redeployment.</div>
+        </div>
+        <div class="product-frame">
+          <aside class="sidebar">
+            <div class="brand">feedbacks.dev</div>
+            <div class="project-select"><small>Project</small>Acme app</div>
+            <div class="nav-label">Setup feedback</div>
+            <div class="nav-item active">1. Design form</div>
+            <div class="nav-item">2. Install code</div>
+            <div class="nav-item">3. Send test</div>
+            <div class="nav-item">4. Check inbox</div>
+            <div class="nav-label">After setup</div>
+            <div class="nav-item">Release notes</div>
+          </aside>
+          <div class="screen">
+            <div class="screen-head">
+              <div><h3>Design your feedback form</h3><p class="plain-feature">Choose the version you want before copying code into your product.</p></div>
+              <button class="btn primary">Save and get code</button>
+            </div>
+            <div class="flowline">
+              <div class="flowstep current">1. Design</div>
+              <div class="flowstep">2. Install</div>
+              <div class="flowstep">3. Test</div>
+              <div class="flowstep">4. Inbox</div>
+            </div>
+            <div class="preview-shell">
+              <div class="section">
+                <div class="row"><div><b>How it opens</b><p>Floating button in the lower-right corner</p></div><button class="btn">Change</button></div>
+                <div class="row"><div><b>What it asks</b><p>Message, feedback type, rating, optional email</p></div><button class="btn">Change</button></div>
+                <div class="row"><div><b>Appearance</b><p>Green button, “Send feedback” label</p></div><button class="btn">Change</button></div>
+              </div>
+              <div class="preview-canvas"><div class="fake-product"></div><div class="fake-product short"></div><div class="launcher">Send feedback</div></div>
+            </div>
+            <div class="callout">After installation, changing these settings produces new code. The product must show “Code update required” before saving a change that affects the embed.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="flow-panel" id="flow-3">
+        <div class="option-head">
+          <div>
+            <div class="eyebrow">Option 3</div>
+            <h2>Separate saved settings from deployed settings</h2>
+            <p>Treat the website snippet like a deployment artifact. The dashboard remembers which version was copied and shows a clear diff when later customization creates a new version.</p>
+          </div>
+          <div class="verdict"><b>Most honest with today’s system.</b><br>More operational than friendly, but it prevents silent configuration drift.</div>
+        </div>
+        <div class="product-frame">
+          <aside class="sidebar">
+            <div class="brand">feedbacks.dev</div>
+            <div class="project-select"><small>Project</small>Acme app</div>
+            <div class="nav-label">Feedback</div>
+            <div class="nav-item">Inbox</div>
+            <div class="nav-item active">Form configuration</div>
+            <div class="nav-label">Release notes</div>
+            <div class="nav-item">Announcements</div>
+            <div class="nav-label">Setup</div>
+            <div class="nav-item">Embed deployment</div>
+          </aside>
+          <div class="screen">
+            <div class="screen-head"><div><h3>Feedback form configuration</h3><p class="plain-feature">Your saved draft differs from the code currently running on your site.</p></div><span class="status" style="color:oklch(0.84 0.11 80)">Code update required</span></div>
+            <div class="diff">
+              <div class="version"><b>Deployed version 3</b><small>Blue “Feedback” button<br>Rating enabled<br>Email optional</small></div>
+              <div class="arrow">→</div>
+              <div class="version"><b>Saved version 4</b><small>Green “Report an issue” button<br>Rating hidden<br>Email required</small></div>
+            </div>
+            <div class="section">
+              <div class="section-title">What happens next</div>
+              <div class="row"><div><b>1. Copy replacement code</b><p>The generated snippet includes version 4 settings.</p></div><button class="btn primary">Copy version 4</button></div>
+              <div class="row"><div><b>2. Deploy it to your app</b><p>Replace the existing embed in the same location.</p></div><button class="btn quiet">View instructions</button></div>
+              <div class="row"><div><b>3. Verify the live page</b><p>We detect version 4 when your product loads it.</p></div><button class="btn" disabled>Waiting for version 4</button></div>
+            </div>
+            <div class="callout good">Release announcements are remote and do not create a new embed version. Only feedback-form changes appear in this deployment diff.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="flow-panel" id="flow-4">
+        <div class="option-head">
+          <div>
+            <div class="eyebrow">Option 4</div>
+            <h2>Offer quick start and guided setup</h2>
+            <p>At project creation, ask how the developer wants to proceed. Quick start uses a minimal default embed. Guided setup configures the form before generating code. Both paths use plain product names.</p>
+          </div>
+          <div class="verdict"><b>Good for mixed audiences.</b><br>Adds one meaningful decision early, but doubles the setup states the product must explain and test.</div>
+        </div>
+        <div class="product-frame">
+          <aside class="sidebar">
+            <div class="brand">feedbacks.dev</div>
+            <div class="project-select"><small>New project</small>Acme app</div>
+            <div class="nav-label">Products</div>
+            <div class="nav-item">Feedback form</div>
+            <div class="nav-item">Release notes</div>
+          </aside>
+          <div class="screen">
+            <div class="screen-head"><div><h3>How do you want to add feedback?</h3><p class="plain-feature">You can start with the default form or configure it before touching your code.</p></div></div>
+            <div class="split">
+              <div class="choice selected">
+                <div class="eyebrow">Recommended for most</div>
+                <h4>Quick start</h4>
+                <p>Install the default floating feedback button, send one test, then decide whether to customize.</p>
+                <div class="flowline"><div class="flowstep current">Install</div><div class="flowstep">Test</div><div class="flowstep">Done</div></div>
+                <button class="btn primary">Use quick start</button>
+              </div>
+              <div class="choice">
+                <div class="eyebrow">For a specific design</div>
+                <h4>Configure first</h4>
+                <p>Choose placement, labels, fields, and security before generating your first snippet.</p>
+                <div class="flowline"><div class="flowstep current">Design</div><div class="flowstep">Install</div><div class="flowstep">Test</div></div>
+                <button class="btn">Configure first</button>
+              </div>
+            </div>
+            <div class="section">
+              <div class="section-title">Want in-app announcements instead?</div>
+              <p class="muted">Release notes show “What’s new” messages inside your users’ product. They can share the same embed, but they are managed separately.</p>
+              <button class="btn">Set up release notes</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="flow-panel" id="flow-5">
+        <div class="option-head">
+          <div>
+            <div class="eyebrow">Option 5</div>
+            <h2>Give each product a clear home, keep installation shared</h2>
+            <p>Stop presenting setup as one long sequence. The project home explains the two user-facing capabilities visually, while a separate Embed installation page owns shared code, connection status, and deployment warnings.</p>
+          </div>
+          <div class="verdict"><b>Clearest information architecture.</b><br>Best if both products will grow, but it is a larger navigation redesign than the other options.</div>
+        </div>
+        <div class="product-frame">
+          <aside class="sidebar">
+            <div class="brand">feedbacks.dev</div>
+            <div class="project-select"><small>Project</small>Acme app</div>
+            <div class="nav-item active">Project home</div>
+            <div class="nav-label">Products</div>
+            <div class="nav-item">Feedback form</div>
+            <div class="nav-item">Release notes</div>
+            <div class="nav-label">Delivery</div>
+            <div class="nav-item">Embed installation</div>
+            <div class="nav-item">Integrations</div>
+          </aside>
+          <div class="screen">
+            <div class="screen-head"><div><h3>Acme app</h3><p class="plain-feature">Collect product feedback and tell users what changed.</p></div><div class="status"><span class="dot"></span> Embed connected</div></div>
+            <div class="product-row">
+              <div class="product-visual"><div class="launcher">Feedback</div></div>
+              <div><b>Feedback form</b><p class="muted">A button or embedded form where users report bugs, share ideas, ask questions, and leave ratings.</p></div>
+              <button class="btn">Open feedback form</button>
+            </div>
+            <div class="product-row">
+              <div class="product-visual"><div class="release-popup"><h4>What’s new</h4></div></div>
+              <div><b>Release notes</b><p class="muted">Announcements that appear inside your users’ product after you publish a release.</p></div>
+              <button class="btn">Open release notes</button>
+            </div>
+            <div class="section">
+              <div class="row"><div><b>Shared embed installation</b><p>Installed once. Currently running configuration version 3.</p></div><button class="btn">Manage embed</button></div>
+              <div class="callout">Feedback form settings have unpublished code changes. Release notes remain live and do not require a new snippet.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="matrix-wrap">
+      <table class="matrix">
+        <thead><tr><th>Option</th><th>Clarity</th><th>Engineering</th><th>Snippet replacement later</th><th>Best when</th></tr></thead>
+        <tbody>
+          <tr><td><b>1. Remote config</b></td><td>Highest</td><td>High</td><td>No</td><td>We want the strongest long-term product</td></tr>
+          <tr><td><b>2. Configure first</b></td><td>High</td><td>Low</td><td>Yes, clearly warned</td><td>We want to correct the flow quickly</td></tr>
+          <tr><td><b>3. Draft vs deployed</b></td><td>High for developers</td><td>Medium</td><td>Yes, tracked explicitly</td><td>We retain attribute-driven configuration</td></tr>
+          <tr><td><b>4. Quick or guided</b></td><td>Medium-high</td><td>Medium</td><td>Depends on path</td><td>Users have very different setup intent</td></tr>
+          <tr><td><b>5. Product homes</b></td><td>Highest IA clarity</td><td>High</td><td>Explicit in Embed</td><td>Feedback and release notes both keep growing</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="pickbar">
+        <p><b id="selection">My recommendation: Option 1</b><br><span>Option 5’s naming and navigation can be combined with Option 1’s remote configuration.</span></p>
+        <button class="btn primary" id="choose">Choose visible option</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const tabs = [...document.querySelectorAll('.flow-tab')]
+    const panels = [...document.querySelectorAll('.flow-panel')]
+    let current = 0
+
+    function show(index) {
+      current = index
+      tabs.forEach((tab, tabIndex) => tab.classList.toggle('active', tabIndex === index))
+      panels.forEach((panel, panelIndex) => panel.classList.toggle('active', panelIndex === index))
+      history.replaceState(null, '', `#option-${index + 1}`)
+    }
+
+    tabs.forEach((tab, index) => tab.addEventListener('click', () => show(index)))
+    document.getElementById('choose').addEventListener('click', () => {
+      const title = tabs[current].querySelector('b').textContent
+      document.getElementById('selection').textContent = `Selected: Option ${current + 1}, ${title}`
+    })
+
+    const hashMatch = location.hash.match(/option-(\d)/)
+    if (hashMatch) show(Math.max(0, Math.min(4, Number(hashMatch[1]) - 1)))
+  </script>
+</body>
+</html>

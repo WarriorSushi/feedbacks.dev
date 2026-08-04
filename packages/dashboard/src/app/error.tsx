@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export default function AppError({
   error,
@@ -17,23 +18,23 @@ export default function AppError({
   }, [error])
 
   return (
-    <main className="mx-auto flex min-h-[60vh] max-w-xl items-center px-4 py-12">
-      <div className="w-full border-y py-10 text-center">
-        <AlertTriangle className="mx-auto h-7 w-7 text-destructive" />
-        <h1 className="mt-4 text-xl font-semibold">This screen could not load</h1>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Your data was not changed. Try this screen again, or return to the dashboard.
-        </p>
-        {error.digest && <p className="mt-2 font-mono text-xs text-muted-foreground">Reference {error.digest}</p>}
-        <div className="mt-5 flex justify-center gap-2">
-          <Button onClick={reset}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Try again
-          </Button>
-          <Button variant="outline" asChild><Link href="/dashboard">Dashboard</Link></Button>
-        </div>
-      </div>
+    <main className="mx-auto flex min-h-[70vh] max-w-2xl items-center px-4 py-12">
+      <EmptyState
+        className="w-full"
+        icon={AlertTriangle}
+        title="This screen could not load"
+        description="Your data was not changed. Retry the request, or return to a known-good workspace screen."
+        action={(
+          <>
+            <Button onClick={reset}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try again
+            </Button>
+            <Button variant="outline" asChild><Link href="/dashboard">Return to dashboard</Link></Button>
+          </>
+        )}
+        detail={error.digest ? <span className="font-mono">Reference {error.digest}</span> : 'If this keeps happening, contact support and tell us which action you were taking.'}
+      />
     </main>
   )
 }
-

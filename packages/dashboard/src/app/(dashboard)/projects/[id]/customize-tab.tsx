@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { buildRuntimeWidgetConfig, buildWidgetEditorConfig, getWidgetModeLabel } from '@feedbacks/shared'
+import { buildRuntimeWidgetConfig, buildWidgetEditorConfig, getDefaultWidgetTarget, getWidgetModeLabel, type EmbedMode } from '@feedbacks/shared'
 import { useRouter } from 'next/navigation'
 import type { Project, WidgetConfig } from '@/lib/types'
 import { publicEnv } from '@/lib/public-env'
@@ -18,6 +18,7 @@ import { PageHeader } from '@/components/ui/workspace-shell'
 import { mutationVersionHeaders } from '@/lib/optimistic-concurrency'
 import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
 import { readErrorMessage, readFieldErrors, type FieldErrors } from '@/lib/form-errors'
+import { CopyButton } from '@/components/copy-button'
 
 interface CustomizeTabProps {
   project: Project
@@ -26,6 +27,7 @@ interface CustomizeTabProps {
 
 const TRACKED_WIDGET_FIELDS: Array<[keyof WidgetConfig, string]> = [
   ['embedMode', 'Embed mode'],
+  ['target', 'Placement target'],
   ['primaryColor', 'Primary color'],
   ['buttonText', 'Button text'],
   ['position', 'Launcher position'],
@@ -40,6 +42,17 @@ const TRACKED_WIDGET_FIELDS: Array<[keyof WidgetConfig, string]> = [
 ]
 
 const HEX_COLOR_RE = /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i
+
+function triggerMarkupForSelector(selector: string): string {
+  const trimmed = selector.trim()
+  const id = trimmed.match(/^#([a-zA-Z][\w:-]*)$/)?.[1]
+  if (id) return `<button id="${id}" type="button">Send feedback</button>`
+  const className = trimmed.match(/^\.([a-zA-Z][\w-]*)$/)?.[1]
+  if (className) return `<button class="${className}" type="button">Send feedback</button>`
+  const attribute = trimmed.match(/^\[([a-zA-Z][\w-]*)\]$/)?.[1]
+  if (attribute) return `<button ${attribute} type="button">Send feedback</button>`
+  return `<!-- Make an existing button match this selector: ${trimmed || '#feedback-button'} -->`
+}
 
 export function CustomizeTab({
   project,
@@ -222,6 +235,20 @@ export function CustomizeTab({
     setSaveError('')
   }
 
+  const selectEmbedMode = (mode: EmbedMode) => {
+    setConfig((current) => {
+      const currentMode = current.embedMode || 'modal'
+      if (currentMode === mode) return current
+      return {
+        ...current,
+        embedMode: mode,
+        target: mode === 'modal' ? undefined : getDefaultWidgetTarget(mode, previewProjectKey),
+      }
+    })
+    setFieldErrors((current) => ({ ...current, embedMode: '', target: '' }))
+    setSaveError('')
+  }
+
   const handleReset = () => {
     setConfig(savedConfig)
     setDraftRestored(false)
@@ -337,7 +364,11 @@ export function CustomizeTab({
       setDraftRestored(false)
       toast({
         title: 'Feedback form updated',
-        description: 'Installed embeds will use this configuration remotely. No code change is required.',
+        description: nextSavedConfig.embedMode === 'trigger'
+          ? `The shared embed stays unchanged. Make sure your button matches ${nextSavedConfig.target}.`
+          : nextSavedConfig.embedMode === 'inline'
+            ? 'The installed host now renders the inline form remotely. Move only the host element if you want the form somewhere else.'
+            : 'Installed embeds will use this floating-button configuration remotely. No code change is required.',
       })
       router.refresh()
     } catch (error) {
@@ -350,6 +381,9 @@ export function CustomizeTab({
   const embedMode = config.embedMode || 'modal'
   const isFloatingButton = embedMode === 'modal'
   const isInlineForm = embedMode === 'inline'
+  const inlineHostMarkup = `<div data-feedbacks-host="${previewProjectKey}"></div>`
+  const triggerSelector = runtimePreviewConfig.target || getDefaultWidgetTarget('trigger', previewProjectKey) || '#feedback-button'
+  const triggerMarkup = triggerMarkupForSelector(triggerSelector)
 
   return (
     <div className="space-y-7">
@@ -410,7 +444,7 @@ export function CustomizeTab({
                     key={mode}
                     type="button"
                     aria-pressed={embedMode === mode}
-                    onClick={() => updateConfig('embedMode', mode)}
+                    onClick={() => selectEmbedMode(mode as EmbedMode)}
                     className={`rounded-lg border p-4 text-left transition-colors ${
                       embedMode === mode
                         ? 'border-primary bg-primary/[0.06]'
@@ -422,6 +456,55 @@ export function CustomizeTab({
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">{body}</p>
                   </button>
                 ))}
+              </div>
+
+              <div className="border-y bg-muted/20 px-4 py-4">
+                {isFloatingButton ? (
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">No code change needed</p>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      Save this setting and every installed embed switches to the floating launcher remotely. Keep the original host and script exactly where they are.
+                    </p>
+                  </div>
+                ) : isInlineForm ? (
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">The existing host becomes the inline form</p>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      Save this setting to switch remotely. You do not replace the script. If the form should appear somewhere else, move only this host element to that location in your page.
+                    </p>
+                    <div className="mt-3 flex items-center gap-2 rounded-md border bg-surface-code p-2 text-surface-code-foreground">
+                      <code className="min-w-0 flex-1 overflow-x-auto px-1 text-xs">{inlineHostMarkup}</code>
+                      <CopyButton value={inlineHostMarkup} label="Copy host" copiedLabel="Copied" variant="secondary" size="sm" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">Connect feedback to your own button</p>
+                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                        Keep the shared host and script installed. Add a button that matches this CSS selector wherever you want the trigger to appear. Until it exists, feedbacks.dev keeps a managed fallback button in the original host.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="trigger-selector">Trigger selector</Label>
+                      <Input
+                        id="trigger-selector"
+                        value={config.target || triggerSelector}
+                        onChange={(event) => updateConfig('target', event.target.value)}
+                        placeholder="#feedback-button"
+                        maxLength={120}
+                      />
+                      <p className="text-xs leading-5 text-muted-foreground">Use an ID, class, or data attribute selector that uniquely identifies your button.</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-foreground">Paste or adapt this where the button should appear</p>
+                      <div className="mt-2 flex items-center gap-2 rounded-md border bg-surface-code p-2 text-surface-code-foreground">
+                        <code className="min-w-0 flex-1 overflow-x-auto px-1 text-xs">{triggerMarkup}</code>
+                        <CopyButton value={triggerMarkup} label="Copy button" copiedLabel="Copied" variant="secondary" size="sm" />
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

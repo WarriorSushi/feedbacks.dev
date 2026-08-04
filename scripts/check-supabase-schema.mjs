@@ -93,7 +93,7 @@ const requiredColumns = {
   webhook_jobs: ['id', 'project_id', 'kind', 'endpoint_url', 'payload', 'status', 'next_attempt_at'],
   webhook_deliveries: ['id', 'project_id', 'event', 'kind', 'url', 'status', 'payload', 'created_at'],
   product_update_settings: ['project_id', 'enabled', 'auto_show', 'display_delay_ms', 'theme', 'accent_color', 'include_paths', 'exclude_paths', 'show_powered_by'],
-  product_updates: ['id', 'project_id', 'created_by', 'status', 'title', 'summary', 'highlights', 'image_path', 'image_alt_text', 'cta_label', 'cta_url', 'published_at', 'expires_at'],
+  product_updates: ['id', 'project_id', 'created_by', 'status', 'is_enabled', 'title', 'summary', 'highlights', 'image_path', 'image_alt_text', 'cta_label', 'cta_url', 'published_at', 'expires_at'],
   product_update_metrics: ['project_id', 'update_id', 'metric_date', 'event_type', 'count'],
   project_embed_installations: ['project_id', 'last_seen_at', 'runtime_version', 'feedback_enabled', 'updates_enabled'],
   email_delivery_events: ['id', 'provider_event_id', 'event_type', 'provider_email_id', 'recipient_hashes', 'reason', 'occurred_at', 'created_at'],

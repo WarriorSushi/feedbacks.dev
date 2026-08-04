@@ -35,6 +35,7 @@ Recommended high-level shape:
 - one canonical config model for widget generation
 - one canonical, minimal snippet generator shared across marketing and dashboard
 - install once, then resolve feedback form configuration and product modules from the public bootstrap
+- treat feedback-form placement as remote configuration; inline and custom-trigger guidance describes page markup without generating replacement install snippets
 - preserve the last validated remote configuration during a temporary bootstrap outage, with legacy attributes as a compatibility fallback
 - one clear saved-config representation per project
 - one canonical plan / entitlement matrix shared across billing, marketing, dashboard UI, and server enforcement
@@ -64,6 +65,8 @@ Recommended high-level shape:
 - cancellation warnings run inside the final paid period; entitlements downgrade at the paid-through boundary with no synthetic Pro grace period
 - project downgrades are reversible state changes, not destructive retention jobs; only downgrade-frozen projects may be auto-restored
 - the internal feedback channel reuses the private project, feedback, and product-update models and is excluded from customer plan accounting
+- product-update visibility is independent from publication status; toggling visibility preserves the stable update ID, publication timestamp, metrics, and visitor seen state
+- publication is the announcement boundary: edits and re-enabling never reset seen state, and a new announcement requires a new product-update record
 
 ## Archived project note
 

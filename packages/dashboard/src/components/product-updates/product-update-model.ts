@@ -2,6 +2,7 @@ export type ProductUpdate = {
   id: string;
   updated_at: string;
   status: "draft" | "published" | "archived";
+  is_enabled: boolean;
   version_label: string | null;
   title: string;
   summary: string;
@@ -91,6 +92,7 @@ export function localDateTime(iso: string | null) {
 export function productUpdateStateLabel(update: ProductUpdate) {
   if (update.status === "archived") return "Archived";
   if (update.status === "draft") return "Draft";
+  if (!update.is_enabled) return "Hidden";
   if (update.expires_at && new Date(update.expires_at) <= new Date())
     return "Expired";
   if (update.published_at && new Date(update.published_at) > new Date())

@@ -26,6 +26,7 @@ import {
 } from "@/lib/optimistic-concurrency";
 import { ProductUpdatesOverview } from "./ProductUpdatesOverview";
 import { ProductUpdatesSettings } from "./ProductUpdatesSettings";
+import { ProductUpdateVisibilityToggle } from "./ProductUpdateVisibilityToggle";
 import {
   ProductUpdateField,
   ProductUpdateMetric,
@@ -119,6 +120,9 @@ export function ProductUpdatesTab({
   const [settingsOpen, setSettingsOpen] = React.useState(view === "settings");
   const [publishConfirmation, setPublishConfirmation] = React.useState<
     "published" | "scheduled" | null
+  >(null);
+  const [publishReview, setPublishReview] = React.useState<
+    "now" | "scheduled" | null
   >(null);
   const selected = updates.find((update) => update.id === selectedId) || null;
 
@@ -231,6 +235,7 @@ export function ProductUpdatesTab({
     setForm(nextForm);
     setPublishAt(localDateTime(update.published_at));
     setEditorConflict(null);
+    setPublishReview(null);
     if (conflictToastIdRef.current) {
       dismissToast(conflictToastIdRef.current);
       conflictToastIdRef.current = null;
@@ -489,6 +494,7 @@ export function ProductUpdatesTab({
         description: "It is usually visible in the widget within a minute.",
       });
       setPublishConfirmation(scheduled ? "scheduled" : "published");
+      setPublishReview(null);
       await load();
     } catch (error) {
       if (!captureEditConflict(error)) {
@@ -497,6 +503,64 @@ export function ProductUpdatesTab({
           description: error instanceof Error ? error.message : "Try again.",
           variant: "destructive",
         });
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function reviewPublish(scheduled: boolean) {
+    if (scheduled && !publishAt) {
+      toast({
+        title: "Choose a publication time",
+        description: "Scheduling requires a future local date and time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setPublishReview(scheduled ? "scheduled" : "now");
+  }
+
+  async function setUpdateVisibility(update: Update, enabled: boolean) {
+    setSaving(true);
+    try {
+      const data = await request(
+        `/api/projects/${projectId}/updates/${update.id}/visibility`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...mutationVersionHeaders(update.updated_at),
+          },
+          body: JSON.stringify({ enabled }),
+        },
+      );
+      const nextUpdate = {
+        ...update,
+        ...data.update,
+        metrics: update.metrics,
+      } as Update;
+      setUpdates((current) =>
+        current.map((item) => (item.id === update.id ? nextUpdate : item)),
+      );
+      if (selectedId === update.id) {
+        selectedVersionRef.current = nextUpdate.updated_at;
+      }
+      toast({
+        title: enabled ? "Release note turned on" : "Release note turned off",
+        description: enabled
+          ? "Eligible visitors can see it again. People who already saw it will not be notified again."
+          : "It is hidden from customer embeds. Its content, metrics, and seen state are preserved.",
+      });
+    } catch (error) {
+      const conflicted = selectedId === update.id && captureEditConflict(error);
+      if (!conflicted) {
+        toast({
+          title: "Could not change release-note visibility",
+          description: error instanceof Error ? error.message : "Try again.",
+          variant: "destructive",
+        });
+        await load();
       }
     } finally {
       setSaving(false);
@@ -812,6 +876,7 @@ export function ProductUpdatesTab({
             router.push(`/projects/${projectId}/release-notes/${id}`)
           }
           onSettings={() => setSettingsOpen(true)}
+          onVisibilityChange={setUpdateVisibility}
           onAction={async (update, action) => {
             if (
               action === "delete" &&
@@ -960,6 +1025,21 @@ export function ProductUpdatesTab({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          {selected ? (
+            <div className="flex min-h-10 items-center rounded-md border bg-background px-3">
+              <ProductUpdateVisibilityToggle
+                enabled={selected.is_enabled}
+                disabled={
+                  saving ||
+                  Boolean(editorConflict) ||
+                  selected.status === "archived"
+                }
+                onChange={(enabled) =>
+                  void setUpdateVisibility(selected, enabled)
+                }
+              />
+            </div>
+          ) : null}
           <Button
             variant="outline"
             onClick={() => setSettingsOpen(true)}
@@ -986,6 +1066,31 @@ export function ProductUpdatesTab({
           ) : null}
         </div>
       </section>
+
+      {selected?.status === "published" ? (
+        <section className="flex flex-col gap-3 rounded-lg border border-amber-500/35 bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex max-w-3xl items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-700 dark:text-amber-300" />
+            <div>
+              <h3 className="text-sm font-semibold">
+                Editing does not re-announce this release note
+              </h3>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                You can correct the live content, but people who already saw this
+                release note will not automatically see it again. Create a new
+                release note when you want to announce another change.
+              </p>
+            </div>
+          </div>
+          <Button
+            className="shrink-0"
+            variant="outline"
+            onClick={() => router.push(`/projects/${projectId}/release-notes/new`)}
+          >
+            New release note
+          </Button>
+        </section>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6">
@@ -1247,7 +1352,7 @@ export function ProductUpdatesTab({
                 {saving
                   ? "Saving…"
                   : selected?.status === "published"
-                    ? "Update live post"
+                    ? "Save correction"
                     : "Save draft"}
               </Button>
               {selected && (
@@ -1262,7 +1367,7 @@ export function ProductUpdatesTab({
               {selected?.status === "draft" && (
                 <Button
                   variant="outline"
-                  onClick={() => void publish(false)}
+                  onClick={() => reviewPublish(false)}
                   disabled={saving || Boolean(editorConflict)}
                 >
                   Publish now
@@ -1270,7 +1375,56 @@ export function ProductUpdatesTab({
               )}
             </div>
             {selected?.status === "draft" && (
-              <div className="mt-4 flex flex-wrap items-end gap-2 rounded-md bg-muted/40 p-3">
+              <div className="mt-4 space-y-3">
+                <div className="flex items-start gap-3 rounded-md border border-amber-500/35 bg-amber-500/10 p-3">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" />
+                  <p className="text-sm leading-6 text-muted-foreground">
+                    Publishing creates this release note&apos;s announcement identity.
+                    Later edits update the content but do not show it again to people
+                    who already saw it. Review the saved draft before publishing.
+                  </p>
+                </div>
+                {publishReview ? (
+                  <div
+                    className="rounded-md border border-primary/30 bg-primary/5 p-4"
+                    role="alert"
+                  >
+                    <h3 className="text-sm font-semibold">
+                      {publishReview === "scheduled"
+                        ? "Schedule this release note?"
+                        : "Publish this release note now?"}
+                    </h3>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                      {publishReview === "scheduled"
+                        ? `The saved draft will become eligible on ${new Date(publishAt).toLocaleString()}.`
+                        : "The saved draft will become eligible for visitors immediately."}{" "}
+                      People who see it will keep that seen state even if you edit or
+                      temporarily turn off the release note later.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Button
+                        disabled={saving || Boolean(editorConflict)}
+                        onClick={() =>
+                          void publish(publishReview === "scheduled")
+                        }
+                      >
+                        {saving
+                          ? "Publishing…"
+                          : publishReview === "scheduled"
+                            ? "Confirm schedule"
+                            : "Confirm publish"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        disabled={saving}
+                        onClick={() => setPublishReview(null)}
+                      >
+                        Keep editing
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+                <div className="flex flex-wrap items-end gap-2 rounded-md bg-muted/40 p-3">
                 <ProductUpdateField
                   label="Publish later"
                   className="min-w-[220px]"
@@ -1287,7 +1441,7 @@ export function ProductUpdatesTab({
                   disabled={
                     saving || Boolean(editorConflict) || !entitlements?.scheduling
                   }
-                  onClick={() => void publish(true)}
+                  onClick={() => reviewPublish(true)}
                 >
                   <CalendarClock className="mr-2 h-4 w-4" />
                   Schedule
@@ -1297,6 +1451,7 @@ export function ProductUpdatesTab({
                     Scheduling is available on Pro.
                   </p>
                 )}
+                </div>
               </div>
             )}
           </section>

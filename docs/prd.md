@@ -109,6 +109,7 @@ Must support:
 - User can preview the widget before customizing.
 - The installed embed stays stable; saved widget configuration is resolved remotely on page load.
 - Changing placement, fields, copy, styling, or captcha does not require replacing the snippet.
+- Placement settings explain the remaining page-level action: inline mode may require moving the stable host, and custom-trigger mode requires a matching selector on the customer button.
 
 ### Widget behavior
 
@@ -167,6 +168,10 @@ Must support:
 - Authenticated users can send a bounded suggestion, problem, question, or positive note from Settings.
 - Internal product feedback is routed into a private system project owned by the product administrator and excluded from customer plan usage.
 - Published updates from that project appear in the same Settings surface so the product team can close the loop.
+- Each release note has an independent on/off visibility state available in both its editor and the overview list.
+- Turning a release note off preserves its identifier, content, publication time, metrics, and visitor seen state.
+- Editing or re-enabling an existing release note does not make it reappear for visitors who already saw it.
+- The dashboard warns about the persistent seen state before publication and while editing a published note, and directs owners to create a new release note for a new announcement.
 
 ## 8. UX requirements
 

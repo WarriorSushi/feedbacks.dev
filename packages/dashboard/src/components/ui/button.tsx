@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-[background-color,color,border-color,box-shadow,transform,filter] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 active:translate-y-px active:brightness-95 disabled:pointer-events-none disabled:opacity-50 disabled:active:translate-y-0",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-[background-color,color,border-color,box-shadow,transform,filter] duration-200 [transition-timing-function:var(--ease-out-expo)] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 active:translate-y-px active:scale-[0.985] active:brightness-95 disabled:pointer-events-none disabled:translate-y-0 disabled:scale-100 disabled:opacity-50 motion-reduce:transform-none",
   {
     variants: {
       variant: {

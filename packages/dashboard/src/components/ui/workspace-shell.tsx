@@ -19,7 +19,7 @@ export function PageHeader({
   className?: string
 }) {
   return (
-    <header className={cn('win98-page-title flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between', className)}>
+    <header className={cn('workspace-page-header win98-page-title flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between', className)}>
       <div className="min-w-0">
         {eyebrow && (
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
@@ -59,7 +59,7 @@ export function SectionPanel({
   dataTour?: string
 }) {
   return (
-    <section data-tour={dataTour} className={cn('win98-window overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]', className)}>
+    <section data-tour={dataTour} className={cn('workspace-panel win98-window overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]', className)}>
       {(title || description || action) && (
         <header className="win98-titlebar flex flex-col gap-3 border-b bg-surface-raised/70 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">

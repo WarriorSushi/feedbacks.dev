@@ -14,6 +14,7 @@ import {
   productUpdateStateLabel,
   type ProductUpdate,
 } from "./product-update-model";
+import { ProductUpdateVisibilityToggle } from "./ProductUpdateVisibilityToggle";
 
 export function ProductUpdatesOverview({
   updates,
@@ -21,6 +22,7 @@ export function ProductUpdatesOverview({
   onEdit,
   onSettings,
   onAction,
+  onVisibilityChange,
   busy,
 }: {
   updates: ProductUpdate[];
@@ -31,6 +33,7 @@ export function ProductUpdatesOverview({
     update: ProductUpdate,
     action: "archive" | "restore" | "delete",
   ) => Promise<void>;
+  onVisibilityChange: (update: ProductUpdate, enabled: boolean) => Promise<void>;
   busy: boolean;
 }) {
   if (!updates.length) {
@@ -118,6 +121,12 @@ export function ProductUpdatesOverview({
               </span>
             </button>
             <div className="flex shrink-0 gap-1">
+              <ProductUpdateVisibilityToggle
+                compact
+                enabled={update.is_enabled}
+                disabled={busy || update.status === "archived"}
+                onChange={(enabled) => void onVisibilityChange(update, enabled)}
+              />
               {update.status === "archived" ? (
                 <Button
                   size="sm"
