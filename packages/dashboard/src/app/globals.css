@@ -532,10 +532,12 @@
   content: "";
   position: absolute;
   inset: -30%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 480 480' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='hero-coarse-grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.028' numOctaves='4' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='1.45' intercept='-.22'/%3E%3CfeFuncG type='linear' slope='1.45' intercept='-.22'/%3E%3CfeFuncB type='linear' slope='1.45' intercept='-.22'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23hero-coarse-grain)' opacity='.86'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   mix-blend-mode: multiply;
-  opacity: 0.16;
+  opacity: 0.38;
   transform: rotate(0.01deg);
 }
 
@@ -549,7 +551,7 @@
 
 .dark .landing-hero-grain::after {
   mix-blend-mode: soft-light;
-  opacity: 0.24;
+  opacity: 0.5;
 }
 
 .landing-section {
@@ -575,9 +577,11 @@
   z-index: 0;
   inset: 0;
   pointer-events: none;
-  opacity: 0.28;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='landing-section-noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23landing-section-noise)' opacity='.62'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
+  opacity: 0.38;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 520 520' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='landing-section-noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.024' numOctaves='4' seed='17' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='1.5' intercept='-.24'/%3E%3CfeFuncG type='linear' slope='1.5' intercept='-.24'/%3E%3CfeFuncB type='linear' slope='1.5' intercept='-.24'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23landing-section-noise)' opacity='.84'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   mix-blend-mode: multiply;
 }
 
@@ -650,7 +654,7 @@
 }
 
 .dark .landing-section::after {
-  opacity: 0.5;
+  opacity: 0.52;
   mix-blend-mode: soft-light;
 }
 
@@ -742,10 +746,12 @@
   z-index: -1;
   inset: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='auth-noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.76' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23auth-noise)' opacity='.58'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 520 520' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='auth-noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.026' numOctaves='4' seed='23' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='1.5' intercept='-.24'/%3E%3CfeFuncG type='linear' slope='1.5' intercept='-.24'/%3E%3CfeFuncB type='linear' slope='1.5' intercept='-.24'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23auth-noise)' opacity='.86'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   mix-blend-mode: multiply;
-  opacity: 0.16;
+  opacity: 0.32;
 }
 
 .auth-story-pane {
@@ -783,7 +789,7 @@ html:not(.dark):not(.windows98) .auth-form-pane {
 .dark .auth-story-pane::after,
 .dark .auth-form-pane::after {
   mix-blend-mode: soft-light;
-  opacity: 0.32;
+  opacity: 0.5;
 }
 
 .dark .auth-story-pane {
