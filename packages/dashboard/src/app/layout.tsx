@@ -8,7 +8,6 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { PublicThemeControl } from '@/components/public-theme-control'
 import { Toaster } from '@/components/toaster'
 import { SITE_ORIGIN } from '@/lib/site'
-import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { MarketingMeasurement } from '@/components/marketing-measurement'
 import { Suspense } from 'react'
@@ -88,7 +87,6 @@ export default async function RootLayout({
               }}
             />
           </Suspense>
-          <Analytics />
           <SpeedInsights />
         </ThemeProvider>
       </body>
