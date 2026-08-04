@@ -249,6 +249,8 @@ test('marketing hero and workspace states share the new motion and texture langu
   assert.match(css, /\.dark \.landing-section::after/)
   assert.match(css, /\.auth-story-pane::after/)
   assert.match(css, /\.dark \.auth-story-pane::after/)
+  assert.match(css, /html:not\(\.dark\):not\(\.windows98\) \.auth-form-pane/)
+  assert.match(css, /linear-gradient\(138deg, #fffef9 0%, #faf8f1 48%, #f2efe7 100%\)/)
   assert.match(css, /auth-noise/)
   assert.match(css, /mix-blend-mode: soft-light/)
   assert.match(css, /\.auth-card-signal-disc/)

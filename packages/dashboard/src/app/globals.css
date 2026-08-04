@@ -754,10 +754,17 @@
     linear-gradient(180deg, rgb(255 255 255 / 0.08), oklch(0.82 0.05 143 / 0.08));
 }
 
-.auth-form-pane {
+.windows98 .auth-form-pane {
   background:
     radial-gradient(ellipse at 100% 100%, oklch(0.74 0.1 204 / 0.13), transparent 62%),
     linear-gradient(135deg, oklch(0.98 0.008 115 / 0.7), oklch(0.95 0.025 183 / 0.46));
+}
+
+html:not(.dark):not(.windows98) .auth-form-pane {
+  background:
+    radial-gradient(ellipse 78% 62% at 92% 4%, rgb(255 255 255 / 0.94), transparent 72%),
+    radial-gradient(ellipse 70% 58% at 8% 100%, rgb(238 235 226 / 0.7), transparent 74%),
+    linear-gradient(138deg, #fffef9 0%, #faf8f1 48%, #f2efe7 100%);
 }
 
 .dark .auth-shell {
