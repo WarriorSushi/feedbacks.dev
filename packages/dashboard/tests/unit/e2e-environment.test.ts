@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { getE2EEnvironmentSafety } from '../../src/lib/e2e-environment.ts'
 
@@ -58,4 +59,11 @@ test('accepts an explicitly matched non-production environment', () => {
     NEXT_PUBLIC_SUPABASE_URL: 'https://safee2eref.supabase.co',
     PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:3000',
   }, () => assert.deepEqual(getE2EEnvironmentSafety(), { safe: true, reason: '' }))
+})
+
+test('internal CI fails closed when the required acceptance environment is unavailable', () => {
+  const workflow = readFileSync(new URL('../../../../.github/workflows/ci.yml', import.meta.url), 'utf8')
+  assert.match(workflow, /pnpm test:e2e:required -- --project=chromium/)
+  assert.doesNotMatch(workflow, /Playwright E2E not executed/)
+  assert.doesNotMatch(workflow, /isolated-e2e\.outputs\.available/)
 })

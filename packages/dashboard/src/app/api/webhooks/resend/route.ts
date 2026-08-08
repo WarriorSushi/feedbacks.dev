@@ -7,6 +7,10 @@ import {
   verifyResendWebhook,
 } from "@/lib/resend-webhooks";
 import { createAdminSupabase } from "@/lib/supabase-server";
+import {
+  readRequestBodyWithLimit,
+  RequestBodyTooLargeError,
+} from "@/lib/request-body-limit";
 
 const MAX_BODY_BYTES = 256 * 1024;
 
@@ -15,14 +19,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Webhook unavailable" }, { status: 503 });
   }
 
-  const contentLength = Number(request.headers.get("content-length") || "0");
-  if (contentLength > MAX_BODY_BYTES) {
-    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
-  }
-
-  const payload = await request.text();
-  if (Buffer.byteLength(payload, "utf8") > MAX_BODY_BYTES) {
-    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  let payload: string;
+  try {
+    payload = new TextDecoder().decode(
+      await readRequestBodyWithLimit(request, MAX_BODY_BYTES),
+    );
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+    }
+    return NextResponse.json({ error: "Unable to read payload" }, { status: 400 });
   }
 
   const id = request.headers.get("svix-id") || "";

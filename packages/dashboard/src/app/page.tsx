@@ -26,6 +26,7 @@ import { PrivacyChoicesButton } from '@/components/privacy-choices-button'
 
 const appOrigin = publicEnv.NEXT_PUBLIC_APP_ORIGIN
 const authHref = `${appOrigin}/auth`
+const proAuthHref = `${authHref}?redirect=${encodeURIComponent('/billing?intent=pro')}`
 const dashboardHref = `${appOrigin}/dashboard`
 
 const installSnippet = generateInstallSnippets({
@@ -269,7 +270,7 @@ export default function LandingPage() {
                     <p className="mt-3 text-4xl font-semibold tracking-tight">${proPlan.monthlyPrice}<span className="text-sm font-normal text-muted-foreground"> / month</span></p>
                     <p className="mt-2 text-sm text-muted-foreground">For teams that get more feedback each week.</p>
                     <ul className="mt-6 space-y-3 text-sm">{['More projects and feedback', 'Full feedback history', 'Multiple integrations and delivery history', 'Scheduling and branding controls'].map(item => <li key={item} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 text-primary" />{item}</li>)}</ul>
-                    <Link href={authHref} className="mt-7 block"><Button className="w-full">Start with Pro</Button></Link>
+                    <Link href={proAuthHref} className="mt-7 block"><Button className="w-full">Start with Pro</Button></Link>
                   </div>
                 </div>
               </div>

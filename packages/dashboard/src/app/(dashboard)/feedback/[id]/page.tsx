@@ -38,6 +38,7 @@ import {
   FeedbackTagsState,
   type FeedbackActivity,
 } from './feedback-live-state'
+import { sanitizeRedirectPath } from '@/lib/redirects'
 
 export const metadata = { title: 'Feedback Details' }
 
@@ -56,10 +57,16 @@ function TypeIcon({ type, className }: { type?: string | null; className?: strin
 
 export default async function FeedbackDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ returnTo?: string }>
 }) {
   const { id } = await params
+  const requestedReturnTo = sanitizeRedirectPath((await searchParams).returnTo, '/feedback')
+  const inboxHref = requestedReturnTo === '/feedback' || requestedReturnTo.startsWith('/feedback?')
+    ? requestedReturnTo
+    : '/feedback'
   const supabase = await createServerSupabase()
   const billingSummary = await getCurrentUserBillingSummary()
   const historyCutoff = billingSummary ? getHistoryCutoff(billingSummary) : null
@@ -146,7 +153,7 @@ export default async function FeedbackDetailPage({
         description={fb.projects ? `From ${fb.projects.name} · ${formatDate(fb.created_at)}` : formatDate(fb.created_at)}
         action={
           <Button asChild variant="outline" size="sm">
-            <Link href="/feedback">Back to inbox</Link>
+            <Link href={inboxHref}>Back to inbox</Link>
           </Button>
         }
       />

@@ -36,7 +36,7 @@ export async function recordActivationMilestone({
       event_name: eventName,
       metadata,
     }, { onConflict: 'project_id,event_name', ignoreDuplicates: true })
-    if (eventName === 'verification_completed' || eventName === 'first_feedback_received') {
+    if (eventName === 'first_feedback_received') {
       await qualifyReferralSignup(userId)
     }
   } catch {

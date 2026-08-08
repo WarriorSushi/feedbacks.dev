@@ -1,11 +1,13 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { env } from './env.ts'
+import { readRequestBodyWithLimit } from './request-body-limit.ts'
 
 const API_BASES = {
   test: 'https://test.dodopayments.com',
   live: 'https://live.dodopayments.com',
 } as const
 const WEBHOOK_TIMESTAMP_TOLERANCE_MS = 5 * 60 * 1000
+export const DODO_WEBHOOK_BODY_LIMIT = 256 * 1024
 
 export interface DodoCheckoutRequest {
   productId: string
@@ -162,7 +164,9 @@ export async function verifyDodoWebhook(request: Request) {
     throw new Error('Dodo webhook secret is not configured')
   }
 
-  const payload = await request.text()
+  const payload = new TextDecoder().decode(
+    await readRequestBodyWithLimit(request, DODO_WEBHOOK_BODY_LIMIT),
+  )
   const signature = headerValue(request.headers, 'webhook-signature')
   const webhookId = headerValue(request.headers, 'webhook-id')
   const timestamp = headerValue(request.headers, 'webhook-timestamp')

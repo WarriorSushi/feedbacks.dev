@@ -118,7 +118,10 @@ test('marketing routes expose a crawlable acquisition foundation without indexin
 
 test('first-run and public feedback screens keep optional work out of the main path', () => {
   const newProject = read('../../src/app/(dashboard)/projects/new/page.tsx')
-  const inbox = read('../../src/app/(dashboard)/feedback/page.tsx')
+  const inbox = [
+    read('../../src/app/(dashboard)/feedback/page.tsx'),
+    read('../../src/app/(dashboard)/feedback/feedback-inbox-client.tsx'),
+  ].join('\n')
   const publicForm = read('../../src/components/boards/BoardSubmitForm.tsx')
 
   assert.match(newProject, /Name your app or website/)
@@ -135,11 +138,16 @@ test('first-run and public feedback screens keep optional work out of the main p
 test('project creation checks plan limits before writing a project', () => {
   const route = read('../../src/app/api/projects/route.ts')
   const billing = read('../../src/lib/billing.ts')
+  const atomicWrites = read('../../src/lib/atomic-quota-writes.ts')
+  const migration = read('../../../../sql/063_atomic_free_plan_quota_writes.sql')
   const plans = read('../../../shared/src/plans.ts')
 
   assert.match(plans, /projectLimit: 2/)
   assert.match(route, /assertCanCreateProject/)
-  assert.ok(route.indexOf('assertCanCreateProject') < route.indexOf("from('projects').insert"))
+  assert.match(route, /createProjectWithAtomicQuota/)
+  assert.match(atomicWrites, /create_project_with_quota/)
+  assert.match(migration, /pg_advisory_xact_lock/)
+  assert.match(migration, /insert into public\.projects/)
   assert.match(route, /status: 403/)
   assert.match(billing, /project_limit_reached/)
 })
@@ -193,7 +201,10 @@ test('release note editor exposes recovery and destructive actions without vague
 test('dashboard mutations preserve mounted content and scope progress to the affected item', () => {
   const updates = read('../../src/components/product-updates/ProductUpdatesTab.tsx')
   const updatesOverview = read('../../src/components/product-updates/ProductUpdatesOverview.tsx')
-  const inbox = read('../../src/app/(dashboard)/feedback/page.tsx')
+  const inbox = [
+    read('../../src/app/(dashboard)/feedback/page.tsx'),
+    read('../../src/app/(dashboard)/feedback/feedback-inbox-client.tsx'),
+  ].join('\n')
   const feedbackActions = read('../../src/app/(dashboard)/feedback/[id]/feedback-actions.tsx')
   const projectSettings = read('../../src/app/(dashboard)/projects/[id]/project-tabs.tsx')
   const customize = read('../../src/app/(dashboard)/projects/[id]/customize-tab.tsx')
@@ -260,7 +271,10 @@ test('dense dashboard forms use clear tonal sections instead of one flat canvas'
   const section = read('../../src/components/ui/workspace-section.tsx')
   const boardIdentity = read('../../src/components/board-settings/BoardIdentitySection.tsx')
   const boardVisibility = read('../../src/components/board-settings/BoardVisibilitySection.tsx')
-  const inbox = read('../../src/app/(dashboard)/feedback/page.tsx')
+  const inbox = [
+    read('../../src/app/(dashboard)/feedback/page.tsx'),
+    read('../../src/app/(dashboard)/feedback/feedback-inbox-client.tsx'),
+  ].join('\n')
 
   assert.match(section, /rounded-lg border bg-card/)
   assert.match(section, /border-b bg-surface-raised\/70/)

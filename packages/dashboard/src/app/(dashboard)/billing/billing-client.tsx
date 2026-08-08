@@ -46,6 +46,7 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
   const [portalLoading, setPortalLoading] = React.useState(false)
   const [syncing, setSyncing] = React.useState(false)
   const searchParams = useSearchParams()
+  const hasProIntent = searchParams.get('intent') === 'pro'
 
   const refreshSummary = React.useCallback(async () => {
     setSyncing(true)
@@ -159,7 +160,7 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
             <Badge variant="outline">{cancellationScheduled ? 'cancels soon' : complimentaryProActive && !paidProActive ? 'referral reward' : summary.account.billing_status}</Badge>
             {!customerBillingLive && <Badge variant="outline">Live checkout unavailable</Badge>}
           </div>
-          <h2 className="mt-3 text-xl font-semibold tracking-tight">{effectivePro ? 'Your feedback operation is fully unlocked' : 'Turn feedback into a shipping system'}</h2>
+          <h2 className="mt-3 text-xl font-semibold tracking-tight">{effectivePro ? 'Your feedback operation is fully unlocked' : hasProIntent ? 'Finish upgrading to Pro' : 'Turn feedback into a shipping system'}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {effectivePro ? 'Every project, integration, history window, and branding control stays available.' : 'Pro removes the ceilings when feedback becomes part of how your product team ships.'}
           </p>

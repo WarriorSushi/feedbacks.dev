@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { authenticateApiKey } from '@/lib/api-auth'
-import { assertCanReceiveFeedback, assertFeatureAccess, getBillingSummaryForUser, getHistoryCutoff, incrementFeedbackUsage } from '@/lib/billing'
+import { assertCanReceiveFeedback, assertFeatureAccess, getBillingSummaryForUser, getHistoryCutoff } from '@/lib/billing'
 import { notifyProjectOwnerOfNewFeedback } from '@/lib/notifications'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { enqueueWebhookJobs, processWebhookJobs } from '@/lib/webhook-delivery'
@@ -14,6 +14,7 @@ import {
   feedbackCursorFilter,
   nextFeedbackCursor,
 } from '@/lib/cursor-pagination'
+import { insertFeedbackWithAtomicQuota } from '@/lib/atomic-quota-writes'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -223,8 +224,14 @@ export async function POST(request: NextRequest) {
       updated_at: now,
     }
 
-    const { error: insertErr } = await admin.from('feedback').insert(feedbackRow)
-    if (insertErr) {
+    let write
+    try {
+      write = await insertFeedbackWithAtomicQuota({
+        admin,
+        feedback: feedbackRow,
+        bypassQuota: false,
+      })
+    } catch (insertErr) {
       console.error('Feedback insert error:', insertErr)
       if (idempotencyKeyHash) {
         await admin
@@ -236,8 +243,24 @@ export async function POST(request: NextRequest) {
       }
       return jsonError('Failed to save feedback', 500)
     }
-
-    await incrementFeedbackUsage(project.owner_user_id)
+    if (write.status !== 'created') {
+      if (idempotencyKeyHash) {
+        await admin
+          .from('api_idempotency_keys')
+          .delete()
+          .eq('project_id', project.id)
+          .eq('route', 'POST /api/v1/feedback')
+          .eq('key_hash', idempotencyKeyHash)
+      }
+      if (write.status === 'quota_reached') {
+        return jsonError('This project has reached its monthly feedback limit. Upgrade to Pro to continue collecting feedback.', 403)
+      }
+      if (write.status === 'project_frozen') {
+        return jsonError('This project is frozen because the workspace is over its current plan limit.', 403)
+      }
+      if (write.status === 'project_not_found') return jsonError('Invalid or missing API key', 401)
+      return jsonError('Failed to save feedback', 500)
+    }
 
     // Queue webhook delivery so retries survive the request lifecycle.
     if (project.webhooks) {

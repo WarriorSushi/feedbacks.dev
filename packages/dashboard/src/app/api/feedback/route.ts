@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
-import { assertCanReceiveFeedback, incrementFeedbackUsage } from '@/lib/billing'
+import { assertCanReceiveFeedback } from '@/lib/billing'
 import { hasE2EBypass } from '@/lib/e2e'
 import { notifyProjectOwnerOfNewFeedback } from '@/lib/notifications'
 import { isWidgetRequestOriginAllowed } from '@/lib/origin-allowlist'
@@ -16,6 +16,7 @@ import {
   MAX_SCREENSHOT_SIZE,
   validateAndSanitizeFeedbackImage,
 } from '@/lib/feedback-media-validation'
+import { insertFeedbackWithAtomicQuota } from '@/lib/atomic-quota-writes'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -440,37 +441,48 @@ export async function POST(request: NextRequest) {
       updated_at: now,
     }
 
-    const { error: insertErr } = await admin.from('feedback').insert(feedbackRow)
-    if (insertErr) {
+    let write
+    try {
+      write = await insertFeedbackWithAtomicQuota({
+        admin,
+        feedback: feedbackRow,
+        media: mediaRows,
+        bypassQuota: hasE2EBypass(request),
+        allowReplay: Boolean(submittedId),
+        recordFirstFeedback: true,
+      })
+    } catch (insertErr) {
       await cleanupUploadedObjects()
-      if (submittedId && insertErr.code === '23505') {
-        const { data: existing } = await admin
-          .from('feedback')
-          .select('id')
-          .eq('id', feedbackId)
-          .eq('project_id', project.id)
-          .maybeSingle()
-        if (existing) {
-          return NextResponse.json(
-            { success: true, id: existing.id, replayed: true },
-            { headers: { ...CORS_HEADERS, 'Idempotency-Replayed': 'true' } },
-          )
-        }
-      }
       console.error('Feedback insert error:', insertErr)
       return jsonError('Failed to save feedback', 500)
     }
-
-    if (mediaRows.length > 0) {
-      const { error: mediaError } = await admin.from('feedback_media').insert(mediaRows)
-      if (mediaError) {
-        await cleanupUploadedObjects()
-        await admin.from('feedback').delete().eq('id', feedbackId)
-        return jsonError('Failed to secure uploaded media', 500)
-      }
+    if (write.status === 'replayed') {
+      await cleanupUploadedObjects()
+      return NextResponse.json(
+        { success: true, id: write.feedbackId, replayed: true },
+        { headers: { ...CORS_HEADERS, 'Idempotency-Replayed': 'true' } },
+      )
+    }
+    if (write.status === 'quota_reached') {
+      await cleanupUploadedObjects()
+      return NextResponse.json({
+        error: 'This project has reached its monthly feedback limit. Upgrade to Pro to continue collecting feedback.',
+        code: 'feedback_quota_reached',
+      }, { status: 403, headers: CORS_HEADERS })
+    }
+    if (write.status === 'project_frozen') {
+      await cleanupUploadedObjects()
+      return jsonError('This project is frozen because the workspace is over its current plan limit.', 403)
+    }
+    if (write.status === 'project_not_found') {
+      await cleanupUploadedObjects()
+      return jsonError('Invalid project key', 401)
+    }
+    if (write.status === 'id_conflict') {
+      await cleanupUploadedObjects()
+      return jsonError('Failed to save feedback', 500)
     }
 
-    await incrementFeedbackUsage(project.owner_user_id)
     await recordActivationMilestone({
       projectId: project.id,
       userId: project.owner_user_id,
