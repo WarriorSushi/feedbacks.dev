@@ -61,7 +61,7 @@ export function LandingHeroDemo({ installSnippet }: { installSnippet: string }) 
         <button
           type="button"
           onClick={() => setPaused((value) => !value)}
-          className="inline-flex h-7 items-center gap-1.5 rounded border border-white/10 px-2 text-[10px] font-medium text-zinc-400 transition-colors hover:border-white/20 hover:text-zinc-100"
+          className="inline-flex min-h-11 items-center gap-1.5 rounded border border-white/10 px-3 text-[10px] font-medium text-zinc-400 transition-colors hover:border-white/20 hover:text-zinc-100 sm:min-h-9"
           aria-label={paused ? 'Play product walkthrough' : 'Pause product walkthrough'}
         >
           {paused ? <Play className="h-3 w-3" /> : <Pause className="h-3 w-3" />}

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
 import { getE2EEnvironmentSafety } from '../../src/lib/e2e-environment.ts'
 
@@ -58,4 +59,16 @@ test('accepts an explicitly matched non-production environment', () => {
     NEXT_PUBLIC_SUPABASE_URL: 'https://safee2eref.supabase.co',
     PLAYWRIGHT_BASE_URL: 'http://127.0.0.1:3000',
   }, () => assert.deepEqual(getE2EEnvironmentSafety(), { safe: true, reason: '' }))
+})
+
+test('CI always runs browser smoke and isolates the data-mutating acceptance suite', () => {
+  const workflow = readFileSync(new URL('../../../../.github/workflows/ci.yml', import.meta.url), 'utf8')
+  assert.match(workflow, /name: Playwright Smoke/)
+  assert.match(workflow, /public-smoke\.spec\.ts --project=chromium/)
+  assert.match(workflow, /name: Playwright E2E \(isolated\)/)
+  assert.match(workflow, /vars\.E2E_ISOLATED_ENABLED == 'true'/)
+  assert.match(workflow, /secrets\.E2E_NEXT_PUBLIC_SUPABASE_URL/)
+  assert.match(workflow, /secrets\.E2E_SUPABASE_PROJECT_REF/)
+  assert.match(workflow, /pnpm test:e2e:required -- --project=chromium/)
+  assert.doesNotMatch(workflow, /NEXT_PUBLIC_SUPABASE_URL: \$\{\{ secrets\.NEXT_PUBLIC_SUPABASE_URL \}\}/)
 })

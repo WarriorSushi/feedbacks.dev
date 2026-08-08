@@ -12,6 +12,7 @@ import { recordActivationMilestone } from '@/lib/activation-milestones'
 import { readJsonBody } from '@/lib/api-request'
 import { normalizeProjectDomain } from '@/lib/project-input'
 import { recordMarketingConversion } from '@/lib/marketing'
+import { createProjectWithAtomicQuota } from '@/lib/atomic-quota-writes'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const SAFE_PROJECT_SELECT = 'id,owner_user_id,name,api_key_last_four,domain,webhooks,settings,environment,test_namespace,expires_at,quarantined_at,plan_frozen_at,plan_freeze_reason,created_at,updated_at'
@@ -130,18 +131,21 @@ export async function POST(request: NextRequest) {
       quarantined_at: null,
     }
 
-    const { data, error } = await admin.from('projects').insert(project).select(SAFE_PROJECT_SELECT).single()
-    if (error) {
-      if (creationRequestId && error.code === '23505') {
-        const { data: existing } = await admin
-          .from('projects')
-          .select(SAFE_PROJECT_SELECT)
-          .eq('owner_user_id', user.id)
-          .eq('creation_request_id', creationRequestId)
-          .maybeSingle()
-        if (existing) return NextResponse.json({ ...existing, api_key: null, replayed: true })
-      }
-      return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
+    const write = await createProjectWithAtomicQuota({
+      admin,
+      project,
+      bypassQuota: isE2ERequest,
+    })
+    if (write.status === 'quota_reached') {
+      return NextResponse.json({
+        error: `Free plan includes ${write.projectLimit} projects. Upgrade to Pro to create more.`,
+        code: 'project_limit_reached',
+        usage: { projectCount: write.projectCount },
+      }, { status: 403 })
+    }
+    const data = write.project
+    if (write.status === 'replayed') {
+      return NextResponse.json({ ...data, api_key: null, replayed: true })
     }
 
     if (rawApiKey && apiKeyHash) {

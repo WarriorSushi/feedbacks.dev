@@ -8,6 +8,8 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANO
 process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'service-role-key'
 process.env.NEXT_PUBLIC_APP_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN || 'https://app.feedbacks.dev'
 process.env.DODO_PAYMENTS_WEBHOOK_SECRET = process.env.DODO_PAYMENTS_WEBHOOK_SECRET || `whsec_${Buffer.from('test-secret').toString('base64')}`
+process.env.DODO_PAYMENTS_PRO_MONTHLY_PRODUCT_ID = 'prod_pro_monthly'
+process.env.DODO_PAYMENTS_PRO_YEARLY_PRODUCT_ID = 'prod_pro_yearly'
 
 async function loadFixture(name: string) {
   const fixtureUrl = new URL(`../fixtures/dodo/${name}.json`, import.meta.url)
@@ -95,6 +97,30 @@ test('maps payment.failed payloads to past_due for billing alerts', async () => 
   assert.equal(result.billingStatus, 'past_due')
   assert.equal(result.planTier, 'free')
   assert.equal(result.billingEmail, 'billing@example.com')
+})
+
+test('accepts only supported lifecycle events for configured Pro products', async () => {
+  const { extractBillingEventContext, isSupportedBillingEvent } = await import(new URL('../../src/lib/billing-webhooks.ts', import.meta.url).href)
+  const fixture = await loadFixture('subscription-active')
+  const allowedProducts = ['prod_pro_monthly', 'prod_pro_yearly']
+
+  assert.equal(isSupportedBillingEvent(extractBillingEventContext(fixture), allowedProducts), true)
+  assert.equal(isSupportedBillingEvent(extractBillingEventContext({
+    ...fixture,
+    type: 'customer.created',
+  }), allowedProducts), false)
+  assert.equal(isSupportedBillingEvent(extractBillingEventContext({
+    ...fixture,
+    data: { ...(fixture.data as Record<string, unknown>), product_id: 'prod_unrelated' },
+  }), allowedProducts), false)
+})
+
+test('rejects billing events whose metadata conflicts with an existing provider binding', async () => {
+  const { resolveBillingEventUser } = await import(new URL('../../src/lib/billing-webhooks.ts', import.meta.url).href)
+  assert.deepEqual(resolveBillingEventUser('user-1', 'user-1', 'user-1'), { ok: true, userId: 'user-1' })
+  assert.deepEqual(resolveBillingEventUser(null, 'user-1', null), { ok: true, userId: 'user-1' })
+  assert.deepEqual(resolveBillingEventUser('user-1', 'user-2', null), { ok: false })
+  assert.deepEqual(resolveBillingEventUser(null, 'user-1', 'user-2'), { ok: false })
 })
 
 test('verifies valid Dodo webhook signatures', async () => {
@@ -211,4 +237,28 @@ test('rejects malformed Dodo webhook timestamps', async () => {
   })
 
   await assert.rejects(() => verifyDodoWebhook(request), /Invalid Dodo webhook timestamp/)
+})
+
+test('rejects chunked Dodo webhooks before buffering an oversized payload', async () => {
+  const { DODO_WEBHOOK_BODY_LIMIT, verifyDodoWebhook } = await import(new URL('../../src/lib/dodo.ts', import.meta.url).href)
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new Uint8Array(DODO_WEBHOOK_BODY_LIMIT))
+      controller.enqueue(new Uint8Array(1))
+      controller.close()
+    },
+  })
+  const request = new Request('https://example.com/api/billing/webhook', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'webhook-id': 'evt_oversized',
+      'webhook-timestamp': Math.floor(Date.now() / 1000).toString(),
+      'webhook-signature': 'irrelevant',
+    },
+    body: stream,
+    duplex: 'half',
+  } as RequestInit & { duplex: 'half' })
+
+  await assert.rejects(() => verifyDodoWebhook(request), /Request body exceeds/)
 })

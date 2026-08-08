@@ -1,6 +1,18 @@
 import type { BillingStatus, PlanTier } from '@feedbacks/shared'
 import type { DodoEventPayload } from './dodo.ts'
 
+const SUPPORTED_BILLING_EVENT_TYPES = new Set([
+  'payment.failed',
+  'subscription.active',
+  'subscription.updated',
+  'subscription.on_hold',
+  'subscription.renewed',
+  'subscription.plan_changed',
+  'subscription.cancelled',
+  'subscription.failed',
+  'subscription.expired',
+])
+
 function readString(value: unknown): string | null {
   return typeof value === 'string' && value.trim() ? value.trim() : null
 }
@@ -98,6 +110,28 @@ export interface BillingEventContext {
   currency: string | null
   billingInterval: string | null
   billingIntervalCount: number | null
+}
+
+export function isSupportedBillingEvent(
+  context: BillingEventContext,
+  allowedProductIds: ReadonlyArray<string | null | undefined>,
+) {
+  if (!SUPPORTED_BILLING_EVENT_TYPES.has(context.eventType)) return false
+  const allowed = new Set(allowedProductIds.filter((value): value is string => Boolean(value)))
+  return Boolean(context.dodoProductId && allowed.has(context.dodoProductId))
+}
+
+export function resolveBillingEventUser(
+  metadataUserId: string | null,
+  customerUserId: string | null,
+  subscriptionUserId: string | null,
+): { ok: true; userId: string | null } | { ok: false } {
+  const candidates = new Set(
+    [metadataUserId, customerUserId, subscriptionUserId]
+      .filter((value): value is string => Boolean(value)),
+  )
+  if (candidates.size > 1) return { ok: false }
+  return { ok: true, userId: candidates.values().next().value || null }
 }
 
 function normalizeTimestamp(value: unknown): string | null {

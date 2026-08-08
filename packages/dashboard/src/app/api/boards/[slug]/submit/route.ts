@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
-import { assertCanReceiveFeedback, incrementFeedbackUsage } from '@/lib/billing'
+import { assertCanReceiveFeedback } from '@/lib/billing'
 import { hasE2EBypass } from '@/lib/e2e'
 import { notifyProjectOwnerOfNewFeedback } from '@/lib/notifications'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { buildSuggestionEntries, isLikelySpam, normalizeBoardMessageTitle } from '@/lib/board-submissions'
 import { isBoardPubliclyAccessible } from '@/lib/public-board'
 import { readJsonBody } from '@/lib/api-request'
+import { insertFeedbackWithAtomicQuota } from '@/lib/atomic-quota-writes'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -59,7 +60,8 @@ export async function POST(
     .eq('id', board.project_id)
     .single()
 
-  if (!hasE2EBypass(req)) {
+  const isE2ERequest = hasE2EBypass(req)
+  if (!isE2ERequest) {
     if (projectOwner?.plan_frozen_at) {
       return NextResponse.json({ error: 'This project is frozen because the workspace is over its current plan limit.' }, { status: 403 })
     }
@@ -131,32 +133,51 @@ export async function POST(
     }, { status: 409 })
   }
 
-  const { data: feedback, error } = await admin
-    .from('feedback')
-    .insert({
-      project_id: board.project_id,
-      message: message.trim(),
-      type: feedbackType,
-      email: trimmedEmail,
-      url: null,
-      user_agent: 'public-board',
-      status: 'new',
-      priority: 'low',
-      tags: [],
-      metadata: { source: 'public_board' },
-      is_public: true,
-      vote_count: 0,
-      read_at: null,
+  const feedbackId = crypto.randomUUID()
+  let write
+  try {
+    write = await insertFeedbackWithAtomicQuota({
+      admin,
+      bypassQuota: isE2ERequest,
+      bypassPlanFreeze: isE2ERequest,
+      feedback: {
+        id: feedbackId,
+        project_id: board.project_id,
+        message: message.trim(),
+        type: feedbackType,
+        email: trimmedEmail,
+        url: null,
+        user_agent: 'public-board',
+        status: 'new',
+        priority: 'low',
+        tags: [],
+        metadata: { source: 'public_board' },
+        is_public: true,
+        is_archived: false,
+        vote_count: 0,
+        read_at: null,
+      },
     })
-    .select('id')
-    .single()
-
-  if (error) {
+  } catch {
+    return NextResponse.json({ error: 'Failed to submit' }, { status: 500 })
+  }
+  if (write.status === 'quota_reached') {
+    return NextResponse.json({
+      error: 'This project has reached its monthly feedback limit. Upgrade to Pro to continue collecting feedback.',
+      code: 'feedback_quota_reached',
+    }, { status: 403 })
+  }
+  if (write.status === 'project_frozen') {
+    return NextResponse.json({ error: 'This project is frozen because the workspace is over its current plan limit.' }, { status: 403 })
+  }
+  if (write.status === 'project_not_found') {
+    return NextResponse.json({ error: 'Board not found' }, { status: 404 })
+  }
+  if (write.status !== 'created') {
     return NextResponse.json({ error: 'Failed to submit' }, { status: 500 })
   }
 
   if (projectOwner?.owner_user_id) {
-    await incrementFeedbackUsage(projectOwner.owner_user_id)
     void notifyProjectOwnerOfNewFeedback(
       { id: board.project_id, name: board.title || board.display_name || slug, owner_user_id: projectOwner.owner_user_id },
       {
@@ -170,5 +191,5 @@ export async function POST(
     )
   }
 
-  return NextResponse.json({ id: feedback.id, success: true, suggestions })
+  return NextResponse.json({ id: feedbackId, success: true, suggestions })
 }

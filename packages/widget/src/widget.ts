@@ -76,12 +76,14 @@ class FeedbacksWidget {
   private hoverRating = 0;
   private maxRetries = 3;
   private boundKeydownHandler: ((e: KeyboardEvent) => void) | null = null;
+  private modalEscapeHandler: ((e: KeyboardEvent) => void) | null = null;
   private themeVars: Record<string, string> = {};
   private updatesController: ProductUpdatesController | null = null;
   private feedbackEnabled = false;
   private inlineContainer: HTMLElement | null = null;
   private managedHost: HTMLElement | null = null;
   private generatedTrigger: HTMLButtonElement | null = null;
+  private triggerElements: Element[] = [];
   private bootstrapController: AbortController | null = null;
   private autoOpenTimer: number | null = null;
   private destroyed = false;
@@ -110,38 +112,96 @@ class FeedbacksWidget {
   }
 
   private async initializeModules(): Promise<void> {
-    const bootstrap = await this.loadBootstrap();
-    if (this.destroyed) return;
     const storage = this.getLocalStorage();
-    let cachedFeedbackEnabled: boolean | undefined;
-
-    if (bootstrap) {
-      this.cfg = { ...this.cfg, ...bootstrap.feedbackConfig, projectKey: this.cfg.projectKey };
-      writeCachedRemoteWidgetConfig(storage, this.cfg.projectKey, bootstrap.feedbackConfig);
-      writeCachedFeedbackEnabled(storage, this.cfg.projectKey, bootstrap.modules.feedback);
-    } else {
-      const cachedConfig = readCachedRemoteWidgetConfig(storage, this.cfg.projectKey);
-      cachedFeedbackEnabled = readCachedFeedbackEnabled(storage, this.cfg.projectKey);
-      if (cachedConfig) {
-        this.cfg = { ...this.cfg, ...cachedConfig, projectKey: this.cfg.projectKey };
-        this.log('Using the last verified remote configuration');
-      }
+    const cachedConfig = readCachedRemoteWidgetConfig(storage, this.cfg.projectKey);
+    const cachedFeedbackEnabled = readCachedFeedbackEnabled(storage, this.cfg.projectKey);
+    if (cachedConfig) {
+      this.cfg = { ...this.cfg, ...cachedConfig, projectKey: this.cfg.projectKey };
+      this.log('Using the last verified remote configuration');
     }
     this.applyTheme();
 
-    this.feedbackEnabled = bootstrap?.modules.feedback ?? cachedFeedbackEnabled ?? this.cfg.feedbackEnabled ?? true;
+    // Render the feedback path from the last verified configuration immediately.
+    // Remote bootstrap then reconciles it in the background, so a slow network can
+    // never hide the launcher for the full request timeout.
+    this.feedbackEnabled = cachedFeedbackEnabled ?? this.cfg.feedbackEnabled ?? true;
     if (this.feedbackEnabled) this.setupFeedbackPresentation();
+    this.log('Widget initialized');
 
-    if (bootstrap?.modules.updates) {
-      this.updatesController = new ProductUpdatesController(this.cfg, () => this.isOpen, bootstrap.updates);
-    } else if (!bootstrap && this.cfg.enableUpdates) {
+    const bootstrap = await this.loadBootstrap();
+    if (this.destroyed) return;
+
+    if (bootstrap) {
+      writeCachedRemoteWidgetConfig(storage, this.cfg.projectKey, bootstrap.feedbackConfig);
+      writeCachedFeedbackEnabled(storage, this.cfg.projectKey, bootstrap.modules.feedback);
+
+      const hadFeedbackPresentation = this.feedbackEnabled;
+      const preserveActiveDraft = bootstrap.modules.feedback && this.hasActiveFeedbackDraft();
+      if (hadFeedbackPresentation && !preserveActiveDraft) this.teardownFeedbackPresentation();
+
+      this.cfg = { ...this.cfg, ...bootstrap.feedbackConfig, projectKey: this.cfg.projectKey };
+      this.applyTheme();
+      this.feedbackEnabled = bootstrap.modules.feedback;
+
+      if (this.feedbackEnabled) {
+        if (!hadFeedbackPresentation || !preserveActiveDraft) {
+          this.setupFeedbackPresentation();
+        } else {
+          // Preserve text the user has already entered while applying the new
+          // configuration to any presentation opened after this one.
+          [this.launcher, this.inlineContainer, this.overlayEl]
+            .filter((element): element is HTMLElement => Boolean(element))
+            .forEach((element) => this.applyThemeToElement(element));
+        }
+      }
+
+      if (bootstrap.modules.updates) {
+        this.updatesController = new ProductUpdatesController(this.cfg, () => this.isOpen, bootstrap.updates);
+      }
+    } else if (this.cfg.enableUpdates) {
       // Compatibility for legacy embeds while the bootstrap endpoint is
       // unavailable. A successful bootstrap remains authoritative.
       this.updatesController = new ProductUpdatesController(this.cfg, () => this.isOpen);
     }
-
-    this.log('Widget initialized');
   }
+
+  private hasActiveFeedbackDraft(): boolean {
+    if (this.isOpen) return true;
+    const fields = this.inlineContainer?.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select');
+    return Array.from(fields || []).some((field) =>
+      field instanceof HTMLInputElement && (field.type === 'checkbox' || field.type === 'radio')
+        ? field.checked
+        : Boolean(field.value),
+    );
+  }
+
+  private teardownFeedbackPresentation(): void {
+    if (this.autoOpenTimer !== null) {
+      window.clearTimeout(this.autoOpenTimer);
+      this.autoOpenTimer = null;
+    }
+    this.close();
+    this.launcher?.remove();
+    this.launcher = null;
+    for (const element of this.triggerElements) {
+      element.removeEventListener('click', this.handleTriggerClick);
+    }
+    this.triggerElements = [];
+    this.generatedTrigger?.remove();
+    this.generatedTrigger = null;
+    this.inlineContainer?.remove();
+    this.inlineContainer = null;
+    if (this.boundKeydownHandler) {
+      document.removeEventListener('keydown', this.boundKeydownHandler);
+      this.boundKeydownHandler = null;
+    }
+  }
+
+  private handleTriggerClick = (event: Event): void => {
+    if (!this.feedbackEnabled) return;
+    event.preventDefault();
+    this.open();
+  };
 
   private setupFeedbackPresentation(): void {
     if (this.cfg.embedMode === 'inline') {
@@ -323,7 +383,8 @@ class FeedbacksWidget {
         els = [button];
       }
     }
-    els.forEach(el => el.addEventListener('click', (e) => { if (!this.feedbackEnabled) return; e.preventDefault(); this.open(); }));
+    this.triggerElements = els;
+    els.forEach((element) => element.addEventListener('click', this.handleTriggerClick));
     this.log(`Attached to ${els.length} trigger(s)`);
   }
 
@@ -390,10 +451,10 @@ class FeedbacksWidget {
     setTimeout(() => ta?.focus(), 100);
 
     // ESC close
-    const escHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { this.close(); document.removeEventListener('keydown', escHandler); }
+    this.modalEscapeHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') this.close();
     };
-    document.addEventListener('keydown', escHandler);
+    document.addEventListener('keydown', this.modalEscapeHandler);
 
     this.bindForm(modal, true);
     this.renderCaptcha(modal, true);
@@ -401,6 +462,10 @@ class FeedbacksWidget {
 
   close(): void {
     releaseOverlay(this);
+    if (this.modalEscapeHandler) {
+      document.removeEventListener('keydown', this.modalEscapeHandler);
+      this.modalEscapeHandler = null;
+    }
     if (!this.isOpen || !this.overlayEl) return;
     this.isOpen = false;
     this.overlayEl.classList.remove('fb-visible');
@@ -956,24 +1021,12 @@ class FeedbacksWidget {
     this.destroyed = true;
     this.bootstrapController?.abort();
     this.bootstrapController = null;
-    if (this.autoOpenTimer !== null) {
-      window.clearTimeout(this.autoOpenTimer);
-      this.autoOpenTimer = null;
-    }
+    this.teardownFeedbackPresentation();
     this.updatesController?.destroy();
     this.updatesController = null;
     releaseOverlay(this);
-    this.launcher?.remove();
-    this.generatedTrigger?.remove();
-    this.generatedTrigger = null;
-    this.inlineContainer?.remove();
-    this.inlineContainer = null;
     this.overlayEl?.remove();
     this.styleEl?.remove();
-    if (this.boundKeydownHandler) {
-      document.removeEventListener('keydown', this.boundKeydownHandler);
-      this.boundKeydownHandler = null;
-    }
     document.body.style.overflow = '';
   }
 

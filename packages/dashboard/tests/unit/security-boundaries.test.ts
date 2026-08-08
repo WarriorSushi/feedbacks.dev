@@ -70,3 +70,13 @@ test('browser mutations use the application version header instead of transport 
     assert.doesNotMatch(source, /['"]If-Match['"]/, client)
   }
 })
+
+test('public feedback notes inherit feedback and board visibility', () => {
+  const migration = read('../../../../sql/062_constrain_public_feedback_note_visibility.sql')
+  assert.match(migration, /feedback_notes\.is_public = true/i)
+  assert.match(migration, /f\.is_public = true/i)
+  assert.match(migration, /f\.is_archived = false/i)
+  assert.match(migration, /board\.enabled = true/i)
+  assert.match(migration, /board\.visibility <> 'private'/i)
+  assert.match(migration, /p\.owner_user_id = \(select auth\.uid\(\)\)/i)
+})

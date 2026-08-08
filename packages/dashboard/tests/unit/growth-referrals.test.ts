@@ -25,6 +25,7 @@ test('growth data is service-only and referral credit is atomic and one-time', (
 test('referral rewards mature after real activation and use layered risk signals', () => {
   const migration = read('../../../../sql/057_referral_and_downgrade_safeguards.sql')
   const reviewMigration = read('../../../../sql/060_referral_review_resolution.sql')
+  const activationEvidenceMigration = read('../../../../sql/061_require_server_feedback_referral_activation.sql')
   const referrals = read('../../src/lib/referrals.ts')
   const inviteRoute = read('../../src/app/r/[code]/route.ts')
 
@@ -50,6 +51,15 @@ test('referral rewards mature after real activation and use layered risk signals
   assert.match(reviewMigration, /set status = 'rejected'/i)
   assert.match(reviewMigration, /revoke execute on function public\.resolve_referral_review/i)
   assert.match(reviewMigration, /grant execute on function public\.resolve_referral_review\(uuid, boolean\)\s+to service_role/i)
+  assert.match(activationEvidenceMigration, /event_name = 'first_feedback_received'/i)
+  assert.doesNotMatch(activationEvidenceMigration, /event_name\s+in\s*\([^)]*verification_completed/i)
+  assert.match(activationEvidenceMigration, /revoke execute on function public\.qualify_referral_signup\(uuid\)/i)
+})
+
+test('client-reported verification does not directly trigger referral qualification', () => {
+  const source = read('../../src/lib/activation-milestones.ts')
+  assert.doesNotMatch(source, /eventName === 'verification_completed'\s*\|\|/)
+  assert.match(source, /if \(eventName === 'first_feedback_received'\)/)
 })
 
 test('downgrades are reversible, preserve data, and freeze only excess projects', () => {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   Bug,
   CircleHelp,
+  Flag,
   Inbox,
   Lightbulb,
   MessageSquare,
@@ -76,12 +77,14 @@ export function FeedbackInboxRow({
   selected,
   active,
   onToggle,
+  returnTo,
   tourTarget = false,
 }: {
   fb: Feedback;
   selected: boolean;
   active: boolean;
   onToggle: () => void;
+  returnTo: string;
   tourTarget?: boolean;
 }) {
   const isUnread = isFeedbackUnread(fb);
@@ -102,17 +105,19 @@ export function FeedbackInboxRow({
         active && "ring-2 ring-inset ring-ring/60",
       )}
     >
-      <input
-        type="checkbox"
-        checked={selected}
-        onChange={onToggle}
-        className="mt-0.5 h-4 w-4 shrink-0 rounded border accent-primary"
-        aria-label="Select item"
-        onClick={(event) => event.stopPropagation()}
-      />
+      <label className="-m-2 flex h-11 w-11 shrink-0 cursor-pointer items-start justify-center pt-2" onClick={(event) => event.stopPropagation()}>
+        <span className="sr-only">Select feedback</span>
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={onToggle}
+          className="h-4 w-4 rounded border accent-primary"
+          aria-label="Select feedback"
+        />
+      </label>
 
       <Link
-        href={`/feedback/${fb.id}`}
+        href={`/feedback/${fb.id}?returnTo=${encodeURIComponent(returnTo)}`}
         className="flex min-w-0 flex-1 items-start gap-2.5"
       >
         <span
@@ -163,6 +168,18 @@ export function FeedbackInboxRow({
               {statusConfig[fb.status]?.label || fb.status}
             </span>
             <span className="text-[10px] text-muted-foreground/30">·</span>
+            {(fb.priority === "high" || fb.priority === "critical") && (
+              <>
+                <span className={cn(
+                  "inline-flex items-center gap-1 text-[11px] font-medium capitalize",
+                  fb.priority === "critical" ? "text-destructive" : "text-amber-700 dark:text-amber-400",
+                )}>
+                  <Flag className="h-3 w-3" />
+                  {fb.priority}
+                </span>
+                <span className="text-[10px] text-muted-foreground/30">·</span>
+              </>
+            )}
             <span className="text-[11px] text-muted-foreground">{source}</span>
             {fb.projects && (
               <>
@@ -196,7 +213,8 @@ export function FeedbackInboxRow({
         </div>
 
         {fb.rating && (
-          <div className="flex shrink-0 items-center gap-px self-start pt-1">
+          <div className="flex shrink-0 items-center gap-px self-start pt-1" aria-label={`Rating ${fb.rating} out of 5`}>
+            <span className="sr-only">{fb.rating} out of 5</span>
             {Array.from({ length: 5 }, (_, index) => (
               <Star
                 key={index}
@@ -230,10 +248,12 @@ function getFeedbackSource(feedback: Feedback) {
 export function FeedbackInboxEmptyState({
   hasFilters,
   hasProjects,
+  selectedProjectId,
   onClear,
 }: {
   hasFilters: boolean;
   hasProjects: boolean;
+  selectedProjectId?: string;
   onClear: () => void;
 }) {
   if (hasFilters) {
@@ -270,10 +290,10 @@ export function FeedbackInboxEmptyState({
           ? "Open a project, finish Setup, then send one test from your site. New feedback will appear here with page and browser context."
           : "Create one project first. Then choose the form style, install the code, and send one test."}
       </p>
-      <Link href={hasProjects ? "/projects" : "/projects/new"} className="mt-4">
+      <Link href={selectedProjectId ? `/projects/${selectedProjectId}/verify` : hasProjects ? "/projects" : "/projects/new"} className="mt-4">
         <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs">
           <Inbox className="h-3.5 w-3.5" />
-          {hasProjects ? "Open projects" : "Create project"}
+          {selectedProjectId ? "Verify this project" : hasProjects ? "Open projects" : "Create project"}
         </Button>
       </Link>
     </div>

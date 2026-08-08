@@ -1,3 +1,5 @@
+import { readRequestBodyWithLimit, RequestBodyTooLargeError } from './request-body-limit.ts'
+
 const DEFAULT_JSON_BODY_LIMIT = 64 * 1024
 
 function errorResponse(request: Request, code: string, message: string, status: number) {
@@ -21,16 +23,11 @@ export async function readJsonBody<T extends Record<string, unknown> = Record<st
   }
 
   const maxBytes = options.maxBytes || DEFAULT_JSON_BODY_LIMIT
-  const declaredLength = Number(request.headers.get('content-length'))
-  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
-    return {
-      ok: false,
-      response: errorResponse(request, 'request_too_large', `JSON body must be ${maxBytes} bytes or fewer.`, 413),
-    }
-  }
-
-  const text = await request.text()
-  if (new TextEncoder().encode(text).byteLength > maxBytes) {
+  let text: string
+  try {
+    text = new TextDecoder().decode(await readRequestBodyWithLimit(request, maxBytes))
+  } catch (error) {
+    if (!(error instanceof RequestBodyTooLargeError)) throw error
     return {
       ok: false,
       response: errorResponse(request, 'request_too_large', `JSON body must be ${maxBytes} bytes or fewer.`, 413),

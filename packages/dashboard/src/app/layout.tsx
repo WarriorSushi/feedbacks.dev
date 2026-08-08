@@ -54,6 +54,7 @@ export default async function RootLayout({
   const pathname = (await headers()).get('x-pathname') || '/'
   const sharedAppearance = normalizeAppearanceTheme((await cookies()).get(APPEARANCE_COOKIE_NAME)?.value)
   const showMarketingConsent = pathname === '/' || pathname === '/auth' || pathname.startsWith('/early-access')
+  const showSpeedInsights = process.env.VERCEL === '1'
   const appearanceSyncScript = sharedAppearance
     ? `try{localStorage.setItem('theme',${JSON.stringify(sharedAppearance)})}catch{}`
     : ''
@@ -87,7 +88,7 @@ export default async function RootLayout({
               }}
             />
           </Suspense>
-          <SpeedInsights />
+          {showSpeedInsights ? <SpeedInsights /> : null}
         </ThemeProvider>
       </body>
     </html>

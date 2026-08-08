@@ -1,15 +1,27 @@
 import { NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { verifyDodoWebhook, type DodoEventPayload } from '@/lib/dodo'
-import { extractBillingEventContext } from '@/lib/billing-webhooks'
+import {
+  extractBillingEventContext,
+  isSupportedBillingEvent,
+  resolveBillingEventUser,
+} from '@/lib/billing-webhooks'
 import { notifyUserOfBillingFailure } from '@/lib/notifications'
 import { applyBillingLifecycleEvent } from '@/lib/billing-lifecycle'
+import { env } from '@/lib/env'
+import { RequestBodyTooLargeError } from '@/lib/request-body-limit'
 
 export async function POST(request: Request) {
   let verified: Awaited<ReturnType<typeof verifyDodoWebhook>>
   try {
     verified = await verifyDodoWebhook(request)
-  } catch {
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return NextResponse.json(
+        { code: 'request_too_large', message: 'Webhook payload is too large' },
+        { status: 413 },
+      )
+    }
     return NextResponse.json(
       { code: 'invalid_webhook', message: 'Webhook verification failed' },
       { status: 400 },
@@ -18,26 +30,39 @@ export async function POST(request: Request) {
 
   const admin = await createAdminSupabase()
   const context = extractBillingEventContext(verified.event as DodoEventPayload)
+  if (!isSupportedBillingEvent(context, [
+    env.DODO_PAYMENTS_PRO_MONTHLY_PRODUCT_ID,
+    env.DODO_PAYMENTS_PRO_YEARLY_PRODUCT_ID,
+  ])) {
+    return NextResponse.json({ received: true, ignored: true })
+  }
   let claimToken: string | null = null
 
   try {
-    let userId = context.userId
-    if (!userId && context.dodoCustomerId) {
-      const { data } = await admin
+    const [customerBinding, subscriptionBinding] = await Promise.all([
+      context.dodoCustomerId ? admin
         .from('billing_accounts')
         .select('user_id')
         .eq('dodo_customer_id', context.dodoCustomerId)
-        .maybeSingle()
-      userId = data?.user_id || null
-    }
-    if (!userId && context.dodoSubscriptionId) {
-      const { data } = await admin
+        .maybeSingle() : Promise.resolve({ data: null }),
+      context.dodoSubscriptionId ? admin
         .from('billing_accounts')
         .select('user_id')
         .eq('dodo_subscription_id', context.dodoSubscriptionId)
-        .maybeSingle()
-      userId = data?.user_id || null
+        .maybeSingle() : Promise.resolve({ data: null }),
+    ])
+    const userResolution = resolveBillingEventUser(
+      context.userId,
+      customerBinding.data?.user_id || null,
+      subscriptionBinding.data?.user_id || null,
+    )
+    if (!userResolution.ok) {
+      return NextResponse.json(
+        { code: 'billing_identity_conflict', message: 'Webhook identity does not match the existing billing account' },
+        { status: 409 },
+      )
     }
+    const userId = userResolution.userId
 
     const occurredAt = context.occurredAt || verified.timestamp
     const { data: claimed, error: claimError } = await admin.rpc('claim_billing_event', {

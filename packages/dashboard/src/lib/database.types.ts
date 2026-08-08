@@ -2141,6 +2141,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_project_with_quota: {
+        Args: {
+          p_bypass_quota?: boolean
+          p_free_project_limit?: number
+          p_project: Json
+        }
+        Returns: Json
+      }
+      insert_feedback_with_quota: {
+        Args: {
+          p_allow_replay?: boolean
+          p_bypass_plan_freeze?: boolean
+          p_bypass_quota?: boolean
+          p_feedback: Json
+          p_free_feedback_limit?: number
+          p_media?: Json
+          p_record_first_feedback?: boolean
+        }
+        Returns: Json
+      }
       qualify_referral_signup: {
         Args: { p_invited_user_id: string }
         Returns: Json

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
 test('widget bootstrap public contract keeps modules independent', async () => {
@@ -18,4 +19,17 @@ test('widget bootstrap public contract keeps modules independent', async () => {
   assert.equal(isWidgetBootstrapResponse({ ...feedbackOnly, feedbackConfig: { ...feedbackConfig, privateKey: 'nope' } }), false)
   assert.equal(isWidgetBootstrapResponse({ ...feedbackOnly, feedbackConfig: { ...feedbackConfig, showPoweredBy: 'nope' } }), false)
   assert.equal(isWidgetBootstrapResponse({ configVersion: 1, modules: { feedback: true, updates: false }, feedbackConfig }), false)
+})
+
+test('widget renders cached feedback before waiting for remote bootstrap', async () => {
+  const source = await readFile(new URL('../../../widget/src/widget.ts', import.meta.url), 'utf8')
+  const initializer = source.slice(
+    source.indexOf('private async initializeModules'),
+    source.indexOf('private hasActiveFeedbackDraft'),
+  )
+
+  assert.ok(initializer.indexOf('readCachedRemoteWidgetConfig') < initializer.indexOf('await this.loadBootstrap()'))
+  assert.ok(initializer.indexOf('this.setupFeedbackPresentation()') < initializer.indexOf('await this.loadBootstrap()'))
+  assert.match(initializer, /writeCachedRemoteWidgetConfig/)
+  assert.match(initializer, /teardownFeedbackPresentation/)
 })
