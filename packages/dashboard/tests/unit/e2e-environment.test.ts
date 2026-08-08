@@ -61,11 +61,14 @@ test('accepts an explicitly matched non-production environment', () => {
   }, () => assert.deepEqual(getE2EEnvironmentSafety(), { safe: true, reason: '' }))
 })
 
-test('internal CI fails closed when the required acceptance environment is unavailable', () => {
+test('CI always runs browser smoke and isolates the data-mutating acceptance suite', () => {
   const workflow = readFileSync(new URL('../../../../.github/workflows/ci.yml', import.meta.url), 'utf8')
+  assert.match(workflow, /name: Playwright Smoke/)
+  assert.match(workflow, /public-smoke\.spec\.ts --project=chromium/)
+  assert.match(workflow, /name: Playwright E2E \(isolated\)/)
+  assert.match(workflow, /vars\.E2E_ISOLATED_ENABLED == 'true'/)
+  assert.match(workflow, /secrets\.E2E_NEXT_PUBLIC_SUPABASE_URL/)
+  assert.match(workflow, /secrets\.E2E_SUPABASE_PROJECT_REF/)
   assert.match(workflow, /pnpm test:e2e:required -- --project=chromium/)
-  assert.match(workflow, /Bind isolated project ref to configured Supabase URL/)
-  assert.match(workflow, /E2E_SUPABASE_PROJECT_REF=\$project_ref/)
-  assert.doesNotMatch(workflow, /Playwright E2E not executed/)
-  assert.doesNotMatch(workflow, /isolated-e2e\.outputs\.available/)
+  assert.doesNotMatch(workflow, /NEXT_PUBLIC_SUPABASE_URL: \$\{\{ secrets\.NEXT_PUBLIC_SUPABASE_URL \}\}/)
 })
