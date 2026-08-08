@@ -64,6 +64,8 @@ test('accepts an explicitly matched non-production environment', () => {
 test('internal CI fails closed when the required acceptance environment is unavailable', () => {
   const workflow = readFileSync(new URL('../../../../.github/workflows/ci.yml', import.meta.url), 'utf8')
   assert.match(workflow, /pnpm test:e2e:required -- --project=chromium/)
+  assert.match(workflow, /Bind isolated project ref to configured Supabase URL/)
+  assert.match(workflow, /E2E_SUPABASE_PROJECT_REF=\$project_ref/)
   assert.doesNotMatch(workflow, /Playwright E2E not executed/)
   assert.doesNotMatch(workflow, /isolated-e2e\.outputs\.available/)
 })
