@@ -31,6 +31,7 @@ A developer is adding feedback collection during a normal build session, switchi
 - Structure: crisp 1px borders, neutral panels, compact spacing, and clear section separation. Prefer page headers, rows, tables, and disclosures over card stacks.
 - Radius: keep panels and controls modest. Avoid oversized rounded containers and repeated pill shapes.
 - Icons: use the existing icon system for actions and status. Prefer icon plus label for unfamiliar actions.
+- Landing-page feature chapters pair the concrete product UI with a purpose-built mascot scene. Vary image scale and placement so the mascot acts out the capability instead of appearing as a repeated corner sticker.
 
 ## Windows 98 Appearance
 

@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import { Bot, Code2, Copy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -24,6 +25,17 @@ export function LandingVibeInstall({ snippet }: { snippet: string }) {
 
   return (
     <div className="landing-vibe-install overflow-hidden rounded-[1.5rem] border bg-[#0d100c] text-[#f5f7f1] shadow-[0_30px_90px_-48px_rgb(0_0_0/0.75)]">
+      <div className="landing-install-art relative h-[250px] overflow-hidden border-b border-white/10 sm:h-[380px]">
+        <Image
+          src="/mascot-install-agent-scene-v2.png"
+          alt="feedbacks.dev mascot and a tiny coding agent connecting the installation to an app"
+          fill
+          className="object-cover object-center"
+          sizes="(max-width: 1280px) 100vw, 1280px"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0d100c] via-transparent to-transparent" aria-hidden="true" />
+        <div className="absolute left-5 top-5 rounded-md border border-white/10 bg-[oklch(0.1_0.01_132/0.56)] px-3 py-2 text-[10px] font-semibold text-lime-300 sm:left-7 sm:top-7">07 · Install once</div>
+      </div>
       <div className="grid lg:grid-cols-[0.88fr_1.12fr]">
         <div className="flex min-h-[390px] items-center border-b border-white/10 p-6 sm:p-8 lg:border-b-0 lg:border-r">
           <div>

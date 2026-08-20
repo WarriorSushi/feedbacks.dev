@@ -3,15 +3,11 @@ import {
   Bug,
   Camera,
   CircleDot,
-  Github,
   Globe2,
-  MessageCircle,
   MessageSquareText,
   MonitorSmartphone,
   Paperclip,
-  Slack,
   Tag,
-  Webhook,
 } from 'lucide-react'
 
 export function LandingProductStories() {
@@ -29,11 +25,39 @@ export function LandingProductStories() {
         </div>
       </section>
 
+      <section className="landing-feature landing-feature-routing landing-reveal border-b bg-[oklch(0.105_0.012_132)] text-[oklch(0.965_0.007_112)]">
+        <div className="mx-auto max-w-[1500px] px-0 py-20 sm:px-6 sm:py-28">
+          <div className="px-5 sm:px-0">
+            <FeatureCopy
+              number="02"
+              title="World-class feedback. One dashboard. Fewer tabs plotting against you."
+              body="Collect feedback, triage the useful bits, publish updates, manage public boards, and route work to GitHub, Slack, email, or a webhook. ACME Corp stays organized. Customers stay in the loop."
+              foot="Everyone is happy. Your browser has stopped negotiating for more RAM."
+              inverse
+            />
+          </div>
+          <div className="landing-routing-image relative mt-12 overflow-hidden border-y border-white/10 sm:rounded-2xl sm:border">
+            <Image
+              src="/mascot_withlaptop_connected_to_everything.webp"
+              alt="The feedbacks.dev mascot managing feedback, product updates, public boards, and connected tools from one dashboard"
+              width={1792}
+              height={1024}
+              className="h-auto min-h-[480px] w-full object-cover object-center sm:min-h-0"
+              sizes="(max-width: 1500px) 100vw, 1500px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.08_0.01_132/0.7)] via-transparent to-transparent" aria-hidden="true" />
+            <p className="absolute bottom-5 left-5 max-w-xs text-xs leading-5 text-zinc-300 sm:bottom-7 sm:left-7">
+              One dashboard, doing a suspiciously reasonable amount of work.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section className="landing-feature landing-feature-context landing-reveal border-b">
         <div className="mx-auto grid min-h-[760px] max-w-7xl items-center gap-14 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-[1.22fr_0.78fr] lg:gap-20">
           <ContextScene />
           <FeatureCopy
-            number="02"
+            number="03"
             title="The useful context arrives with the sentence."
             body="The report already knows the page, browser, rating, and optional screenshot. Your team starts with evidence instead of a follow-up email."
             foot="One report, ready to investigate."
@@ -44,41 +68,12 @@ export function LandingProductStories() {
       <section className="landing-feature landing-feature-triage landing-reveal border-b">
         <div className="mx-auto grid min-h-[760px] max-w-7xl items-center gap-14 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-[0.76fr_1.24fr] lg:gap-20">
           <FeatureCopy
-            number="03"
+            number="04"
             title="Turn a noisy inbox into the next decision."
             body="Filter new reports, add the tags your team actually uses, and move the important ones from new to planned without introducing Jira-scale ceremony."
             foot="Bugs, ideas, and praise stay distinct without becoming three different tools."
           />
           <TriageScene />
-        </div>
-      </section>
-
-      <section className="landing-feature landing-feature-routing landing-reveal border-b bg-[oklch(0.105_0.012_132)] text-[oklch(0.965_0.007_112)]">
-        <div className="mx-auto max-w-[1500px] px-0 py-20 sm:px-6 sm:py-28">
-          <div className="grid gap-10 px-5 sm:px-0 lg:grid-cols-[0.78fr_1.22fr] lg:items-end lg:gap-16">
-            <FeatureCopy
-              number="04"
-              title="Route the important stuff to where work happens."
-              body="Send a real bug to GitHub, notify the product channel, or use a webhook for everything else. Delivery history stays visible when an endpoint needs attention."
-              foot="The inbox remains the record. Your workflow remains yours."
-              inverse
-            />
-            <DestinationRail />
-          </div>
-          <div className="landing-routing-image relative mt-12 overflow-hidden border-y border-white/10 sm:rounded-2xl sm:border">
-            <Image
-              src="/ultrasuper-feedback-control-room.png"
-              alt="The feedbacks.dev mascot routing ACME Corp feedback to different tools"
-              width={1536}
-              height={1024}
-              className="h-auto min-h-[480px] w-full object-cover object-center sm:min-h-0"
-              sizes="(max-width: 1500px) 100vw, 1500px"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.08_0.01_132/0.72)] via-transparent to-transparent" aria-hidden="true" />
-            <p className="absolute bottom-5 left-5 max-w-xs text-xs leading-5 text-zinc-300 sm:bottom-7 sm:left-7">
-              The mascot is dramatic. The routing rules are not.
-            </p>
-          </div>
         </div>
       </section>
 
@@ -175,13 +170,20 @@ function CaptureScene() {
         </div>
       </div>
 
-      <Image src="/feedbacks.dev_mascot.png" alt="feedbacks.dev mascot pointing toward the feedback form" width={180} height={180} className="landing-story-mascot absolute -bottom-9 -left-6 h-28 w-28 object-contain sm:-left-12 sm:h-36 sm:w-36" />
+      <Image
+        src="/mascot-feedback-press-v1.png"
+        alt="feedbacks.dev mascot pressing a feedback button while holding a message"
+        width={1214}
+        height={1295}
+        className="landing-capture-mascot absolute -bottom-12 -left-8 z-[3] h-auto w-36 object-contain drop-shadow-[0_22px_24px_oklch(0.12_0.01_132/0.28)] sm:-bottom-16 sm:-left-20 sm:w-52"
+      />
     </figure>
   )
 }
 
 function ContextScene() {
   return (
+    <div className="landing-context-wrap relative mx-auto w-full max-w-3xl pb-20 sm:pb-14">
     <figure className="landing-context-scene overflow-hidden rounded-2xl border border-white/10 bg-[oklch(0.15_0.012_132)] text-[oklch(0.965_0.007_112)] shadow-[0_34px_90px_-40px_oklch(0.18_0.08_132/0.7)]">
       <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><div><p className="text-xs font-semibold">ACME Corp</p><p className="mt-1 text-[9px] text-zinc-500">Feedback inbox</p></div><span className="text-[9px] text-zinc-500">Received just now</span></div>
       <div className="grid md:grid-cols-[1.15fr_0.85fr]">
@@ -201,6 +203,14 @@ function ContextScene() {
         </dl>
       </div>
     </figure>
+      <Image
+        src="/mascot-context-investigator-v1.png"
+        alt="feedbacks.dev mascot inspecting the page, browser, and rating attached to a report"
+        width={1209}
+        height={1301}
+        className="landing-context-mascot absolute -bottom-10 -right-7 z-[3] h-auto w-36 object-contain drop-shadow-[0_24px_26px_oklch(0.08_0.02_132/0.36)] sm:-bottom-14 sm:-right-12 sm:w-52"
+      />
+    </div>
   )
 }
 
@@ -215,6 +225,7 @@ function TriageScene() {
     ['The new report builder is fast', 'Praise · yesterday', 'Reviewed'],
   ] as const
   return (
+    <div className="landing-triage-wrap relative mx-auto w-full max-w-3xl pb-24 sm:pb-16">
     <figure className="landing-triage-scene overflow-hidden rounded-2xl border bg-card shadow-[var(--shadow-float)]">
       <div className="flex items-center justify-between border-b px-5 py-4"><div><p className="text-xs font-semibold">ACME Corp inbox</p><p className="mt-1 text-[9px] text-muted-foreground">12 unread reports</p></div><span className="inline-flex items-center gap-2 text-[10px] text-primary"><CircleDot className="h-3 w-3" />Live</span></div>
       <div className="grid min-h-[430px] md:grid-cols-[0.82fr_1.18fr]">
@@ -230,19 +241,13 @@ function TriageScene() {
         </div>
       </div>
     </figure>
-  )
-}
-
-function DestinationRail() {
-  const destinations = [
-    ['Slack', 'Notify product', Slack],
-    ['GitHub', 'Open an issue', Github],
-    ['Discord', 'Post to server', MessageCircle],
-    ['Webhook', 'Send anywhere', Webhook],
-  ] as const
-  return (
-    <div className="landing-destination-rail grid grid-cols-2 overflow-hidden rounded-xl border border-white/10 sm:grid-cols-4">
-      {destinations.map(([label, detail, Icon]) => <div key={label} className="border-white/10 p-4 odd:border-r sm:border-r sm:last:border-r-0"><Icon className="h-4 w-4 text-lime-300" /><p className="mt-3 text-xs font-semibold">{label}</p><p className="mt-1 text-[9px] text-zinc-500">{detail}</p></div>)}
+      <Image
+        src="/mascot-triage-controller-v1.png"
+        alt="feedbacks.dev mascot sorting feedback into clear triage lanes"
+        width={1493}
+        height={1053}
+        className="landing-triage-mascot absolute -bottom-8 -right-3 z-[3] h-auto w-52 object-contain drop-shadow-[0_24px_28px_oklch(0.12_0.02_132/0.3)] sm:-bottom-16 sm:-right-10 sm:w-72"
+      />
     </div>
   )
 }
@@ -266,8 +271,14 @@ function PublicBoardScene() {
           </div>
         </div>
       </div>
-      <Image src="/feedbacks.dev_mascot.png" alt="feedbacks.dev mascot beside ACME Corp's public feedback board" width={180} height={180} className="landing-story-mascot absolute -bottom-7 right-0 h-28 w-28 object-contain sm:-right-10 sm:h-36 sm:w-36" />
-      <div className="absolute bottom-2 right-24 rounded-lg border bg-card px-3 py-2 text-[10px] font-medium shadow-[var(--shadow-card)] sm:right-20">Good ideas, one visible home.</div>
+      <Image
+        src="/mascot-public-board-v1.png"
+        alt="feedbacks.dev mascot curating ideas on ACME Corp's public feedback board"
+        width={1128}
+        height={1394}
+        className="landing-board-mascot absolute -bottom-12 -right-4 z-[3] h-auto w-36 object-contain drop-shadow-[0_24px_26px_oklch(0.12_0.02_132/0.26)] sm:-bottom-20 sm:-right-20 sm:w-56"
+      />
+      <div className="absolute bottom-3 right-28 z-[4] rounded-lg border bg-card px-3 py-2 text-[10px] font-medium shadow-[var(--shadow-card)] sm:bottom-0 sm:right-28">Good ideas, one visible home.</div>
     </figure>
   )
 }
