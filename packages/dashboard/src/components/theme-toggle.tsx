@@ -140,7 +140,7 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
               title={option.label}
               onClick={(event) => void changeTheme(option.value, event.currentTarget)}
               className={cn(
-                'landing-theme-option relative flex h-8 min-w-8 items-center justify-center gap-1.5 overflow-hidden rounded-md px-2 text-[11px] font-semibold text-muted-foreground transition-colors',
+                'landing-theme-option relative flex h-10 min-w-10 items-center justify-center gap-1.5 overflow-hidden rounded-md px-2 text-[11px] font-semibold text-muted-foreground transition-colors lg:h-8 lg:min-w-8',
                 selected ? 'bg-card text-foreground shadow-sm' : 'hover:bg-accent hover:text-accent-foreground',
                 option.value === 'windows98' && 'landing-theme-option-98',
               )}

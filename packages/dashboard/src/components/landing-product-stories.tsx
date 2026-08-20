@@ -42,7 +42,7 @@ export function LandingProductStories() {
               alt="The feedbacks.dev mascot managing feedback, product updates, public boards, and connected tools from one dashboard"
               width={1792}
               height={1024}
-              className="h-auto min-h-[480px] w-full object-cover object-center sm:min-h-0"
+              className="h-auto min-h-[360px] w-full object-cover object-[58%_center] sm:min-h-0 sm:object-center"
               sizes="(max-width: 1500px) 100vw, 1500px"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.08_0.01_132/0.7)] via-transparent to-transparent" aria-hidden="true" />

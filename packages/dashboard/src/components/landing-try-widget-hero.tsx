@@ -40,7 +40,7 @@ const callouts = [
     labelPath: 'M24 118 C184 127 322 174 430 279',
     head: 'M622 459 L648 478 L619 488',
     label: 'Click the button',
-    labelOffset: '8%',
+    labelOffset: '40%',
   },
   {
     id: 'top-right',
@@ -48,7 +48,7 @@ const callouts = [
     labelPath: 'M1188 308 C1312 178 1435 119 1590 116',
     head: 'M980 456 L952 478 L982 489',
     label: 'Press the button',
-    labelOffset: '43%',
+    labelOffset: '5%',
   },
   {
     id: 'bottom-left',
@@ -56,7 +56,7 @@ const callouts = [
     labelPath: 'M58 684 C174 610 286 568 405 574',
     head: 'M620 501 L648 510 L630 534',
     label: 'See the real interaction',
-    labelOffset: '9%',
+    labelOffset: '46%',
   },
   {
     id: 'bottom-right',
@@ -64,7 +64,7 @@ const callouts = [
     labelPath: 'M1010 523 C1100 540 1185 563 1274 602 C1370 644 1462 684 1550 700',
     head: 'M985 493 L960 510 L985 528',
     label: 'The button is the product',
-    labelOffset: '57%',
+    labelOffset: '15%',
   },
 ] as const
 
@@ -241,7 +241,7 @@ export function LandingTryWidgetHero() {
             >
               <div className="flex items-center justify-between gap-5 border-b px-4 py-3">
                 <p className="text-sm font-semibold">Send feedback</p>
-                <button ref={closeButtonRef} type="button" onClick={closeDemo} className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Close demo feedback form"><X className="h-4 w-4" /></button>
+                <button ref={closeButtonRef} type="button" onClick={closeDemo} className="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-8 sm:w-8" aria-label="Close demo feedback form"><X className="h-4 w-4" /></button>
               </div>
 
               <div className="space-y-3.5 p-4">
@@ -249,7 +249,7 @@ export function LandingTryWidgetHero() {
                   <legend className="mb-1.5 text-[11px] font-semibold">What kind of feedback?</legend>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {feedbackTypes.map(({ value, label, Icon }) => (
-                      <button key={value} type="button" onClick={() => setFeedbackType(value)} aria-pressed={feedbackType === value} className={cn('inline-flex min-h-9 items-center justify-center gap-1.5 rounded-md border px-2 text-xs font-medium transition-[background-color,border-color,color,transform] hover:-translate-y-0.5', feedbackType === value ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground')}><Icon className="h-3.5 w-3.5" />{label}</button>
+                      <button key={value} type="button" onClick={() => setFeedbackType(value)} aria-pressed={feedbackType === value} className={cn('inline-flex min-h-10 items-center justify-center gap-1.5 rounded-md border px-2 text-xs font-medium transition-[background-color,border-color,color,transform] hover:-translate-y-0.5 sm:min-h-9', feedbackType === value ? 'border-primary bg-primary text-primary-foreground' : 'bg-background text-muted-foreground hover:text-foreground')}><Icon className="h-3.5 w-3.5" />{label}</button>
                     ))}
                   </div>
                 </fieldset>
@@ -269,21 +269,21 @@ export function LandingTryWidgetHero() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 border-t pt-3.5">
+                <div className="flex flex-col items-stretch gap-3 border-t pt-3.5 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="mb-1 text-[11px] font-semibold">How was it?</p>
                     <div className="flex gap-1" aria-label={`${rating} out of 5 stars`}>
                       {[1, 2, 3, 4, 5].map((value) => (
-                        <button key={value} type="button" onClick={() => { userRated.current = true; setRating(value) }} aria-label={`Rate ${value} stars`} className="rounded p-0.5 text-amber-400 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"><Star className={cn('h-5 w-5', value <= rating && 'fill-current')} /></button>
+                        <button key={value} type="button" onClick={() => { userRated.current = true; setRating(value) }} aria-label={`Rate ${value} stars`} className="inline-flex h-10 w-10 items-center justify-center rounded text-amber-400 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-8 sm:w-8"><Star className={cn('h-5 w-5', value <= rating && 'fill-current')} /></button>
                       ))}
                     </div>
                   </div>
-                  <button type="button" onClick={() => setScreenshotReady((ready) => !ready)} aria-pressed={screenshotReady} className={cn('inline-flex min-h-9 items-center justify-center gap-2 rounded-md border px-3 text-xs font-semibold transition-colors', screenshotReady ? 'border-primary/40 bg-primary/10 text-foreground' : 'bg-background text-muted-foreground hover:text-foreground')}><Camera className="h-3.5 w-3.5" />{screenshotReady ? 'Screenshot ready' : 'Add screenshot'}</button>
+                  <button type="button" onClick={() => setScreenshotReady((ready) => !ready)} aria-pressed={screenshotReady} className={cn('inline-flex min-h-10 items-center justify-center gap-2 rounded-md border px-3 text-xs font-semibold transition-colors sm:min-h-9', screenshotReady ? 'border-primary/40 bg-primary/10 text-foreground' : 'bg-background text-muted-foreground hover:text-foreground')}><Camera className="h-3.5 w-3.5" />{screenshotReady ? 'Screenshot ready' : 'Add screenshot'}</button>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 border-t pt-3.5">
                   <p className="text-[11px] text-muted-foreground">Page + browser context included</p>
-                  <button type="button" disabled={!message.trim()} onClick={() => setSubmitted(true)} className="inline-flex min-h-9 shrink-0 items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground transition-[transform,opacity] hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40">Send <ChevronRight className="h-3.5 w-3.5" /></button>
+                  <button type="button" disabled={!message.trim()} onClick={() => setSubmitted(true)} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground transition-[transform,opacity] hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-9">Send <ChevronRight className="h-3.5 w-3.5" /></button>
                 </div>
               </div>
             </motion.div>

@@ -48,7 +48,7 @@ export function LandingVibeInstall({ snippet }: { snippet: string }) {
           <div className="min-w-0 border-b border-white/10 p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <span className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300"><Code2 className="h-4 w-4 text-[#b8ff4f]" />Paste it yourself</span>
-              <button type="button" onClick={() => copy(snippet, 'code')} className={cn('inline-flex min-h-9 items-center gap-2 rounded-md border border-white/10 px-3 text-xs font-semibold transition-colors hover:bg-white/10', copied === 'code' && 'border-[#b8ff4f]/40 text-[#b8ff4f]')}><Copy className="h-3.5 w-3.5" />{copied === 'code' ? 'Copied' : 'Copy'}</button>
+              <button type="button" onClick={() => copy(snippet, 'code')} className={cn('inline-flex min-h-11 items-center gap-2 rounded-md border border-white/10 px-3 text-xs font-semibold transition-colors hover:bg-white/10 sm:min-h-9', copied === 'code' && 'border-[#b8ff4f]/40 text-[#b8ff4f]')}><Copy className="h-3.5 w-3.5" />{copied === 'code' ? 'Copied' : 'Copy'}</button>
             </div>
             <pre className="mt-5 overflow-x-auto whitespace-pre-wrap break-all font-mono text-[11px] leading-6 text-zinc-400"><code>{snippet}</code></pre>
           </div>
@@ -56,7 +56,7 @@ export function LandingVibeInstall({ snippet }: { snippet: string }) {
           <div className="min-w-0 bg-white/[0.025] p-5 sm:p-6">
             <div className="flex items-center justify-between gap-3">
               <span className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300"><Bot className="h-4 w-4 text-[#b8ff4f]" />Generated in your dashboard</span>
-              <button type="button" onClick={() => copy(agentPrompt, 'prompt')} className={cn('inline-flex min-h-9 items-center gap-2 rounded-md border border-white/10 px-3 text-xs font-semibold transition-colors hover:bg-white/10', copied === 'prompt' && 'border-[#b8ff4f]/40 text-[#b8ff4f]')}><Copy className="h-3.5 w-3.5" />{copied === 'prompt' ? 'Copied' : 'Copy agent instruction'}</button>
+              <button type="button" onClick={() => copy(agentPrompt, 'prompt')} className={cn('inline-flex min-h-11 items-center gap-2 rounded-md border border-white/10 px-3 text-xs font-semibold transition-colors hover:bg-white/10 sm:min-h-9', copied === 'prompt' && 'border-[#b8ff4f]/40 text-[#b8ff4f]')}><Copy className="h-3.5 w-3.5" />{copied === 'prompt' ? 'Copied' : 'Copy agent instruction'}</button>
             </div>
             <pre className="mt-5 max-h-48 overflow-y-auto whitespace-pre-wrap font-mono text-[11px] leading-5 text-zinc-300"><code>{agentPrompt}</code></pre>
           </div>

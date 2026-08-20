@@ -740,6 +740,7 @@
 }
 
 .landing-try-hero {
+  overflow-anchor: none;
   background: linear-gradient(112deg, oklch(0.968 0.064 88), oklch(0.925 0.078 148));
 }
 
@@ -874,14 +875,25 @@
   vector-effect: non-scaling-stroke;
 }
 
-@media (max-width: 899px) {
+@media (max-width: 1099px) {
   .landing-try-heading { padding-top: clamp(3.75rem, 9vh, 5.5rem); }
-  .landing-try-heading h1 { font-size: clamp(2.35rem, 11vw, 3.05rem); }
+  .landing-try-heading h1 { font-size: clamp(2rem, 10vw, 2.7rem); }
   .landing-try-heading-open { padding-top: 2rem; }
   .landing-try-heading-open h1 { font-size: clamp(1.65rem, 7.3vw, 2rem); }
   .landing-try-stage { margin-top: 1.25rem; transform: none; }
   .landing-try-stage-open { margin-top: 0.75rem; }
   .landing-try-annotations { display: none; }
+}
+
+@media (max-width: 1099px) and (max-height: 760px) {
+  .landing-try-heading-open { padding-top: 0.75rem; }
+  .landing-try-heading-open h1 { font-size: clamp(1.4rem, 6.4vw, 1.7rem); line-height: 1; }
+  .landing-try-stage-open { margin-top: 0.25rem; padding-bottom: 0.25rem; }
+  .landing-demo-form {
+    max-height: calc(100svh - 11rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
 }
 
 .landing-try-launch::before {
