@@ -128,6 +128,7 @@ export default function CannyAlternativePage() {
                 <Link href="#advantages">See where we win</Link>
               </Button>
             </div>
+            <p className="mx-auto mt-5 max-w-2xl text-xs leading-5 text-muted-foreground">Independent comparison based on public product information. feedbacks.dev is not affiliated with, endorsed by, or sponsored by Canny.</p>
           </div>
 
           <dl className="mx-auto mt-10 grid max-w-5xl grid-cols-2 border-y sm:grid-cols-4">

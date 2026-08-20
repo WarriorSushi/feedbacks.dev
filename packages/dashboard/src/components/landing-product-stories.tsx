@@ -1,288 +1,332 @@
-import Image from 'next/image'
 import {
-  Bug,
+  ArrowRight,
+  BellRing,
   Camera,
+  Check,
+  ChevronUp,
   CircleDot,
+  Clock3,
+  ExternalLink,
+  GitBranch,
   Globe2,
+  Inbox,
+  Lightbulb,
   MessageSquareText,
   MonitorSmartphone,
   Paperclip,
+  Rocket,
+  Search,
   Tag,
+  Webhook,
 } from 'lucide-react'
 
 export function LandingProductStories() {
   return (
     <>
-      <section id="product" className="landing-feature landing-feature-capture landing-reveal border-b">
-        <div className="mx-auto grid min-h-[760px] max-w-7xl items-center gap-14 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-[0.76fr_1.24fr] lg:gap-20">
-          <FeatureCopy
-            number="01"
-            title="Feedback happens inside the product."
-            body="Your user stays on the page where something went wrong, opens one small form, and tells ACME Corp what happened."
-            foot="No support portal. No context lost between tabs."
-          />
-          <CaptureScene />
-        </div>
-      </section>
-
-      <section className="landing-feature landing-feature-routing landing-reveal border-b bg-[oklch(0.105_0.012_132)] text-[oklch(0.965_0.007_112)]">
-        <div className="mx-auto max-w-[1500px] px-0 py-20 sm:px-6 sm:py-28">
-          <div className="px-5 sm:px-0">
-            <FeatureCopy
-              number="02"
-              title="World-class feedback. One dashboard. Fewer tabs plotting against you."
-              body="Collect feedback, triage the useful bits, publish updates, manage public boards, and route work to GitHub, Slack, email, or a webhook. ACME Corp stays organized. Customers stay in the loop."
-              foot="Everyone is happy. Your browser has stopped negotiating for more RAM."
-              inverse
-            />
+      <section id="product" className="landing-journey landing-reveal border-b py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">The whole trip, clearly labeled</p>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">One small message becomes work your team can act on.</h2>
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">Your customer never leaves the product. feedbacks.dev keeps the useful context attached, then hands the important work to the tools your team already opens.</p>
           </div>
-          <div className="landing-routing-image relative mt-12 overflow-hidden border-y border-white/10 sm:rounded-2xl sm:border">
-            <Image
-              src="/mascot_withlaptop_connected_to_everything.webp"
-              alt="The feedbacks.dev mascot managing feedback, product updates, public boards, and connected tools from one dashboard"
-              width={1792}
-              height={1024}
-              className="h-auto min-h-[360px] w-full object-cover object-[58%_center] sm:min-h-0 sm:object-center"
-              sizes="(max-width: 1500px) 100vw, 1500px"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.08_0.01_132/0.7)] via-transparent to-transparent" aria-hidden="true" />
-            <p className="absolute bottom-5 left-5 max-w-xs text-xs leading-5 text-zinc-300 sm:bottom-7 sm:left-7">
-              One dashboard, doing a suspiciously reasonable amount of work.
-            </p>
+
+          <div className="landing-journey-grid mt-12 grid items-stretch gap-4 lg:grid-cols-[1fr_56px_1fr_56px_0.82fr] lg:gap-0">
+            <ProductCaptureScene />
+            <FlowConnector label="Arrives with context" />
+            <FeedbackInboxScene />
+            <FlowConnector label="Route or respond" />
+            <WorkflowScene />
           </div>
+
+          <p className="mt-7 text-center text-xs text-muted-foreground">Every surface says what it is. No mystery company, no empty dashboard, no fake loading state.</p>
         </div>
       </section>
 
-      <section className="landing-feature landing-feature-context landing-reveal border-b">
-        <div className="mx-auto grid min-h-[760px] max-w-7xl items-center gap-14 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-[1.22fr_0.78fr] lg:gap-20">
-          <ContextScene />
-          <FeatureCopy
-            number="03"
-            title="The useful context arrives with the sentence."
-            body="The report already knows the page, browser, rating, and optional screenshot. Your team starts with evidence instead of a follow-up email."
-            foot="One report, ready to investigate."
-          />
-        </div>
-      </section>
-
-      <section className="landing-feature landing-feature-triage landing-reveal border-b">
-        <div className="mx-auto grid min-h-[760px] max-w-7xl items-center gap-14 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-[0.76fr_1.24fr] lg:gap-20">
-          <FeatureCopy
-            number="04"
-            title="Turn a noisy inbox into the next decision."
-            body="Filter new reports, add the tags your team actually uses, and move the important ones from new to planned without introducing Jira-scale ceremony."
-            foot="Bugs, ideas, and praise stay distinct without becoming three different tools."
-          />
-          <TriageScene />
-        </div>
-      </section>
-
-      <section className="landing-feature landing-feature-updates landing-reveal border-b">
-        <div className="mx-auto grid min-h-[820px] max-w-7xl items-center gap-14 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-[1.25fr_0.75fr] lg:gap-20">
-          <div className="landing-update-image overflow-hidden rounded-2xl border border-white/10 bg-[oklch(0.12_0.012_132)] shadow-[0_38px_95px_-45px_oklch(0.18_0.08_132/0.7)]">
-            <Image
-              src="/feedbacks-close-the-loop-v1.png"
-              alt="The feedbacks.dev mascot carrying a shipped product update back into ACME Corp"
-              width={1536}
-              height={1024}
-              className="h-auto w-full object-cover"
-              sizes="(max-width: 1024px) 100vw, 760px"
-            />
+      <section className="landing-context-section landing-reveal border-b py-20 sm:py-28">
+        <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-center lg:gap-20">
+          <div className="max-w-xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Context without interrogation</p>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">The short message is only the beginning.</h2>
+            <p className="mt-5 text-base leading-7 text-muted-foreground">The page, browser, device, time, rating, and optional screenshot arrive beside the message. Your first reply can be useful instead of “which page were you on?”</p>
+            <div className="mt-7 flex flex-wrap gap-2 text-xs font-medium">
+              {['Captured automatically', 'Visible to your team', 'Screenshot stays optional'].map((item) => <span key={item} className="rounded-full border bg-card px-3 py-2">{item}</span>)}
+            </div>
           </div>
-          <FeatureCopy
-            number="05"
-            title="Show users that their feedback shipped."
-            body="Publish a concise product update from the same dashboard. The embed already in ACME Corp shows it inside the product, without another installation."
-            foot="A report becomes visible progress, not a closed ticket nobody sees."
-          />
+          <ContextEvidenceScene />
         </div>
       </section>
 
-      <section className="landing-feature landing-feature-board landing-reveal border-b">
-        <div className="mx-auto grid min-h-[780px] max-w-7xl items-center gap-14 px-5 py-20 sm:px-6 sm:py-28 lg:grid-cols-[0.74fr_1.26fr] lg:gap-20">
-          <FeatureCopy
-            number="06"
-            title="Give good ideas a public place to gather."
-            body="Run a focused feedback board where users can post, vote, follow a status, and read the official response from ACME Corp."
-            foot="Useful transparency, without turning product decisions into a popularity contest."
-          />
-          <PublicBoardScene />
+      <section className="landing-inbox-section landing-reveal border-b py-20 text-zinc-100 sm:py-28">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-lime-300">Inside feedbacks.dev</p>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Open the inbox and know what deserves attention.</h2>
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">New messages are distinct, technical context is already attached, and the next action is visible. It feels like triage, not archaeology.</p>
+          </div>
+          <TriageDashboardScene />
+        </div>
+      </section>
+
+      <section className="landing-close-loop landing-reveal border-b py-20 sm:py-28">
+        <div className="mx-auto max-w-7xl px-5 sm:px-6">
+          <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Close the loop</p>
+              <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Let users see what happened next.</h2>
+            </div>
+            <p className="max-w-2xl text-base leading-7 text-muted-foreground lg:justify-self-end">Share a shipped update inside your product, or give ideas a real public home. Both views below are customer-facing, not another admin dashboard.</p>
+          </div>
+
+          <div className="mt-12 grid gap-6 lg:grid-cols-2">
+            <ProductUpdateScene />
+            <PublicBoardScene />
+          </div>
         </div>
       </section>
     </>
   )
 }
 
-function FeatureCopy({
-  number,
-  title,
-  body,
-  foot,
-  inverse = false,
-}: {
-  number: string
-  title: string
-  body: string
-  foot: string
-  inverse?: boolean
-}) {
+function SceneLabel({ number, title }: { number: string; title: string }) {
   return (
-    <div className="landing-feature-copy relative z-10 max-w-xl">
-      <span className={inverse ? 'text-lime-300' : 'text-primary'}>{number}</span>
-      <h2 className="mt-5 text-4xl font-semibold leading-[1.01] tracking-[-0.052em] sm:text-5xl">{title}</h2>
-      <p className={inverse ? 'mt-6 text-base leading-7 text-zinc-300' : 'mt-6 text-base leading-7 text-muted-foreground'}>{body}</p>
-      <p className={inverse ? 'mt-7 border-t border-white/15 pt-5 text-xs leading-5 text-zinc-400' : 'mt-7 border-t pt-5 text-xs leading-5 text-muted-foreground'}>{foot}</p>
+    <div className="flex items-center justify-between border-b px-4 py-3">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{number}</span>
+      <span className="text-xs font-semibold">{title}</span>
     </div>
   )
 }
 
-function CaptureScene() {
+function ProductCaptureScene() {
   return (
-    <figure className="landing-capture-scene relative mx-auto w-full max-w-3xl pb-14 sm:pb-10">
-      <div className="overflow-hidden rounded-2xl border bg-card shadow-[var(--shadow-float)]">
-        <div className="flex h-12 items-center gap-2 border-b px-4 text-[10px] text-muted-foreground">
+    <article className="landing-scene-card overflow-hidden rounded-2xl border bg-card">
+      <SceneLabel number="01" title="Your product" />
+      <div className="border-b bg-muted/20 px-4 py-3">
+        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
           <span className="h-2 w-2 rounded-full bg-rose-400" />
           <span className="h-2 w-2 rounded-full bg-amber-300" />
-          <span className="h-2 w-2 rounded-full bg-primary" />
-          <span className="ml-3">acme.test/reports/export</span>
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          <span className="ml-2 truncate font-mono">orbit-notes.app/settings/notifications</span>
         </div>
-        <div className="grid min-h-[420px] grid-cols-[86px_1fr] sm:grid-cols-[128px_1fr]">
-          <div className="border-r bg-muted/25 p-4">
-            <span className="block h-2 w-10 rounded-full bg-foreground/15" />
-            <div className="mt-8 space-y-4"><span className="block h-8 bg-primary/10" /><span className="block h-8 bg-foreground/[0.04]" /><span className="block h-8 bg-foreground/[0.04]" /></div>
+      </div>
+      <div className="relative min-h-[390px] bg-[linear-gradient(145deg,oklch(var(--card)),oklch(var(--muted)/0.45))] p-5">
+        <div className="max-w-[82%]">
+          <p className="text-[10px] font-semibold text-muted-foreground">ORBIT NOTES</p>
+          <h3 className="mt-3 text-xl font-semibold">Notification schedule</h3>
+          <p className="mt-2 text-xs leading-5 text-muted-foreground">Choose when your daily digest arrives.</p>
+          <div className="mt-5 grid gap-3 rounded-xl border bg-background/80 p-4 text-xs">
+            <div className="flex items-center justify-between"><span>Weekdays</span><span className="rounded-md bg-primary/10 px-2 py-1 font-medium text-primary">Mon to Fri</span></div>
+            <div className="flex items-center justify-between border-t pt-3"><span>Delivery time</span><span className="font-semibold">9:00 AM</span></div>
           </div>
-          <div className="p-5 sm:p-8">
-            <p className="text-xs font-semibold">Export report</p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-3"><span className="h-20 rounded-lg border bg-background" /><span className="h-20 rounded-lg border bg-background" /><span className="h-20 rounded-lg border bg-background" /></div>
-            <div className="mt-5 h-28 rounded-lg border bg-muted/20" />
+        </div>
+        <div className="landing-capture-pop absolute bottom-4 right-4 w-[86%] max-w-[290px] overflow-hidden rounded-xl border bg-card shadow-[0_24px_65px_-24px_rgb(0_0_0/0.45)]">
+          <div className="flex items-center justify-between border-b px-4 py-3"><span className="text-xs font-semibold">Send feedback</span><span className="text-[9px] font-medium text-rose-500">Bug</span></div>
+          <div className="p-4">
+            <p className="rounded-lg border bg-background p-3 text-xs leading-5">My notification time resets after I save.</p>
+            <div className="mt-3 flex items-center justify-between gap-3"><span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground"><Camera className="h-3 w-3" />Screenshot</span><span className="rounded-md bg-primary px-3 py-2 text-[10px] font-semibold text-primary-foreground">Send</span></div>
           </div>
         </div>
       </div>
-
-      <div className="landing-capture-form absolute -bottom-2 right-2 w-[84%] max-w-sm overflow-hidden rounded-xl border bg-card shadow-[0_28px_80px_-28px_oklch(0.18_0.05_132/0.48)] sm:-bottom-8 sm:right-6">
-        <div className="flex items-center justify-between border-b px-4 py-3">
-          <span className="text-xs font-semibold">Tell ACME Corp</span>
-          <span className="text-[9px] text-muted-foreground">Bug report</span>
-        </div>
-        <div className="p-4">
-          <p className="min-h-20 rounded-lg border bg-background p-3 text-xs leading-5 text-muted-foreground">Export keeps spinning after I choose the last 90 days.</p>
-          <div className="mt-3 flex items-center justify-between"><span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground"><Camera className="h-3 w-3" />Add screenshot</span><span className="rounded-md bg-primary px-3 py-2 text-[10px] font-semibold text-primary-foreground">Send feedback</span></div>
-        </div>
-      </div>
-
-      <Image
-        src="/mascot-feedback-press-v1.png"
-        alt="feedbacks.dev mascot pressing a feedback button while holding a message"
-        width={1214}
-        height={1295}
-        className="landing-capture-mascot absolute -bottom-12 -left-8 z-[3] h-auto w-36 object-contain drop-shadow-[0_22px_24px_oklch(0.12_0.01_132/0.28)] sm:-bottom-16 sm:-left-20 sm:w-52"
-      />
-    </figure>
+    </article>
   )
 }
 
-function ContextScene() {
+function FlowConnector({ label }: { label: string }) {
   return (
-    <div className="landing-context-wrap relative mx-auto w-full max-w-3xl pb-20 sm:pb-14">
-    <figure className="landing-context-scene overflow-hidden rounded-2xl border border-white/10 bg-[oklch(0.15_0.012_132)] text-[oklch(0.965_0.007_112)] shadow-[0_34px_90px_-40px_oklch(0.18_0.08_132/0.7)]">
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><div><p className="text-xs font-semibold">ACME Corp</p><p className="mt-1 text-[9px] text-zinc-500">Feedback inbox</p></div><span className="text-[9px] text-zinc-500">Received just now</span></div>
-      <div className="grid md:grid-cols-[1.15fr_0.85fr]">
-        <div className="border-b border-white/10 p-5 sm:p-7 md:border-b-0 md:border-r">
-          <div className="flex items-center gap-2 text-[10px] font-semibold text-rose-300"><Bug className="h-3.5 w-3.5" />Bug report</div>
-          <h3 className="mt-5 text-2xl font-semibold leading-tight tracking-[-0.035em] sm:text-3xl">Export freezes after I choose the last 90 days.</h3>
-          <div className="mt-7 overflow-hidden rounded-xl border border-white/10">
-            <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3 text-[10px] text-zinc-300"><Camera className="h-3.5 w-3.5 text-lime-300" />Screenshot</div>
-            <div className="relative h-44 bg-[oklch(0.94_0.02_132)] p-4"><span className="block h-2 w-24 rounded-full bg-[oklch(0.72_0.02_132)]" /><div className="mt-5 grid grid-cols-3 gap-3"><span className="h-20 rounded-lg border border-[oklch(0.84_0.02_132)]" /><span className="h-20 rounded-lg border border-[oklch(0.84_0.02_132)]" /><span className="h-20 rounded-lg border border-[oklch(0.84_0.02_132)]" /></div><span className="absolute left-1/2 top-1/2 -translate-x-1/2 rounded-lg border border-[oklch(0.78_0.02_132)] bg-[oklch(0.985_0.006_132)] px-4 py-3 text-[10px] font-semibold text-[oklch(0.25_0.02_132)] shadow-lg">Preparing export…</span></div>
-          </div>
-        </div>
-        <dl className="landing-context-rail divide-y divide-white/10 px-5 sm:px-6">
-          <ContextDatum label="Page"><span className="font-mono">/reports/export</span></ContextDatum>
-          <ContextDatum label="Browser"><span className="inline-flex items-center gap-2"><MonitorSmartphone className="h-3.5 w-3.5 text-lime-300" />Edge on Windows</span></ContextDatum>
-          <ContextDatum label="Rating"><span className="tracking-[0.18em] text-amber-300">★★☆☆☆</span></ContextDatum>
-          <ContextDatum label="Attachment"><span className="inline-flex items-center gap-2"><Paperclip className="h-3.5 w-3.5 text-lime-300" />Screenshot included</span></ContextDatum>
-        </dl>
-      </div>
-    </figure>
-      <Image
-        src="/mascot-context-investigator-v1.png"
-        alt="feedbacks.dev mascot inspecting the page, browser, and rating attached to a report"
-        width={1209}
-        height={1301}
-        className="landing-context-mascot absolute -bottom-10 -right-7 z-[3] h-auto w-36 object-contain drop-shadow-[0_24px_26px_oklch(0.08_0.02_132/0.36)] sm:-bottom-14 sm:-right-12 sm:w-52"
-      />
+    <div className="landing-flow-connector flex items-center justify-center py-1 text-primary lg:flex-col lg:py-0" aria-hidden="true">
+      <span className="hidden max-w-20 text-center text-[9px] font-semibold leading-4 text-muted-foreground lg:block">{label}</span>
+      <span className="landing-flow-line mx-3 h-px flex-1 bg-primary/30 lg:mx-0 lg:my-3 lg:h-12 lg:w-px lg:flex-none" />
+      <ArrowRight className="h-5 w-5 rotate-90 lg:rotate-0" />
     </div>
   )
 }
 
-function ContextDatum({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="py-6"><dt className="text-[9px] text-zinc-500">{label}</dt><dd className="mt-2 text-xs text-zinc-200">{children}</dd></div>
+function FeedbackInboxScene() {
+  return (
+    <article className="landing-scene-card overflow-hidden rounded-2xl border bg-card">
+      <SceneLabel number="02" title="feedbacks.dev" />
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <div><p className="text-xs font-semibold">Orbit Notes inbox</p><p className="mt-1 text-[9px] text-muted-foreground">1 new message</p></div>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-300"><CircleDot className="h-3 w-3" />Live</span>
+      </div>
+      <div className="min-h-[390px] p-4">
+        <div className="rounded-xl border border-primary/25 bg-primary/[0.055] p-4">
+          <div className="flex items-start gap-3">
+            <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-rose-400" />
+            <div><p className="text-xs font-semibold leading-5">Notification time resets after save</p><p className="mt-1 text-[9px] text-muted-foreground">Bug · just now</p></div>
+            <span className="ml-auto rounded-md bg-rose-500/10 px-2 py-1 text-[9px] font-semibold text-rose-600 dark:text-rose-300">New</span>
+          </div>
+        </div>
+        <div className="mt-4 rounded-xl border p-4">
+          <p className="text-sm font-semibold leading-6">“My notification time resets after I save.”</p>
+          <div className="mt-4 grid grid-cols-2 gap-2 text-[10px]">
+            <ContextChip Icon={Globe2} text="/settings/notifications" />
+            <ContextChip Icon={MonitorSmartphone} text="Chrome · macOS" />
+            <ContextChip Icon={Clock3} text="Just now" />
+            <ContextChip Icon={Paperclip} text="Screenshot" />
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2 border-t pt-4 text-[9px] font-medium"><span className="rounded-md bg-rose-500/10 px-2 py-1 text-rose-600 dark:text-rose-300">Bug</span><span className="rounded-md bg-primary/10 px-2 py-1 text-primary">Notifications</span><span className="rounded-md bg-muted px-2 py-1">High signal</span></div>
+        </div>
+      </div>
+    </article>
+  )
 }
 
-function TriageScene() {
-  const rows = [
-    ['Export freezes after I choose…', 'Bug · just now', 'New'],
-    ['Saved report views would help', 'Idea · 2h', 'Planned'],
-    ['The new report builder is fast', 'Praise · yesterday', 'Reviewed'],
-  ] as const
+function ContextChip({ Icon, text }: { Icon: typeof Globe2; text: string }) {
+  return <span className="flex min-w-0 items-center gap-1.5 rounded-md bg-muted/65 px-2 py-2 text-muted-foreground"><Icon className="h-3 w-3 shrink-0 text-primary" /><span className="truncate">{text}</span></span>
+}
+
+function WorkflowScene() {
+  const destinations = [
+    { badge: 'GH', title: 'GitHub issue #184', meta: 'Created with context' },
+    { badge: 'SL', title: '#product alert', meta: 'Team notified' },
+    { badge: '↗', title: 'Product update', meta: 'Ready when shipped' },
+  ]
   return (
-    <div className="landing-triage-wrap relative mx-auto w-full max-w-3xl pb-24 sm:pb-16">
-    <figure className="landing-triage-scene overflow-hidden rounded-2xl border bg-card shadow-[var(--shadow-float)]">
-      <div className="flex items-center justify-between border-b px-5 py-4"><div><p className="text-xs font-semibold">ACME Corp inbox</p><p className="mt-1 text-[9px] text-muted-foreground">12 unread reports</p></div><span className="inline-flex items-center gap-2 text-[10px] text-primary"><CircleDot className="h-3 w-3" />Live</span></div>
-      <div className="grid min-h-[430px] md:grid-cols-[0.82fr_1.18fr]">
-        <div className="border-b md:border-b-0 md:border-r">
-          {rows.map(([title, meta, status], index) => <div key={title} className={`landing-triage-row border-b px-5 py-5 last:border-b-0 ${index === 0 ? 'is-selected' : ''}`}><div className="flex items-start gap-3"><span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${index === 0 ? 'bg-rose-400' : index === 1 ? 'bg-sky-400' : 'bg-amber-300'}`} /><div className="min-w-0"><p className="truncate text-xs font-semibold">{title}</p><p className="mt-1 text-[9px] text-muted-foreground">{meta}</p></div><span className="ml-auto text-[9px] text-muted-foreground">{status}</span></div></div>)}
+    <article className="landing-scene-card overflow-hidden rounded-2xl border bg-card">
+      <SceneLabel number="03" title="Your workflow" />
+      <div className="flex min-h-[443px] flex-col justify-center gap-3 p-4">
+        {destinations.map((item, index) => (
+          <div key={item.title} className="landing-route-card flex items-center gap-3 rounded-xl border bg-background p-3" style={{ animationDelay: `${index * 180}ms` }}>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-foreground text-[10px] font-bold text-background">{item.badge}</span>
+            <div className="min-w-0"><p className="truncate text-xs font-semibold">{item.title}</p><p className="mt-1 text-[9px] text-muted-foreground">{item.meta}</p></div>
+            <Check className="ml-auto h-4 w-4 text-emerald-500" />
+          </div>
+        ))}
+        <div className="mt-2 rounded-xl border border-dashed bg-muted/25 p-4 text-center">
+          <Webhook className="mx-auto h-5 w-5 text-primary" />
+          <p className="mt-2 text-xs font-semibold">Or send it anywhere</p>
+          <p className="mt-1 text-[9px] leading-4 text-muted-foreground">Email, Discord, or your own webhook</p>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function ContextEvidenceScene() {
+  return (
+    <div className="landing-evidence-grid grid gap-4 sm:grid-cols-2">
+      <div className="landing-evidence-card rounded-2xl border bg-card p-5 sm:row-span-2">
+        <div className="flex items-center justify-between"><span className="inline-flex items-center gap-2 text-xs font-semibold"><Camera className="h-4 w-4 text-primary" />What they saw</span><span className="text-[9px] text-muted-foreground">Optional screenshot</span></div>
+        <div className="mt-5 rounded-xl border bg-muted/30 p-4">
+          <p className="text-[9px] font-semibold text-muted-foreground">ORBIT NOTES · NOTIFICATIONS</p>
+          <div className="mt-4 rounded-lg border border-rose-400/40 bg-card p-3 shadow-sm">
+            <div className="flex items-center justify-between text-[10px]"><span>Delivery time</span><span className="font-semibold">9:00 AM</span></div>
+            <p className="mt-3 rounded-md bg-rose-500/10 p-2 text-[9px] font-medium text-rose-600 dark:text-rose-300">Resets to 8:00 AM after save</p>
+          </div>
+        </div>
+        <p className="mt-4 text-xs leading-5 text-muted-foreground">A concrete screenshot beats three rounds of reproduction questions.</p>
+      </div>
+      <div className="landing-evidence-card rounded-2xl border bg-card p-5">
+        <div className="flex items-center gap-2 text-xs font-semibold"><Globe2 className="h-4 w-4 text-primary" />Page</div>
+        <p className="mt-4 break-all font-mono text-sm font-semibold">/settings/notifications</p>
+        <p className="mt-2 text-[10px] text-muted-foreground">Captured automatically</p>
+      </div>
+      <div className="landing-evidence-card rounded-2xl border bg-card p-5">
+        <div className="flex items-center gap-2 text-xs font-semibold"><MonitorSmartphone className="h-4 w-4 text-primary" />Environment</div>
+        <p className="mt-4 text-sm font-semibold">Chrome 140 · macOS</p>
+        <p className="mt-2 text-[10px] text-muted-foreground">1440 × 900 · English</p>
+      </div>
+      <div className="landing-evidence-card rounded-2xl border bg-card p-5 sm:col-span-2">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs">
+          <span className="font-semibold">Everything travels together</span>
+          <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Clock3 className="h-3.5 w-3.5 text-primary" />Timestamp</span>
+          <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Tag className="h-3.5 w-3.5 text-primary" />Category</span>
+          <span className="inline-flex items-center gap-1.5 text-muted-foreground"><Paperclip className="h-3.5 w-3.5 text-primary" />Attachment</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TriageDashboardScene() {
+  const rows = [
+    ['Notification time resets after save', 'Bug · just now', 'New'],
+    ['Keyboard shortcuts for quick capture', 'Idea · 42m', 'Planned'],
+    ['The new editor feels much faster', 'Praise · 3h', 'Reviewed'],
+  ]
+  return (
+    <figure className="landing-triage-dashboard mx-auto mt-12 max-w-6xl overflow-hidden rounded-2xl border border-white/10 bg-[#0d100d] shadow-[0_40px_120px_-50px_rgb(0_0_0/0.95)]">
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
+        <div className="flex items-center gap-3"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-lime-300 text-xs font-black text-zinc-950">f.</span><div><p className="text-xs font-semibold">feedbacks.dev dashboard</p><p className="mt-0.5 text-[9px] text-zinc-500">Project: Orbit Notes</p></div></div>
+        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-[9px] text-zinc-400"><CircleDot className="h-3 w-3 text-lime-300" />Inbox live</span>
+      </div>
+      <div className="grid min-h-[500px] md:grid-cols-[160px_0.88fr_1.12fr]">
+        <nav className="hidden border-r border-white/10 bg-white/[0.018] p-3 text-[10px] text-zinc-500 md:block" aria-label="Dashboard example">
+          <p className="px-2 pb-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-600">Collect</p>
+          <span className="flex items-center gap-2 rounded-md bg-lime-300/10 px-2 py-2.5 font-semibold text-lime-200"><Inbox className="h-3.5 w-3.5" />Feedback inbox</span>
+          <span className="mt-1 flex items-center gap-2 px-2 py-2.5"><MessageSquareText className="h-3.5 w-3.5" />Feedback form</span>
+          <p className="mt-5 px-2 pb-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-600">Share</p>
+          <span className="flex items-center gap-2 px-2 py-2.5"><Rocket className="h-3.5 w-3.5" />Product updates</span>
+          <span className="flex items-center gap-2 px-2 py-2.5"><Globe2 className="h-3.5 w-3.5" />Public board</span>
+        </nav>
+        <div className="border-b border-white/10 md:border-b-0 md:border-r">
+          <div className="flex items-center gap-2 border-b border-white/10 p-3"><div className="flex min-h-9 flex-1 items-center gap-2 rounded-md border border-white/10 px-3 text-[10px] text-zinc-500"><Search className="h-3.5 w-3.5" />Search feedback</div><span className="rounded-md border border-white/10 px-3 py-2 text-[9px]">Filter</span></div>
+          {rows.map(([title, meta, status], index) => (
+            <div key={title} className={`landing-inbox-row border-b border-white/10 p-4 ${index === 0 ? 'is-active' : ''}`}>
+              <div className="flex items-start gap-3"><span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${index === 0 ? 'bg-rose-400' : index === 1 ? 'bg-sky-400' : 'bg-amber-300'}`} /><div className="min-w-0"><p className="truncate text-xs font-semibold text-zinc-200">{title}</p><p className="mt-1 text-[9px] text-zinc-500">{meta}</p></div><span className="ml-auto text-[9px] text-zinc-500">{status}</span></div>
+            </div>
+          ))}
         </div>
         <div className="p-5 sm:p-7">
-          <div className="flex flex-wrap gap-2 text-[9px]"><span className="rounded-md bg-rose-500/10 px-2 py-1 text-rose-600 dark:text-rose-300">Bug</span><span className="rounded-md bg-primary/10 px-2 py-1 text-primary">Exports</span><span className="rounded-md bg-amber-500/10 px-2 py-1 text-amber-700 dark:text-amber-300">High signal</span></div>
-          <h3 className="mt-5 text-xl font-semibold leading-7">Export freezes after I choose the last 90 days.</h3>
-          <p className="mt-3 text-xs leading-5 text-muted-foreground">The spinner stays forever. Refreshing brings the report back, but the download never starts.</p>
-          <dl className="mt-6 divide-y border-y text-xs"><div className="flex items-center justify-between py-3"><dt className="text-muted-foreground">Status</dt><dd className="font-medium">Planned</dd></div><div className="flex items-center justify-between py-3"><dt className="text-muted-foreground">Owner</dt><dd className="font-medium">Maya</dd></div><div className="flex items-center justify-between py-3"><dt className="text-muted-foreground">Destination</dt><dd className="font-medium">GitHub issue #248</dd></div></dl>
-          <div className="mt-6 flex items-center gap-2 text-[10px] text-muted-foreground"><Tag className="h-3.5 w-3.5 text-primary" />Exports · Reliability · Pro</div>
+          <div className="flex flex-wrap gap-2 text-[9px]"><span className="rounded-md bg-rose-400/10 px-2 py-1 text-rose-300">Bug</span><span className="rounded-md bg-lime-300/10 px-2 py-1 text-lime-200">Notifications</span><span className="rounded-md bg-amber-300/10 px-2 py-1 text-amber-200">High signal</span></div>
+          <h3 className="mt-5 max-w-lg text-xl font-semibold leading-7 sm:text-2xl">Notification time resets after save</h3>
+          <p className="mt-3 max-w-lg text-sm leading-6 text-zinc-400">My notification time resets after I save. I expected 9:00 AM, but the page shows 8:00 AM when I return.</p>
+          <dl className="mt-7 divide-y divide-white/10 border-y border-white/10 text-xs">
+            <div className="flex items-center justify-between py-3"><dt className="text-zinc-500">Status</dt><dd className="font-medium text-lime-200">Planned</dd></div>
+            <div className="flex items-center justify-between py-3"><dt className="text-zinc-500">Page</dt><dd className="font-mono text-zinc-300">/settings/notifications</dd></div>
+            <div className="flex items-center justify-between py-3"><dt className="text-zinc-500">Destination</dt><dd className="font-medium">GitHub issue #184</dd></div>
+          </dl>
+          <div className="mt-6 flex flex-wrap gap-2"><span className="inline-flex items-center gap-2 rounded-md bg-lime-300 px-3 py-2 text-[10px] font-bold text-zinc-950"><GitBranch className="h-3.5 w-3.5" />Open issue</span><span className="rounded-md border border-white/10 px-3 py-2 text-[10px] font-semibold">Add note</span></div>
         </div>
       </div>
     </figure>
-      <Image
-        src="/mascot-triage-controller-v1.png"
-        alt="feedbacks.dev mascot sorting feedback into clear triage lanes"
-        width={1493}
-        height={1053}
-        className="landing-triage-mascot absolute -bottom-8 -right-3 z-[3] h-auto w-52 object-contain drop-shadow-[0_24px_28px_oklch(0.12_0.02_132/0.3)] sm:-bottom-16 sm:-right-10 sm:w-72"
-      />
-    </div>
+  )
+}
+
+function ProductUpdateScene() {
+  return (
+    <article className="landing-loop-card overflow-hidden rounded-2xl border bg-card">
+      <div className="flex items-center justify-between border-b px-5 py-4"><div><p className="text-xs font-semibold">What customers see inside Orbit Notes</p><p className="mt-1 text-[9px] text-muted-foreground">In-product update</p></div><BellRing className="h-4 w-4 text-primary" /></div>
+      <div className="relative min-h-[390px] bg-[radial-gradient(circle_at_25%_15%,oklch(var(--primary)/0.14),transparent_42%),oklch(var(--muted)/0.28)] p-5 sm:p-7">
+        <div className="max-w-sm">
+          <p className="text-[10px] font-semibold text-muted-foreground">ORBIT NOTES</p>
+          <h3 className="mt-3 text-2xl font-semibold">Your notes, in motion.</h3>
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">A calm home for daily thinking and useful reminders.</p>
+        </div>
+        <div className="absolute bottom-5 right-5 w-[82%] max-w-sm overflow-hidden rounded-xl border bg-card shadow-[0_26px_70px_-28px_rgb(0_0_0/0.55)]">
+          <div className="flex items-center justify-between border-b px-4 py-3"><span className="inline-flex items-center gap-2 text-xs font-semibold"><Rocket className="h-3.5 w-3.5 text-primary" />What&apos;s new</span><span className="text-[9px] text-muted-foreground">Just shipped</span></div>
+          <div className="p-4"><span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-300">Shipped</span><h4 className="mt-3 text-base font-semibold">Notification schedules now save instantly</h4><p className="mt-2 text-xs leading-5 text-muted-foreground">Your chosen time now stays exactly where you put it, on every device.</p><p className="mt-4 text-[9px] font-semibold text-primary">Thanks to everyone who reported this.</p></div>
+        </div>
+      </div>
+    </article>
   )
 }
 
 function PublicBoardScene() {
   return (
-    <figure className="landing-board-scene relative mx-auto w-full max-w-3xl pb-14 sm:pb-8">
-      <div className="overflow-hidden rounded-2xl border bg-card shadow-[var(--shadow-float)]">
-        <div className="flex items-center justify-between border-b px-5 py-4"><div className="flex items-center gap-3"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-[11px] font-black text-primary-foreground">A</span><div><p className="text-xs font-semibold">ACME Corp ideas</p><p className="mt-0.5 text-[9px] text-muted-foreground">Public feedback board</p></div></div><Globe2 className="h-4 w-4 text-primary" /></div>
-        <div className="grid md:grid-cols-[1.15fr_0.85fr]">
-          <div className="divide-y border-b md:border-b-0 md:border-r">
-            <BoardRow votes="24" title="Add saved report views" meta="Planned · 8 replies" active />
-            <BoardRow votes="11" title="Faster CSV exports" meta="Shipped · 4 replies" />
-            <BoardRow votes="8" title="Share reports with a link" meta="Under review · 2 replies" />
-          </div>
-          <div className="bg-muted/20 p-5 sm:p-6">
-            <div className="flex items-center gap-2 text-[10px] font-semibold text-primary"><MessageSquareText className="h-3.5 w-3.5" />Official response</div>
-            <p className="mt-4 text-sm font-semibold leading-6">Saved views are planned for the next reporting update.</p>
-            <p className="mt-3 text-xs leading-5 text-muted-foreground">We are starting with filters, columns, and date ranges. Everyone following this idea will see the launch note.</p>
-            <div className="mt-6 border-t pt-4 text-[9px] text-muted-foreground">Posted by ACME Corp · 12 minutes ago</div>
-          </div>
+    <article className="landing-loop-card overflow-hidden rounded-2xl border bg-card">
+      <div className="flex items-center justify-between border-b px-5 py-4"><div><p className="text-xs font-semibold">What customers see on the public web</p><p className="mt-1 font-mono text-[9px] text-muted-foreground">feedbacks.dev/p/orbit-notes</p></div><ExternalLink className="h-4 w-4 text-primary" /></div>
+      <div className="min-h-[390px] p-5 sm:p-7">
+        <div className="flex items-start justify-between gap-5"><div><div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-black text-primary-foreground">O</span><div><h3 className="text-sm font-semibold">Orbit Notes feedback</h3><p className="mt-1 text-[9px] text-muted-foreground">Ideas, decisions, and shipped work</p></div></div></div><span className="rounded-md bg-primary px-3 py-2 text-[10px] font-semibold text-primary-foreground">Submit idea</span></div>
+        <div className="mt-5 flex gap-2 border-y py-3 text-[9px]"><span className="rounded-full bg-foreground px-3 py-1 font-semibold text-background">Top ideas</span><span className="rounded-full px-3 py-1 text-muted-foreground">Planned</span><span className="rounded-full px-3 py-1 text-muted-foreground">Shipped</span></div>
+        <div className="divide-y">
+          <BoardRow votes="38" title="Add a weekly review view" meta="Planned · 12 replies" active />
+          <BoardRow votes="24" title="Pin notes to the top" meta="In progress · 6 replies" />
+          <BoardRow votes="17" title="Notification schedules" meta="Shipped · 4 replies" />
         </div>
+        <div className="mt-3 flex items-start gap-2 rounded-lg bg-primary/[0.055] p-3 text-[10px] leading-4"><MessageSquareText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" /><span><strong>Official response:</strong> Weekly review is planned for the next release. Follow this idea to get the update.</span></div>
       </div>
-      <Image
-        src="/mascot-public-board-v1.png"
-        alt="feedbacks.dev mascot curating ideas on ACME Corp's public feedback board"
-        width={1128}
-        height={1394}
-        className="landing-board-mascot absolute -bottom-12 -right-4 z-[3] h-auto w-36 object-contain drop-shadow-[0_24px_26px_oklch(0.12_0.02_132/0.26)] sm:-bottom-20 sm:-right-20 sm:w-56"
-      />
-      <div className="absolute bottom-3 right-28 z-[4] rounded-lg border bg-card px-3 py-2 text-[10px] font-medium shadow-[var(--shadow-card)] sm:bottom-0 sm:right-28">Good ideas, one visible home.</div>
-    </figure>
+    </article>
   )
 }
 
 function BoardRow({ votes, title, meta, active = false }: { votes: string; title: string; meta: string; active?: boolean }) {
-  return <div className={`landing-board-row flex items-center gap-4 px-5 py-5 sm:px-6 ${active ? 'is-active' : ''}`}><div className="flex h-11 w-11 shrink-0 flex-col items-center justify-center rounded-lg border bg-background"><span className="text-xs font-semibold">{votes}</span><span className="text-[8px] text-muted-foreground">votes</span></div><div className="min-w-0"><p className="truncate text-xs font-semibold">{title}</p><p className="mt-1 text-[9px] text-muted-foreground">{meta}</p></div></div>
+  return (
+    <div className={`landing-board-row flex items-center gap-3 py-3 ${active ? 'is-active' : ''}`}>
+      <span className="landing-board-vote flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-lg border bg-background"><ChevronUp className="h-3 w-3 text-primary" /><span className="text-[9px] font-semibold">{votes}</span></span>
+      <div className="min-w-0"><p className="truncate text-xs font-semibold">{title}</p><p className="mt-1 text-[9px] text-muted-foreground">{meta}</p></div>
+      {active && <Lightbulb className="ml-auto h-4 w-4 text-primary" />}
+    </div>
+  )
 }

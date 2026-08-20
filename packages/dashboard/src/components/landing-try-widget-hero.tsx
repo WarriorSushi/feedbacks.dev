@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import {
   Bug,
   Camera,
+  ChevronDown,
   ChevronRight,
   CircleHelp,
   Lightbulb,
@@ -33,42 +34,101 @@ const confetti = [
   ['68%', '-16deg', '120ms'], ['78%', '24deg', '260ms'], ['90%', '-34deg', '200ms'],
 ] as const
 
-const callouts = [
-  {
-    id: 'top-left',
-    path: 'M-20 112 C176 119 336 178 460 306 C544 393 574 449 648 478',
-    labelPath: 'M24 118 C184 127 322 174 430 279',
-    head: 'M622 459 L648 478 L619 488',
-    label: 'Click the button',
-    labelOffset: '40%',
-  },
-  {
-    id: 'top-right',
-    path: 'M1620 112 C1432 112 1312 177 1192 304 C1122 378 1086 442 952 478',
-    labelPath: 'M1188 308 C1312 178 1435 119 1590 116',
-    head: 'M980 456 L952 478 L982 489',
-    label: 'Press the button',
-    labelOffset: '5%',
-  },
-  {
-    id: 'bottom-left',
-    path: 'M30 706 C155 618 282 561 408 568 C495 573 561 527 648 510',
-    labelPath: 'M58 684 C174 610 286 568 405 574',
-    head: 'M620 501 L648 510 L630 534',
-    label: 'See the real interaction',
-    labelOffset: '46%',
-  },
-  {
-    id: 'bottom-right',
-    path: 'M1570 706 C1440 680 1328 618 1217 578 C1118 542 1045 527 960 510',
-    labelPath: 'M1010 523 C1100 540 1185 563 1274 602 C1370 644 1462 684 1550 700',
-    head: 'M985 493 L960 510 L985 528',
-    label: 'The button is the product',
-    labelOffset: '15%',
-  },
-] as const
+type AnnotationGeometry = {
+  width: number
+  height: number
+  buttonLeft: number
+  buttonRight: number
+  buttonTop: number
+  buttonBottom: number
+}
 
-function HeroAnnotations({ reduceMotion }: { reduceMotion: boolean }) {
+function HeroAnnotations({
+  reduceMotion,
+  stageRef,
+  buttonRef,
+}: {
+  reduceMotion: boolean
+  stageRef: React.RefObject<HTMLDivElement | null>
+  buttonRef: React.RefObject<HTMLButtonElement | null>
+}) {
+  const [geometry, setGeometry] = React.useState<AnnotationGeometry | null>(null)
+
+  React.useLayoutEffect(() => {
+    let frame = 0
+    let observer: ResizeObserver | null = null
+
+    const connect = () => {
+      const stage = stageRef.current
+      const button = buttonRef.current
+      if (!stage || !button) {
+        frame = window.requestAnimationFrame(connect)
+        return
+      }
+
+      const measure = () => {
+      const stageBox = stage.getBoundingClientRect()
+      const buttonBox = button.getBoundingClientRect()
+      setGeometry({
+        width: stageBox.width,
+        height: stageBox.height,
+        buttonLeft: buttonBox.left - stageBox.left,
+        buttonRight: buttonBox.right - stageBox.left,
+        buttonTop: buttonBox.top - stageBox.top,
+        buttonBottom: buttonBox.bottom - stageBox.top,
+      })
+      }
+
+      measure()
+      observer = new ResizeObserver(measure)
+      observer.observe(stage)
+      observer.observe(button)
+    }
+
+    connect()
+    return () => {
+      window.cancelAnimationFrame(frame)
+      observer?.disconnect()
+    }
+  }, [buttonRef, stageRef])
+
+  if (!geometry) return null
+
+  const { width, height, buttonLeft, buttonRight, buttonTop, buttonBottom } = geometry
+  const leftTarget = Math.max(0, buttonLeft - 14)
+  const rightTarget = Math.min(width, buttonRight + 14)
+  const centerY = (buttonTop + buttonBottom) / 2
+  const paths = [
+    {
+      id: 'top-left',
+      d: `M 0 ${height * 0.12} C ${width * 0.22} ${height * 0.13}, ${width * 0.32} ${height * 0.2}, ${leftTarget} ${centerY - 10}`,
+      label: 'Click the button',
+      x: width * 0.1,
+      y: height * 0.13,
+    },
+    {
+      id: 'top-right',
+      d: `M ${width} ${height * 0.12} C ${width * 0.78} ${height * 0.12}, ${width * 0.7} ${height * 0.2}, ${rightTarget} ${centerY - 10}`,
+      label: 'Press the button',
+      x: width * 0.76,
+      y: height * 0.13,
+    },
+    {
+      id: 'bottom-left',
+      d: `M 0 ${height * 0.88} C ${width * 0.2} ${height * 0.68}, ${width * 0.34} ${height * 0.76}, ${leftTarget} ${centerY + 10}`,
+      label: 'See the real interaction',
+      x: width * 0.08,
+      y: height * 0.8,
+    },
+    {
+      id: 'bottom-right',
+      d: `M ${width} ${height * 0.88} C ${width * 0.8} ${height * 0.77}, ${width * 0.68} ${height * 0.72}, ${rightTarget} ${centerY + 10}`,
+      label: 'The button is the product',
+      x: width * 0.73,
+      y: height * 0.8,
+    },
+  ]
+
   return (
     <motion.div
       className="landing-try-annotations absolute inset-0"
@@ -80,36 +140,34 @@ function HeroAnnotations({ reduceMotion }: { reduceMotion: boolean }) {
     >
       <span className="landing-try-halo landing-try-halo-left" />
       <span className="landing-try-halo landing-try-halo-right" />
-      <svg className="landing-try-callouts" viewBox="0 0 1600 720" fill="none" preserveAspectRatio="xMidYMid slice">
+      <svg className="landing-try-callouts" viewBox={`0 0 ${width} ${height}`} fill="none" preserveAspectRatio="none">
         <defs>
-          {callouts.map((callout) => <path key={callout.id} id={`landing-label-${callout.id}`} d={callout.labelPath} />)}
+          <marker id="landing-arrowhead" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 1 1 L 10 6 L 1 11" fill="none" stroke="currentColor" strokeWidth="1.6" />
+          </marker>
         </defs>
-        {callouts.map((callout, index) => {
+        {paths.map((callout, index) => {
           const delay = reduceMotion ? 0 : 0.18 + index * 0.16
           return (
             <g key={callout.id} className="landing-callout-stroke" fill="none" stroke="currentColor">
               <motion.path
-                d={callout.path}
+                d={callout.d}
+                markerEnd="url(#landing-arrowhead)"
                 initial={reduceMotion ? false : { pathLength: 0, opacity: 0.35 }}
                 animate={{ pathLength: 1, opacity: 1 }}
                 transition={{ duration: reduceMotion ? 0 : 1.05, delay, ease: [0.16, 1, 0.3, 1] }}
               />
-              <motion.path
-                d={callout.head}
-                initial={reduceMotion ? false : { pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: reduceMotion ? 0 : 0.34, delay: delay + 0.74, ease: [0.16, 1, 0.3, 1] }}
-              />
               <motion.text
                 className="landing-callout-path-label"
-                dy="-13"
+                x={callout.x}
+                y={callout.y}
                 fill="currentColor"
                 stroke="none"
                 initial={reduceMotion ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: reduceMotion ? 0 : 0.4, delay: delay + 0.62 }}
               >
-                <textPath href={`#landing-label-${callout.id}`} startOffset={callout.labelOffset}>{callout.label}</textPath>
+                {callout.label}
               </motion.text>
             </g>
           )
@@ -128,6 +186,8 @@ export function LandingTryWidgetHero() {
   const [screenshotReady, setScreenshotReady] = React.useState(false)
   const reduceMotion = useReducedMotion() ?? false
   const sectionRef = React.useRef<HTMLElement>(null)
+  const stageRef = React.useRef<HTMLDivElement>(null)
+  const launchButtonRef = React.useRef<HTMLButtonElement>(null)
   const closeButtonRef = React.useRef<HTMLButtonElement>(null)
   const userEdited = React.useRef(false)
   const userRated = React.useRef(false)
@@ -177,6 +237,14 @@ export function LandingTryWidgetHero() {
     }
   }, [open, reduceMotion, submitted])
 
+  React.useEffect(() => {
+    if (!submitted) return
+    const frame = window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [submitted])
+
   const launchDemo = () => {
     setOpen(true)
     setSubmitted(false)
@@ -196,8 +264,6 @@ export function LandingTryWidgetHero() {
   return (
     <section ref={sectionRef} className="landing-try-hero relative isolate overflow-hidden border-b" aria-labelledby="try-widget-title">
       <motion.div layout className={cn('landing-try-shell relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-[1600px] flex-col px-5 pb-8 sm:px-6', open && 'landing-try-shell-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
-        <AnimatePresence>{!open && <HeroAnnotations reduceMotion={reduceMotion} />}</AnimatePresence>
-
         <motion.div layout="position" className={cn('landing-try-heading relative z-[2] mx-auto max-w-[920px] text-center', open && 'landing-try-heading-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
           <h1 id="try-widget-title" className="font-semibold tracking-[-0.055em]">
             <span className="block">We believe in “Show, don&apos;t tell”.</span>
@@ -205,13 +271,15 @@ export function LandingTryWidgetHero() {
           </h1>
         </motion.div>
 
-        <motion.div layout="position" className={cn('landing-try-stage relative mx-auto flex min-h-[300px] w-full items-center justify-center', open && 'landing-try-stage-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
+        <motion.div ref={stageRef} layout="position" className={cn('landing-try-stage relative mx-auto flex min-h-[300px] w-full flex-col items-center justify-center', open && 'landing-try-stage-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
           <div className="landing-try-grid absolute inset-0" aria-hidden="true" />
+          <AnimatePresence>{!open && <HeroAnnotations reduceMotion={reduceMotion} stageRef={stageRef} buttonRef={launchButtonRef} />}</AnimatePresence>
 
           <div className="widget-theme-preview contents">
             <AnimatePresence mode="wait" initial={false}>
             {!open && (
               <motion.button
+                ref={launchButtonRef}
                 key="launch"
                 layoutId="landing-widget-demo"
                 type="button"
@@ -300,6 +368,20 @@ export function LandingTryWidgetHero() {
             )}
             </AnimatePresence>
           </div>
+
+          {open && (
+            <motion.button
+              type="button"
+              onClick={() => document.getElementById('product')?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' })}
+              initial={reduceMotion ? false : { opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: reduceMotion ? 0 : 0.3 }}
+              className="landing-scroll-cue relative z-20 mt-5 inline-flex min-h-12 flex-col items-center justify-center gap-1 rounded-full px-5 text-xs font-semibold text-foreground/75 transition-colors hover:text-foreground"
+            >
+              <span>{submitted ? 'See the complete feedback loop' : 'Continue below when you are ready'}</span>
+              <ChevronDown className="h-4 w-4" />
+            </motion.button>
+          )}
         </motion.div>
 
       </motion.div>

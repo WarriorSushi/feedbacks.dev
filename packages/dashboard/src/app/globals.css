@@ -145,7 +145,7 @@
   }
 
   ::selection {
-    background-color: oklch(var(--primary) / 0.18);
+    background-color: oklch(var(--foreground) / 0.14);
     color: oklch(var(--foreground));
   }
 
@@ -896,12 +896,42 @@
   }
 }
 
+@keyframes landing-send-ring {
+  0%, 35% { opacity: 0; transform: scale(0.94); }
+  52% { opacity: 0.48; }
+  82%, 100% { opacity: 0; transform: scale(1.22); }
+}
+
+@keyframes landing-send-breathe {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.08); }
+}
+
+@keyframes landing-scroll-cue {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
 .landing-try-launch::before {
-  content: none;
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border: 2px solid oklch(var(--primary) / 0.7);
+  border-radius: inherit;
+  animation: landing-send-ring 2.8s var(--ease-out-expo) infinite;
+  pointer-events: none;
 }
 
 .landing-try-launch::after {
-  content: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 0 0 8px oklch(var(--primary) / 0.08);
+  animation: landing-send-breathe 2.8s var(--ease-in-out) infinite;
+  pointer-events: none;
 }
 
 .landing-try-stage .widget-theme-preview {
@@ -919,6 +949,7 @@
 
 .landing-try-launch {
   isolation: isolate;
+  overflow: visible;
   background: oklch(0.17 0.012 108);
   color: oklch(0.965 0.007 105);
   box-shadow:
@@ -956,6 +987,10 @@
   transform: translateX(2px);
 }
 
+.landing-scroll-cue svg {
+  animation: landing-scroll-cue 1.35s var(--ease-in-out) infinite;
+}
+
 .landing-demo-form { will-change: transform, opacity; }
 
 .landing-type-caret {
@@ -989,6 +1024,206 @@
 .landing-vibe-install button:focus-visible {
   outline: 2px solid #b8ff4f;
   outline-offset: 2px;
+}
+
+/* Landing page overhaul: populated product proof with clear ownership labels. */
+
+@keyframes landing-flow-travel {
+  from { background-position: 0 0; }
+  to { background-position: 32px 0; }
+}
+
+@keyframes landing-route-arrive {
+  0%, 18% { opacity: 0.62; transform: translateY(5px); }
+  34%, 100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-card-hover {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.landing-journey {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 12% 12%, oklch(var(--primary) / 0.1), transparent 30%),
+    radial-gradient(circle at 86% 82%, oklch(0.72 0.11 86 / 0.09), transparent 32%),
+    oklch(var(--background));
+}
+
+.landing-journey::before,
+.landing-setup-section::before,
+.landing-final-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(oklch(var(--foreground) / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(var(--foreground) / 0.035) 1px, transparent 1px);
+  background-size: 36px 36px;
+  -webkit-mask-image: radial-gradient(ellipse at center, black, transparent 82%);
+  mask-image: radial-gradient(ellipse at center, black, transparent 82%);
+}
+
+.landing-scene-card,
+.landing-evidence-card,
+.landing-loop-card {
+  position: relative;
+  box-shadow: 0 24px 70px -42px oklch(var(--foreground) / 0.42);
+  transition: transform 320ms var(--ease-out-quart), box-shadow 320ms var(--ease-out-quart), border-color 320ms var(--ease-out-quart);
+}
+
+.landing-scene-card:hover,
+.landing-evidence-card:hover,
+.landing-loop-card:hover {
+  transform: translateY(-4px);
+  border-color: oklch(var(--primary) / 0.35);
+  box-shadow: 0 30px 82px -42px oklch(var(--foreground) / 0.5);
+}
+
+.landing-capture-pop {
+  animation: landing-card-hover 4.8s var(--ease-in-out) infinite;
+}
+
+.landing-flow-line {
+  background-image: linear-gradient(90deg, transparent, oklch(var(--primary)), transparent);
+  background-size: 32px 100%;
+  animation: landing-flow-travel 1.4s linear infinite;
+}
+
+.landing-route-card {
+  animation: landing-route-arrive 4.8s var(--ease-out-expo) infinite;
+}
+
+.landing-context-section {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 78% 42%, oklch(var(--primary) / 0.11), transparent 32%),
+    oklch(var(--muted) / 0.22);
+}
+
+.landing-evidence-grid {
+  perspective: 1000px;
+}
+
+.landing-inbox-section {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 15%, oklch(0.62 0.17 132 / 0.16), transparent 32%),
+    #050705;
+}
+
+.landing-inbox-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(circle at 50% 55%, black, transparent 78%);
+  mask-image: radial-gradient(circle at 50% 55%, black, transparent 78%);
+  pointer-events: none;
+}
+
+.landing-inbox-section > div {
+  position: relative;
+}
+
+.landing-inbox-row {
+  transition: background-color 240ms var(--ease-out-quart), box-shadow 240ms var(--ease-out-quart);
+}
+
+.landing-inbox-row.is-active {
+  background: rgb(190 242 100 / 0.065);
+  box-shadow: inset 3px 0 rgb(190 242 100 / 0.9);
+}
+
+.landing-close-loop {
+  background:
+    radial-gradient(circle at 12% 82%, oklch(0.78 0.11 86 / 0.09), transparent 30%),
+    radial-gradient(circle at 88% 14%, oklch(var(--primary) / 0.1), transparent 32%),
+    oklch(var(--background));
+}
+
+.landing-board-vote {
+  transition: transform 220ms var(--ease-out-quart), border-color 220ms var(--ease-out-quart), background-color 220ms var(--ease-out-quart);
+}
+
+.landing-board-row:hover .landing-board-vote,
+.landing-board-row.is-active .landing-board-vote {
+  transform: translateY(-2px);
+  border-color: oklch(var(--primary) / 0.45);
+  background: oklch(var(--primary) / 0.08);
+}
+
+.landing-setup-section {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 16%, oklch(var(--primary) / 0.11), transparent 34%),
+    oklch(var(--background));
+}
+
+.landing-setup-section > div,
+.landing-final-cta > div,
+.landing-final-cta > span {
+  position: relative;
+}
+
+.landing-proof-strip {
+  background: oklch(var(--muted) / 0.24);
+}
+
+.landing-pricing-section {
+  background:
+    radial-gradient(circle at 18% 10%, oklch(var(--primary) / 0.1), transparent 28%),
+    oklch(var(--background));
+}
+
+.landing-free-plan,
+.landing-pro-plan {
+  transition: transform 300ms var(--ease-out-quart), box-shadow 300ms var(--ease-out-quart);
+}
+
+.landing-free-plan:hover,
+.landing-pro-plan:hover {
+  transform: translateY(-5px);
+}
+
+.landing-faq-section {
+  background: oklch(var(--muted) / 0.2);
+}
+
+.landing-final-cta {
+  background:
+    radial-gradient(circle at 50% 50%, oklch(var(--primary) / 0.12), transparent 38%),
+    oklch(var(--background));
+}
+
+.landing-final-chip {
+  animation: landing-card-hover 5.4s var(--ease-in-out) infinite;
+}
+
+.landing-final-chip-right {
+  animation-delay: 900ms;
+}
+
+@media (min-width: 1024px) {
+  .landing-flow-connector .landing-flow-line {
+    background-image: linear-gradient(180deg, transparent, oklch(var(--primary)), transparent);
+    background-size: 100% 32px;
+    animation-name: landing-flow-travel-vertical;
+  }
+}
+
+@keyframes landing-flow-travel-vertical {
+  from { background-position: 0 0; }
+  to { background-position: 0 32px; }
 }
 
 .landing-feature {
@@ -2167,8 +2402,8 @@ html.windows98 {
 }
 
 .windows98 ::selection {
-  background: var(--win98-title);
-  color: var(--win98-highlight);
+  background: var(--win98-shadow);
+  color: var(--win98-text);
 }
 
 .windows98 *:focus-visible {

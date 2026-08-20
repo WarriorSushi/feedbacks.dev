@@ -1,65 +1,70 @@
 'use client'
 
 import * as React from 'react'
-import Image from 'next/image'
-import { Bot, Code2, Copy } from 'lucide-react'
+import { Bot, Check, Code2, Copy, MousePointerClick, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const agentPrompt = `Install feedbacks.dev in this project using the project-specific setup details from my dashboard.
 
-1. Identify the shared app shell or root layout where the browser-safe embed should load once.
-2. Add the exact dashboard-generated snippet without exposing private API keys or server credentials.
-3. Keep the stable embed unchanged so future form and placement settings continue to update remotely.
-4. Run the app locally and confirm the feedback trigger appears without layout shift or console errors.
-5. Submit one test report from the real page and verify that its URL and browser context reach the feedbacks.dev inbox.
-6. Summarize the files changed, the placement used, and the verification result.`
+1. Find the shared app shell or root layout.
+2. Add the exact dashboard-generated snippet once.
+3. Do not expose private API keys or server credentials.
+4. Start the app and confirm the feedback button appears without layout shift.
+5. Send one test report and verify its page and browser context in the inbox.
+6. Summarize the changed file and verification result.`
+
+type InstallView = 'code' | 'agent'
 
 export function LandingVibeInstall({ snippet }: { snippet: string }) {
-  const [copied, setCopied] = React.useState<'code' | 'prompt' | null>(null)
+  const [view, setView] = React.useState<InstallView>('code')
+  const [copied, setCopied] = React.useState(false)
+  const activeValue = view === 'code' ? snippet : agentPrompt
 
-  const copy = async (value: string, kind: 'code' | 'prompt') => {
-    await navigator.clipboard.writeText(value)
-    setCopied(kind)
-    window.setTimeout(() => setCopied(null), 1800)
+  const copy = async () => {
+    await navigator.clipboard.writeText(activeValue)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 1800)
   }
 
   return (
-    <div className="landing-vibe-install overflow-hidden rounded-[1.5rem] border bg-[#0d100c] text-[#f5f7f1] shadow-[0_30px_90px_-48px_rgb(0_0_0/0.75)]">
-      <div className="landing-install-art relative h-[250px] overflow-hidden border-b border-white/10 sm:h-[380px]">
-        <Image
-          src="/mascot-install-agent-scene-v2.png"
-          alt="feedbacks.dev mascot and a tiny coding agent connecting the installation to an app"
-          fill
-          className="object-cover object-center"
-          sizes="(max-width: 1280px) 100vw, 1280px"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d100c] via-transparent to-transparent" aria-hidden="true" />
-        <div className="absolute left-5 top-5 rounded-md border border-white/10 bg-[oklch(0.1_0.01_132/0.56)] px-3 py-2 text-[10px] font-semibold text-lime-300 sm:left-7 sm:top-7">07 · Install once</div>
-      </div>
-      <div className="grid lg:grid-cols-[0.88fr_1.12fr]">
-        <div className="flex min-h-[390px] items-center border-b border-white/10 p-6 sm:p-8 lg:border-b-0 lg:border-r">
-          <div>
-            <h3 className="max-w-md text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-4xl">Install it yourself, or hand it to your coding agent.</h3>
-            <p className="mt-5 max-w-md text-sm leading-6 text-zinc-400">Your dashboard generates the project-specific snippet and a complete setup instruction. Copy either one, paste it where you work, and verify the first report.</p>
-          </div>
+    <div className="landing-install-shell overflow-hidden rounded-2xl border bg-[#0b0e0b] text-[#f5f7f1] shadow-[0_36px_110px_-52px_rgb(0_0_0/0.9)]">
+      <div className="grid lg:grid-cols-[0.78fr_1.22fr]">
+        <div className="border-b border-white/10 p-6 sm:p-9 lg:border-b-0 lg:border-r">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-lime-300">Install once</p>
+          <h3 className="mt-4 max-w-md text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-4xl">One exact snippet. Then the form follows your settings.</h3>
+          <p className="mt-5 max-w-md text-sm leading-6 text-zinc-400">Copy the dashboard-generated embed yourself, or hand the bounded instruction to your coding agent. Either path ends with a real test report.</p>
+
+          <ol className="mt-8 space-y-4 text-sm">
+            {[
+              [Code2, 'Create a project', 'Your browser-safe project key is generated for you.'],
+              [MousePointerClick, 'Paste once', 'Put the stable embed in the shared app shell.'],
+              [Check, 'Send one test', 'Verify the real page and browser arrive in the inbox.'],
+            ].map(([Icon, title, body], index) => {
+              const StepIcon = Icon as typeof Code2
+              return (
+                <li key={String(title)} className="flex gap-3 rounded-xl border border-white/10 bg-white/[0.025] p-4">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-lime-300/10 text-lime-300"><StepIcon className="h-4 w-4" /></span>
+                  <div><p className="font-semibold text-zinc-100">{index + 1}. {String(title)}</p><p className="mt-1 text-xs leading-5 text-zinc-500">{String(body)}</p></div>
+                </li>
+              )
+            })}
+          </ol>
+
+          <p className="mt-6 flex items-center gap-2 text-xs text-zinc-400"><ShieldCheck className="h-4 w-4 text-lime-300" />No private key belongs in the browser.</p>
         </div>
 
-        <div className="grid min-w-0 sm:grid-rows-2">
-          <div className="min-w-0 border-b border-white/10 p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300"><Code2 className="h-4 w-4 text-[#b8ff4f]" />Paste it yourself</span>
-              <button type="button" onClick={() => copy(snippet, 'code')} className={cn('inline-flex min-h-11 items-center gap-2 rounded-md border border-white/10 px-3 text-xs font-semibold transition-colors hover:bg-white/10 sm:min-h-9', copied === 'code' && 'border-[#b8ff4f]/40 text-[#b8ff4f]')}><Copy className="h-3.5 w-3.5" />{copied === 'code' ? 'Copied' : 'Copy'}</button>
+        <div className="min-w-0 p-4 sm:p-6">
+          <div className="flex flex-col gap-3 border-b border-white/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="inline-flex w-fit rounded-lg border border-white/10 bg-white/[0.035] p-1" role="tablist" aria-label="Installation method">
+              <button type="button" role="tab" aria-selected={view === 'code'} onClick={() => { setView('code'); setCopied(false) }} className={cn('inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-xs font-semibold text-zinc-400 transition-colors', view === 'code' && 'bg-white/10 text-white')}><Code2 className="h-3.5 w-3.5" />Install code</button>
+              <button type="button" role="tab" aria-selected={view === 'agent'} onClick={() => { setView('agent'); setCopied(false) }} className={cn('inline-flex min-h-10 items-center gap-2 rounded-md px-3 text-xs font-semibold text-zinc-400 transition-colors', view === 'agent' && 'bg-white/10 text-white')}><Bot className="h-3.5 w-3.5" />Agent brief</button>
             </div>
-            <pre className="mt-5 overflow-x-auto whitespace-pre-wrap break-all font-mono text-[11px] leading-6 text-zinc-400"><code>{snippet}</code></pre>
+            <button type="button" onClick={copy} className={cn('inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/10 px-3 text-xs font-semibold transition-colors hover:bg-white/10', copied && 'border-lime-300/40 text-lime-300')}><Copy className="h-3.5 w-3.5" />{copied ? 'Copied' : view === 'code' ? 'Copy snippet' : 'Copy brief'}</button>
           </div>
 
-          <div className="min-w-0 bg-white/[0.025] p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-3">
-              <span className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-300"><Bot className="h-4 w-4 text-[#b8ff4f]" />Generated in your dashboard</span>
-              <button type="button" onClick={() => copy(agentPrompt, 'prompt')} className={cn('inline-flex min-h-11 items-center gap-2 rounded-md border border-white/10 px-3 text-xs font-semibold transition-colors hover:bg-white/10 sm:min-h-9', copied === 'prompt' && 'border-[#b8ff4f]/40 text-[#b8ff4f]')}><Copy className="h-3.5 w-3.5" />{copied === 'prompt' ? 'Copied' : 'Copy agent instruction'}</button>
-            </div>
-            <pre className="mt-5 max-h-48 overflow-y-auto whitespace-pre-wrap font-mono text-[11px] leading-5 text-zinc-300"><code>{agentPrompt}</code></pre>
-          </div>
+          <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500"><span>{view === 'code' ? 'Dashboard-generated snippet' : 'A bounded task for your coding agent'}</span><span>{view === 'code' ? 'HTML' : 'Plain text'}</span></div>
+          <pre className="mt-4 min-h-[420px] overflow-x-auto whitespace-pre-wrap break-words rounded-xl border border-white/10 bg-black/35 p-5 font-mono text-[11px] leading-6 text-zinc-300 sm:p-6"><code>{activeValue}</code></pre>
+          <p className="mt-4 text-xs leading-5 text-zinc-500">Keep the stable embed unchanged. Form fields, placement, copy, and styling update remotely after you save them in feedbacks.dev.</p>
         </div>
       </div>
     </div>
