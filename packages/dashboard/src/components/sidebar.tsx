@@ -84,13 +84,13 @@ const primaryNavGroups: NavGroup[] = [
       { href: '/install', label: 'Install & verify', icon: Code2, tourId: 'nav-install', projectTab: 'install' },
       { href: '/integrations', label: 'Integrations', icon: Webhook, tourId: 'nav-integrations', projectTab: 'integrations' },
       { href: '/api', label: 'API & MCP', icon: Code2, tourId: 'nav-api', projectTab: 'api' },
+      { href: 'https://www.feedbacks.dev/docs', label: 'Docs', icon: Library, tourId: 'nav-docs', external: true },
+      { href: '/invites', label: 'Earn free Pro', icon: Gift, tourId: 'nav-invites' },
     ],
   },
 ]
 
 const utilityNavItems: NavItem[] = [
-  { href: '/invites', label: 'Invite friends', icon: Gift, tourId: 'nav-invites' },
-  { href: 'https://www.feedbacks.dev/docs', label: 'Docs', icon: Library, tourId: 'nav-docs', external: true },
   { href: '/billing',   label: 'Billing',   icon: CreditCard, tourId: 'nav-billing' },
   { href: '/settings',  label: 'Settings',  icon: Settings, tourId: 'nav-settings' },
 ]
@@ -487,9 +487,11 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                     title={collapsed ? item.label : undefined}
                     aria-label={collapsed ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
-                    onClick={() => beginNavigation(scopedHref)}
-                    onMouseEnter={() => router.prefetch(scopedHref)}
-                    onFocus={() => router.prefetch(scopedHref)}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                    onClick={() => { if (!item.external) beginNavigation(scopedHref) }}
+                    onMouseEnter={() => { if (!item.external) router.prefetch(scopedHref) }}
+                    onFocus={() => { if (!item.external) router.prefetch(scopedHref) }}
                     className={cn(
                       'group relative flex min-h-11 items-center gap-3 rounded-lg py-2 text-[13px] font-medium md:min-h-0',
                       'transition-[background-color,color,transform] duration-150 active:scale-[0.98]',
@@ -506,6 +508,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                       <item.icon className={cn('h-[17px] w-[17px] shrink-0 transition-colors duration-150', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
                     )}
                     {!collapsed && <span className="truncate">{item.label}</span>}
+                    {!collapsed && item.external ? <ExternalLink className="ml-auto h-3 w-3 shrink-0 opacity-60" /> : null}
                   </Link>
                 )
               })}
