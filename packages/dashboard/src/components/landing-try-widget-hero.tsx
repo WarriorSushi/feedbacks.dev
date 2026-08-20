@@ -1,11 +1,9 @@
 'use client'
 
 import * as React from 'react'
-import Image from 'next/image'
 import {
   Bug,
   Camera,
-  Check,
   ChevronRight,
   CircleHelp,
   Lightbulb,
@@ -33,6 +31,39 @@ const confetti = [
   ['35%', '-28deg', '220ms'], ['46%', '12deg', '60ms'], ['57%', '38deg', '180ms'],
   ['68%', '-16deg', '120ms'], ['78%', '24deg', '260ms'], ['90%', '-34deg', '200ms'],
 ] as const
+
+function HeroAnnotations() {
+  return (
+    <div className="landing-try-annotations absolute inset-0" aria-hidden="true">
+      <span className="landing-try-halo landing-try-halo-left" />
+      <span className="landing-try-halo landing-try-halo-right" />
+      <svg className="landing-try-callouts" viewBox="0 0 1600 720" fill="none" preserveAspectRatio="none">
+        <g className="landing-callout-stroke">
+          <path d="M-30 38 C145 36 270 92 370 190 C468 286 478 366 596 414" />
+          <path d="M572 390 L596 414 L566 419" />
+          <path d="M1630 119 C1492 85 1395 108 1310 177" strokeDasharray="5 7" />
+          <path d="M1294 195 C1242 244 1201 307 1172 346 C1144 383 1117 393 1083 410" />
+          <path d="M1092 382 L1083 410 L1111 397" />
+          <path d="M105 740 C157 645 190 590 237 545" strokeDasharray="5 8" />
+          <path d="M255 532 C315 492 370 491 430 524 C481 552 529 554 594 528" />
+          <path d="M570 518 L594 528 L578 550" />
+          <path d="M1491 661 C1418 672 1364 651 1310 612 C1255 572 1197 535 1099 516" />
+          <path d="M1121 503 L1099 516 L1118 534" />
+        </g>
+        <g className="landing-callout-dots">
+          <circle cx="174" cy="70" r="4.25" /><circle cx="294" cy="128" r="4.25" />
+          <circle cx="1310" cy="177" r="4.25" /><circle cx="1247" cy="243" r="4.25" />
+          <circle cx="237" cy="545" r="4.25" /><circle cx="255" cy="532" r="4.25" />
+          <circle cx="1491" cy="661" r="4.25" /><circle cx="1397" cy="655" r="4.25" />
+        </g>
+      </svg>
+      <span className="landing-callout-label landing-callout-label-one">Click the button</span>
+      <span className="landing-callout-label landing-callout-label-two">We believe in showing, not telling</span>
+      <span className="landing-callout-label landing-callout-label-three">Try the interaction</span>
+      <span className="landing-callout-label landing-callout-label-four">This is the product</span>
+    </div>
+  )
+}
 
 export function LandingTryWidgetHero() {
   const [open, setOpen] = React.useState(false)
@@ -101,47 +132,35 @@ export function LandingTryWidgetHero() {
 
   return (
     <section className="landing-try-hero relative isolate overflow-hidden border-b" aria-labelledby="try-widget-title">
-      <div className="landing-try-orbit landing-try-orbit-one" aria-hidden="true" />
-      <div className="landing-try-orbit landing-try-orbit-two" aria-hidden="true" />
-      <div className="relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-7xl flex-col px-5 pb-10 pt-14 sm:px-6 sm:pb-16 sm:pt-20">
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="text-sm font-semibold text-primary">We believe in show, don&apos;t tell.</p>
-          <h1 id="try-widget-title" className="mt-4 text-[2.75rem] font-semibold leading-[0.98] tracking-[-0.06em] sm:text-[4.6rem] lg:text-[5.35rem]">
+      <div className="relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-[1600px] flex-col px-5 pb-12 sm:px-6">
+        {!open && <HeroAnnotations />}
+
+        <div className={cn('landing-try-heading relative z-[2] mx-auto max-w-[780px] text-center', open && 'landing-try-heading-open')}>
+          <h1 id="try-widget-title" className="text-[3.25rem] font-semibold leading-[0.91] tracking-[-0.065em] sm:text-[5rem] lg:text-[6rem]">
             Try the feedback button.
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            It is a demo. Click everything. Nothing gets sent anywhere. Very rebellious.
-          </p>
         </div>
 
-        <div className="relative mx-auto mt-8 flex min-h-[340px] w-full max-w-5xl items-center justify-center sm:mt-10 sm:min-h-[240px]">
+        <div className={cn('landing-try-stage relative mx-auto flex min-h-[310px] w-full items-center justify-center', open && 'landing-try-stage-open')}>
           <div className="landing-try-grid absolute inset-0" aria-hidden="true" />
 
-          {!open && (
-            <>
-              <div className="landing-try-nudge landing-try-nudge-left" aria-hidden="true">
-                <span>Yes, this one</span><ChevronRight className="h-5 w-5" />
-              </div>
-              <div className="landing-try-nudge landing-try-nudge-right" aria-hidden="true">
-                <ChevronRight className="h-5 w-5 rotate-180" /><span>Go on</span>
-              </div>
+          <div className="widget-theme-preview contents">
+            {!open && (
               <button
                 type="button"
                 onClick={launchDemo}
-                className="landing-try-launch group relative z-10 inline-flex min-h-16 items-center gap-3 rounded-full border bg-foreground px-7 text-base font-semibold text-background shadow-[0_24px_70px_-28px_oklch(0.36_0.14_136/0.72)] transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_30px_90px_-28px_oklch(0.48_0.18_136/0.82)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 sm:min-h-20 sm:px-9 sm:text-lg"
+                className="landing-try-launch group relative z-10 inline-flex min-h-16 items-center gap-3 rounded-full border px-8 text-base font-semibold transition-[transform,box-shadow] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 sm:min-h-20 sm:px-11 sm:text-lg"
               >
-                <Image src="/new_logo_feedbacks.dev.svg" alt="" width={42} height={42} className="landing-try-logo h-9 w-9 rounded-full sm:h-11 sm:w-11" aria-hidden="true" />
                 Send feedback
                 <MessageSquareText className="h-5 w-5 text-primary" />
               </button>
-            </>
-          )}
+            )}
 
-          {open && !submitted && (
+            {open && !submitted && (
             <div className="landing-demo-form relative z-20 w-full max-w-[520px] overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-[0_38px_110px_-38px_rgb(0_0_0/0.58)]">
               <div className="flex items-start justify-between gap-5 border-b px-5 py-4 sm:px-6">
                 <div>
-                  <p className="text-base font-semibold">Tell UltraSuper Corp everything</p>
+                  <p className="text-base font-semibold">Tell ACME Corp everything</p>
                   <p className="mt-1 text-xs text-muted-foreground">Legal asked us to say “within reason.”</p>
                 </div>
                 <button type="button" onClick={closeDemo} className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label="Close demo feedback form"><X className="h-4 w-4" /></button>
@@ -191,22 +210,20 @@ export function LandingTryWidgetHero() {
                 </div>
               </div>
             </div>
-          )}
+            )}
 
-          {open && submitted && (
+            {open && submitted && (
             <div className="landing-demo-success relative z-20 flex min-h-[555px] w-full max-w-[520px] flex-col items-center justify-center overflow-hidden rounded-2xl border bg-card px-6 py-14 text-center shadow-[0_38px_110px_-38px_rgb(0_0_0/0.58)] sm:px-10 sm:py-16" aria-live="polite">
               {confetti.map(([left, rotate, delay], index) => <span key={`${left}-${index}`} className={cn('landing-success-confetti', index % 3 === 0 ? 'bg-primary' : index % 3 === 1 ? 'bg-amber-400' : 'bg-sky-400')} style={{ left, rotate, animationDelay: delay }} aria-hidden="true" />)}
-              <span className="landing-success-mark relative flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground"><Check className="h-9 w-9" /></span>
+              <span className="landing-success-mark relative flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground"><MessageSquareText className="h-9 w-9" /></span>
               <h2 className="mt-6 text-3xl font-semibold tracking-[-0.04em]">That was the whole thing.</h2>
               <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">In a real app, the team would now have your message, page, browser, rating{ screenshotReady ? ', and screenshot' : ''}. Here, it vanished responsibly.</p>
               <button type="button" onClick={launchDemo} className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-lg border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted"><RotateCcw className="h-4 w-4" />Try it again</button>
             </div>
-          )}
+            )}
+          </div>
         </div>
 
-        <div className="mx-auto flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
-          {['No signup', 'No backend request', 'Exactly the real interaction'].map((item) => <span key={item} className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" />{item}</span>)}
-        </div>
       </div>
     </section>
   )

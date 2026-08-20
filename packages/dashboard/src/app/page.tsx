@@ -1,11 +1,11 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { ArrowRight, Check, Gauge, Github, LockKeyhole, Route } from 'lucide-react'
+import { ArrowRight, Gauge, Github, LockKeyhole, Route } from 'lucide-react'
 import { PLAN_MATRIX, generateInstallSnippets } from '@feedbacks/shared'
 import { AuthenticatedRedirect } from './authenticated-redirect'
 import { BrandWordmark } from '@/components/brand-wordmark'
-import { LandingProductLoop } from '@/components/landing-product-loop'
+import { LandingFeedbackSnapshot } from '@/components/landing-feedback-snapshot'
 import { LandingScrollHeader } from '@/components/landing-scroll-header'
 import { LandingSectionObserver } from '@/components/landing-section-observer'
 import { LandingTryWidgetHero } from '@/components/landing-try-widget-hero'
@@ -97,24 +97,21 @@ export default function LandingPage() {
           <div className="mx-auto max-w-7xl px-5 sm:px-6">
             <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:gap-16">
               <div>
-                <h2 className="max-w-xl text-4xl font-semibold leading-[1.02] tracking-[-0.05em] sm:text-5xl">Your users have opinions. Give them somewhere better than your DMs.</h2>
-                <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground">They report from the page. You get the context. When it ships, they see the update in the same app.</p>
-                <div className="mt-7 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
-                  {['Bug reports', 'Ideas and praise', 'Product updates'].map((item) => <span key={item} className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" />{item}</span>)}
-                </div>
+                <h2 className="max-w-xl text-4xl font-semibold leading-[1.02] tracking-[-0.05em] sm:text-5xl">One report. Enough context to act.</h2>
+                <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground">A user writes one sentence. ACME Corp receives the exact page, browser, rating, and screenshot in the same view.</p>
               </div>
-              <LandingProductLoop />
+              <LandingFeedbackSnapshot />
             </div>
           </div>
         </section>
 
         <section className="landing-control-room landing-reveal relative overflow-hidden border-b bg-[#080b08] text-white">
           <div className="relative mx-auto max-w-[1500px]">
-            <Image src="/ultrasuper-feedback-control-room.png" alt="The feedbacks.dev mascot operating a playful feedback control room" width={1536} height={1024} className="landing-control-room-image h-auto min-h-[600px] w-full object-cover object-center sm:min-h-0" sizes="100vw" />
+            <Image src="/ultrasuper-feedback-control-room.png" alt="The feedbacks.dev mascot operating ACME Corp&apos;s feedback control room" width={1536} height={1024} className="landing-control-room-image h-auto min-h-[600px] w-full object-cover object-center sm:min-h-0" sizes="100vw" />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-black/15" aria-hidden="true" />
             <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10 lg:p-14">
               <div className="max-w-2xl">
-                <h2 className="text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">UltraSuper Corp built a feedback control room.</h2>
+                <h2 className="text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">ACME Corp built a feedback control room.</h2>
                 <p className="mt-4 max-w-xl text-base leading-7 text-zinc-300">You need one script tag. Reports can still reach Slack, Discord, GitHub, webhooks, the API, or your coding agent.</p>
               </div>
             </div>
@@ -146,14 +143,14 @@ export default function LandingPage() {
               <div className="p-6 sm:p-9">
                 <p className="text-sm font-semibold">Free</p><p className="mt-4 text-5xl font-semibold tracking-tight">${freePlan.monthlyPrice}</p>
                 <p className="mt-3 text-sm text-muted-foreground">The real product, for smaller products.</p>
-                <ul className="mt-7 space-y-3 text-sm">{[`${freePlan.projectLimit} projects`, `${freePlan.feedbackMonthlyLimit} feedback each month`, 'Feedback form, inbox, and updates', 'One copy-paste install'].map((item) => <li key={item} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 text-primary" />{item}</li>)}</ul>
+                <ul className="mt-7 divide-y border-y text-sm">{[`${freePlan.projectLimit} projects`, `${freePlan.feedbackMonthlyLimit} feedback each month`, 'Feedback form, inbox, and updates', 'One copy-paste install'].map((item) => <li key={item} className="py-3">{item}</li>)}</ul>
                 <Link href={authHref} className="mt-8 block"><Button variant="outline" className="w-full">Start free</Button></Link>
               </div>
               <div className="border-t border-primary/20 bg-primary/[0.055] p-6 sm:p-9 md:border-l md:border-t-0">
                 <div className="flex items-center justify-between gap-4"><p className="text-sm font-semibold">Pro</p><span className="rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary">When things get serious</span></div>
                 <p className="mt-4 text-5xl font-semibold tracking-tight">${proPlan.monthlyPrice}<span className="ml-2 text-sm font-normal text-muted-foreground">/ month</span></p>
                 <p className="mt-3 text-sm text-muted-foreground">More volume, history, routing, and control.</p>
-                <ul className="mt-7 space-y-3 text-sm">{['More projects and feedback', 'Full history and delivery records', 'Multiple integrations', 'Scheduling and branding controls'].map((item) => <li key={item} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 text-primary" />{item}</li>)}</ul>
+                <ul className="mt-7 divide-y border-y text-sm">{['More projects and feedback', 'Full history and delivery records', 'Multiple integrations', 'Scheduling and branding controls'].map((item) => <li key={item} className="py-3">{item}</li>)}</ul>
                 <Link href={proAuthHref} className="mt-8 block"><Button className="w-full">Start with Pro</Button></Link>
               </div>
             </div>

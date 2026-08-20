@@ -92,3 +92,4 @@ The UI should keep this order visible anywhere installation is discussed.
 - Burying snippets behind advanced configuration.
 - Toy-like public board interactions.
 - Decorative gradients, glass effects, oversized pills, or repeated identical card grids.
+- Checkmark-and-label clusters used as marketing proof or feature summaries. Use direct copy, a concrete visual, or a plainly structured list instead.
