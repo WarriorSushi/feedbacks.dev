@@ -1186,6 +1186,7 @@ export function ProductUpdatesTab({
                   aria-invalid={Boolean(fieldErrors.title)}
                   value={form.title}
                   maxLength={120}
+                  placeholder="What changed?"
                   onChange={(event) => updateForm("title", event.target.value)}
                 />
               </ProductUpdateField>
@@ -1197,6 +1198,7 @@ export function ProductUpdatesTab({
                   value={form.summary}
                   maxLength={280}
                   rows={3}
+                  placeholder="Briefly explain what’s new and why it matters."
                   onChange={(event) =>
                     updateForm("summary", event.target.value)
                   }
@@ -1267,7 +1269,7 @@ export function ProductUpdatesTab({
                     <img
                       src={selected.imageUrl}
                       alt={form.imageAltText || "Current release note image"}
-                      className="aspect-video w-full max-w-md rounded-md border object-cover"
+                      className="h-auto w-full max-w-md rounded-md border"
                     />
                     {removeImageReview ? (
                       <div className="flex items-center gap-1 rounded-md border border-destructive/30 bg-destructive/5 p-1" role="alert">

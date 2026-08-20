@@ -129,12 +129,14 @@ cp packages/dashboard/.env.local.example packages/dashboard/.env.local
 
 # Internal/staging databases use the ordered SQL chain documented in docs/DEPLOYMENT.md
 
-# Dev
-pnpm dev
+# Dev, including a fresh local widget build
+pnpm dev:local
 
 # Build
 pnpm build
 ```
+
+`pnpm dev:local` rebuilds the customer widget, copies it into the dashboard, and starts the app at `http://localhost:3000`. Use `pnpm dev` when only dashboard code changed. See [Local development](docs/local-development.md) before signing in so local work does not write to the production Supabase project.
 
 ### Launch Docs
 
@@ -186,6 +188,7 @@ sql/              # Internal Supabase migration files for hosted/staging operati
 
 ```bash
 pnpm dev              # Start dashboard dev server
+pnpm dev:local        # Rebuild/copy the widget, then start the dashboard
 pnpm build            # Build everything
 pnpm type-check       # TypeScript validation
 pnpm test:unit        # Unit tests

@@ -16,6 +16,7 @@
   },
   "scripts": {
     "dev": "pnpm --filter @feedbacks/dashboard dev",
+    "dev:local": "pnpm widget:build && pnpm widget:copy && pnpm dev",
     "build": "pnpm --filter @feedbacks/shared build && pnpm --filter @feedbacks/widget build && pnpm --filter @feedbacks/widget-react build && pnpm --filter @feedbacks/widget-vue build && pnpm run widget:copy && pnpm --filter @feedbacks/mcp-server build && pnpm run mcp:pack && pnpm --filter @feedbacks/dashboard build",
     "widget:dev": "pnpm --filter @feedbacks/widget dev",
     "widget:build": "pnpm --filter @feedbacks/widget build",

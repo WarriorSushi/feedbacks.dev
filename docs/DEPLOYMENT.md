@@ -116,6 +116,16 @@ Go to **Supabase Dashboard** → **Authentication**:
    - **Authorization callback URL:** `https://your-supabase-project.supabase.co/auth/v1/callback`
 4. Copy the **Client ID** and **Client Secret** back into Supabase GitHub provider settings
 
+### Google OAuth
+1. In Google Auth Platform, create an OAuth client with **Web application** as the application type.
+2. Add the application origins:
+   - `http://localhost:3000` for local development
+   - `https://app.feedbacks.dev` for production
+3. Add the Supabase Auth callback shown on **Supabase Dashboard → Authentication → Providers → Google** as an authorized redirect URI. For a hosted project it is `https://YOUR_PROJECT.supabase.co/auth/v1/callback`.
+4. Add the `openid`, `userinfo.email`, and `userinfo.profile` scopes in Google Auth Platform.
+5. Copy the Google **Client ID** and **Client Secret** into the Supabase Google provider and enable it.
+6. Keep development and production Supabase projects separate. Configure each project with its own allowed application URLs and preferably its own Google OAuth client.
+
 ### URL Configuration
 1. **Authentication → URL Configuration**:
    - **Site URL:** `https://app.feedbacks.dev` for production
@@ -124,6 +134,8 @@ Go to **Supabase Dashboard** → **Authentication**:
      - `https://app.feedbacks.dev/auth/callback`
 
 Use staging app origins for staging projects. Do not point production Auth redirects at preview deployments unless they are intentionally allowed for a launch rehearsal.
+
+The app uses a PKCE callback at `/auth/callback` for Google, GitHub, and email links. Do not add Google client secrets to application environment variables; Supabase stores the provider secret.
 
 ---
 

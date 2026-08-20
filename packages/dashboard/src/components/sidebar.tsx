@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -14,7 +15,6 @@ import {
   Settings,
   LogOut,
   ChevronDown,
-  ChevronRight,
   ChevronUp,
   Menu,
   X,
@@ -123,7 +123,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   const [projectOpen, setProjectOpen] = React.useState(false)
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [collapsed, setCollapsed] = React.useState(false)
-  const [utilityCollapsed, setUtilityCollapsed] = React.useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
   const mobileDrawerRef = React.useRef<HTMLElement>(null)
   const mobileMenuButtonRef = React.useRef<HTMLButtonElement>(null)
@@ -132,10 +131,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   React.useEffect(() => {
     setVisibleProjects(projects)
   }, [projects])
-
-  React.useEffect(() => {
-    setUtilityCollapsed(window.localStorage.getItem('feedbacks:sidebar:utility-collapsed') === 'true')
-  }, [])
 
   React.useEffect(() => {
     const removeDeletedProject = (event: Event) => {
@@ -258,7 +253,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   React.useEffect(() => {
     const expandForTour = () => {
       setCollapsed(false)
-      setUtilityCollapsed(false)
       if (window.matchMedia('(max-width: 767px)').matches) {
         setMobileOpen(true)
       }
@@ -291,14 +285,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   React.useEffect(() => {
     if (routeProjectId) rememberProject(routeProjectId)
   }, [rememberProject, routeProjectId])
-
-  const toggleUtilityMenu = () => {
-    setUtilityCollapsed((current) => {
-      const next = !current
-      window.localStorage.setItem('feedbacks:sidebar:utility-collapsed', String(next))
-      return next
-    })
-  }
 
   const projectIcon = (project?: SidebarProject) => project?.settings?.icon || DEFAULT_PROJECT_ICON
 
@@ -544,132 +530,83 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
           })()}
         </div>
 
-        <div className="mt-auto border-t pt-2.5">
-          {!collapsed && (
-            <div className="mb-1 flex items-center justify-between px-2.5">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/65">Help & account</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 text-muted-foreground"
-                onClick={toggleUtilityMenu}
-                aria-expanded={!utilityCollapsed}
-                aria-label={`${utilityCollapsed ? 'Expand' : 'Collapse'} account and help menu`}
-              >
-                {utilityCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              </Button>
-            </div>
-          )}
-          {!utilityCollapsed && (
-            <div className="space-y-0.5">
-              {utilityNavItems.map((item) => {
-                const isActive = !item.external && (pathname === item.href || pathname.startsWith(item.href + '/'))
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    data-tour={item.tourId}
-                    title={collapsed ? item.label : undefined}
-                    aria-label={collapsed ? item.label : undefined}
-                    aria-current={isActive ? 'page' : undefined}
-                    target={item.external ? '_blank' : undefined}
-                    rel={item.external ? 'noopener noreferrer' : undefined}
-                    onClick={() => { if (!item.external) beginNavigation(item.href) }}
-                    onMouseEnter={() => { if (!item.external) router.prefetch(item.href) }}
-                    onFocus={() => { if (!item.external) router.prefetch(item.href) }}
-                    className={cn(
-                      'group relative flex min-h-11 items-center gap-3 rounded-lg py-2 text-[13px] font-medium md:min-h-0',
-                      'transition-all duration-150 active:scale-[0.98]',
-                      collapsed ? 'justify-center px-2' : 'px-3',
-                      isActive ? 'bg-surface-selected text-primary' : 'text-muted-foreground hover:bg-surface-raised hover:text-foreground',
-                    )}
-                  >
-                    {!item.external && pendingHref === item.href ? (
-                      <Loader2 className="h-[17px] w-[17px] shrink-0 animate-spin text-primary" />
-                    ) : (
-                      <item.icon className={cn('h-[17px] w-[17px] shrink-0', isActive && 'text-primary')} />
-                    )}
-                    {!collapsed && <span className="truncate">{item.label}</span>}
-                    {!collapsed && item.external && <ExternalLink className="ml-auto h-3 w-3 opacity-50" />}
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </div>
       </nav>
 
       {/* Footer stays visible at the bottom. */}
-      <div className="shrink-0 space-y-1 border-t p-2.5">
-        {/* Theme toggle */}
-        <ThemeToggle collapsed={collapsed} />
+      <div className={cn('shrink-0 border-t p-2', collapsed ? 'space-y-1' : 'flex items-center gap-1.5')}>
+        <ThemeToggle collapsed={collapsed} className={cn(!collapsed && 'min-w-0 flex-1')} />
 
-        {/* User row */}
-        <div
-          className={cn(
-            'flex items-center gap-2.5 rounded-lg px-2.5 py-2',
-            collapsed && 'justify-center px-0'
-          )}
-        >
-          <div
-            className={cn(
-              'flex h-7 w-7 shrink-0 items-center justify-center rounded-full',
-              'bg-primary/10 text-[12px] font-semibold text-primary',
-              'ring-1 ring-primary/15'
-            )}
-          >
-            {displayName[0].toUpperCase()}
-          </div>
-
-          {!collapsed && (
-            <>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-medium leading-tight">{displayName}</p>
-                {user.email && (
-                  <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
-                )}
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <button
+              type="button"
+              className={cn(
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[12px] font-semibold text-primary ring-1 ring-primary/20 transition-[background-color,box-shadow,transform] hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 active:scale-[0.96]',
+                collapsed && 'mx-auto',
+              )}
+              aria-label={`Open account menu for ${displayName}`}
+              title={user.email || displayName}
+            >
+              {displayName[0].toUpperCase()}
+            </button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              side={collapsed ? 'right' : 'top'}
+              align="start"
+              sideOffset={8}
+              collisionPadding={12}
+              className="z-[70] min-w-[232px] rounded-lg border bg-popover p-1.5 text-popover-foreground shadow-xl"
+            >
+              <div className="px-2.5 py-2">
+                <p className="truncate text-sm font-semibold">{displayName}</p>
+                {user.email ? <p className="mt-0.5 truncate text-xs text-muted-foreground">{user.email}</p> : null}
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 shrink-0 text-muted-foreground hover:text-destructive md:h-7 md:w-7"
-                onClick={handleSignOut}
-                title="Sign out"
-                aria-label="Sign out"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-              </Button>
-            </>
-          )}
-        </div>
-
-        <Link
-          href="/dashboard?tour=1"
-          title={collapsed ? 'Take product tour' : undefined}
-          aria-label={collapsed ? 'Take product tour' : undefined}
-          data-tour="take-product-tour"
-          onClick={() => {
-            if (pathname === '/dashboard') {
-              window.dispatchEvent(new CustomEvent('feedbacks:start-product-tour'))
-            }
-            beginNavigation('/dashboard?tour=1')
-          }}
-          onMouseEnter={() => router.prefetch('/dashboard?tour=1')}
-          onFocus={() => router.prefetch('/dashboard?tour=1')}
-          className={cn(
-            'group flex min-h-11 items-center gap-2.5 rounded-lg py-2 text-[12px] font-medium text-muted-foreground md:min-h-0',
-            'transition-[background-color,color,transform] duration-150 hover:bg-surface-raised hover:text-foreground active:scale-[0.98]',
-            collapsed ? 'justify-center px-0' : 'px-2.5',
-          )}
-        >
-          {pendingHref === '/dashboard?tour=1' ? (
-            <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-primary" />
-          ) : (
-            <CircleHelp className="h-3.5 w-3.5 shrink-0 transition-transform duration-150 group-hover:scale-[1.08]" />
-          )}
-          {!collapsed && <span className="truncate">Quick product tour</span>}
-        </Link>
+              <DropdownMenu.Separator className="my-1 h-px bg-border" />
+              {utilityNavItems.map((item) => (
+                <DropdownMenu.Item key={item.href} asChild>
+                  <Link
+                    href={item.href}
+                    data-tour={item.tourId}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                    onClick={() => { if (!item.external) beginNavigation(item.href) }}
+                    className="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-[13px] font-medium outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                  >
+                    <item.icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="flex-1">{item.label}</span>
+                    {item.external ? <ExternalLink className="h-3 w-3 text-muted-foreground" /> : null}
+                  </Link>
+                </DropdownMenu.Item>
+              ))}
+              <DropdownMenu.Item asChild>
+                <Link
+                  href="/dashboard?tour=1"
+                  data-tour="take-product-tour"
+                  onClick={() => {
+                    if (pathname === '/dashboard') window.dispatchEvent(new CustomEvent('feedbacks:start-product-tour'))
+                    beginNavigation('/dashboard?tour=1')
+                  }}
+                  className="flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-[13px] font-medium outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                >
+                  <CircleHelp className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  Product tour
+                </Link>
+              </DropdownMenu.Item>
+              <DropdownMenu.Separator className="my-1 h-px bg-border" />
+              <DropdownMenu.Item asChild>
+                <button
+                  type="button"
+                  onClick={() => void handleSignOut()}
+                  className="flex min-h-9 w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] font-medium text-destructive outline-none transition-colors focus:bg-destructive/10"
+                >
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  Sign out
+                </button>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
       </div>
     </>
   )

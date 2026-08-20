@@ -7,14 +7,26 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, ArrowRight, Github, KeyRound, Loader2, Mail } from 'lucide-react'
+import { ArrowLeft, Github, KeyRound, Loader2, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { cn } from '@/lib/utils'
 import { sanitizeRedirectPath } from '@/lib/redirects'
 import { AuthCaptcha } from '@/components/auth-captcha'
 import { AuthUseCaseCarousel } from '@/components/auth-use-case-carousel'
 import { SITE_ORIGIN } from '@/lib/site'
+
+type OAuthProvider = 'google' | 'github'
+
+function GoogleMark({ className }: { className?: string }) {
+  return (
+    <svg aria-hidden="true" className={className} viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.01v2.55h3.24c1.9-1.75 2.98-4.33 2.98-7.41Z" />
+      <path fill="#34A853" d="M12 22c2.7 0 4.98-.9 6.63-2.43l-3.24-2.55c-.9.6-2.05.96-3.39.96-2.61 0-4.83-1.77-5.62-4.14H3.03v2.63A10 10 0 0 0 12 22Z" />
+      <path fill="#FBBC05" d="M6.38 13.84A6.01 6.01 0 0 1 6.07 12c0-.64.11-1.27.31-1.84V7.53H3.03A10 10 0 0 0 2 12c0 1.61.39 3.14 1.03 4.47l3.35-2.63Z" />
+      <path fill="#EA4335" d="M12 6.02c1.47 0 2.79.51 3.83 1.5l2.87-2.87A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.97 5.53l3.35 2.63C7.17 7.79 9.39 6.02 12 6.02Z" />
+    </svg>
+  )
+}
 
 const marketingHomeHref = process.env.NEXT_PUBLIC_MARKETING_ORIGIN
   || (process.env.NODE_ENV === 'development' ? '/' : SITE_ORIGIN)
@@ -24,7 +36,7 @@ function AuthPageInner() {
   const [password, setPassword] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [magicLoading, setMagicLoading] = React.useState(false)
-  const [githubLoading, setGithubLoading] = React.useState(false)
+  const [oauthLoading, setOauthLoading] = React.useState<OAuthProvider | null>(null)
   const [sent, setSent] = React.useState(false)
   const [error, setError] = React.useState('')
   const [showPassword, setShowPassword] = React.useState(false)
@@ -101,12 +113,18 @@ function AuthPageInner() {
     }
   }
 
-  const handleGitHub = async () => {
-    setGithubLoading(true)
-    await supabase.auth.signInWithOAuth({
-      provider: 'github',
+  const handleOAuth = async (provider: OAuthProvider) => {
+    setOauthLoading(provider)
+    setError('')
+    const { data, error: authError } = await supabase.auth.signInWithOAuth({
+      provider,
       options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${encodedRedirect}` },
     })
+    if (authError || !data.url) {
+      setOauthLoading(null)
+      const providerLabel = provider === 'google' ? 'Google' : 'GitHub'
+      setError(`We could not start ${providerLabel} sign-in. You can still continue with email or try again in a moment.`)
+    }
   }
 
   return (
@@ -127,7 +145,7 @@ function AuthPageInner() {
           <div className="auth-form-wrap mx-auto my-auto w-full max-w-[390px] py-8 lg:py-12">
             <div className="mb-8">
               <h1 className="text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">{sent ? 'Check your inbox' : 'Sign in or create an account'}</h1>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{sent ? `We sent a secure sign-in link to ${email}.` : 'Use email or GitHub. New accounts start on the Free plan.'}</p>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{sent ? `We sent a secure sign-in link to ${email}.` : 'Use Google, GitHub, or email. New accounts start on the Free plan.'}</p>
               {invited && !sent && <p className="mt-3 rounded-md border border-primary/25 bg-primary/[0.05] px-3 py-2 text-xs leading-5 text-foreground">You were invited by another feedbacks.dev user. Their invite qualifies after you verify your email and genuinely activate your first project.</p>}
             </div>
 
@@ -150,6 +168,21 @@ function AuthPageInner() {
               </div>
             ) : (
               <div className="space-y-4">
+                {error && <p role="alert" aria-live="assertive" className="rounded-md border border-destructive/25 bg-destructive/5 px-3 py-2 text-xs text-destructive">{error}</p>}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" className="h-11" type="button" onClick={() => void handleOAuth('google')} disabled={oauthLoading !== null}>
+                    {oauthLoading === 'google' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleMark className="mr-2 h-4 w-4" />}
+                    Google
+                  </Button>
+                  <Button variant="outline" className="h-11" type="button" onClick={() => void handleOAuth('github')} disabled={oauthLoading !== null}>
+                    {oauthLoading === 'github' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Github className="mr-2 h-4 w-4" />}
+                    GitHub
+                  </Button>
+                </div>
+
+                <div className="flex items-center gap-3"><Separator className="flex-1" /><span className="text-[11px] text-muted-foreground">or use email</span><Separator className="flex-1" /></div>
+
                 <form onSubmit={handleMagicLink} className="space-y-4">
                   <div className="space-y-1.5"><Label htmlFor="email">Email address</Label><Input id="email" type="email" autoComplete="email" placeholder="you@company.com" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11" required autoFocus /></div>
                   {captchaProvider && captchaSiteKey && (
@@ -160,24 +193,18 @@ function AuthPageInner() {
                       onToken={setCaptchaToken}
                     />
                   )}
-                  {error && <p role="alert" aria-live="assertive" className="rounded-md border border-destructive/25 bg-destructive/5 px-3 py-2 text-xs text-destructive">{error}</p>}
-                  <Button className="h-11 w-full" type="submit" disabled={magicLoading || !email}>{magicLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}Continue with email</Button>
+                  <Button className="h-11 w-full" type="submit" disabled={magicLoading || oauthLoading !== null || !email}>{magicLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Mail className="mr-2 h-4 w-4" />}Email me a sign-in link</Button>
                 </form>
-
-                <Button variant="outline" className="group h-11 w-full justify-between" onClick={handleGitHub} disabled={githubLoading}>
-                  <span className="flex items-center gap-2.5">{githubLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Github className="h-4 w-4" />}Continue with GitHub</span>
-                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                </Button>
 
                 <div className="flex items-center gap-3"><Separator className="flex-1" /><span className="text-[11px] text-muted-foreground">Password</span><Separator className="flex-1" /></div>
 
                 {showPassword ? (
                   <form onSubmit={handlePasswordSignIn} className="space-y-3">
                     <div className="space-y-1.5"><Label htmlFor="password">Password</Label><Input id="password" type="password" autoComplete="current-password" placeholder="Your password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-11" required /></div>
-                    <Button variant="secondary" className="h-11 w-full" type="submit" disabled={loading || !email}>{loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}Sign in with password</Button>
+                    <Button variant="secondary" className="h-11 w-full" type="submit" disabled={loading || !email || !password}>{loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}Sign in with password</Button>
                   </form>
                 ) : (
-                  <Button variant="ghost" className={cn('h-10 w-full', !email && 'opacity-60')} type="button" disabled={!email} onClick={() => setShowPassword(true)}>Use password instead</Button>
+                  <Button variant="ghost" className="h-10 w-full" type="button" onClick={() => setShowPassword(true)}>Use password instead</Button>
                 )}
               </div>
             )}

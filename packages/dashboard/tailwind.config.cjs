@@ -27,6 +27,7 @@ module.exports = {
           overlay: 'oklch(var(--surface-overlay) / <alpha-value>)',
           selected: 'oklch(var(--surface-selected) / <alpha-value>)',
           code: 'oklch(var(--surface-code) / <alpha-value>)',
+          'code-foreground': 'oklch(var(--surface-code-foreground) / <alpha-value>)',
         },
         primary: {
           DEFAULT: 'oklch(var(--primary) / <alpha-value>)',

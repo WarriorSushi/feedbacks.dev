@@ -184,16 +184,14 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
   }
 
   return (
-    <div className={cn('space-y-1.5', className)}>
-      <div className="flex items-center justify-between px-1 text-[11px] font-medium text-muted-foreground">
-        <span>Appearance</span>
-        <span aria-live="polite">{currentOption.label}</span>
-      </div>
-      <div
-        role="radiogroup"
-        aria-label="Appearance"
-        className="grid grid-cols-4 gap-1.5 rounded-lg border border-border/90 bg-surface-raised p-1.5 shadow-[inset_0_1px_0_hsl(var(--background)/0.8),0_1px_3px_hsl(var(--foreground)/0.12)]"
-      >
+    <div
+      role="radiogroup"
+      aria-label="Appearance"
+      className={cn(
+        'grid grid-cols-4 gap-0.5 rounded-md border border-border/90 bg-surface-raised p-0.5 shadow-[inset_0_1px_0_hsl(var(--background)/0.8),0_1px_2px_hsl(var(--foreground)/0.1)]',
+        className,
+      )}
+    >
         {APPEARANCE_OPTIONS.map((option) => {
           const Icon = option.icon
           const selected = currentTheme === option.value
@@ -207,9 +205,9 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
               title={option.label}
               onClick={(event) => void changeTheme(option.value, event.currentTarget)}
               className={cn(
-                'flex h-9 min-w-0 items-center justify-center gap-1 rounded-md border border-transparent text-[11px] font-semibold transition-colors',
+                'flex h-7 min-w-0 items-center justify-center rounded-sm border border-transparent text-[10px] font-semibold transition-colors',
                 selected
-                  ? 'border-border/80 bg-card text-foreground shadow-[0_1px_3px_hsl(var(--foreground)/0.18)]'
+                  ? 'border-border/80 bg-card text-foreground shadow-sm'
                   : 'text-muted-foreground hover:border-border/60 hover:bg-accent hover:text-accent-foreground',
               )}
             >
@@ -221,7 +219,6 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
             </button>
           )
         })}
-      </div>
     </div>
   )
 }

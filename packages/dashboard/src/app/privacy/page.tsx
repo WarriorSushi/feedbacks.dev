@@ -1,7 +1,13 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { PrivacyChoicesButton } from '@/components/privacy-choices-button'
+
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: 'How feedbacks.dev collects, uses, stores, and protects personal information.',
+}
 
 export default function PrivacyPage() {
   return (
@@ -16,7 +22,7 @@ export default function PrivacyPage() {
 
         <h1 className="text-3xl font-bold tracking-tight">Privacy Policy</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Last updated: August 1, 2026
+          Last updated: August 20, 2026
         </p>
 
         <div className="prose prose-zinc mt-8 max-w-none dark:prose-invert">
@@ -25,7 +31,7 @@ export default function PrivacyPage() {
             When you use feedbacks.dev, we collect information you provide directly:
           </p>
           <ul>
-            <li>Account information (email, name via GitHub OAuth or magic link)</li>
+            <li>Account information (email and name provided through Google OAuth, GitHub OAuth, or email sign-in)</li>
             <li>Project configuration data</li>
             <li>Feedback submitted through your widgets (messages, ratings, page URL, browser context, optional screenshots or image attachments, and optional contact details)</li>
             <li>Lead-list information you submit (email, optional use case, consent time, and campaign attribution)</li>
@@ -67,6 +73,7 @@ export default function PrivacyPage() {
           <ul>
             <li><strong>Supabase:</strong> database and authentication</li>
             <li><strong>Vercel:</strong> hosting, privacy-preserving page analytics, and aggregate performance measurement</li>
+            <li><strong>Google:</strong> optional OAuth authentication</li>
             <li><strong>GitHub:</strong> optional OAuth authentication</li>
             <li><strong>Dodo Payments:</strong> checkout, billing portal, and subscription events</li>
             <li><strong>Resend:</strong> transactional email delivery for opt-in alerts</li>

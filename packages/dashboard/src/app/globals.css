@@ -14,6 +14,7 @@
     --surface-overlay: 0.995 0.004 105;
     --surface-selected: 0.925 0.038 126;
     --surface-code: 0.205 0.012 112;
+    --surface-code-foreground: 0.965 0.007 105;
     --card: 0.992 0.004 105;
     --card-foreground: 0.205 0.014 108;
     --popover: 0.998 0.003 105;
@@ -49,6 +50,7 @@
     --surface-overlay: 0.335 0.014 108;
     --surface-selected: 0.285 0.048 130;
     --surface-code: 0.085 0.01 112;
+    --surface-code-foreground: 0.965 0.007 105;
     --card: 0.225 0.012 108;
     --card-foreground: 0.935 0.009 105;
     --popover: 0.315 0.014 108;
@@ -84,6 +86,7 @@
     --surface-overlay: 0.9922 0.039 107.09;
     --surface-selected: 0.2711 0.1879 264.05;
     --surface-code: 0.135 0.008 145;
+    --surface-code-foreground: 0.985 0.004 90;
     --card: 0.8078 0 90;
     --card-foreground: 0.115 0.003 264;
     --popover: 0.8078 0 90;

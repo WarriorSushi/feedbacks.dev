@@ -115,7 +115,7 @@ export function ProductUpdatePreview({
           data-testid="release-note-preview-image"
           src={form.imageUrl}
           alt={form.imageAltText || ""}
-          className="mt-4 aspect-video w-full rounded-md object-cover"
+          className="mt-4 h-auto w-full rounded-md"
         />
       )}
       {form.highlights && (

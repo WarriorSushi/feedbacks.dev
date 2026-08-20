@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description: 'The terms that apply when using feedbacks.dev.',
+}
 
 export default function TermsPage() {
   return (
@@ -40,7 +46,7 @@ export default function TermsPage() {
           <h2>4. Your Data</h2>
           <p>
             You own your data. We store it to provide the service. You can export or delete
-            your data at any time. See our Privacy Policy for details.
+            your data at any time. See our <Link href="/privacy">Privacy Policy</Link> for details.
           </p>
           <p>
             If you publish a feedback board, the board content you mark public can be viewed on the
