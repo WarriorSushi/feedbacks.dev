@@ -11,6 +11,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: 'monthly' as const,
     priority: page.slug === 'quickstart' ? 0.85 : 0.7,
   }))
+  const acquisitionPages: MetadataRoute.Sitemap = [
+    {
+      url: `${SITE_ORIGIN}/feedback-widget`,
+      lastModified: '2026-08-20',
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
+      url: `${SITE_ORIGIN}/feedback-widget/nextjs`,
+      lastModified: '2026-08-20',
+      changeFrequency: 'monthly',
+      priority: 0.85,
+    },
+    {
+      url: `${SITE_ORIGIN}/canny-alternative`,
+      lastModified: '2026-08-20',
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+  ]
 
   let publicBoards: MetadataRoute.Sitemap = []
   try {
@@ -49,6 +69,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 0.75,
     },
+    ...acquisitionPages,
     ...publicBoards,
     {
       url: `${SITE_ORIGIN}/early-access`,

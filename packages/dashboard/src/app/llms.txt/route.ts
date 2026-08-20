@@ -23,6 +23,9 @@ const content = `# feedbacks.dev
 ## Start here
 
 - Product overview: ${SITE_ORIGIN}
+- Feedback widget: ${SITE_ORIGIN}/feedback-widget
+- Next.js feedback widget guide: ${SITE_ORIGIN}/feedback-widget/nextjs
+- Canny alternative comparison: ${SITE_ORIGIN}/canny-alternative
 - Quickstart: ${SITE_ORIGIN}/docs/quickstart
 - Website installation: ${SITE_ORIGIN}/docs/install/website
 - Framework installation: ${SITE_ORIGIN}/docs/install/frameworks
