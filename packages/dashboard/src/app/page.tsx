@@ -5,7 +5,7 @@ import { ArrowRight, Gauge, Github, LockKeyhole, Route } from 'lucide-react'
 import { PLAN_MATRIX, generateInstallSnippets } from '@feedbacks/shared'
 import { AuthenticatedRedirect } from './authenticated-redirect'
 import { BrandWordmark } from '@/components/brand-wordmark'
-import { LandingFeedbackSnapshot } from '@/components/landing-feedback-snapshot'
+import { LandingProductStories } from '@/components/landing-product-stories'
 import { LandingScrollHeader } from '@/components/landing-scroll-header'
 import { LandingSectionObserver } from '@/components/landing-section-observer'
 import { LandingTryWidgetHero } from '@/components/landing-try-widget-hero'
@@ -93,30 +93,7 @@ export default function LandingPage() {
         <LandingSectionObserver />
         <LandingTryWidgetHero />
 
-        <section id="product" className="landing-section landing-section-mint landing-reveal border-b py-20 sm:py-28">
-          <div className="mx-auto max-w-7xl px-5 sm:px-6">
-            <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:gap-16">
-              <div>
-                <h2 className="max-w-xl text-4xl font-semibold leading-[1.02] tracking-[-0.05em] sm:text-5xl">One report. Enough context to act.</h2>
-                <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground">A user writes one sentence. ACME Corp receives the exact page, browser, rating, and screenshot in the same view.</p>
-              </div>
-              <LandingFeedbackSnapshot />
-            </div>
-          </div>
-        </section>
-
-        <section className="landing-control-room landing-reveal relative overflow-hidden border-b bg-[#080b08] text-white">
-          <div className="relative mx-auto max-w-[1500px]">
-            <Image src="/ultrasuper-feedback-control-room.png" alt="The feedbacks.dev mascot operating ACME Corp&apos;s feedback control room" width={1536} height={1024} className="landing-control-room-image h-auto min-h-[600px] w-full object-cover object-center sm:min-h-0" sizes="100vw" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-black/15" aria-hidden="true" />
-            <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10 lg:p-14">
-              <div className="max-w-2xl">
-                <h2 className="text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">ACME Corp built a feedback control room.</h2>
-                <p className="mt-4 max-w-xl text-base leading-7 text-zinc-300">You need one script tag. Reports can still reach Slack, Discord, GitHub, webhooks, the API, or your coding agent.</p>
-              </div>
-            </div>
-          </div>
-        </section>
+        <LandingProductStories />
 
         <section id="setup" className="landing-section landing-section-warm landing-reveal border-b py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-5 sm:px-6">

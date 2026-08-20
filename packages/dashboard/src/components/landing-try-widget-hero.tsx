@@ -38,29 +38,33 @@ function HeroAnnotations() {
       <span className="landing-try-halo landing-try-halo-left" />
       <span className="landing-try-halo landing-try-halo-right" />
       <svg className="landing-try-callouts" viewBox="0 0 1600 720" fill="none" preserveAspectRatio="none">
-        <g className="landing-callout-stroke">
-          <path d="M-30 38 C145 36 270 92 370 190 C468 286 478 366 596 414" />
-          <path d="M572 390 L596 414 L566 419" />
-          <path d="M1630 119 C1492 85 1395 108 1310 177" strokeDasharray="5 7" />
-          <path d="M1294 195 C1242 244 1201 307 1172 346 C1144 383 1117 393 1083 410" />
-          <path d="M1092 382 L1083 410 L1111 397" />
-          <path d="M105 740 C157 645 190 590 237 545" strokeDasharray="5 8" />
-          <path d="M255 532 C315 492 370 491 430 524 C481 552 529 554 594 528" />
-          <path d="M570 518 L594 528 L578 550" />
-          <path d="M1491 661 C1418 672 1364 651 1310 612 C1255 572 1197 535 1099 516" />
-          <path d="M1121 503 L1099 516 L1118 534" />
+        <g className="landing-callout-stroke landing-callout-one">
+          <path pathLength="1" d="M-28 76 C150 80 278 134 372 230 C456 316 482 387 594 435" />
+          <path pathLength="1" d="M570 412 L594 435 L564 441" />
+        </g>
+        <g className="landing-callout-stroke landing-callout-two">
+          <path pathLength="1" d="M1628 80 C1462 70 1342 123 1261 225 C1198 304 1172 381 1076 433" />
+          <path pathLength="1" d="M1087 405 L1076 433 L1105 418" />
+        </g>
+        <g className="landing-callout-stroke landing-callout-three">
+          <path pathLength="1" d="M48 704 C139 615 218 563 303 550 C394 536 469 588 594 526" />
+          <path pathLength="1" d="M570 519 L594 526 L580 550" />
+        </g>
+        <g className="landing-callout-stroke landing-callout-four">
+          <path pathLength="1" d="M1553 698 C1458 681 1383 645 1312 600 C1247 559 1187 537 1096 520" />
+          <path pathLength="1" d="M1118 505 L1096 520 L1117 536" />
         </g>
         <g className="landing-callout-dots">
-          <circle cx="174" cy="70" r="4.25" /><circle cx="294" cy="128" r="4.25" />
-          <circle cx="1310" cy="177" r="4.25" /><circle cx="1247" cy="243" r="4.25" />
-          <circle cx="237" cy="545" r="4.25" /><circle cx="255" cy="532" r="4.25" />
-          <circle cx="1491" cy="661" r="4.25" /><circle cx="1397" cy="655" r="4.25" />
+          <circle cx="156" cy="100" r="4.25" /><circle cx="286" cy="170" r="4.25" />
+          <circle cx="1450" cy="96" r="4.25" /><circle cx="1324" cy="159" r="4.25" />
+          <circle cx="153" cy="614" r="4.25" /><circle cx="269" cy="556" r="4.25" />
+          <circle cx="1460" cy="666" r="4.25" /><circle cx="1364" cy="626" r="4.25" />
         </g>
       </svg>
       <span className="landing-callout-label landing-callout-label-one">Click the button</span>
-      <span className="landing-callout-label landing-callout-label-two">We believe in showing, not telling</span>
-      <span className="landing-callout-label landing-callout-label-three">Try the interaction</span>
-      <span className="landing-callout-label landing-callout-label-four">This is the product</span>
+      <span className="landing-callout-label landing-callout-label-two">Press the button</span>
+      <span className="landing-callout-label landing-callout-label-three">See the real interaction</span>
+      <span className="landing-callout-label landing-callout-label-four">The button is the product</span>
     </div>
   )
 }
@@ -135,9 +139,9 @@ export function LandingTryWidgetHero() {
       <div className="relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-[1600px] flex-col px-5 pb-12 sm:px-6">
         {!open && <HeroAnnotations />}
 
-        <div className={cn('landing-try-heading relative z-[2] mx-auto max-w-[780px] text-center', open && 'landing-try-heading-open')}>
-          <h1 id="try-widget-title" className="text-[3.25rem] font-semibold leading-[0.91] tracking-[-0.065em] sm:text-[5rem] lg:text-[6rem]">
-            Try the feedback button.
+        <div className={cn('landing-try-heading relative z-[2] mx-auto max-w-[1080px] text-center', open && 'landing-try-heading-open')}>
+          <h1 id="try-widget-title" className="text-[2.85rem] font-semibold leading-[0.94] tracking-[-0.06em] sm:text-[4rem] lg:text-[4.8rem]">
+            We believe in “Show, don&apos;t tell”, your users will press this button.
           </h1>
         </div>
 

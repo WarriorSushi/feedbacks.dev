@@ -93,3 +93,5 @@ The UI should keep this order visible anywhere installation is discussed.
 - Toy-like public board interactions.
 - Decorative gradients, glass effects, oversized pills, or repeated identical card grids.
 - Checkmark-and-label clusters used as marketing proof or feature summaries. Use direct copy, a concrete visual, or a plainly structured list instead.
+- Multi-feature carousels or mockups that force separate product stories into one interactive surface. Marketing sections should explain one capability with one clear visual.
+- Decorative annotation lines that cross their own labels or leave labels visually detached. Reserve a clean label gap and animate paths toward the subject when motion is appropriate.
