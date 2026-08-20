@@ -42,6 +42,13 @@ Before proposing or building anything, read:
 - If old archived behavior conflicts with current docs, follow the current docs.
 - Treat docs in `docs/` as authoritative unless explicitly updated.
 
+## Verification cadence
+
+- For UI-only changes, run targeted lint, type checks, relevant tests, and browser checks. Do not run the full monorepo build after every small visual commit.
+- Run the full `pnpm ci:verify` gate on every third pushed commit, after dependency, schema, or multi-package changes, and before a major release.
+- A production Vercel deployment build remains the release gate for every production push.
+- If a targeted check exposes a wider regression, expand verification immediately instead of waiting for the cadence.
+
 ## Archived project usage
 
 Use `archived_project/` only when it exists and is needed for:

@@ -33,31 +33,31 @@ const categoryOptions: { value: Category; label: string; Icon: typeof Bug }[] = 
 
 const scenes = [
   {
-    name: 'Orbit',
-    product: 'Cloud deploys',
-    mark: 'O',
+    name: 'UltraSuper Corp',
+    product: 'Serious buttons',
+    mark: 'U',
     accent: '#c4b5fd',
     accentInk: '#21153d',
-    message: 'Build logs stop at 80%. I cannot tell if the deploy is still running.',
-    updateTitle: 'Live build logs are ready',
-    updateBody: 'See each build step as it runs. Errors now say what to fix.',
+    message: 'The launch button pauses at 80%. It looks dramatic, but not useful.',
+    updateTitle: 'The launch button now launches',
+    updateBody: 'Progress keeps moving, and errors explain what needs attention.',
     Icon: Rocket,
   },
   {
-    name: 'Ledgerly',
-    product: 'Money reports',
-    mark: 'L',
+    name: 'Probably Solvent',
+    product: 'Money, allegedly',
+    mark: 'P',
     accent: '#38bdf8',
     accentInk: '#082f49',
-    message: 'Please let me compare this month with the same month last year.',
+    message: 'Please let me compare this month with last year before finance notices.',
     updateTitle: 'Compare any two months',
     updateBody: 'Pick two dates and see the change. You can also download the chart.',
     Icon: BarChart3,
   },
   {
-    name: 'Parcel',
-    product: 'Store orders',
-    mark: 'P',
+    name: 'Box Enjoyers Ltd.',
+    product: 'Things in boxes',
+    mark: 'B',
     accent: '#fb923c',
     accentInk: '#431407',
     message: 'Some overseas orders are missing when I print many labels at once.',
@@ -70,7 +70,7 @@ const scenes = [
 function OrbitCanvas() {
   return (
     <div className="absolute inset-0 grid grid-cols-[52px_minmax(0,1fr)] bg-[#0b0b10] sm:grid-cols-[132px_minmax(0,1fr)]">
-      <aside className="border-r border-white/10 bg-[#08080c] px-2 py-5 sm:px-3" aria-label="Orbit example menu">
+      <aside className="border-r border-white/10 bg-[#08080c] px-2 py-5 sm:px-3" aria-label="UltraSuper Corp example menu">
         <Rocket className="mx-auto h-4 w-4 text-violet-300 sm:mx-2" />
         <div className="mt-7 space-y-2">
           {['Deploys', 'Apps', 'Logs'].map((item, index) => <div key={item} className={cn('rounded-md px-2 py-2 text-[10px]', index === 0 ? 'bg-violet-300/10 text-violet-200' : 'text-zinc-600')}><span className="hidden sm:inline">{item}</span></div>)}
@@ -94,7 +94,7 @@ function OrbitCanvas() {
 function LedgerlyCanvas() {
   return (
     <div className="absolute inset-0 bg-[#edf7fb] text-slate-900">
-      <div className="flex h-14 items-center justify-between border-b border-sky-950/10 bg-white/80 px-5"><div className="flex items-center gap-2 font-semibold"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 text-xs text-white">L</span> Ledgerly</div><div className="hidden gap-5 text-[10px] text-slate-500 sm:flex"><span className="font-semibold text-sky-700">Overview</span><span>Money in</span><span>Bills</span></div></div>
+      <div className="flex h-14 items-center justify-between border-b border-sky-950/10 bg-white/80 px-5"><div className="flex items-center gap-2 font-semibold"><span className="flex h-7 w-7 items-center justify-center rounded-full bg-sky-500 text-xs text-white">P</span> Probably Solvent</div><div className="hidden gap-5 text-[10px] text-slate-500 sm:flex"><span className="font-semibold text-sky-700">Overview</span><span>Money in</span><span>Bills</span></div></div>
       <div className="p-5 sm:p-7">
         <div className="flex items-end justify-between"><div><p className="text-[10px] font-medium text-slate-500">Cash on hand</p><p className="mt-1 text-2xl font-semibold tracking-tight">$184,200</p></div><span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-semibold text-emerald-700">Up 12%</span></div>
         <div className="relative mt-7 h-36 rounded-xl border border-sky-950/10 bg-white p-3 shadow-sm" aria-hidden="true">
@@ -109,7 +109,7 @@ function LedgerlyCanvas() {
 function ParcelCanvas() {
   return (
     <div className="absolute inset-0 bg-[#fff8ed] text-stone-900">
-      <div className="flex h-16 items-center justify-between bg-[#17251e] px-5 text-white"><div className="flex items-center gap-2 font-bold"><PackageCheck className="h-4 w-4 text-orange-300"/> Parcel</div><span className="rounded-md bg-orange-300 px-2.5 py-1 text-[10px] font-bold text-orange-950">Print labels</span></div>
+      <div className="flex h-16 items-center justify-between bg-[#17251e] px-5 text-white"><div className="flex items-center gap-2 font-bold"><PackageCheck className="h-4 w-4 text-orange-300"/> Box Enjoyers Ltd.</div><span className="rounded-md bg-orange-300 px-2.5 py-1 text-[10px] font-bold text-orange-950">Print labels</span></div>
       <div className="p-5 sm:p-7">
         <div className="flex items-center justify-between"><div><p className="text-[10px] font-medium uppercase tracking-wider text-stone-500">Orders today</p><p className="mt-1 text-xl font-bold">248 to ship</p></div><div className="flex -space-x-2">{['M','J','A'].map((letter) => <span key={letter} className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#fff8ed] bg-stone-800 text-[9px] text-white">{letter}</span>)}</div></div>
         <div className="mt-6 overflow-hidden rounded-lg border border-orange-950/10 bg-white">
@@ -207,7 +207,7 @@ export function LandingProductLoop() {
 
   return (
     <div className="landing-product-loop" aria-label="Live examples of feedbacks.dev inside three different customer products">
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5"><div className="flex min-w-0 items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-md text-[10px] font-black" style={{ backgroundColor: scene.accent, color: scene.accentInk }}>{scene.mark}</span><span className="truncate text-xs font-semibold text-zinc-100">{scene.name}</span><span className="hidden text-[11px] text-zinc-500 sm:inline">Sample customer product</span></div><button type="button" onClick={() => setPaused((value) => !value)} className="inline-flex h-7 items-center gap-1.5 rounded-md border border-white/10 px-2 text-[10px] text-zinc-400 hover:text-white" aria-label={paused ? 'Resume examples' : 'Pause examples'}>{paused ? <Play className="h-3 w-3"/> : <Pause className="h-3 w-3"/>}<span className="hidden sm:inline">{paused ? 'Play' : 'Auto play'}</span></button></div>
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5"><div className="flex min-w-0 items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-md text-[10px] font-black" style={{ backgroundColor: scene.accent, color: scene.accentInk }}>{scene.mark}</span><span className="truncate text-xs font-semibold text-zinc-100">{scene.name}</span><span className="hidden text-[11px] text-zinc-500 sm:inline">A completely normal company</span></div><button type="button" onClick={() => setPaused((value) => !value)} className="inline-flex h-7 items-center gap-1.5 rounded-md border border-white/10 px-2 text-[10px] text-zinc-400 hover:text-white" aria-label={paused ? 'Resume examples' : 'Pause examples'}>{paused ? <Play className="h-3 w-3"/> : <Pause className="h-3 w-3"/>}<span className="hidden sm:inline">{paused ? 'Play' : 'Auto play'}</span></button></div>
 
       <div className="relative min-h-[455px] overflow-hidden sm:min-h-[470px]">
         <ProductCanvas sceneIndex={sceneIndex}/>
