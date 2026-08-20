@@ -2,7 +2,7 @@ import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { loadBoardDirectoryEntries, recommendBoards } from '@/lib/board-discovery'
-import { isBoardPubliclyAccessible, parseBoardBranding } from '@/lib/public-board'
+import { isBoardListedInDirectory, isBoardPubliclyAccessible, parseBoardBranding } from '@/lib/public-board'
 import { PublicBoard } from './public-board'
 import { sanitizeCustomBoardCss } from '@/lib/board-custom-css'
 import { SITE_ORIGIN } from '@/lib/site'
@@ -28,6 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: 'Board not found',
       description: 'This board is not publicly available.',
+      robots: { index: false, follow: false },
     }
   }
 
@@ -39,6 +40,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     alternates: { canonical: `/p/${slug}` },
+    robots: isBoardListedInDirectory(board)
+      ? { index: true, follow: true }
+      : { index: false, follow: false },
     openGraph: {
       type: 'website',
       url: `${SITE_ORIGIN}/p/${slug}`,

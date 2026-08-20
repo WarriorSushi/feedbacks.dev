@@ -1,13 +1,22 @@
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BrandWordmark } from '@/components/brand-wordmark'
 import { publicEnv } from '@/lib/public-env'
 import { BoardDirectorySurface } from './board-directory-surface'
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Public Product Boards',
   description: 'Browse public boards from teams that collect feedback in private and share priorities in public.',
+  alternates: { canonical: '/boards' },
+  openGraph: {
+    type: 'website',
+    url: '/boards',
+    title: 'Public Product Boards',
+    description: 'Browse public boards from teams that collect feedback in private and share priorities in public.',
+    siteName: 'feedbacks.dev',
+  },
 }
 
 // Directory membership and activity change continuously after deployment.

@@ -7,6 +7,7 @@ import { LeadForm } from './lead-form'
 export const metadata: Metadata = {
   title: 'Get feedbacks.dev launch notes',
   description: 'Join the feedbacks.dev launch list for practical install guidance and product updates.',
+  alternates: { canonical: '/early-access' },
 }
 
 const benefits = [

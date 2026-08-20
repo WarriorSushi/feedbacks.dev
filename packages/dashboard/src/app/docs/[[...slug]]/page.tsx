@@ -16,8 +16,13 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug?: string[] }> }): Promise<Metadata> {
   const { slug } = await params
   const page = getDocsPage(slug?.join('/'))
-  if (!page) return { title: 'Documentation' }
-  return { title: page.title === 'Documentation' ? 'Documentation' : `${page.title} documentation`, description: page.description }
+  if (!page) return { title: 'Documentation', robots: { index: false, follow: false } }
+  const canonical = page.slug === 'overview' ? '/docs' : `/docs/${page.slug}`
+  return {
+    title: page.title === 'Documentation' ? 'Documentation' : `${page.title} documentation`,
+    description: page.description,
+    alternates: { canonical },
+  }
 }
 
 function DocsNavigation({ activeSlug, mobile = false }: { activeSlug: string; mobile?: boolean }) {
