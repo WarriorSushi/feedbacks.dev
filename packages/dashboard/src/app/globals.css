@@ -758,6 +758,7 @@
   position: absolute;
   z-index: 4;
   height: auto;
+  max-width: calc(100vw - 2rem);
   pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 24px 30px rgb(0 0 0 / 0.24));
@@ -767,8 +768,8 @@
 
 .landing-mascot-journey {
   bottom: 0.75rem;
-  left: -5.5rem;
-  width: clamp(16rem, 24vw, 23rem);
+  left: 1.25rem;
+  width: clamp(15rem, 21vw, 20rem);
   --mascot-rest: 5deg;
   --mascot-peak: 1deg;
   --mascot-shift-x: 12px;
@@ -777,9 +778,9 @@
 }
 
 .landing-mascot-context-v2 {
-  right: -4.5rem;
+  right: 1.25rem;
   bottom: 0.75rem;
-  width: clamp(10rem, 15vw, 14rem);
+  width: clamp(9rem, 12vw, 12rem);
   --mascot-rest: -5deg;
   --mascot-peak: -1deg;
   --mascot-shift-x: -8px;
@@ -787,9 +788,9 @@
 }
 
 .landing-mascot-inbox {
-  right: -5.5rem;
+  right: 1.25rem;
   bottom: 0.5rem;
-  width: clamp(18rem, 27vw, 25rem);
+  width: clamp(16rem, 23vw, 22rem);
   --mascot-rest: -2deg;
   --mascot-peak: 2deg;
   --mascot-shift-x: -9px;
@@ -799,8 +800,8 @@
 
 .landing-mascot-loop {
   bottom: 0.5rem;
-  left: -6.5rem;
-  width: clamp(17rem, 25vw, 23rem);
+  left: 1.25rem;
+  width: clamp(15rem, 21vw, 20rem);
   --mascot-rest: 5deg;
   --mascot-peak: 1deg;
   --mascot-shift-x: 13px;
@@ -809,9 +810,9 @@
 }
 
 .landing-mascot-install {
-  right: -2.75rem;
+  right: 1rem;
   bottom: 0.75rem;
-  width: clamp(15rem, 23vw, 21rem);
+  width: clamp(14rem, 20vw, 19rem);
   --mascot-rest: -4deg;
   --mascot-peak: -1deg;
   --mascot-shift-x: -7px;
@@ -820,9 +821,9 @@
 }
 
 .landing-mascot-proof {
-  top: -5rem;
-  right: 2%;
-  width: 11rem;
+  right: max(1.25rem, calc((100vw - 80rem) / 2 + 1.25rem));
+  bottom: 0.75rem;
+  width: 8rem;
   --mascot-rest: 3deg;
   --mascot-peak: -2deg;
   --mascot-speed: 5.7s;
@@ -830,8 +831,8 @@
 
 .landing-mascot-pricing {
   top: 14.5rem;
-  right: -4.5rem;
-  width: clamp(11rem, 17vw, 15.5rem);
+  right: 1.25rem;
+  width: clamp(10rem, 14vw, 13.5rem);
   --mascot-rest: -6deg;
   --mascot-peak: -2deg;
   --mascot-shift-x: -8px;
@@ -840,8 +841,8 @@
 
 .landing-mascot-faq {
   top: 25%;
-  right: -4.25rem;
-  width: clamp(8.5rem, 13vw, 12rem);
+  right: 1.25rem;
+  width: clamp(7.5rem, 10vw, 10rem);
   --mascot-rest: -4deg;
   --mascot-peak: 0deg;
   --mascot-shift-x: -9px;
@@ -849,9 +850,9 @@
 }
 
 .landing-mascot-final {
-  left: -3rem;
+  left: 1.25rem;
   bottom: 0.5rem;
-  width: clamp(12rem, 19vw, 16.5rem);
+  width: clamp(11rem, 16vw, 14.5rem);
   --mascot-rest: 8deg;
   --mascot-peak: 3deg;
   --mascot-shift-x: 8px;
@@ -861,24 +862,26 @@
 
 @media (max-width: 1099px) {
   .landing-mascot-journey,
-  .landing-mascot-loop { left: -6.5rem; }
+  .landing-mascot-loop { left: 1rem; }
 
   .landing-mascot-context-v2,
   .landing-mascot-pricing,
-  .landing-mascot-faq { right: -5.5rem; }
+  .landing-mascot-faq { right: 1rem; }
+
+  .landing-proof-strip { padding-bottom: 7rem; }
 }
 
 @media (max-width: 767px) {
   .landing-section-mascot { filter: drop-shadow(0 14px 18px rgb(0 0 0 / 0.2)); }
-  .landing-mascot-journey { bottom: 0.25rem; left: -4.25rem; width: 13rem; }
-  .landing-mascot-context-v2 { right: -3.8rem; bottom: 0.25rem; width: 9.5rem; }
-  .landing-mascot-inbox { right: -4rem; bottom: 0.25rem; width: 15rem; opacity: 0.82; }
-  .landing-mascot-loop { bottom: 0.25rem; left: -4.5rem; width: 14rem; }
-  .landing-mascot-install { right: -4.25rem; bottom: 0.25rem; width: 13rem; opacity: 0.78; }
-  .landing-mascot-proof { top: -3rem; right: -1rem; width: 8rem; opacity: 0.72; }
-  .landing-mascot-pricing { top: 18rem; right: -3.75rem; width: 10rem; }
-  .landing-mascot-faq { top: 9rem; right: -3rem; width: 7.5rem; opacity: 0.76; }
-  .landing-mascot-final { left: -3.5rem; bottom: 0.25rem; width: 10.5rem; opacity: 0.82; }
+  .landing-mascot-journey { bottom: 0.25rem; left: 0.75rem; width: 11.5rem; }
+  .landing-mascot-context-v2 { right: 0.75rem; bottom: 0.25rem; width: 7.5rem; }
+  .landing-mascot-inbox { right: 0.75rem; bottom: 0.25rem; width: 12rem; opacity: 0.86; }
+  .landing-mascot-loop { bottom: 0.25rem; left: 0.75rem; width: 11.5rem; }
+  .landing-mascot-install { right: 0.75rem; bottom: 0.5rem; width: 11.5rem; opacity: 0.92; }
+  .landing-mascot-proof { right: 0.75rem; bottom: 0.5rem; width: 6.5rem; opacity: 0.9; }
+  .landing-mascot-pricing { top: 18rem; right: 0.75rem; width: 8rem; }
+  .landing-mascot-faq { top: 9rem; right: 0.75rem; width: 6.5rem; opacity: 0.9; }
+  .landing-mascot-final { left: 0.75rem; bottom: 0.25rem; width: 9.5rem; opacity: 0.92; }
 }
 
 .landing-try-hero {
@@ -1847,13 +1850,26 @@
   display: none;
 }
 
-.landing-final-chip {
-  animation: landing-card-hover 5.4s var(--ease-in-out) infinite;
+@keyframes landing-final-chip-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--chip-rotate, 0deg)); }
+  50% { transform: translate3d(var(--chip-shift-x, 0), -6px, 0) rotate(var(--chip-peak, 1deg)); }
 }
 
-.landing-final-chip-right {
-  animation-delay: 900ms;
+.landing-final-chip {
+  animation: landing-final-chip-drift 5.4s var(--ease-in-out) infinite;
+  transition: border-color 260ms var(--ease-standard), box-shadow 320ms var(--ease-out-quart), filter 320ms var(--ease-standard);
 }
+
+.landing-final-chip:hover {
+  border-color: oklch(var(--primary) / 0.52) !important;
+  box-shadow: 0 20px 42px -24px oklch(var(--primary) / 0.5) !important;
+  filter: saturate(1.08);
+}
+
+.landing-final-chip-left { --chip-rotate: -5deg; --chip-peak: -3deg; --chip-shift-x: 4px; }
+.landing-final-chip-top-right { --chip-rotate: 3deg; --chip-peak: 1deg; --chip-shift-x: -4px; animation-delay: 650ms; }
+.landing-final-chip-bottom-left { --chip-rotate: 4deg; --chip-peak: 2deg; --chip-shift-x: 5px; animation-delay: 1.25s; }
+.landing-final-chip-right { --chip-rotate: -3deg; --chip-peak: -1deg; --chip-shift-x: -3px; animation-delay: 1.9s; }
 
 @media (min-width: 1024px) {
   .landing-flow-connector .landing-flow-line {
@@ -2469,6 +2485,8 @@ html:not(.dark):not(.windows98) .auth-form-pane {
   .landing-success-confetti,
   .landing-success-mark,
   .landing-mascot-float,
+  .landing-section-mascot,
+  .landing-final-chip,
   .landing-capture-form,
   .landing-capture-mascot,
   .landing-context-mascot,
@@ -3101,6 +3119,20 @@ html:not(.dark):not(.windows98) .auth-form-pane {
   .landing-triage-sidebar
 ) {
   background: linear-gradient(145deg, #111611, #090c09) !important;
+}
+
+/* The install wizard is intentionally a dark code surface in every modern theme. */
+.marketing-shell .landing-install-shell {
+  border-color: oklch(0.69 0.075 138 / 0.58) !important;
+  background:
+    radial-gradient(circle at 86% 14%, oklch(0.34 0.08 145 / 0.24), transparent 34%),
+    linear-gradient(145deg, oklch(0.17 0.018 145), oklch(0.105 0.012 145)) !important;
+  color: oklch(0.965 0.008 110) !important;
+  box-shadow: 0 36px 110px -52px rgb(0 0 0 / 0.9), inset 0 1px 0 rgb(255 255 255 / 0.07) !important;
+}
+
+.marketing-shell .landing-install-shell:hover {
+  border-color: oklch(0.78 0.13 132 / 0.7) !important;
 }
 
 .marketing-shell :is(

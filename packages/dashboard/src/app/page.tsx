@@ -103,7 +103,7 @@ export default function LandingPage() {
 
         <section className="landing-proof-strip landing-reveal win98-section-window relative border-b py-6 sm:py-8">
           <Win98Chrome title="feedbacks.dev - Trust and performance" />
-          <div className="relative z-[2] mx-auto grid max-w-7xl gap-3 px-5 sm:px-6 md:grid-cols-3">
+          <div className="relative z-[2] mx-auto grid max-w-7xl gap-3 px-5 sm:px-6 md:grid-cols-3 xl:pr-36">
             {proofPoints.map(({ Icon, value, label }) => (
               <div key={value} className="landing-premium-card flex items-start gap-4 rounded-xl border bg-card p-5">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Icon className="h-4 w-4 text-primary" /></span>
@@ -124,7 +124,7 @@ export default function LandingPage() {
             </div>
 
             <div className="mt-12 grid gap-5 lg:grid-cols-[1.06fr_0.94fr]">
-              <article className="landing-premium-card landing-free-plan relative overflow-hidden rounded-2xl border bg-card p-6 sm:p-9">
+              <article className="landing-premium-card landing-free-plan relative flex h-full flex-col overflow-hidden rounded-2xl border bg-card p-6 sm:p-9">
                 <div className="absolute right-0 top-0 rounded-bl-xl bg-primary px-4 py-2 text-[10px] font-bold text-primary-foreground">START HERE</div>
                 <p className="text-sm font-semibold">Free forever</p>
                 <div className="mt-5 flex items-end gap-2"><p className="text-6xl font-semibold tracking-[-0.06em]">${freePlan.monthlyPrice}</p><span className="pb-2 text-sm text-muted-foreground">no card needed</span></div>
@@ -132,19 +132,20 @@ export default function LandingPage() {
                 <ul className="mt-8 grid gap-3 text-sm sm:grid-cols-2">
                   {[`${freePlan.projectLimit} projects`, `${freePlan.feedbackMonthlyLimit} feedback / month`, `${freePlan.historyDays} days of history`, 'Feedback form + inbox', 'Public board + product updates', 'REST API + MCP + 1 webhook'].map((item) => <li key={item} className="landing-premium-card flex items-start gap-2 rounded-lg border p-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
                 </ul>
-                <Link href={authHref} className="mt-8 block"><Button className="h-12 w-full gap-2 text-sm">Create a free project <ArrowRight className="h-4 w-4" /></Button></Link>
+                <Link href={authHref} className="mt-auto block pt-8"><Button className="h-12 w-full gap-2 text-sm">Create a free project <ArrowRight className="h-4 w-4" /></Button></Link>
+                <p className="mt-4 text-center text-[10px] text-muted-foreground">No card. No trial clock. No tiny asterisk plotting backstage.</p>
               </article>
 
-              <article className="landing-premium-card landing-pro-plan relative overflow-hidden rounded-2xl border p-6 sm:p-9">
+              <article className="landing-premium-card landing-pro-plan relative flex h-full flex-col overflow-hidden rounded-2xl border p-6 sm:p-9">
                 <div className="landing-pro-glow absolute -right-20 -top-20 h-56 w-56 rounded-full bg-lime-300/20 blur-3xl" aria-hidden="true" />
-                <div className="relative">
+                <div className="relative flex h-full flex-col">
                   <p className="text-sm font-semibold text-primary">Pro, when you need it</p>
                   <div className="mt-5 flex items-end gap-2"><p className="text-6xl font-semibold tracking-[-0.06em]">${proPlan.monthlyPrice}</p><span className="pb-2 text-sm text-muted-foreground">/ month</span></div>
                   <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">For products with steady feedback, longer memory, and more destinations. Cancel without losing your work.</p>
                   <ul className="mt-8 space-y-3 text-sm">
                     {['Unlimited projects and feedback', 'Full feedback history', 'Unlimited webhook destinations', 'Scheduling and 90-day update analytics', 'Custom branding controls'].map((item) => <li key={item} className="flex items-start gap-3 border-b pb-3 last:border-0"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
                   </ul>
-                  <Link href={proAuthHref} className="mt-8 block"><Button className="h-12 w-full bg-lime-300 text-sm text-zinc-950 hover:bg-lime-200">Choose Pro</Button></Link>
+                  <Link href={proAuthHref} className="mt-auto block pt-8"><Button className="h-12 w-full bg-lime-300 text-sm text-zinc-950 hover:bg-lime-200">Choose Pro</Button></Link>
                   <p className="mt-4 text-center text-[10px] text-muted-foreground">The Free plan stays available if you downgrade.</p>
                 </div>
               </article>
@@ -174,8 +175,10 @@ export default function LandingPage() {
         <section className="landing-final-cta landing-reveal win98-section-window relative overflow-hidden px-5 py-24 sm:px-6 sm:py-32">
           <Win98Chrome title="feedbacks.dev - Get started" />
           <div className="landing-final-orb absolute left-1/2 top-1/2 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
-          <div className="landing-premium-card landing-final-chip landing-final-chip-left absolute left-[8%] top-[25%] hidden rotate-[-5deg] items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><MessageSquareText className="h-4 w-4 text-primary" />New feedback · just now</div>
-          <div className="landing-premium-card landing-final-chip landing-final-chip-right absolute bottom-[24%] right-[8%] hidden rotate-[4deg] items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><Check className="h-4 w-4 text-primary" />Routed to GitHub #184</div>
+          <div className="landing-premium-card landing-final-chip landing-final-chip-left absolute left-[8%] top-[25%] hidden items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><MessageSquareText className="h-4 w-4 text-primary" />New feedback · just now</div>
+          <div className="landing-premium-card landing-final-chip landing-final-chip-top-right absolute right-[9%] top-[19%] hidden items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><Gauge className="h-4 w-4 text-primary" />Reproduced · suspiciously fast</div>
+          <div className="landing-premium-card landing-final-chip landing-final-chip-bottom-left absolute bottom-[18%] left-[14%] hidden items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><Route className="h-4 w-4 text-primary" />Fix shipped · meeting avoided</div>
+          <div className="landing-premium-card landing-final-chip landing-final-chip-right absolute bottom-[24%] right-[8%] hidden items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><Check className="h-4 w-4 text-primary" />Routed to GitHub #184</div>
           <Image className="landing-section-mascot landing-mascot-final" src="/mascots-v2/final-victory.png" alt="" width={1217} height={1293} sizes="(max-width: 767px) 150px, 260px" aria-hidden="true" />
           <div className="relative mx-auto max-w-4xl text-center">
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border bg-card shadow-sm"><HeartHandshake className="h-6 w-6 text-primary" /></span>

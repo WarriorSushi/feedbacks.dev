@@ -385,6 +385,7 @@ test('sign-in stays concise while showing the rotating use-case carousel', () =>
 
 test('marketing hero and workspace states share the new motion and texture language', () => {
   const css = read('../../src/app/globals.css')
+  const landing = read('../../src/app/page.tsx')
   const emptyState = read('../../src/components/ui/empty-state.tsx')
   const layout = read('../../src/app/(dashboard)/layout.tsx')
 
@@ -396,6 +397,17 @@ test('marketing hero and workspace states share the new motion and texture langu
   assert.match(css, /--landing-slate-section:/)
   assert.match(css, /\.landing-try-hero,[\s\S]*\.landing-faq-section[\s\S]*background: var\(--landing-premium-section\)/)
   assert.match(css, /\.landing-journey,[\s\S]*\.landing-final-cta[\s\S]*background: var\(--landing-slate-section\)/)
+  assert.match(css, /\.marketing-shell \.landing-install-shell[\s\S]*linear-gradient\(145deg, oklch\(0\.17 0\.018 145\)/)
+  assert.match(css, /\.landing-section-mascot[\s\S]*max-width: calc\(100vw - 2rem\)/)
+  assert.doesNotMatch(css, /\.landing-mascot-(?:journey|context-v2|inbox|loop|install|proof|pricing|faq|final)[^{]*\{[^}]*(?:left|right|top):\s*-/)
+  assert.match(css, /@keyframes landing-final-chip-drift/)
+  assert.match(css, /\.landing-final-chip-top-right/)
+  assert.match(css, /\.landing-final-chip-bottom-left/)
+  assert.match(landing, /landing-free-plan relative flex h-full flex-col/)
+  assert.match(landing, /landing-pro-plan relative flex h-full flex-col/)
+  assert.equal(landing.match(/mt-auto block pt-8/g)?.length, 2)
+  assert.match(landing, /Reproduced · suspiciously fast/)
+  assert.match(landing, /Fix shipped · meeting avoided/)
   assert.match(css, /surface-film-grain/)
   assert.match(css, /baseFrequency='\.72'/)
   assert.match(css, /stitchTiles='stitch'/)
