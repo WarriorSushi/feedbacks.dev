@@ -8,6 +8,7 @@ const links = [
   ['#product', 'Product'],
   ['#setup', 'Install'],
   ['#pricing', 'Pricing'],
+  ['/early-access', 'Founding beta'],
   ['/docs', 'Docs'],
 ] as const
 

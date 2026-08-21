@@ -4,13 +4,10 @@ import { createAdminSupabase } from '@/lib/supabase-server'
 import { processWebhookDigests, processWebhookJobs } from '@/lib/webhook-delivery'
 import { getRequestId, logOperationalEvent } from '@/lib/operational-logging'
 import { operationalRetentionCutoffs } from '@/lib/operational-retention'
+import { verifyBearerSecret } from '@/lib/secret-auth'
 
 function isAuthorized(request: NextRequest) {
-  const secret = process.env.CRON_SECRET
-  if (!secret) return false
-
-  const authHeader = request.headers.get('authorization')
-  return authHeader === `Bearer ${secret}`
+  return verifyBearerSecret(request.headers.get('authorization'), process.env.CRON_SECRET)
 }
 
 export async function GET(request: NextRequest) {

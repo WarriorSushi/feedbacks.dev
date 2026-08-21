@@ -80,3 +80,33 @@ test('public feedback notes inherit feedback and board visibility', () => {
   assert.match(migration, /board\.visibility <> 'private'/i)
   assert.match(migration, /p\.owner_user_id = \(select auth\.uid\(\)\)/i)
 })
+
+test('cron and internal bearer credentials use constant-time verification', async () => {
+  const { verifyBearerSecret } = await import('../../src/lib/secret-auth.ts')
+  assert.equal(verifyBearerSecret('Bearer correct-horse', 'correct-horse'), true)
+  assert.equal(verifyBearerSecret('Bearer wrong-horse', 'correct-horse'), false)
+  assert.equal(verifyBearerSecret('Basic correct-horse', 'correct-horse'), false)
+  assert.equal(verifyBearerSecret('Bearer short', 'correct-horse'), false)
+  assert.equal(verifyBearerSecret(null, 'correct-horse'), false)
+  assert.equal(verifyBearerSecret('Bearer correct-horse', undefined), false)
+
+  const protectedRoutes = [
+    '../../src/app/api/cron/webhook-jobs/route.ts',
+    '../../src/app/api/cron/notification-digests/route.ts',
+    '../../src/app/api/cron/e2e-cleanup/route.ts',
+    '../../src/app/api/cron/billing-lifecycle/route.ts',
+    '../../src/app/api/cron/account-deletions/route.ts',
+    '../../src/app/api/internal/health/route.ts',
+    '../../src/app/api/internal/webhook-jobs/process/route.ts',
+  ]
+  for (const route of protectedRoutes) {
+    assert.match(read(route), /verifyBearerSecret/, route)
+  }
+})
+
+test('public CSP reports are bounded and rate limited before logging', () => {
+  const route = read('../../src/app/api/security/csp-report/route.ts')
+  assert.match(route, /MAX_CSP_REPORT_BYTES = 32 \* 1024/)
+  assert.match(route, /checkRateLimit\(request, 'csp-report', 30, 10\)/)
+  assert.match(route, /if \(!rate\.allowed\) return new NextResponse\(null, \{ status: 204 \}\)/)
+})

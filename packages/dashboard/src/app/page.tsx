@@ -72,6 +72,7 @@ export default function LandingPage() {
             <Link href="#product"><Button variant="ghost" size="sm">Product</Button></Link>
             <Link href="#setup"><Button variant="ghost" size="sm">Install</Button></Link>
             <Link href="#pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
+            <Link href="/early-access"><Button variant="ghost" size="sm">Founding beta</Button></Link>
             <Link href="/docs" prefetch={false}><Button variant="ghost" size="sm">Docs</Button></Link>
           </nav>
           <div className="flex items-center gap-1 sm:gap-2">
@@ -85,7 +86,7 @@ export default function LandingPage() {
 
       <main>
         <LandingSectionObserver />
-        <LandingTryWidgetHero />
+        <LandingTryWidgetHero authHref={authHref} />
 
         <LandingProductStories />
 
@@ -192,7 +193,7 @@ export default function LandingPage() {
       <footer className="border-t px-5 py-8 sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 sm:flex-row">
           <BrandWordmark className="text-sm font-semibold" markClassName="h-5 w-5" />
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground"><Link href="/feedback-widget">Feedback widget</Link><Link href="/feedback-widget/nextjs">Next.js guide</Link><Link href="/docs" prefetch={false}>Docs</Link><Link href="/boards" prefetch={false}>Public boards</Link><Link href="/early-access">Launch notes</Link><Link href="/privacy">Privacy</Link><PrivacyChoicesButton /><Link href="/terms">Terms</Link></div>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground"><Link href="/feedback-widget">Feedback widget</Link><Link href="/feedback-widget/nextjs">Next.js guide</Link><Link href="/docs" prefetch={false}>Docs</Link><Link href="/boards" prefetch={false}>Public boards</Link><Link href="/early-access">Founding beta</Link><Link href="/privacy">Privacy</Link><PrivacyChoicesButton /><Link href="/terms">Terms</Link></div>
           <a href="https://github.com/WarriorSushi/Feedbacks.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><Github className="h-4 w-4" /> Source available</a>
         </div>
       </footer>

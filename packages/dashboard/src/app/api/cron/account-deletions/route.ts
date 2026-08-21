@@ -3,10 +3,10 @@ import { createAdminSupabase } from '@/lib/supabase-server'
 import { processAccountDeletionJobs } from '@/lib/account-deletion'
 import { finishCronRun, startCronRun } from '@/lib/cron-runs'
 import { getRequestId, logOperationalEvent } from '@/lib/operational-logging'
+import { verifyBearerSecret } from '@/lib/secret-auth'
 
 function isAuthorized(request: NextRequest) {
-  const secret = process.env.CRON_SECRET
-  return Boolean(secret) && request.headers.get('authorization') === `Bearer ${secret}`
+  return verifyBearerSecret(request.headers.get('authorization'), process.env.CRON_SECRET)
 }
 
 export async function GET(request: NextRequest) {

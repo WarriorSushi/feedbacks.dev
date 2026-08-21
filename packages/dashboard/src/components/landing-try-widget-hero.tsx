@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import {
   Bug,
@@ -14,9 +15,11 @@ import {
   RotateCcw,
   Sparkles,
   Star,
+  UsersRound,
   X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 type FeedbackType = 'bug' | 'idea' | 'praise' | 'question'
 
@@ -213,7 +216,7 @@ function HeroAnnotations({
   )
 }
 
-export function LandingTryWidgetHero() {
+export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
   const [open, setOpen] = React.useState(false)
   const [submitted, setSubmitted] = React.useState(false)
   const [message, setMessage] = React.useState('')
@@ -305,6 +308,19 @@ export function LandingTryWidgetHero() {
             <span className="block">We believe in “<span className="landing-try-show-accent">Show</span>, don&apos;t tell”.</span>
             <span className="mt-1 block text-primary">Your users will press this button.</span>
           </h1>
+          <AnimatePresence>
+            {!open && (
+              <motion.p
+                initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: reduceMotion ? 0 : 0.35, delay: reduceMotion ? 0 : 0.08 }}
+                className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7"
+              >
+                Install one lightweight feedback widget, keep the useful page context, triage the signal, and show users what shipped.
+              </motion.p>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         <motion.div ref={stageRef} layout="position" className={cn('landing-try-stage relative mx-auto flex min-h-[300px] w-full flex-col items-center justify-center', open && 'landing-try-stage-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
@@ -423,6 +439,24 @@ export function LandingTryWidgetHero() {
             </motion.button>
           )}
         </motion.div>
+
+        <AnimatePresence>
+          {!open && (
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: reduceMotion ? 0 : 0.38, delay: reduceMotion ? 0 : 0.18 }}
+              className="relative z-20 mx-auto flex max-w-2xl flex-col items-center text-center"
+            >
+              <div className="flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row">
+                <Button asChild size="lg" className="h-12 px-7"><Link href={authHref}>Start free</Link></Button>
+                <Button asChild size="lg" variant="outline" className="h-12 gap-2 px-7"><Link href="/early-access"><UsersRound className="h-4 w-4" />Apply for the Founding Beta</Link></Button>
+              </div>
+              <p className="mt-3 text-[11px] leading-5 text-muted-foreground">Free signup is open to everyone. The small beta cohort adds hands-on onboarding, not a gate.</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </motion.div>
     </section>

@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { processWebhookJobs } from '@/lib/webhook-delivery'
 import { readJsonBody } from '@/lib/api-request'
+import { verifyBearerSecret } from '@/lib/secret-auth'
 
 function isAuthorized(request: NextRequest) {
-  const secret = process.env.WEBHOOK_JOB_SECRET
-  if (!secret) return false
-
-  const authHeader = request.headers.get('authorization')
-  return authHeader === `Bearer ${secret}`
+  return verifyBearerSecret(request.headers.get('authorization'), process.env.WEBHOOK_JOB_SECRET)
 }
 
 export async function POST(request: NextRequest) {

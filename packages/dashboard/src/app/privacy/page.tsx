@@ -34,7 +34,7 @@ export default function PrivacyPage() {
             <li>Account information (email and name provided through Google OAuth, GitHub OAuth, or email sign-in)</li>
             <li>Project configuration data</li>
             <li>Feedback submitted through your widgets (messages, ratings, page URL, browser context, optional screenshots or image attachments, and optional contact details)</li>
-            <li>Lead-list information you submit (email, optional use case, consent time, and campaign attribution)</li>
+            <li>Lead-list and beta-application information you submit (email, product use case, stage, install timing, current tool, consent time, and campaign attribution)</li>
             <li>Referral codes, successful referred signups, and one-time reward status</li>
           </ul>
 
@@ -118,7 +118,7 @@ export default function PrivacyPage() {
             product data and uploaded feedback media. Operational delivery and security records are
             retained only as needed to operate, secure, and troubleshoot the service, with destinations
             redacted and credentials excluded.
-            Lead-list records are kept until you unsubscribe or ask us to remove them. Advertising conversion
+            Lead-list and beta-application records are kept until you unsubscribe or ask us to remove them. Advertising conversion
             records retain hashed match fields and delivery status only as long as needed for attribution,
             troubleshooting, deletion requests, and fraud prevention.
           </p>

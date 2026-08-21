@@ -79,6 +79,7 @@ const requiredColumns = {
   feedback_watches: ['id', 'board_id', 'project_id', 'feedback_id', 'user_id', 'created_at'],
   billing_accounts: ['user_id', 'plan_tier', 'billing_status', 'dodo_customer_id', 'last_event_at', 'recurring_amount', 'billing_currency', 'billing_interval', 'billing_interval_count', 'complimentary_pro_until', 'grace_started_at', 'grace_ends_at', 'grace_cycle_id', 'downgrade_finalized_at', 'updated_at'],
   marketing_leads: ['id', 'email', 'email_hash', 'use_case', 'source', 'consent_version', 'consented_at', 'attribution', 'created_at', 'updated_at'],
+  beta_applications: ['id', 'email', 'email_hash', 'use_case', 'product_stage', 'install_timeline', 'current_tool', 'status', 'applied_at', 'created_at', 'updated_at'],
   marketing_conversion_events: ['event_id', 'event_name', 'user_id', 'email_hash', 'source_url', 'attribution', 'consent_version', 'provider_results', 'status', 'attempt_count', 'created_at', 'delivered_at'],
   user_acquisition: ['user_id', 'referral_code', 'attribution', 'consent_version', 'signup_event_id', 'signup_recorded_at', 'network_hash', 'device_hash', 'created_at'],
   referral_programs: ['user_id', 'code', 'successful_referrals', 'reward_granted_at', 'reward_expires_at', 'created_at', 'updated_at'],

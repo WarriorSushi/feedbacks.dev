@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { finishCronRun, startCronRun } from '@/lib/cron-runs'
 import { processBillingLifecycle } from '@/lib/billing-lifecycle'
+import { verifyBearerSecret } from '@/lib/secret-auth'
 
 export async function GET(request: NextRequest) {
-  const secret = process.env.CRON_SECRET
-  if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
+  if (!verifyBearerSecret(request.headers.get('authorization'), process.env.CRON_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

@@ -2,13 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { finishCronRun, startCronRun } from '@/lib/cron-runs'
 import { sendDailyFeedbackDigest } from '@/lib/notifications'
+import { verifyBearerSecret } from '@/lib/secret-auth'
 
 function isAuthorized(request: NextRequest) {
-  const secret = process.env.CRON_SECRET
-  if (!secret) return false
-
-  const authHeader = request.headers.get('authorization')
-  return authHeader === `Bearer ${secret}`
+  return verifyBearerSecret(request.headers.get('authorization'), process.env.CRON_SECRET)
 }
 
 function getDigestWindow() {

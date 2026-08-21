@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { readRequestBodyWithLimit, RequestBodyTooLargeError } from '@/lib/request-body-limit'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 const MAX_CSP_REPORT_BYTES = 32 * 1024
 
@@ -14,7 +15,10 @@ function safeOrigin(value: unknown) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const rate = await checkRateLimit(request, 'csp-report', 30, 10)
+  if (!rate.allowed) return new NextResponse(null, { status: 204 })
+
   try {
     const text = new TextDecoder().decode(
       await readRequestBodyWithLimit(request, MAX_CSP_REPORT_BYTES),

@@ -9,6 +9,13 @@ test('public acquisition, auth, and documentation routes render', async ({ page 
 })
 
 test('optional measurement stays off until consent and withdrawal clears attribution', async ({ page }) => {
+  test.skip(
+    !process.env.NEXT_PUBLIC_GOOGLE_TAG_ID
+      && !process.env.NEXT_PUBLIC_META_PIXEL_ID
+      && !process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID,
+    'Optional marketing providers are not configured in this environment',
+  )
+
   await page.context().addCookies([{
     name: 'feedbacks_attribution',
     value: 'test-attribution',

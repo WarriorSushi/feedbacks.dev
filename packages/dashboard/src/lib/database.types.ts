@@ -14,88 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      api_idempotency_keys: {
-        Row: {
-          created_at: string
-          expires_at: string
-          key_hash: string
-          project_id: string
-          request_hash: string
-          response_body: Json | null
-          response_status: number | null
-          route: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          expires_at?: string
-          key_hash: string
-          project_id: string
-          request_hash: string
-          response_body?: Json | null
-          response_status?: number | null
-          route: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          expires_at?: string
-          key_hash?: string
-          project_id?: string
-          request_hash?: string
-          response_body?: Json | null
-          response_status?: number | null
-          route?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "api_idempotency_keys_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      activation_milestones: {
-        Row: {
-          environment: string
-          event_name: string
-          first_seen_at: string
-          metadata: Json
-          project_id: string
-          user_id: string
-        }
-        Insert: {
-          environment?: string
-          event_name: string
-          first_seen_at?: string
-          metadata?: Json
-          project_id: string
-          user_id: string
-        }
-        Update: {
-          environment?: string
-          event_name?: string
-          first_seen_at?: string
-          metadata?: Json
-          project_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "activation_milestones_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       account_deletion_jobs: {
         Row: {
           attempt_count: number
@@ -137,6 +55,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      activation_milestones: {
+        Row: {
+          environment: string
+          event_name: string
+          first_seen_at: string
+          metadata: Json
+          project_id: string
+          user_id: string
+        }
+        Insert: {
+          environment?: string
+          event_name: string
+          first_seen_at?: string
+          metadata?: Json
+          project_id: string
+          user_id: string
+        }
+        Update: {
+          environment?: string
+          event_name?: string
+          first_seen_at?: string
+          metadata?: Json
+          project_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activation_milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       agent_setup_audit: {
         Row: {
@@ -217,25 +170,122 @@ export type Database = {
           },
         ]
       }
+      api_idempotency_keys: {
+        Row: {
+          created_at: string
+          expires_at: string
+          key_hash: string
+          project_id: string
+          request_hash: string
+          response_body: Json | null
+          response_status: number | null
+          route: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          key_hash: string
+          project_id: string
+          request_hash?: string
+          response_body?: Json | null
+          response_status?: number | null
+          route: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          key_hash?: string
+          project_id?: string
+          request_hash?: string
+          response_body?: Json | null
+          response_status?: number | null
+          route?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_idempotency_keys_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      beta_applications: {
+        Row: {
+          applied_at: string
+          created_at: string
+          current_tool: string | null
+          email: string
+          email_hash: string
+          id: string
+          install_timeline: string
+          product_stage: string
+          status: string
+          updated_at: string
+          use_case: string
+        }
+        Insert: {
+          applied_at?: string
+          created_at?: string
+          current_tool?: string | null
+          email: string
+          email_hash: string
+          id?: string
+          install_timeline: string
+          product_stage: string
+          status?: string
+          updated_at?: string
+          use_case: string
+        }
+        Update: {
+          applied_at?: string
+          created_at?: string
+          current_tool?: string | null
+          email?: string
+          email_hash?: string
+          id?: string
+          install_timeline?: string
+          product_stage?: string
+          status?: string
+          updated_at?: string
+          use_case?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beta_applications_email_hash_fkey"
+            columns: ["email_hash"]
+            isOneToOne: true
+            referencedRelation: "marketing_leads"
+            referencedColumns: ["email_hash"]
+          },
+        ]
+      }
       billing_accounts: {
         Row: {
-          billing_email: string | null
           billing_currency: string | null
+          billing_email: string | null
           billing_interval: string | null
           billing_interval_count: number | null
           billing_status: string
-          complimentary_pro_until: string | null
-          grace_started_at: string | null
-          grace_ends_at: string | null
-          grace_cycle_id: string | null
-          downgrade_finalized_at: string | null
           cancel_at_period_end: boolean
+          complimentary_pro_until: string | null
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
           dodo_customer_id: string | null
           dodo_product_id: string | null
           dodo_subscription_id: string | null
+          downgrade_finalized_at: string | null
+          grace_cycle_id: string | null
+          grace_ends_at: string | null
+          grace_started_at: string | null
           last_event_at: string | null
           last_event_id: string | null
           last_event_type: string | null
@@ -245,23 +295,23 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          billing_email?: string | null
           billing_currency?: string | null
+          billing_email?: string | null
           billing_interval?: string | null
           billing_interval_count?: number | null
           billing_status?: string
-          complimentary_pro_until?: string | null
-          grace_started_at?: string | null
-          grace_ends_at?: string | null
-          grace_cycle_id?: string | null
-          downgrade_finalized_at?: string | null
           cancel_at_period_end?: boolean
+          complimentary_pro_until?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
           dodo_customer_id?: string | null
           dodo_product_id?: string | null
           dodo_subscription_id?: string | null
+          downgrade_finalized_at?: string | null
+          grace_cycle_id?: string | null
+          grace_ends_at?: string | null
+          grace_started_at?: string | null
           last_event_at?: string | null
           last_event_id?: string | null
           last_event_type?: string | null
@@ -271,23 +321,23 @@ export type Database = {
           user_id: string
         }
         Update: {
-          billing_email?: string | null
           billing_currency?: string | null
+          billing_email?: string | null
           billing_interval?: string | null
           billing_interval_count?: number | null
           billing_status?: string
-          complimentary_pro_until?: string | null
-          grace_started_at?: string | null
-          grace_ends_at?: string | null
-          grace_cycle_id?: string | null
-          downgrade_finalized_at?: string | null
           cancel_at_period_end?: boolean
+          complimentary_pro_until?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
           dodo_customer_id?: string | null
           dodo_product_id?: string | null
           dodo_subscription_id?: string | null
+          downgrade_finalized_at?: string | null
+          grace_cycle_id?: string | null
+          grace_ends_at?: string | null
+          grace_started_at?: string | null
           last_event_at?: string | null
           last_event_id?: string | null
           last_event_type?: string | null
@@ -295,6 +345,57 @@ export type Database = {
           recurring_amount?: number | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      billing_events: {
+        Row: {
+          attempt_count: number
+          claim_token: string | null
+          created_at: string
+          dodo_customer_id: string | null
+          dodo_subscription_id: string | null
+          event_type: string
+          id: string
+          locked_at: string | null
+          occurred_at: string | null
+          payload: Json
+          processed_at: string | null
+          processing_error: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          attempt_count?: number
+          claim_token?: string | null
+          created_at?: string
+          dodo_customer_id?: string | null
+          dodo_subscription_id?: string | null
+          event_type: string
+          id: string
+          locked_at?: string | null
+          occurred_at?: string | null
+          payload: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          attempt_count?: number
+          claim_token?: string | null
+          created_at?: string
+          dodo_customer_id?: string | null
+          dodo_subscription_id?: string | null
+          event_type?: string
+          id?: string
+          locked_at?: string | null
+          occurred_at?: string | null
+          payload?: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          status?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -322,57 +423,6 @@ export type Database = {
           notice_day?: number
           sent_at?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      billing_events: {
-        Row: {
-          attempt_count: number
-          claim_token: string | null
-          created_at: string
-          dodo_customer_id: string | null
-          dodo_subscription_id: string | null
-          event_type: string
-          id: string
-          locked_at: string | null
-          occurred_at: string | null
-          payload: Json
-          processing_error: string | null
-          processed_at: string | null
-          status: string
-          user_id: string | null
-        }
-        Insert: {
-          attempt_count?: number
-          claim_token?: string | null
-          created_at?: string
-          dodo_customer_id?: string | null
-          dodo_subscription_id?: string | null
-          event_type: string
-          id: string
-          locked_at?: string | null
-          occurred_at?: string | null
-          payload: Json
-          processing_error?: string | null
-          processed_at?: string | null
-          status?: string
-          user_id?: string | null
-        }
-        Update: {
-          attempt_count?: number
-          claim_token?: string | null
-          created_at?: string
-          dodo_customer_id?: string | null
-          dodo_subscription_id?: string | null
-          event_type?: string
-          id?: string
-          locked_at?: string | null
-          occurred_at?: string | null
-          payload?: Json
-          processing_error?: string | null
-          processed_at?: string | null
-          status?: string
-          user_id?: string | null
         }
         Relationships: []
       }
@@ -934,6 +984,90 @@ export type Database = {
           },
         ]
       }
+      marketing_conversion_events: {
+        Row: {
+          attempt_count: number
+          attribution: Json
+          consent_version: string
+          created_at: string
+          delivered_at: string | null
+          email_hash: string | null
+          event_id: string
+          event_name: string
+          provider_results: Json
+          source_url: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          attempt_count?: number
+          attribution?: Json
+          consent_version: string
+          created_at?: string
+          delivered_at?: string | null
+          email_hash?: string | null
+          event_id: string
+          event_name: string
+          provider_results?: Json
+          source_url?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          attempt_count?: number
+          attribution?: Json
+          consent_version?: string
+          created_at?: string
+          delivered_at?: string | null
+          email_hash?: string | null
+          event_id?: string
+          event_name?: string
+          provider_results?: Json
+          source_url?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      marketing_leads: {
+        Row: {
+          attribution: Json
+          consent_version: string
+          consented_at: string
+          created_at: string
+          email: string
+          email_hash: string
+          id: string
+          source: string
+          updated_at: string
+          use_case: string | null
+        }
+        Insert: {
+          attribution?: Json
+          consent_version: string
+          consented_at: string
+          created_at?: string
+          email: string
+          email_hash: string
+          id?: string
+          source?: string
+          updated_at?: string
+          use_case?: string | null
+        }
+        Update: {
+          attribution?: Json
+          consent_version?: string
+          consented_at?: string
+          created_at?: string
+          email?: string
+          email_hash?: string
+          id?: string
+          source?: string
+          updated_at?: string
+          use_case?: string | null
+        }
+        Relationships: []
+      }
       notification_digests: {
         Row: {
           created_at: string
@@ -1075,8 +1209,8 @@ export type Database = {
           expires_at: string | null
           highlights: string[]
           id: string
-          image_path: string | null
           image_alt_text: string | null
+          image_path: string | null
           is_enabled: boolean
           project_id: string
           published_at: string | null
@@ -1095,8 +1229,8 @@ export type Database = {
           expires_at?: string | null
           highlights?: string[]
           id?: string
-          image_path?: string | null
           image_alt_text?: string | null
+          image_path?: string | null
           is_enabled?: boolean
           project_id: string
           published_at?: string | null
@@ -1115,8 +1249,8 @@ export type Database = {
           expires_at?: string | null
           highlights?: string[]
           id?: string
-          image_path?: string | null
           image_alt_text?: string | null
+          image_path?: string | null
           is_enabled?: boolean
           project_id?: string
           published_at?: string | null
@@ -1228,6 +1362,82 @@ export type Database = {
           },
         ]
       }
+      project_embed_installations: {
+        Row: {
+          created_at: string
+          feedback_enabled: boolean
+          last_seen_at: string
+          project_id: string
+          runtime_version: string | null
+          updated_at: string
+          updates_enabled: boolean
+        }
+        Insert: {
+          created_at?: string
+          feedback_enabled?: boolean
+          last_seen_at?: string
+          project_id: string
+          runtime_version?: string | null
+          updated_at?: string
+          updates_enabled?: boolean
+        }
+        Update: {
+          created_at?: string
+          feedback_enabled?: boolean
+          last_seen_at?: string
+          project_id?: string
+          runtime_version?: string | null
+          updated_at?: string
+          updates_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_embed_installations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_integration_secret_events: {
+        Row: {
+          created_at: string
+          destination_hint: string
+          endpoint_id: string
+          event_type: string
+          id: string
+          kind: string
+          project_id: string
+        }
+        Insert: {
+          created_at?: string
+          destination_hint: string
+          endpoint_id: string
+          event_type: string
+          id?: string
+          kind: string
+          project_id: string
+        }
+        Update: {
+          created_at?: string
+          destination_hint?: string
+          endpoint_id?: string
+          event_type?: string
+          id?: string
+          kind?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_integration_secret_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_integration_secrets: {
         Row: {
           auth_tag: string
@@ -1278,82 +1488,6 @@ export type Database = {
           },
         ]
       }
-      project_integration_secret_events: {
-        Row: {
-          created_at: string
-          destination_hint: string
-          endpoint_id: string
-          event_type: string
-          id: string
-          kind: string
-          project_id: string
-        }
-        Insert: {
-          created_at?: string
-          destination_hint: string
-          endpoint_id: string
-          event_type: string
-          id?: string
-          kind: string
-          project_id: string
-        }
-        Update: {
-          created_at?: string
-          destination_hint?: string
-          endpoint_id?: string
-          event_type?: string
-          id?: string
-          kind?: string
-          project_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_integration_secret_events_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      project_embed_installations: {
-        Row: {
-          created_at: string
-          feedback_enabled: boolean
-          last_seen_at: string
-          project_id: string
-          runtime_version: string | null
-          updated_at: string
-          updates_enabled: boolean
-        }
-        Insert: {
-          created_at?: string
-          feedback_enabled?: boolean
-          last_seen_at?: string
-          project_id: string
-          runtime_version?: string | null
-          updated_at?: string
-          updates_enabled?: boolean
-        }
-        Update: {
-          created_at?: string
-          feedback_enabled?: boolean
-          last_seen_at?: string
-          project_id?: string
-          runtime_version?: string | null
-          updated_at?: string
-          updates_enabled?: boolean
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_embed_installations_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: true
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       projects: {
         Row: {
           api_key: string | null
@@ -1367,8 +1501,8 @@ export type Database = {
           id: string
           name: string
           owner_user_id: string
-          plan_frozen_at: string | null
           plan_freeze_reason: string | null
+          plan_frozen_at: string | null
           quarantined_at: string | null
           settings: Json
           test_namespace: string | null
@@ -1387,8 +1521,8 @@ export type Database = {
           id?: string
           name: string
           owner_user_id: string
-          plan_frozen_at?: string | null
           plan_freeze_reason?: string | null
+          plan_frozen_at?: string | null
           quarantined_at?: string | null
           settings?: Json
           test_namespace?: string | null
@@ -1407,8 +1541,8 @@ export type Database = {
           id?: string
           name?: string
           owner_user_id?: string
-          plan_frozen_at?: string | null
           plan_freeze_reason?: string | null
+          plan_frozen_at?: string | null
           quarantined_at?: string | null
           settings?: Json
           test_namespace?: string | null
@@ -1533,6 +1667,87 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_programs: {
+        Row: {
+          code: string
+          created_at: string
+          reward_expires_at: string | null
+          reward_granted_at: string | null
+          successful_referrals: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          reward_expires_at?: string | null
+          reward_granted_at?: string | null
+          successful_referrals?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          reward_expires_at?: string | null
+          reward_granted_at?: string | null
+          successful_referrals?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_signups: {
+        Row: {
+          created_at: string
+          device_hash: string | null
+          id: string
+          invited_email_hash: string | null
+          invited_user_id: string
+          inviter_user_id: string
+          network_hash: string | null
+          qualification_milestone: string | null
+          qualified_at: string | null
+          referral_code: string
+          rejected_at: string | null
+          risk_reasons: string[]
+          risk_score: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          device_hash?: string | null
+          id?: string
+          invited_email_hash?: string | null
+          invited_user_id: string
+          inviter_user_id: string
+          network_hash?: string | null
+          qualification_milestone?: string | null
+          qualified_at?: string | null
+          referral_code: string
+          rejected_at?: string | null
+          risk_reasons?: string[]
+          risk_score?: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          device_hash?: string | null
+          id?: string
+          invited_email_hash?: string | null
+          invited_user_id?: string
+          inviter_user_id?: string
+          network_hash?: string | null
+          qualification_milestone?: string | null
+          qualified_at?: string | null
+          referral_code?: string
+          rejected_at?: string | null
+          risk_reasons?: string[]
+          risk_score?: number
+          status?: string
+        }
+        Relationships: []
+      }
       usage_counters: {
         Row: {
           count: number
@@ -1559,6 +1774,42 @@ export type Database = {
           metric?: string
           period_start?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_acquisition: {
+        Row: {
+          attribution: Json
+          consent_version: string | null
+          created_at: string
+          device_hash: string | null
+          network_hash: string | null
+          referral_code: string | null
+          signup_event_id: string | null
+          signup_recorded_at: string
+          user_id: string
+        }
+        Insert: {
+          attribution?: Json
+          consent_version?: string | null
+          created_at?: string
+          device_hash?: string | null
+          network_hash?: string | null
+          referral_code?: string | null
+          signup_event_id?: string | null
+          signup_recorded_at?: string
+          user_id: string
+        }
+        Update: {
+          attribution?: Json
+          consent_version?: string | null
+          created_at?: string
+          device_hash?: string | null
+          network_hash?: string | null
+          referral_code?: string | null
+          signup_event_id?: string | null
+          signup_recorded_at?: string
           user_id?: string
         }
         Relationships: []
@@ -1935,273 +2186,30 @@ export type Database = {
         }
         Relationships: []
       }
-      marketing_conversion_events: {
-        Row: {
-          attempt_count: number
-          attribution: Json
-          consent_version: string
-          created_at: string
-          delivered_at: string | null
-          email_hash: string | null
-          event_id: string
-          event_name: string
-          provider_results: Json
-          source_url: string | null
-          status: string
-          user_id: string | null
-        }
-        Insert: {
-          attempt_count?: number
-          attribution?: Json
-          consent_version: string
-          created_at?: string
-          delivered_at?: string | null
-          email_hash?: string | null
-          event_id: string
-          event_name: string
-          provider_results?: Json
-          source_url?: string | null
-          status?: string
-          user_id?: string | null
-        }
-        Update: {
-          attempt_count?: number
-          attribution?: Json
-          consent_version?: string
-          created_at?: string
-          delivered_at?: string | null
-          email_hash?: string | null
-          event_id?: string
-          event_name?: string
-          provider_results?: Json
-          source_url?: string | null
-          status?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      marketing_leads: {
-        Row: {
-          attribution: Json
-          consent_version: string
-          consented_at: string
-          created_at: string
-          email: string
-          email_hash: string
-          id: string
-          source: string
-          updated_at: string
-          use_case: string | null
-        }
-        Insert: {
-          attribution?: Json
-          consent_version: string
-          consented_at: string
-          created_at?: string
-          email: string
-          email_hash: string
-          id?: string
-          source?: string
-          updated_at?: string
-          use_case?: string | null
-        }
-        Update: {
-          attribution?: Json
-          consent_version?: string
-          consented_at?: string
-          created_at?: string
-          email?: string
-          email_hash?: string
-          id?: string
-          source?: string
-          updated_at?: string
-          use_case?: string | null
-        }
-        Relationships: []
-      }
-      referral_programs: {
-        Row: {
-          code: string
-          created_at: string
-          reward_expires_at: string | null
-          reward_granted_at: string | null
-          successful_referrals: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          reward_expires_at?: string | null
-          reward_granted_at?: string | null
-          successful_referrals?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          reward_expires_at?: string | null
-          reward_granted_at?: string | null
-          successful_referrals?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      referral_signups: {
-        Row: {
-          created_at: string
-          device_hash: string | null
-          id: string
-          invited_email_hash: string | null
-          invited_user_id: string
-          inviter_user_id: string
-          network_hash: string | null
-          qualification_milestone: string | null
-          qualified_at: string | null
-          rejected_at: string | null
-          referral_code: string
-          risk_reasons: string[]
-          risk_score: number
-          status: string
-        }
-        Insert: {
-          created_at?: string
-          device_hash?: string | null
-          id?: string
-          invited_email_hash?: string | null
-          invited_user_id: string
-          inviter_user_id: string
-          network_hash?: string | null
-          qualification_milestone?: string | null
-          qualified_at?: string | null
-          rejected_at?: string | null
-          referral_code: string
-          risk_reasons?: string[]
-          risk_score?: number
-          status?: string
-        }
-        Update: {
-          created_at?: string
-          device_hash?: string | null
-          id?: string
-          invited_email_hash?: string | null
-          invited_user_id?: string
-          inviter_user_id?: string
-          network_hash?: string | null
-          qualification_milestone?: string | null
-          qualified_at?: string | null
-          rejected_at?: string | null
-          referral_code?: string
-          risk_reasons?: string[]
-          risk_score?: number
-          status?: string
-        }
-        Relationships: []
-      }
-      user_acquisition: {
-        Row: {
-          attribution: Json
-          consent_version: string | null
-          created_at: string
-          device_hash: string | null
-          network_hash: string | null
-          referral_code: string | null
-          signup_event_id: string | null
-          signup_recorded_at: string
-          user_id: string
-        }
-        Insert: {
-          attribution?: Json
-          consent_version?: string | null
-          created_at?: string
-          device_hash?: string | null
-          network_hash?: string | null
-          referral_code?: string | null
-          signup_event_id?: string | null
-          signup_recorded_at?: string
-          user_id: string
-        }
-        Update: {
-          attribution?: Json
-          consent_version?: string | null
-          created_at?: string
-          device_hash?: string | null
-          network_hash?: string | null
-          referral_code?: string | null
-          signup_event_id?: string | null
-          signup_recorded_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      create_project_with_quota: {
-        Args: {
-          p_bypass_quota?: boolean
-          p_free_project_limit?: number
-          p_project: Json
-        }
-        Returns: Json
-      }
-      insert_feedback_with_quota: {
-        Args: {
-          p_allow_replay?: boolean
-          p_bypass_plan_freeze?: boolean
-          p_bypass_quota?: boolean
-          p_feedback: Json
-          p_free_feedback_limit?: number
-          p_media?: Json
-          p_record_first_feedback?: boolean
-        }
-        Returns: Json
-      }
-      qualify_referral_signup: {
-        Args: { p_invited_user_id: string }
-        Returns: Json
-      }
-      reconcile_plan_projects: {
-        Args: { p_effective_pro: boolean; p_free_project_limit?: number; p_user_id: string }
-        Returns: Json
-      }
-      register_referral_signup: {
-        Args: {
-          p_device_hash: string | null
-          p_invited_email_hash: string
-          p_invited_user_id: string
-          p_network_hash: string | null
-          p_referral_code: string
-        }
-        Returns: Json
-      }
-      resolve_referral_review: {
-        Args: { p_approved: boolean; p_signup_id: string }
-        Returns: Json
-      }
       apply_claimed_billing_event: {
         Args: {
-          p_billing_email: string | null
-          p_billing_interval: string | null
-          p_billing_interval_count: number | null
-          p_billing_status: string | null
+          p_billing_email: string
+          p_billing_interval: string
+          p_billing_interval_count: number
+          p_billing_status: string
           p_cancel_at_period_end: boolean
           p_claim_token: string
-          p_currency: string | null
-          p_customer_id: string | null
+          p_currency: string
+          p_customer_id: string
           p_event_id: string
           p_occurred_at: string
-          p_period_end: string | null
-          p_period_start: string | null
+          p_period_end: string
+          p_period_start: string
           p_plan_tier: string
-          p_product_id: string | null
-          p_recurring_amount: number | null
-          p_subscription_id: string | null
-          p_user_id: string | null
+          p_product_id: string
+          p_recurring_amount: number
+          p_subscription_id: string
+          p_user_id: string
         }
         Returns: boolean
       }
@@ -2218,23 +2226,8 @@ export type Database = {
         }
         Returns: Json
       }
-      claim_billing_event: {
-        Args: {
-          p_customer_id: string | null
-          p_event_id: string
-          p_event_type: string
-          p_occurred_at: string
-          p_payload: Json
-          p_subscription_id: string | null
-          p_user_id: string | null
-        }
-        Returns: string | null
-      }
       claim_account_deletion_jobs: {
-        Args: {
-          p_limit?: number
-          p_user_id?: string | null
-        }
+        Args: { p_limit?: number; p_user_id?: string }
         Returns: {
           attempt_count: number
           claim_token: string | null
@@ -2248,6 +2241,24 @@ export type Database = {
           user_email: string
           user_id: string
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "account_deletion_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      claim_billing_event: {
+        Args: {
+          p_customer_id: string
+          p_event_id: string
+          p_event_type: string
+          p_occurred_at: string
+          p_payload: Json
+          p_subscription_id: string
+          p_user_id: string
+        }
+        Returns: string
       }
       count_by_column: {
         Args: {
@@ -2257,20 +2268,13 @@ export type Database = {
         }
         Returns: Json
       }
-      get_owner_project_health: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          board_enabled: boolean
-          board_listed: boolean
-          board_visibility: string | null
-          embed_last_seen_at: string | null
-          failed_delivery_count: number
-          feedback_count: number
-          latest_feedback_at: string | null
-          project_id: string
-          unread_count: number
-          updates_enabled: boolean
-        }[]
+      create_project_with_quota: {
+        Args: {
+          p_bypass_quota?: boolean
+          p_free_project_limit?: number
+          p_project: Json
+        }
+        Returns: Json
       }
       dashboard_stats: {
         Args: {
@@ -2281,37 +2285,48 @@ export type Database = {
         }
         Returns: Json
       }
+      fail_claimed_billing_event: {
+        Args: { p_claim_token: string; p_error: string; p_event_id: string }
+        Returns: undefined
+      }
       generate_api_key: { Args: never; Returns: string }
+      get_owner_project_health: {
+        Args: never
+        Returns: {
+          board_enabled: boolean
+          board_listed: boolean
+          board_visibility: string
+          embed_last_seen_at: string
+          failed_delivery_count: number
+          feedback_count: number
+          latest_feedback_at: string
+          project_id: string
+          unread_count: number
+          updates_enabled: boolean
+        }[]
+      }
       get_public_board_directory: {
         Args: {
-          p_category?: string | null
+          p_category?: string
           p_limit?: number
           p_offset?: number
-          p_query?: string | null
+          p_query?: string
           p_sort?: string
         }
         Returns: Json
       }
       get_public_board_directory_cursor: {
         Args: {
-          p_after_activity?: string | null
-          p_after_id?: string | null
-          p_after_score?: number | null
-          p_category?: string | null
+          p_after_activity?: string
+          p_after_id?: string
+          p_after_score?: number
+          p_category?: string
           p_limit?: number
-          p_query?: string | null
-          p_snapshot_at?: string | null
+          p_query?: string
+          p_snapshot_at?: string
           p_sort?: string
         }
         Returns: Json
-      }
-      fail_claimed_billing_event: {
-        Args: {
-          p_claim_token: string
-          p_error: string
-          p_event_id: string
-        }
-        Returns: undefined
       }
       increment_product_update_metric: {
         Args: {
@@ -2331,40 +2346,126 @@ export type Database = {
         }
         Returns: number
       }
-      publish_product_update: {
+      insert_feedback_with_quota: {
         Args: {
-          p_active_limit: number
-          p_allow_scheduling: boolean
-          p_expires_at: string
+          p_allow_replay?: boolean
+          p_bypass_plan_freeze?: boolean
+          p_bypass_quota?: boolean
+          p_feedback: Json
+          p_free_feedback_limit?: number
+          p_media?: Json
+          p_record_first_feedback?: boolean
+        }
+        Returns: Json
+      }
+      publish_product_update:
+        | {
+            Args: {
+              p_active_limit: number
+              p_allow_scheduling: boolean
+              p_expires_at: string
+              p_project_id: string
+              p_published_at: string
+              p_update_id: string
+            }
+            Returns: {
+              created_at: string
+              created_by: string | null
+              cta_label: string | null
+              cta_url: string | null
+              ctas: Json
+              expires_at: string | null
+              highlights: string[]
+              id: string
+              image_alt_text: string | null
+              image_path: string | null
+              is_enabled: boolean
+              project_id: string
+              published_at: string | null
+              status: string
+              summary: string
+              title: string
+              updated_at: string
+              version_label: string | null
+            }
+            SetofOptions: {
+              from: "*"
+              to: "product_updates"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              p_active_limit: number
+              p_allow_scheduling: boolean
+              p_expected_updated_at: string
+              p_expires_at: string
+              p_project_id: string
+              p_published_at: string
+              p_update_id: string
+            }
+            Returns: {
+              created_at: string
+              created_by: string | null
+              cta_label: string | null
+              cta_url: string | null
+              ctas: Json
+              expires_at: string | null
+              highlights: string[]
+              id: string
+              image_alt_text: string | null
+              image_path: string | null
+              is_enabled: boolean
+              project_id: string
+              published_at: string | null
+              status: string
+              summary: string
+              title: string
+              updated_at: string
+              version_label: string | null
+            }
+            SetofOptions: {
+              from: "*"
+              to: "product_updates"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+      qualify_referral_signup: {
+        Args: { p_invited_user_id: string }
+        Returns: Json
+      }
+      reconcile_plan_projects: {
+        Args: {
+          p_effective_pro: boolean
+          p_free_project_limit?: number
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      register_referral_signup: {
+        Args: {
+          p_device_hash: string
+          p_invited_email_hash: string
+          p_invited_user_id: string
+          p_network_hash: string
+          p_referral_code: string
+        }
+        Returns: Json
+      }
+      resolve_referral_review: {
+        Args: { p_approved: boolean; p_signup_id: string }
+        Returns: Json
+      }
+      rotate_project_api_key: {
+        Args: {
+          p_actor_user_id: string
+          p_key_hash: string
+          p_key_last_four: string
           p_project_id: string
-          p_published_at: string
-          p_expected_updated_at: string
-          p_update_id: string
         }
-        Returns: {
-          created_at: string
-          created_by: string | null
-          cta_label: string | null
-          cta_url: string | null
-          expires_at: string | null
-          highlights: string[]
-          id: string
-          image_path: string | null
-          is_enabled: boolean
-          project_id: string
-          published_at: string | null
-          status: string
-          summary: string
-          title: string
-          updated_at: string
-          version_label: string | null
-        }
-        SetofOptions: {
-          from: "*"
-          to: "product_updates"
-          isOneToOne: true
-          isSetofReturn: false
-        }
+        Returns: string
       }
       set_product_update_visibility: {
         Args: {
@@ -2379,9 +2480,11 @@ export type Database = {
           created_by: string | null
           cta_label: string | null
           cta_url: string | null
+          ctas: Json
           expires_at: string | null
           highlights: string[]
           id: string
+          image_alt_text: string | null
           image_path: string | null
           is_enabled: boolean
           project_id: string
@@ -2398,15 +2501,6 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
-      }
-      rotate_project_api_key: {
-        Args: {
-          p_actor_user_id: string
-          p_key_hash: string
-          p_key_last_four: string
-          p_project_id: string
-        }
-        Returns: string
       }
       set_project_modules: {
         Args: { p_feedback: boolean; p_project_id: string; p_updates: boolean }

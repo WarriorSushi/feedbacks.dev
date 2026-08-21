@@ -9,6 +9,7 @@ import {
   readMarketingAttribution,
   recordMarketingConversion,
 } from '@/lib/marketing'
+import { validateBetaApplication } from '@/lib/beta-application'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -21,6 +22,9 @@ export async function POST(request: NextRequest) {
   const result = await readJsonBody<{
     email?: string
     useCase?: string
+    applicationStage?: string
+    installTimeline?: string
+    currentTool?: string
     newsletterConsent?: boolean
     companyWebsite?: string
   }>(request)
@@ -42,14 +46,22 @@ export async function POST(request: NextRequest) {
     }, { status: 400 })
   }
 
+  const application = validateBetaApplication(result.data)
+  if (!application.ok) {
+    return NextResponse.json({
+      error: 'Review the highlighted application details.',
+      fieldErrors: application.fieldErrors,
+    }, { status: 400 })
+  }
+
   const attribution = readMarketingAttribution(request)
   const admin = await createAdminSupabase()
   const now = new Date().toISOString()
   const { error } = await admin.from('marketing_leads').upsert({
     email,
     email_hash: hashMarketingValue(email),
-    use_case: result.data.useCase?.trim().slice(0, 500) || null,
-    source: 'early-access',
+    use_case: application.value.useCase,
+    source: 'founding-beta',
     consent_version: 'lead-v1',
     consented_at: now,
     attribution,
@@ -57,6 +69,21 @@ export async function POST(request: NextRequest) {
   }, { onConflict: 'email_hash' })
 
   if (error) return NextResponse.json({ error: 'We could not save your request. Please try again.' }, { status: 500 })
+
+  const { error: applicationError } = await admin.from('beta_applications').upsert({
+    email,
+    email_hash: hashMarketingValue(email),
+    use_case: application.value.useCase,
+    product_stage: application.value.applicationStage,
+    install_timeline: application.value.installTimeline,
+    current_tool: application.value.currentTool,
+    applied_at: now,
+    updated_at: now,
+  }, { onConflict: 'email_hash' })
+
+  if (applicationError) {
+    return NextResponse.json({ error: 'We saved your email but could not complete the beta application. Please try again.' }, { status: 500 })
+  }
 
   const eventId = crypto.randomUUID()
   after(() => recordMarketingConversion({

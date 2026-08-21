@@ -1,5 +1,7 @@
 # feedbacks.dev go-to-market plan
 
+> Execution update (22 August 2026): the detailed two-lane Free/Founding Beta flow, current channel rules, ready-to-edit post bank, 30-day calendar, measurement system, and creative/video briefs now live in [`docs/launch/`](launch/README.md). This document remains the strategic foundation.
+
 ## The growth thesis
 
 Do not market “a feedback tool.” Market the shortest trustworthy path from a shipped product to useful, contextual feedback.

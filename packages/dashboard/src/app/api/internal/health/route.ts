@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { evaluateCronHealth } from '@/lib/operational-health'
 import { getRequestId, logOperationalEvent } from '@/lib/operational-logging'
+import { verifyBearerSecret } from '@/lib/secret-auth'
 
 function isAuthorized(request: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET
-  return Boolean(secret && request.headers.get('authorization') === `Bearer ${secret}`)
+  return verifyBearerSecret(request.headers.get('authorization'), process.env.CRON_SECRET)
 }
 
 export async function GET(request: NextRequest) {

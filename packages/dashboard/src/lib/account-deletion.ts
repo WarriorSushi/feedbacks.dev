@@ -83,7 +83,7 @@ export async function processAccountDeletionJobs(
 ) {
   const { data, error } = await admin.rpc('claim_account_deletion_jobs', {
     p_limit: options.limit || 10,
-    p_user_id: options.userId || null,
+    p_user_id: options.userId,
   })
   if (error) throw error
 

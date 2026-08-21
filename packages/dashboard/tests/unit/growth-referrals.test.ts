@@ -115,6 +115,7 @@ test('advertising integrations remain consent-gated and outside customer widgets
 test('lead capture distinguishes email consent from advertising measurement', () => {
   const page = read('../../src/app/early-access/lead-form.tsx')
   const route = read('../../src/app/api/marketing/leads/route.ts')
+  const betaMigration = read('../../../../sql/064_founding_beta_applications.sql')
 
   assert.match(page, /newsletterConsent/)
   assert.match(page, /Advertising measurement is controlled separately/)
@@ -122,4 +123,38 @@ test('lead capture distinguishes email consent from advertising measurement', ()
   assert.match(route, /checkRateLimit\(request, 'marketing-lead'/)
   assert.match(route, /companyWebsite/)
   assert.match(route, /recordMarketingConversion/)
+  assert.match(route, /validateBetaApplication/)
+  assert.match(route, /from\('beta_applications'\)\.upsert/)
+  assert.match(page, /Apply for the Founding Beta/)
+  assert.match(betaMigration, /alter table public\.beta_applications enable row level security/i)
+  assert.match(betaMigration, /revoke all on table public\.beta_applications from public, anon, authenticated/i)
+  assert.match(betaMigration, /grant select, insert, update, delete on table public\.beta_applications to service_role/i)
+})
+
+test('Founding Beta applications require a real product use case, stage, and install window', async () => {
+  const { validateBetaApplication } = await import('../../src/lib/beta-application.ts')
+
+  const invalid = validateBetaApplication({ useCase: 'Too short', applicationStage: 'unknown', installTimeline: '' })
+  assert.equal(invalid.ok, false)
+  if (!invalid.ok) {
+    assert.ok(invalid.fieldErrors.useCase)
+    assert.ok(invalid.fieldErrors.applicationStage)
+    assert.ok(invalid.fieldErrors.installTimeline)
+  }
+
+  const valid = validateBetaApplication({
+    useCase: 'We collect bug reports in Discord and lose the page context every time.',
+    applicationStage: 'early-live',
+    installTimeline: 'this-week',
+    currentTool: 'Discord',
+  })
+  assert.deepEqual(valid, {
+    ok: true,
+    value: {
+      useCase: 'We collect bug reports in Discord and lose the page context every time.',
+      applicationStage: 'early-live',
+      installTimeline: 'this-week',
+      currentTool: 'Discord',
+    },
+  })
 })
