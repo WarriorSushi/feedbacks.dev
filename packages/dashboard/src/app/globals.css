@@ -739,6 +739,159 @@
   50% { transform: translate3d(0, -13px, 0) rotate(2deg); }
 }
 
+@keyframes landing-mascot-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--mascot-rest, -2deg)); }
+  48% { transform: translate3d(var(--mascot-shift-x, 4px), var(--mascot-shift-y, -12px), 0) rotate(var(--mascot-peak, 2deg)); }
+}
+
+.landing-section-mascot {
+  position: absolute;
+  z-index: 4;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 24px 30px rgb(0 0 0 / 0.24));
+  animation: landing-mascot-drift var(--mascot-speed, 5.8s) var(--ease-in-out) infinite;
+  transition: opacity 320ms var(--ease-standard), filter 320ms var(--ease-standard);
+}
+
+.landing-mascot-hero {
+  top: -12rem;
+  left: clamp(1rem, 4vw, 4rem);
+  width: clamp(10rem, 14vw, 14.5rem);
+  --mascot-rest: 2deg;
+  --mascot-peak: -2deg;
+  --mascot-shift-y: -8px;
+  --mascot-speed: 5.2s;
+}
+
+.landing-mascot-hero.is-hidden { opacity: 0; }
+
+.landing-mascot-journey {
+  bottom: -3rem;
+  left: -5.5rem;
+  width: clamp(16rem, 24vw, 23rem);
+  --mascot-rest: 5deg;
+  --mascot-peak: 1deg;
+  --mascot-shift-x: 12px;
+  --mascot-shift-y: -9px;
+  --mascot-speed: 6.3s;
+}
+
+.landing-mascot-context-v2 {
+  right: -4.5rem;
+  bottom: -1.75rem;
+  width: clamp(10rem, 15vw, 14rem);
+  --mascot-rest: -5deg;
+  --mascot-peak: -1deg;
+  --mascot-shift-x: -8px;
+  --mascot-speed: 6.8s;
+}
+
+.landing-mascot-inbox {
+  right: -5.5rem;
+  bottom: -5.25rem;
+  width: clamp(18rem, 27vw, 25rem);
+  --mascot-rest: -2deg;
+  --mascot-peak: 2deg;
+  --mascot-shift-x: -9px;
+  --mascot-shift-y: -10px;
+  --mascot-speed: 6s;
+}
+
+.landing-mascot-loop {
+  bottom: -4.5rem;
+  left: -6.5rem;
+  width: clamp(17rem, 25vw, 23rem);
+  --mascot-rest: 5deg;
+  --mascot-peak: 1deg;
+  --mascot-shift-x: 13px;
+  --mascot-shift-y: -8px;
+  --mascot-speed: 5.5s;
+}
+
+.landing-mascot-install {
+  right: -2.75rem;
+  bottom: -4.75rem;
+  width: clamp(15rem, 23vw, 21rem);
+  --mascot-rest: -4deg;
+  --mascot-peak: -1deg;
+  --mascot-shift-x: -7px;
+  --mascot-shift-y: -7px;
+  --mascot-speed: 6.4s;
+}
+
+.landing-mascot-proof {
+  right: 3%;
+  bottom: -5.75rem;
+  width: 11rem;
+  --mascot-rest: 3deg;
+  --mascot-peak: -2deg;
+  --mascot-speed: 5.7s;
+}
+
+.landing-mascot-pricing {
+  top: 14.5rem;
+  right: -4.5rem;
+  width: clamp(11rem, 17vw, 15.5rem);
+  --mascot-rest: -6deg;
+  --mascot-peak: -2deg;
+  --mascot-shift-x: -8px;
+  --mascot-speed: 6.2s;
+}
+
+.landing-mascot-faq {
+  top: 25%;
+  right: -4.25rem;
+  width: clamp(8.5rem, 13vw, 12rem);
+  --mascot-rest: -4deg;
+  --mascot-peak: 0deg;
+  --mascot-shift-x: -9px;
+  --mascot-speed: 5.9s;
+}
+
+.landing-mascot-final {
+  left: -3rem;
+  bottom: -5rem;
+  width: clamp(12rem, 19vw, 16.5rem);
+  --mascot-rest: 8deg;
+  --mascot-peak: 3deg;
+  --mascot-shift-x: 8px;
+  --mascot-shift-y: -14px;
+  --mascot-speed: 5.1s;
+}
+
+@media (max-width: 1099px) {
+  .landing-mascot-hero {
+    top: -2.5rem;
+    right: -1rem;
+    left: auto;
+    width: 7rem;
+    opacity: 0.76;
+  }
+
+  .landing-mascot-journey,
+  .landing-mascot-loop { left: -6.5rem; }
+
+  .landing-mascot-context-v2,
+  .landing-mascot-pricing,
+  .landing-mascot-faq { right: -5.5rem; }
+}
+
+@media (max-width: 767px) {
+  .landing-section-mascot { filter: drop-shadow(0 14px 18px rgb(0 0 0 / 0.2)); }
+  .landing-mascot-hero { top: -1.5rem; right: -1.25rem; width: 5.75rem; opacity: 0.62; }
+  .landing-mascot-journey { bottom: -1.5rem; left: -4.25rem; width: 13rem; }
+  .landing-mascot-context-v2 { right: -3.8rem; bottom: -2.5rem; width: 9.5rem; }
+  .landing-mascot-inbox { right: -4rem; bottom: -2.5rem; width: 15rem; opacity: 0.82; }
+  .landing-mascot-loop { bottom: -2.75rem; left: -4.5rem; width: 14rem; }
+  .landing-mascot-install { right: -4.25rem; bottom: -2.75rem; width: 13rem; opacity: 0.78; }
+  .landing-mascot-proof { right: -2rem; bottom: -3.75rem; width: 8rem; opacity: 0.72; }
+  .landing-mascot-pricing { top: 18rem; right: -3.75rem; width: 10rem; }
+  .landing-mascot-faq { top: 9rem; right: -3rem; width: 7.5rem; opacity: 0.76; }
+  .landing-mascot-final { left: -3.5rem; bottom: -2.5rem; width: 10.5rem; opacity: 0.82; }
+}
+
 .landing-try-hero {
   overflow-anchor: none;
   background: linear-gradient(112deg, oklch(0.968 0.064 88), oklch(0.925 0.078 148));
@@ -2781,6 +2934,7 @@ html.windows98 {
 }
 
 .windows98 .landing-mascot-float,
+.windows98 .landing-section-mascot,
 .windows98 .landing-capture-mascot,
 .windows98 .landing-context-mascot,
 .windows98 .landing-triage-mascot,

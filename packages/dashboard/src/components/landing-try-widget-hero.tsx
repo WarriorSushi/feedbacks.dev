@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import {
   Bug,
@@ -281,6 +282,7 @@ export function LandingTryWidgetHero() {
 
         <motion.div ref={stageRef} layout="position" className={cn('landing-try-stage relative mx-auto flex min-h-[300px] w-full flex-col items-center justify-center', open && 'landing-try-stage-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
           <div className="landing-try-grid absolute inset-0" aria-hidden="true" />
+          <Image className={cn('landing-section-mascot landing-mascot-hero', open && 'is-hidden')} src="/mascots-v2/hero-bungee.png" alt="" width={1024} height={1536} sizes="(max-width: 767px) 96px, 230px" priority aria-hidden="true" />
           <AnimatePresence>{!open && <HeroAnnotations reduceMotion={reduceMotion} stageRef={stageRef} buttonRef={launchButtonRef} />}</AnimatePresence>
 
           <div className="widget-theme-preview contents">

@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import { Bot, Check, Code2, Copy, MousePointerClick, ShieldCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -27,7 +28,7 @@ export function LandingVibeInstall({ snippet }: { snippet: string }) {
   }
 
   return (
-    <div className="landing-app-window landing-install-shell overflow-hidden rounded-2xl border bg-[#0b0e0b] text-[#f5f7f1] shadow-[0_36px_110px_-52px_rgb(0_0_0/0.9)]">
+    <div className="landing-app-window landing-install-shell relative overflow-hidden rounded-2xl border bg-[#0b0e0b] text-[#f5f7f1] shadow-[0_36px_110px_-52px_rgb(0_0_0/0.9)]">
       <div className="landing-window-chrome">feedbacks.dev Setup Wizard</div>
       <div className="grid lg:grid-cols-[0.78fr_1.22fr]">
         <div className="border-b border-white/10 p-6 sm:p-9 lg:border-b-0 lg:border-r">
@@ -65,9 +66,10 @@ export function LandingVibeInstall({ snippet }: { snippet: string }) {
 
           <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500"><span>{view === 'code' ? 'Dashboard-generated snippet' : 'A bounded task for your coding agent'}</span><span>{view === 'code' ? 'HTML' : 'Plain text'}</span></div>
           <pre className="mt-4 min-h-[420px] overflow-x-auto whitespace-pre-wrap break-words rounded-xl border border-white/15 bg-[#e7ebe5] p-5 font-mono text-[11px] leading-6 text-[#1b201b] shadow-inner sm:p-6"><code>{activeValue}</code></pre>
-          <p className="mt-4 text-xs leading-5 text-zinc-500">Keep the stable embed unchanged. Form fields, placement, copy, and styling update remotely after you save them in feedbacks.dev.</p>
+          <p className="mt-4 text-xs leading-5 text-zinc-500 lg:max-w-[62%]">Keep the stable embed unchanged. Form fields, placement, copy, and styling update remotely after you save them in feedbacks.dev.</p>
         </div>
       </div>
+      <Image className="landing-section-mascot landing-mascot-install" src="/mascots-v2/install-mechanic.png" alt="" width={1536} height={1024} sizes="(max-width: 767px) 190px, 330px" aria-hidden="true" />
     </div>
   )
 }

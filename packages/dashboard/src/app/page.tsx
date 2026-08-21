@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 import { ArrowRight, Check, Gauge, Gift, Github, HeartHandshake, LockKeyhole, MessageSquareText, Route } from 'lucide-react'
 import { PLAN_MATRIX, generateInstallSnippets } from '@feedbacks/shared'
@@ -97,8 +98,8 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="landing-proof-strip landing-reveal border-b py-6 sm:py-8">
-          <div className="mx-auto grid max-w-7xl gap-3 px-5 sm:px-6 md:grid-cols-3">
+        <section className="landing-proof-strip landing-reveal relative overflow-hidden border-b py-6 sm:py-8">
+          <div className="relative z-[2] mx-auto grid max-w-7xl gap-3 px-5 sm:px-6 md:grid-cols-3">
             {proofPoints.map(({ Icon, value, label }) => (
               <div key={value} className="flex items-start gap-4 rounded-xl border bg-card p-5">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Icon className="h-4 w-4 text-primary" /></span>
@@ -106,10 +107,11 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+          <Image className="landing-section-mascot landing-mascot-proof" src="/mascots-v2/proof-scale.png" alt="" width={1536} height={1024} sizes="160px" aria-hidden="true" />
         </section>
 
-        <section id="pricing" className="landing-pricing-section landing-reveal border-b py-20 sm:py-28">
-          <div className="mx-auto max-w-6xl px-5 sm:px-6">
+        <section id="pricing" className="landing-pricing-section landing-reveal relative overflow-hidden border-b py-20 sm:py-28">
+          <div className="relative z-[2] mx-auto max-w-6xl px-5 sm:px-6">
             <div className="mx-auto max-w-3xl text-center">
               <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-2 text-xs font-semibold"><Gift className="h-4 w-4 text-primary" />A genuinely useful Free plan</div>
               <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Use the full feedback loop for free.</h2>
@@ -143,10 +145,11 @@ export default function LandingPage() {
               </article>
             </div>
           </div>
+          <Image className="landing-section-mascot landing-mascot-pricing" src="/mascots-v2/pricing-gift.png" alt="" width={1070} height={1470} sizes="(max-width: 767px) 150px, 250px" aria-hidden="true" />
         </section>
 
-        <section className="landing-faq-section landing-reveal border-b py-20 sm:py-28">
-          <div className="mx-auto max-w-6xl px-5 sm:px-6">
+        <section className="landing-faq-section landing-reveal relative overflow-hidden border-b py-20 sm:py-28">
+          <div className="relative z-[2] mx-auto max-w-6xl px-5 sm:px-6">
             <div className="mx-auto max-w-2xl text-center"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Straight answers</p><h2 className="mt-4 text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">The things developers ask first.</h2></div>
             <div className="mt-12 grid gap-3 md:grid-cols-2">
               {[
@@ -159,12 +162,14 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
+          <Image className="landing-section-mascot landing-mascot-faq" src="/mascots-v2/faq-peek.png" alt="" width={941} height={1672} sizes="(max-width: 767px) 110px, 190px" aria-hidden="true" />
         </section>
 
         <section className="landing-final-cta landing-reveal relative overflow-hidden px-5 py-24 sm:px-6 sm:py-32">
           <div className="landing-final-orb absolute left-1/2 top-1/2 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
           <div className="landing-final-chip landing-final-chip-left absolute left-[8%] top-[25%] hidden rotate-[-5deg] items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><MessageSquareText className="h-4 w-4 text-primary" />New feedback · just now</div>
           <div className="landing-final-chip landing-final-chip-right absolute bottom-[24%] right-[8%] hidden rotate-[4deg] items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><Check className="h-4 w-4 text-primary" />Routed to GitHub #184</div>
+          <Image className="landing-section-mascot landing-mascot-final" src="/mascots-v2/final-victory.png" alt="" width={1217} height={1293} sizes="(max-width: 767px) 150px, 260px" aria-hidden="true" />
           <div className="relative mx-auto max-w-4xl text-center">
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border bg-card shadow-sm"><HeartHandshake className="h-6 w-6 text-primary" /></span>
             <h2 className="mt-7 text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">Your first useful report could arrive today.</h2>

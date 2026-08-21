@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import {
   ArrowRight,
   BellRing,
@@ -24,7 +25,7 @@ export function LandingProductStories() {
   return (
     <>
       <section id="product" className="landing-journey landing-reveal border-b py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-5 sm:px-6">
+        <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">From message to shipped fix</p>
             <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">One small message becomes work your team can act on.</h2>
@@ -38,12 +39,12 @@ export function LandingProductStories() {
             <FlowConnector label="Route or respond" />
             <WorkflowScene />
           </div>
-
         </div>
+        <Image className="landing-section-mascot landing-mascot-journey" src="/mascots-v2/journey-runner.png" alt="" width={1536} height={1024} sizes="(max-width: 767px) 190px, 360px" aria-hidden="true" />
       </section>
 
       <section className="landing-context-section landing-reveal border-b py-20 sm:py-28">
-        <div className="mx-auto grid max-w-7xl gap-12 px-5 sm:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-center lg:gap-20">
+        <div className="relative z-[2] mx-auto grid max-w-7xl gap-12 px-5 sm:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-center lg:gap-20">
           <div className="max-w-xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Context without interrogation</p>
             <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">The short message is only the beginning.</h2>
@@ -54,21 +55,23 @@ export function LandingProductStories() {
           </div>
           <ContextEvidenceScene />
         </div>
+        <Image className="landing-section-mascot landing-mascot-context-v2" src="/mascots-v2/context-detective.png" alt="" width={1024} height={1536} sizes="(max-width: 767px) 150px, 230px" aria-hidden="true" />
       </section>
 
       <section className="landing-inbox-section landing-reveal border-b py-20 text-zinc-100 sm:py-28">
-        <div className="mx-auto max-w-7xl px-5 sm:px-6">
+        <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-lime-300">Inside feedbacks.dev</p>
             <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Open the inbox and know what deserves attention.</h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">New messages are distinct, technical context is already attached, and the next action is visible. It feels like triage, not archaeology.</p>
           </div>
           <TriageDashboardScene />
+          <Image className="landing-section-mascot landing-mascot-inbox" src="/mascots-v2/inbox-controller.png" alt="" width={1536} height={1024} sizes="(max-width: 767px) 220px, 400px" aria-hidden="true" />
         </div>
       </section>
 
-      <section className="landing-close-loop landing-reveal border-b py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-5 sm:px-6">
+      <section className="landing-close-loop landing-reveal relative overflow-hidden border-b py-20 sm:py-28">
+        <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Close the loop</p>
@@ -82,6 +85,7 @@ export function LandingProductStories() {
             <PublicBoardScene />
           </div>
         </div>
+        <Image className="landing-section-mascot landing-mascot-loop" src="/mascots-v2/loop-courier.png" alt="" width={1536} height={1024} sizes="(max-width: 767px) 210px, 370px" aria-hidden="true" />
       </section>
     </>
   )
