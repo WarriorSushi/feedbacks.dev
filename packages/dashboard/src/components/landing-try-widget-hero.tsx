@@ -302,7 +302,7 @@ export function LandingTryWidgetHero() {
       <motion.div layout className={cn('landing-try-shell relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-[1600px] flex-col px-5 pb-8 sm:px-6', open && 'landing-try-shell-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
         <motion.div layout="position" className={cn('landing-try-heading relative z-[2] mx-auto max-w-[920px] text-center', open && 'landing-try-heading-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
           <h1 id="try-widget-title" className="font-semibold tracking-[-0.055em]">
-            <span className="block">We believe in “Show, don&apos;t tell”.</span>
+            <span className="block">We believe in “<span className="landing-try-show-accent">Show</span>, don&apos;t tell”.</span>
             <span className="mt-1 block text-primary">Your users will press this button.</span>
           </h1>
         </motion.div>

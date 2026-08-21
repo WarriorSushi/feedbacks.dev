@@ -921,6 +921,14 @@
   letter-spacing: -0.045em;
 }
 
+.landing-try-show-accent {
+  color: #741b2d;
+}
+
+.dark .landing-try-show-accent {
+  color: #c76573;
+}
+
 .landing-try-stage {
   flex: 1;
   width: 100vw;
