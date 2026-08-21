@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { Win98Chrome } from '@/components/ui/win98-chrome'
 
 export function PageHeader({
   eyebrow,
@@ -20,6 +21,7 @@ export function PageHeader({
 }) {
   return (
     <header className={cn('workspace-page-header win98-page-title flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between', className)}>
+      <Win98Chrome title={`feedbacks.dev - ${title}`} />
       <div className="min-w-0">
         {eyebrow && (
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
@@ -61,7 +63,8 @@ export function SectionPanel({
   return (
     <section data-tour={dataTour} className={cn('workspace-panel win98-window overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]', className)}>
       {(title || description || action) && (
-        <header className="win98-titlebar flex flex-col gap-3 border-b bg-surface-raised/70 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
+        <header className="win98-titlebar win98-panel-header relative flex flex-col gap-3 border-b bg-surface-raised/70 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
+          <Win98Chrome title={`feedbacks.dev - ${title || 'Workspace'}`} />
           <div className="min-w-0">
             {title && <h2 className="text-sm font-semibold text-foreground">{title}</h2>}
             {description && <p className="mt-1 max-w-[68ch] text-sm leading-5 text-muted-foreground">{description}</p>}

@@ -63,7 +63,11 @@ export default async function RootLayout({
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className={inter.className}>
         {appearanceSyncScript && (
-          <script nonce={nonce} dangerouslySetInnerHTML={{ __html: appearanceSyncScript }} />
+          <script
+            nonce={nonce}
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{ __html: appearanceSyncScript }}
+          />
         )}
         <ThemeProvider
           attribute="class"

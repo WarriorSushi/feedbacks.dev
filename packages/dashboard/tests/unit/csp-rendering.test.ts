@@ -14,6 +14,7 @@ test('nonce CSP uses request-aware rendering so Next can hydrate every route', (
   assert.match(layout, /export default async function RootLayout/)
   assert.match(layout, /\(await headers\(\)\)\.get\('x-nonce'\)/)
   assert.match(layout, /nonce=\{nonce\}/)
+  assert.match(layout, /nonce=\{nonce\}[\s\S]*suppressHydrationWarning/)
 })
 
 test('auth bot protection supports hCaptcha first and Turnstile as a fallback', () => {

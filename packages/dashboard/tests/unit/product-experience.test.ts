@@ -37,7 +37,7 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   const install = read('../../src/components/landing-vibe-install.tsx')
   const css = read('../../src/app/globals.css')
 
-  assert.match(hero, /Show, don&apos;t tell/)
+  assert.match(hero, /Show<\/span>, don&apos;t tell/)
   assert.match(hero, /Your users will press this button/)
   assert.match(hero, /Send feedback/)
   assert.match(hero, /Page \+ browser context included/)
@@ -49,11 +49,11 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   assert.match(hero, /textPath/)
   assert.match(stories, /From message to shipped fix/)
   assert.match(stories, /Your product/)
-  assert.match(stories, /feedbacks\.dev dashboard/)
+  assert.match(stories, /ACME App workspace/)
   assert.match(stories, /Your workflow/)
   assert.match(stories, /Context without interrogation/)
-  assert.match(stories, /What customers see inside Orbit Notes/)
-  assert.match(stories, /feedbacks\.dev\/p\/orbit-notes/)
+  assert.match(stories, /What customers see inside ACME App/)
+  assert.match(stories, /feedbacks\.dev\/p\/acme-app/)
   assert.doesNotMatch(stories, /ACME Corp|Preparing export|Export report/)
   assert.match(install, /Dashboard-generated snippet/)
   assert.match(install, /bg-\[#e7ebe5\]/)
@@ -61,7 +61,11 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   assert.match(install, /Agent brief/)
   assert.match(css, /overflow-anchor: none/)
   assert.match(css, /max-height: calc\(100svh - 11rem\)/)
-  assert.match(css, /landing-send-radiate/)
+  assert.match(css, /landing-send-breathe/)
+  assert.match(css, /content-visibility: auto/)
+  assert.match(css, /\.windows98 \.win98-chrome/)
+  assert.match(source, /feedbacks\.dev - Trust and performance/)
+  assert.match(stories, /feedbacks\.dev - Feedback journey/)
   assert.match(source, /Under 20KB/)
   assert.match(source, /Browser-safe/)
   assert.match(source, /One feedback loop/)
@@ -73,6 +77,16 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   assert.doesNotMatch(source, /WidgetDemo/)
   assert.doesNotMatch(source, /createServerSupabase/)
   assert.doesNotMatch(source, /userbase|Collecting user feedbacks/)
+})
+
+test('hosted widget assets are cross-origin compatible and bounded by a short browser cache', () => {
+  const nextConfig = read('../../next.config.js')
+
+  assert.match(nextConfig, /source: '\/widget\/:path\*\.js'/)
+  assert.match(nextConfig, /key: 'Access-Control-Allow-Origin'[\s\S]*value: '\*'/)
+  assert.match(nextConfig, /key: 'Cross-Origin-Resource-Policy'[\s\S]*value: 'cross-origin'/)
+  assert.match(nextConfig, /max-age=300, s-maxage=3600, stale-while-revalidate=86400/)
+  assert.doesNotMatch(nextConfig, /bodySizeLimit: '10mb'/)
 })
 
 test('marketing routes expose a crawlable acquisition foundation without indexing private workspaces', () => {

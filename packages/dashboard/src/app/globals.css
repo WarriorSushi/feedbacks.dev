@@ -665,20 +665,30 @@
   mix-blend-mode: soft-light;
 }
 
-.landing-reveal[data-motion-ready="true"]:not([data-visible="true"]) > div {
+.landing-reveal[data-motion-ready="true"]:not([data-visible="true"]) > div:not(.win98-chrome) {
   opacity: 0;
   transform: translate3d(0, 30px, 0) scale(0.992);
 }
 
-.landing-reveal > div {
+.landing-reveal > div:not(.win98-chrome) {
   transition:
     opacity 760ms var(--ease-standard),
     transform 920ms var(--ease-spring);
 }
 
-.landing-reveal[data-visible="true"] > div {
+.landing-reveal[data-visible="true"] > div:not(.win98-chrome) {
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* Skip layout and paint work for long, below-the-fold marketing chapters. */
+.marketing-shell main > section:not(:first-child) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
+.win98-section-window {
+  position: relative;
 }
 
 .landing-use-case-row {
@@ -3231,8 +3241,8 @@ html.windows98 {
 }
 
 .windows98 ::selection {
-  background: var(--win98-shadow);
-  color: var(--win98-text);
+  background: var(--win98-title);
+  color: var(--win98-highlight);
 }
 
 .windows98 *:focus-visible {
@@ -3293,8 +3303,7 @@ html.windows98 {
   padding: 3px;
 }
 
-.windows98 .win98-titlebar,
-.windows98 .win98-page-title {
+.windows98 .win98-titlebar {
   border: 0 !important;
   background: linear-gradient(90deg, var(--win98-title), var(--win98-title-end)) !important;
   color: var(--win98-highlight) !important;
@@ -3308,22 +3317,107 @@ html.windows98 {
 }
 
 .windows98 .win98-page-title {
+  position: relative;
   margin-bottom: 6px;
-  padding: 6px 8px !important;
+  padding: 38px 10px 12px !important;
+  border: 0 !important;
+  background: var(--win98-face) !important;
+  color: var(--win98-text) !important;
   box-shadow: var(--win98-raised) !important;
 }
 
-.windows98 .win98-titlebar :is(h1, h2, h3, p, span, a),
-.windows98 .win98-page-title :is(h1, h2, h3, p, span, a) {
+.windows98 .win98-titlebar :is(h1, h2, h3, p, span, a) {
   color: inherit !important;
   letter-spacing: 0 !important;
 }
 
-.windows98 .win98-titlebar :is(h1, h2, h3),
-.windows98 .win98-page-title :is(h1, h2, h3) {
+.windows98 .win98-titlebar :is(h1, h2, h3) {
   font-size: 0.8125rem !important;
   font-weight: 700 !important;
   line-height: 1.15 !important;
+}
+
+.windows98 .win98-page-title h1 {
+  color: var(--win98-text) !important;
+  font-size: 1.375rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+}
+
+.windows98 .win98-page-title p {
+  color: var(--win98-dark-shadow) !important;
+  letter-spacing: 0 !important;
+}
+
+.windows98 .win98-page-title p:first-child {
+  color: var(--win98-title) !important;
+}
+
+.windows98 .win98-panel-header {
+  padding: 34px 8px 9px !important;
+  background: var(--win98-face) !important;
+  color: var(--win98-text) !important;
+}
+
+.windows98 .win98-panel-header :is(h2, h3) {
+  color: var(--win98-text) !important;
+  font-size: 0.8125rem !important;
+}
+
+.windows98 .win98-panel-header p {
+  color: var(--win98-dark-shadow) !important;
+}
+
+.windows98 .win98-chrome {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  left: 3px;
+  z-index: 20;
+  display: flex !important;
+  min-width: 0;
+  height: 24px;
+  align-items: center;
+  gap: 8px;
+  padding: 3px;
+  background: linear-gradient(90deg, var(--win98-title), var(--win98-title-end));
+  color: var(--win98-highlight) !important;
+  font-family: "MS Sans Serif", Tahoma, "Segoe UI", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.windows98 .win98-chrome-title {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--win98-highlight) !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.windows98 .win98-chrome-controls {
+  display: flex;
+  height: 18px;
+  flex: none;
+  align-items: stretch;
+  gap: 2px;
+  color: var(--win98-text) !important;
+}
+
+.windows98 .win98-chrome-controls > span {
+  display: flex;
+  width: 18px;
+  align-items: center;
+  justify-content: center;
+  background: var(--win98-face);
+  color: var(--win98-text) !important;
+  box-shadow: var(--win98-raised);
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .windows98 .win98-window > [class*="border-t"],
@@ -3673,6 +3767,26 @@ html.windows98 {
 .windows98 .marketing-shell > footer {
   background: var(--win98-face) !important;
   border-color: var(--win98-shadow) !important;
+}
+
+.windows98 .marketing-shell > main > .win98-section-window {
+  margin: 12px;
+  border: 0 !important;
+  box-shadow:
+    3px 3px 0 rgb(5 5 8 / 0.42),
+    var(--win98-raised) !important;
+}
+
+.windows98 .marketing-shell > main > .win98-section-window > .win98-chrome {
+  top: 3px;
+}
+
+.windows98 .landing-proof-strip {
+  padding-top: 3.75rem !important;
+}
+
+.windows98 .landing-reveal > div:not(.win98-chrome) {
+  transition: none;
 }
 
 .windows98 .marketing-shell > main > section.landing-try-hero {
@@ -4206,6 +4320,10 @@ html.windows98 {
   }
 
   .windows98 .landing-hero > .relative {
+    margin: 6px;
+  }
+
+  .windows98 .marketing-shell > main > .win98-section-window {
     margin: 6px;
   }
 
