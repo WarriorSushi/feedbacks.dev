@@ -1201,6 +1201,11 @@
   to { background-position: 32px 0; }
 }
 
+@keyframes landing-flow-travel-vertical {
+  from { background-position: 0 -120px; }
+  to { background-position: 0 240px; }
+}
+
 @keyframes landing-route-arrive {
   0%, 18% { opacity: 0.62; transform: translateY(5px); }
   34%, 100% { opacity: 1; transform: translateY(0); }
@@ -1209,6 +1214,70 @@
 @keyframes landing-card-hover {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
+}
+
+@keyframes landing-capture-host-loop {
+  0%, 42%, 92%, 100% { opacity: 0.78; filter: saturate(0.82) brightness(0.96); }
+  52%, 82% { opacity: 0.58; filter: saturate(0.65) brightness(0.88); }
+}
+
+@keyframes landing-capture-scrim-loop {
+  0%, 42%, 92%, 100% { opacity: 0.16; }
+  52%, 82% { opacity: 0.3; }
+}
+
+@keyframes landing-capture-compose-loop {
+  0%, 44%, 92%, 100% { opacity: 1; transform: translateY(0); }
+  51%, 84% { opacity: 0; transform: translateY(-5px); }
+}
+
+@keyframes landing-capture-success-loop {
+  0%, 47%, 89%, 100% { opacity: 0; transform: translateY(5px) scale(0.98); }
+  55%, 82% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes landing-capture-send-loop {
+  0%, 37%, 47%, 100% { transform: scale(1); box-shadow: 0 0 0 0 oklch(var(--primary) / 0); }
+  41% { transform: scale(0.9); box-shadow: 0 0 0 7px oklch(var(--primary) / 0.12); }
+  44% { transform: scale(1.03); box-shadow: 0 0 0 12px oklch(var(--primary) / 0); }
+}
+
+@keyframes landing-success-mark-loop {
+  0%, 50%, 89%, 100% { transform: scale(0.62) rotate(-12deg); }
+  58%, 82% { transform: scale(1) rotate(0); }
+}
+
+@keyframes landing-soft-arrival-loop {
+  0%, 100% { border-color: oklch(var(--primary) / 0.22); box-shadow: 0 0 0 0 oklch(var(--primary) / 0); }
+  12%, 30% { border-color: oklch(var(--primary) / 0.48); box-shadow: 0 0 0 5px oklch(var(--primary) / 0.055); }
+}
+
+@keyframes landing-highlight-loop {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(251 113 133 / 0); }
+  42%, 62% { box-shadow: 0 0 0 5px rgb(251 113 133 / 0.09); }
+}
+
+@keyframes landing-sheen-loop {
+  0%, 24% { transform: translateX(-125%); opacity: 0; }
+  34% { opacity: 0.55; }
+  52%, 100% { transform: translateX(175%); opacity: 0; }
+}
+
+@keyframes landing-update-pop-loop {
+  0%, 100% { transform: translateY(0); box-shadow: 0 26px 70px -28px rgb(0 0 0 / 0.55); }
+  12% { transform: translateY(-5px); box-shadow: 0 30px 76px -25px oklch(var(--primary) / 0.32); }
+  24%, 88% { transform: translateY(-2px); }
+}
+
+@keyframes landing-bell-loop {
+  0%, 7%, 14%, 100% { transform: rotate(0); }
+  4%, 11% { transform: rotate(13deg); }
+}
+
+@keyframes landing-code-scan-loop {
+  0%, 12% { transform: translateY(-2px); opacity: 0; }
+  20% { opacity: 0.75; }
+  52%, 100% { transform: translateY(420px); opacity: 0; }
 }
 
 .landing-journey {
@@ -1259,6 +1328,37 @@
   animation: landing-card-hover 4.8s var(--ease-in-out) infinite;
 }
 
+.landing-capture-host {
+  animation: landing-capture-host-loop 8.4s var(--ease-in-out) infinite;
+}
+
+.landing-capture-scrim {
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(145deg, oklch(var(--background) / 0.68), oklch(var(--foreground) / 0.24));
+  animation: landing-capture-scrim-loop 8.4s var(--ease-in-out) infinite;
+}
+
+.landing-capture-compose {
+  min-height: 121px;
+  animation: landing-capture-compose-loop 8.4s var(--ease-in-out) infinite;
+}
+
+.landing-capture-send {
+  display: inline-block;
+  transform-origin: center;
+  animation: landing-capture-send-loop 8.4s var(--ease-in-out) infinite;
+}
+
+.landing-capture-success {
+  pointer-events: none;
+  animation: landing-capture-success-loop 8.4s var(--ease-in-out) infinite;
+}
+
+.landing-capture-success-mark {
+  animation: landing-success-mark-loop 8.4s var(--ease-spring) infinite;
+}
+
 .landing-flow-line {
   background-image: linear-gradient(90deg, transparent, oklch(var(--primary)), transparent);
   background-size: 32px 100%;
@@ -1267,6 +1367,37 @@
 
 .landing-route-card {
   animation: landing-route-arrive 4.8s var(--ease-out-expo) infinite;
+}
+
+.landing-inbox-arrival,
+.landing-inbox-detail {
+  animation: landing-soft-arrival-loop 7.2s var(--ease-in-out) infinite;
+}
+
+.landing-inbox-detail {
+  animation-delay: 280ms;
+}
+
+.landing-workflow-stack {
+  position: relative;
+  isolation: isolate;
+}
+
+.landing-workflow-stack::before {
+  content: "";
+  position: absolute;
+  top: 17%;
+  bottom: 17%;
+  left: 31px;
+  z-index: -1;
+  width: 2px;
+  background: linear-gradient(transparent, oklch(var(--primary) / 0.5), transparent);
+  background-size: 100% 42%;
+  animation: landing-flow-travel-vertical 1.8s linear infinite;
+}
+
+.landing-evidence-highlight {
+  animation: landing-highlight-loop 6.8s var(--ease-in-out) infinite;
 }
 
 .landing-context-section {
@@ -1311,8 +1442,23 @@
 }
 
 .landing-inbox-row.is-active {
+  position: relative;
+  overflow: hidden;
   background: rgb(190 242 100 / 0.065);
   box-shadow: inset 3px 0 rgb(190 242 100 / 0.9);
+}
+
+.landing-inbox-row.is-active::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 25%, rgb(190 242 100 / 0.11), transparent 64%);
+  animation: landing-sheen-loop 6.6s var(--ease-in-out) infinite;
+}
+
+.landing-triage-action {
+  animation: landing-soft-arrival-loop 6.6s var(--ease-in-out) 900ms infinite;
 }
 
 .landing-close-loop {
@@ -1331,6 +1477,31 @@
   transform: translateY(-2px);
   border-color: oklch(var(--primary) / 0.45);
   background: oklch(var(--primary) / 0.08);
+}
+
+.landing-update-pop {
+  animation: landing-update-pop-loop 7.4s var(--ease-in-out) infinite;
+}
+
+.landing-update-bell {
+  display: inline-flex;
+  transform-origin: 50% 15%;
+  animation: landing-bell-loop 7.4s var(--ease-in-out) infinite;
+}
+
+.landing-board-response {
+  animation: landing-soft-arrival-loop 7.2s var(--ease-in-out) 1.1s infinite;
+}
+
+.landing-install-code-frame {
+  box-shadow: 0 24px 68px -42px rgb(0 0 0 / 0.9);
+}
+
+.landing-install-code-scan {
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(95 139 32 / 0.9), transparent);
+  box-shadow: 0 0 18px rgb(95 139 32 / 0.32);
+  animation: landing-code-scan-loop 6.8s var(--ease-in-out) infinite;
 }
 
 .landing-setup-section {
@@ -3346,6 +3517,34 @@ html.windows98 {
   box-shadow: var(--win98-sunken);
 }
 
+.windows98 .landing-capture-scrim {
+  background: rgb(0 0 0 / 0.22) !important;
+}
+
+.windows98 .landing-capture-success {
+  top: 24px;
+  color: var(--win98-text) !important;
+  background: var(--win98-face) !important;
+}
+
+.windows98 .landing-capture-success-mark {
+  border-radius: 0 !important;
+  color: var(--win98-highlight) !important;
+  background: var(--win98-title) !important;
+  box-shadow: var(--win98-raised) !important;
+}
+
+.windows98 .landing-install-code-frame {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: var(--win98-sunken) !important;
+}
+
+.windows98 .landing-install-code-scan {
+  background: var(--win98-title);
+  box-shadow: none;
+}
+
 .windows98 .landing-scene-card [class~="bg-background"][class*="border"],
 .windows98 .landing-route-card,
 .windows98 .landing-evidence-field,
@@ -3443,6 +3642,10 @@ html.windows98 {
 .windows98 .landing-install-shell pre {
   border: 0 !important;
   background: var(--win98-window) !important;
+  color: var(--win98-text) !important;
+}
+
+.windows98 .landing-install-shell pre code {
   color: var(--win98-text) !important;
 }
 

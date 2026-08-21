@@ -65,7 +65,10 @@ export function LandingVibeInstall({ snippet }: { snippet: string }) {
           </div>
 
           <div className="mt-4 flex items-center justify-between text-[10px] text-zinc-500"><span>{view === 'code' ? 'Dashboard-generated snippet' : 'A bounded task for your coding agent'}</span><span>{view === 'code' ? 'HTML' : 'Plain text'}</span></div>
-          <pre className="mt-4 min-h-[420px] overflow-x-auto whitespace-pre-wrap break-words rounded-xl border border-white/15 bg-[#e7ebe5] p-5 font-mono text-[11px] leading-6 text-[#1b201b] shadow-inner sm:p-6"><code>{activeValue}</code></pre>
+          <div className="landing-install-code-frame relative mt-4 overflow-hidden rounded-xl">
+            <pre className="min-h-[420px] overflow-x-auto whitespace-pre-wrap break-words rounded-xl border border-white/15 bg-[#e7ebe5] p-5 font-mono text-[11px] leading-6 text-[#1b201b] shadow-inner sm:p-6"><code>{activeValue}</code></pre>
+            <span className="landing-install-code-scan absolute inset-x-0 top-0 h-px" aria-hidden="true" />
+          </div>
           <p className="mt-4 text-xs leading-5 text-zinc-500 lg:max-w-[62%]">Keep the stable embed unchanged. Form fields, placement, copy, and styling update remotely after you save them in feedbacks.dev.</p>
         </div>
       </div>

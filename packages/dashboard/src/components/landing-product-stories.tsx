@@ -112,8 +112,8 @@ function ProductCaptureScene() {
           <span className="ml-2 truncate font-mono">orbit-notes.app/settings/notifications</span>
         </div>
       </div>
-      <div className="relative min-h-[390px] bg-[linear-gradient(145deg,oklch(var(--card)),oklch(var(--muted)/0.45))] p-5">
-        <div className="max-w-[82%]">
+      <div className="landing-capture-stage relative min-h-[390px] overflow-hidden bg-[linear-gradient(145deg,oklch(var(--card)),oklch(var(--muted)/0.45))] p-5">
+        <div className="landing-capture-host max-w-[82%]">
           <p className="text-[10px] font-semibold text-muted-foreground">ORBIT NOTES</p>
           <h3 className="mt-3 text-xl font-semibold">Notification schedule</h3>
           <p className="mt-2 text-xs leading-5 text-muted-foreground">Choose when your daily digest arrives.</p>
@@ -122,11 +122,17 @@ function ProductCaptureScene() {
             <div className="flex items-center justify-between border-t pt-3"><span>Delivery time</span><span className="font-semibold">9:00 AM</span></div>
           </div>
         </div>
-        <div className="landing-app-window landing-capture-pop absolute bottom-4 right-4 w-[86%] max-w-[290px] overflow-hidden rounded-xl border bg-card shadow-[0_24px_65px_-24px_rgb(0_0_0/0.45)]">
+        <span className="landing-capture-scrim absolute inset-0" aria-hidden="true" />
+        <div className="landing-app-window landing-capture-pop absolute bottom-4 right-4 z-10 w-[86%] max-w-[290px] overflow-hidden rounded-xl border bg-card shadow-[0_24px_65px_-24px_rgb(0_0_0/0.45)]">
           <div className="landing-window-titlebar flex items-center justify-between border-b px-4 py-3"><span className="text-xs font-semibold">Send feedback</span><span className="text-[9px] font-medium text-rose-500">Bug</span></div>
-          <div className="p-4">
+          <div className="landing-capture-compose p-4">
             <p className="rounded-lg border bg-background p-3 text-xs leading-5">My notification time resets after I save.</p>
-            <div className="mt-3 flex items-center justify-between gap-3"><span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground"><Camera className="h-3 w-3" />Screenshot</span><span className="rounded-md bg-primary px-3 py-2 text-[10px] font-semibold text-primary-foreground">Send</span></div>
+            <div className="mt-3 flex items-center justify-between gap-3"><span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground"><Camera className="h-3 w-3" />Screenshot</span><span className="landing-capture-send rounded-md bg-primary px-3 py-2 text-[10px] font-semibold text-primary-foreground">Send</span></div>
+          </div>
+          <div className="landing-capture-success absolute inset-x-0 bottom-0 top-[37px] flex flex-col items-center justify-center bg-card px-5 text-center" aria-hidden="true">
+            <span className="landing-capture-success-mark flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500 text-white"><Check className="h-5 w-5" /></span>
+            <p className="mt-3 text-sm font-semibold">Feedback sent</p>
+            <p className="mt-1 text-[10px] leading-4 text-muted-foreground">Message and context arrived together.</p>
           </div>
         </div>
       </div>
@@ -153,14 +159,14 @@ function FeedbackInboxScene() {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-300"><CircleDot className="h-3 w-3" />Live</span>
       </div>
       <div className="min-h-[390px] p-4">
-        <div className="rounded-xl border border-primary/25 bg-primary/[0.055] p-4">
+        <div className="landing-inbox-arrival rounded-xl border border-primary/25 bg-primary/[0.055] p-4">
           <div className="flex items-start gap-3">
             <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-rose-400" />
             <div><p className="text-xs font-semibold leading-5">Notification time resets after save</p><p className="mt-1 text-[9px] text-muted-foreground">Bug · just now</p></div>
             <span className="ml-auto rounded-md bg-rose-500/10 px-2 py-1 text-[9px] font-semibold text-rose-600 dark:text-rose-300">New</span>
           </div>
         </div>
-        <div className="mt-4 rounded-xl border p-4">
+        <div className="landing-inbox-detail mt-4 rounded-xl border p-4">
           <p className="text-sm font-semibold leading-6">“My notification time resets after I save.”</p>
           <div className="mt-4 grid grid-cols-2 gap-2 text-[10px]">
             <ContextChip Icon={Globe2} text="/settings/notifications" />
@@ -188,7 +194,7 @@ function WorkflowScene() {
   return (
     <article className="landing-app-window landing-scene-card overflow-hidden rounded-2xl border bg-card">
       <SceneLabel number="03" title="Your workflow" />
-      <div className="flex min-h-[443px] flex-col justify-center gap-3 p-4">
+      <div className="landing-workflow-stack flex min-h-[443px] flex-col justify-center gap-3 p-4">
         {destinations.map((item, index) => (
           <div key={item.title} className="landing-route-card flex items-center gap-3 rounded-xl border bg-background p-3" style={{ animationDelay: `${index * 180}ms` }}>
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-foreground text-[10px] font-bold text-background">{item.badge}</span>
@@ -213,7 +219,7 @@ function ContextEvidenceScene() {
         <div className="landing-window-titlebar flex items-center justify-between"><span className="inline-flex items-center gap-2 text-xs font-semibold"><Camera className="h-4 w-4 text-primary" />What they saw</span><span className="text-[9px] text-muted-foreground">Optional screenshot</span></div>
         <div className="mt-5 rounded-xl border bg-muted/30 p-4">
           <p className="text-[9px] font-semibold text-muted-foreground">ORBIT NOTES · NOTIFICATIONS</p>
-          <div className="mt-4 rounded-lg border border-rose-400/40 bg-card p-3 shadow-sm">
+          <div className="landing-evidence-highlight mt-4 rounded-lg border border-rose-400/40 bg-card p-3 shadow-sm">
             <div className="flex items-center justify-between text-[10px]"><span>Delivery time</span><span className="font-semibold">9:00 AM</span></div>
             <p className="mt-3 rounded-md bg-rose-500/10 p-2 text-[9px] font-medium text-rose-600 dark:text-rose-300">Resets to 8:00 AM after save</p>
           </div>
@@ -280,7 +286,7 @@ function TriageDashboardScene() {
             <div className="flex items-center justify-between py-3"><dt className="text-zinc-500">Page</dt><dd className="font-mono text-zinc-300">/settings/notifications</dd></div>
             <div className="flex items-center justify-between py-3"><dt className="text-zinc-500">Destination</dt><dd className="font-medium">GitHub issue #184</dd></div>
           </dl>
-          <div className="mt-6 flex flex-wrap gap-2"><span className="inline-flex items-center gap-2 rounded-md bg-lime-300 px-3 py-2 text-[10px] font-bold text-zinc-950"><GitBranch className="h-3.5 w-3.5" />Open issue</span><span className="rounded-md border border-white/10 px-3 py-2 text-[10px] font-semibold">Add note</span></div>
+          <div className="mt-6 flex flex-wrap gap-2"><span className="landing-triage-action inline-flex items-center gap-2 rounded-md bg-lime-300 px-3 py-2 text-[10px] font-bold text-zinc-950"><GitBranch className="h-3.5 w-3.5" />Open issue</span><span className="rounded-md border border-white/10 px-3 py-2 text-[10px] font-semibold">Add note</span></div>
         </div>
       </div>
     </figure>
@@ -290,14 +296,14 @@ function TriageDashboardScene() {
 function ProductUpdateScene() {
   return (
     <article className="landing-app-window landing-loop-card overflow-hidden rounded-2xl border bg-card">
-      <div className="landing-window-titlebar flex items-center justify-between border-b px-5 py-4"><div><p className="text-xs font-semibold">What customers see inside Orbit Notes</p><p className="mt-1 text-[9px] text-muted-foreground">In-product update</p></div><BellRing className="h-4 w-4 text-primary" /></div>
-      <div className="relative min-h-[390px] bg-[radial-gradient(circle_at_25%_15%,oklch(var(--primary)/0.14),transparent_42%),oklch(var(--muted)/0.28)] p-5 sm:p-7">
+      <div className="landing-window-titlebar flex items-center justify-between border-b px-5 py-4"><div><p className="text-xs font-semibold">What customers see inside Orbit Notes</p><p className="mt-1 text-[9px] text-muted-foreground">In-product update</p></div><span className="landing-update-bell"><BellRing className="h-4 w-4 text-primary" /></span></div>
+      <div className="landing-update-stage relative min-h-[390px] bg-[radial-gradient(circle_at_25%_15%,oklch(var(--primary)/0.14),transparent_42%),oklch(var(--muted)/0.28)] p-5 sm:p-7">
         <div className="max-w-sm">
           <p className="text-[10px] font-semibold text-muted-foreground">ORBIT NOTES</p>
           <h3 className="mt-3 text-2xl font-semibold">Your notes, in motion.</h3>
           <p className="mt-3 text-xs leading-5 text-muted-foreground">A calm home for daily thinking and useful reminders.</p>
         </div>
-        <div className="landing-app-window absolute bottom-5 right-5 w-[82%] max-w-sm overflow-hidden rounded-xl border bg-card shadow-[0_26px_70px_-28px_rgb(0_0_0/0.55)]">
+        <div className="landing-app-window landing-update-pop absolute bottom-5 right-5 w-[82%] max-w-sm overflow-hidden rounded-xl border bg-card shadow-[0_26px_70px_-28px_rgb(0_0_0/0.55)]">
           <div className="landing-window-titlebar flex items-center justify-between border-b px-4 py-3"><span className="inline-flex items-center gap-2 text-xs font-semibold"><Rocket className="h-3.5 w-3.5 text-primary" />What&apos;s new</span><span className="text-[9px] text-muted-foreground">Just shipped</span></div>
           <div className="p-4"><span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-300">Shipped</span><h4 className="mt-3 text-base font-semibold">Notification schedules now save instantly</h4><p className="mt-2 text-xs leading-5 text-muted-foreground">Your chosen time now stays exactly where you put it, on every device.</p><p className="mt-4 text-[9px] font-semibold text-primary">Thanks to everyone who reported this.</p></div>
         </div>
@@ -318,7 +324,7 @@ function PublicBoardScene() {
           <BoardRow votes="24" title="Pin notes to the top" meta="In progress · 6 replies" />
           <BoardRow votes="17" title="Notification schedules" meta="Shipped · 4 replies" />
         </div>
-        <div className="mt-3 flex items-start gap-2 rounded-lg bg-primary/[0.055] p-3 text-[10px] leading-4"><MessageSquareText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" /><span><strong>Official response:</strong> Weekly review is planned for the next release. Follow this idea to get the update.</span></div>
+        <div className="landing-board-response mt-3 flex items-start gap-2 rounded-lg bg-primary/[0.055] p-3 text-[10px] leading-4"><MessageSquareText className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" /><span><strong>Official response:</strong> Weekly review is planned for the next release. Follow this idea to get the update.</span></div>
       </div>
     </article>
   )
