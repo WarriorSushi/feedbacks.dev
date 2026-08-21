@@ -101,7 +101,7 @@ export default function LandingPage() {
         <section className="landing-proof-strip landing-reveal relative border-b py-6 sm:py-8">
           <div className="relative z-[2] mx-auto grid max-w-7xl gap-3 px-5 sm:px-6 md:grid-cols-3">
             {proofPoints.map(({ Icon, value, label }) => (
-              <div key={value} className="flex items-start gap-4 rounded-xl border bg-card p-5">
+              <div key={value} className="landing-premium-card flex items-start gap-4 rounded-xl border bg-card p-5">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10"><Icon className="h-4 w-4 text-primary" /></span>
                 <div><p className="text-sm font-semibold">{value}</p><p className="mt-1 text-xs leading-5 text-muted-foreground">{label}</p></div>
               </div>
@@ -113,34 +113,34 @@ export default function LandingPage() {
         <section id="pricing" className="landing-pricing-section landing-reveal relative overflow-hidden border-b py-20 sm:py-28">
           <div className="relative z-[2] mx-auto max-w-6xl px-5 sm:px-6">
             <div className="mx-auto max-w-3xl text-center">
-              <div className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-2 text-xs font-semibold"><Gift className="h-4 w-4 text-primary" />A genuinely useful Free plan</div>
+              <div className="landing-premium-card inline-flex items-center gap-2 rounded-full border bg-card px-3 py-2 text-xs font-semibold"><Gift className="h-4 w-4 text-primary" />A genuinely useful Free plan</div>
               <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Use the full feedback loop for free.</h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">No trial clock and no card. Upgrade when more projects, more history, and more volume are worth paying for.</p>
             </div>
 
             <div className="mt-12 grid gap-5 lg:grid-cols-[1.06fr_0.94fr]">
-              <article className="landing-free-plan relative overflow-hidden rounded-2xl border bg-card p-6 sm:p-9">
+              <article className="landing-premium-card landing-free-plan relative overflow-hidden rounded-2xl border bg-card p-6 sm:p-9">
                 <div className="absolute right-0 top-0 rounded-bl-xl bg-primary px-4 py-2 text-[10px] font-bold text-primary-foreground">START HERE</div>
                 <p className="text-sm font-semibold">Free forever</p>
                 <div className="mt-5 flex items-end gap-2"><p className="text-6xl font-semibold tracking-[-0.06em]">${freePlan.monthlyPrice}</p><span className="pb-2 text-sm text-muted-foreground">no card needed</span></div>
                 <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">For side projects, launches, and growing products collecting their first useful signals.</p>
                 <ul className="mt-8 grid gap-3 text-sm sm:grid-cols-2">
-                  {[`${freePlan.projectLimit} projects`, `${freePlan.feedbackMonthlyLimit} feedback / month`, `${freePlan.historyDays} days of history`, 'Feedback form + inbox', 'Public board + product updates', 'REST API + MCP + 1 webhook'].map((item) => <li key={item} className="flex items-start gap-2 rounded-lg bg-muted/35 p-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
+                  {[`${freePlan.projectLimit} projects`, `${freePlan.feedbackMonthlyLimit} feedback / month`, `${freePlan.historyDays} days of history`, 'Feedback form + inbox', 'Public board + product updates', 'REST API + MCP + 1 webhook'].map((item) => <li key={item} className="landing-premium-card flex items-start gap-2 rounded-lg border p-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
                 </ul>
                 <Link href={authHref} className="mt-8 block"><Button className="h-12 w-full gap-2 text-sm">Create a free project <ArrowRight className="h-4 w-4" /></Button></Link>
               </article>
 
-              <article className="landing-pro-plan relative overflow-hidden rounded-2xl border border-white/10 bg-[#0b0e0b] p-6 text-zinc-100 shadow-[0_34px_100px_-55px_rgb(0_0_0/0.9)] sm:p-9">
+              <article className="landing-premium-card landing-pro-plan relative overflow-hidden rounded-2xl border p-6 sm:p-9">
                 <div className="landing-pro-glow absolute -right-20 -top-20 h-56 w-56 rounded-full bg-lime-300/20 blur-3xl" aria-hidden="true" />
                 <div className="relative">
-                  <p className="text-sm font-semibold text-lime-300">Pro, when you need it</p>
-                  <div className="mt-5 flex items-end gap-2"><p className="text-6xl font-semibold tracking-[-0.06em]">${proPlan.monthlyPrice}</p><span className="pb-2 text-sm text-zinc-500">/ month</span></div>
-                  <p className="mt-4 max-w-md text-sm leading-6 text-zinc-400">For products with steady feedback, longer memory, and more destinations. Cancel without losing your work.</p>
+                  <p className="text-sm font-semibold text-primary">Pro, when you need it</p>
+                  <div className="mt-5 flex items-end gap-2"><p className="text-6xl font-semibold tracking-[-0.06em]">${proPlan.monthlyPrice}</p><span className="pb-2 text-sm text-muted-foreground">/ month</span></div>
+                  <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">For products with steady feedback, longer memory, and more destinations. Cancel without losing your work.</p>
                   <ul className="mt-8 space-y-3 text-sm">
-                    {['Unlimited projects and feedback', 'Full feedback history', 'Unlimited webhook destinations', 'Scheduling and 90-day update analytics', 'Custom branding controls'].map((item) => <li key={item} className="flex items-start gap-3 border-b border-white/10 pb-3 last:border-0"><Check className="mt-0.5 h-4 w-4 shrink-0 text-lime-300" />{item}</li>)}
+                    {['Unlimited projects and feedback', 'Full feedback history', 'Unlimited webhook destinations', 'Scheduling and 90-day update analytics', 'Custom branding controls'].map((item) => <li key={item} className="flex items-start gap-3 border-b pb-3 last:border-0"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
                   </ul>
                   <Link href={proAuthHref} className="mt-8 block"><Button className="h-12 w-full bg-lime-300 text-sm text-zinc-950 hover:bg-lime-200">Choose Pro</Button></Link>
-                  <p className="mt-4 text-center text-[10px] text-zinc-500">The Free plan stays available if you downgrade.</p>
+                  <p className="mt-4 text-center text-[10px] text-muted-foreground">The Free plan stays available if you downgrade.</p>
                 </div>
               </article>
             </div>
@@ -158,7 +158,7 @@ export default function LandingPage() {
                 ['Do I reinstall after changing the form?', 'No. Save the form in the dashboard and the existing widget loads the change.'],
                 ['What does the user send?', 'A short note, optional rating and screenshot, plus the page and browser context needed to understand it.'],
               ].map(([question, answer]) => (
-                <details key={question} className="group rounded-xl border bg-card px-5 py-2"><summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-5 py-3 text-sm font-semibold">{question}<span aria-hidden="true" className="text-lg text-primary transition-transform group-open:rotate-45">+</span></summary><p className="mb-4 max-w-2xl text-sm leading-6 text-muted-foreground">{answer}</p></details>
+                <details key={question} className="landing-premium-card landing-faq-item group rounded-xl border bg-card px-5 py-2"><summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-5 py-3 text-sm font-semibold">{question}<span aria-hidden="true" className="text-lg text-primary transition-transform group-open:rotate-45">+</span></summary><p className="mb-4 max-w-2xl text-sm leading-6 text-muted-foreground">{answer}</p></details>
               ))}
             </div>
           </div>
@@ -167,8 +167,8 @@ export default function LandingPage() {
 
         <section className="landing-final-cta landing-reveal relative overflow-hidden px-5 py-24 sm:px-6 sm:py-32">
           <div className="landing-final-orb absolute left-1/2 top-1/2 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
-          <div className="landing-final-chip landing-final-chip-left absolute left-[8%] top-[25%] hidden rotate-[-5deg] items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><MessageSquareText className="h-4 w-4 text-primary" />New feedback · just now</div>
-          <div className="landing-final-chip landing-final-chip-right absolute bottom-[24%] right-[8%] hidden rotate-[4deg] items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><Check className="h-4 w-4 text-primary" />Routed to GitHub #184</div>
+          <div className="landing-premium-card landing-final-chip landing-final-chip-left absolute left-[8%] top-[25%] hidden rotate-[-5deg] items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><MessageSquareText className="h-4 w-4 text-primary" />New feedback · just now</div>
+          <div className="landing-premium-card landing-final-chip landing-final-chip-right absolute bottom-[24%] right-[8%] hidden rotate-[4deg] items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><Check className="h-4 w-4 text-primary" />Routed to GitHub #184</div>
           <Image className="landing-section-mascot landing-mascot-final" src="/mascots-v2/final-victory.png" alt="" width={1217} height={1293} sizes="(max-width: 767px) 150px, 260px" aria-hidden="true" />
           <div className="relative mx-auto max-w-4xl text-center">
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border bg-card shadow-sm"><HeartHandshake className="h-6 w-6 text-primary" /></span>

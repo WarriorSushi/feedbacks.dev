@@ -12,7 +12,7 @@ export function LandingProofPanel({ installSnippet }: { installSnippet: string }
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-foreground/15 bg-card shadow-[var(--shadow-float)]" aria-label="A project moving from install to feedback to a user update">
+    <div className="landing-premium-card overflow-hidden rounded-xl border border-foreground/15 bg-card shadow-[var(--shadow-float)]" aria-label="A project moving from install to feedback to a user update">
       <header className="flex items-center justify-between border-b bg-[oklch(var(--surface-raised))] px-4 py-3">
         <div className="flex min-w-0 items-center gap-2.5">
           <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-sm font-black text-primary">A</span>

@@ -128,7 +128,7 @@ function ProductCaptureScene() {
           <p className="text-[10px] font-semibold text-muted-foreground">ACME APP</p>
           <h3 className="mt-3 text-xl font-semibold">Notification schedule</h3>
           <p className="mt-2 text-xs leading-5 text-muted-foreground">Choose when your daily digest arrives.</p>
-          <div className="mt-5 grid gap-3 rounded-xl border bg-background/80 p-4 text-xs">
+          <div className="landing-premium-card mt-5 grid gap-3 rounded-xl border bg-background/80 p-4 text-xs">
             <div className="flex items-center justify-between"><span>Weekdays</span><span className="rounded-md bg-primary/10 px-2 py-1 font-medium text-primary">Mon to Fri</span></div>
             <div className="flex items-center justify-between border-t pt-3"><span>Delivery time</span><span className="font-semibold">9:00 AM</span></div>
           </div>
@@ -170,14 +170,14 @@ function FeedbackInboxScene() {
         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-300"><CircleDot className="h-3 w-3" />Live</span>
       </div>
       <div className="min-h-[390px] p-4">
-        <div className="landing-inbox-arrival rounded-xl border border-primary/25 bg-primary/[0.055] p-4">
+        <div className="landing-premium-card landing-inbox-arrival rounded-xl border border-primary/25 bg-primary/[0.055] p-4">
           <div className="flex items-start gap-3">
             <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-rose-400" />
             <div><p className="text-xs font-semibold leading-5">Notification time resets after save</p><p className="mt-1 text-[9px] text-muted-foreground">Bug · just now</p></div>
             <span className="ml-auto rounded-md bg-rose-500/10 px-2 py-1 text-[9px] font-semibold text-rose-600 dark:text-rose-300">New</span>
           </div>
         </div>
-        <div className="landing-inbox-detail mt-4 rounded-xl border p-4">
+        <div className="landing-premium-card landing-inbox-detail mt-4 rounded-xl border p-4">
           <p className="text-sm font-semibold leading-6">“My notification time resets after I save.”</p>
           <div className="mt-4 grid grid-cols-2 gap-2 text-[10px]">
             <ContextChip Icon={Globe2} text="/settings/notifications" />
@@ -213,7 +213,7 @@ function WorkflowScene() {
             <Check className="ml-auto h-4 w-4 text-emerald-500" />
           </div>
         ))}
-        <div className="mt-2 rounded-xl border border-dashed bg-muted/25 p-4 text-center">
+        <div className="landing-premium-card mt-2 rounded-xl border border-dashed bg-muted/25 p-4 text-center">
           <Webhook className="mx-auto h-5 w-5 text-primary" />
           <p className="mt-2 text-xs font-semibold">Or send it anywhere</p>
           <p className="mt-1 text-[9px] leading-4 text-muted-foreground">Email, Discord, or your own webhook</p>

@@ -13,7 +13,7 @@ export function LandingShowcase({ websiteSnippet, agentPrompt }: LandingShowcase
   const [activeTab, setActiveTab] = React.useState<'snippet' | 'agent'>('snippet')
 
   return (
-    <div className="overflow-hidden rounded-2xl border bg-card shadow-2xl shadow-black/[0.08]">
+    <div className="landing-premium-card overflow-hidden rounded-2xl border bg-card shadow-2xl shadow-black/[0.08]">
       <div className="flex flex-wrap gap-2 border-b bg-muted/35 p-2">
         {[
           { id: 'snippet' as const, label: 'Install snippet', Icon: Code2 },

@@ -2787,6 +2787,78 @@ html:not(.dark):not(.windows98) .auth-form-pane {
   82%, 100% { transform: skewX(-18deg) translateX(620%); }
 }
 
+/* Shared landing surfaces: cool slate keeps cards distinct in both color themes. */
+.marketing-shell {
+  --landing-slate-surface: linear-gradient(145deg, oklch(0.985 0.006 250), oklch(0.955 0.012 250) 54%, oklch(0.925 0.018 250));
+  --landing-slate-surface-raised: linear-gradient(155deg, oklch(0.995 0.004 250), oklch(0.965 0.011 250) 58%, oklch(0.94 0.017 250));
+  --landing-slate-titlebar: linear-gradient(180deg, oklch(0.99 0.005 250), oklch(0.945 0.014 250));
+  --landing-slate-border: oklch(0.7 0.025 250 / 0.52);
+  --landing-slate-shadow: 0 28px 72px -42px rgb(30 41 59 / 0.38), inset 0 1px 0 rgb(255 255 255 / 0.84);
+}
+
+.dark .marketing-shell {
+  --landing-slate-surface: linear-gradient(145deg, oklch(0.3 0.022 250), oklch(0.245 0.02 250) 52%, oklch(0.205 0.018 250));
+  --landing-slate-surface-raised: linear-gradient(150deg, oklch(0.34 0.024 250), oklch(0.275 0.021 250) 56%, oklch(0.225 0.019 250));
+  --landing-slate-titlebar: linear-gradient(180deg, oklch(0.34 0.024 250), oklch(0.265 0.02 250));
+  --landing-slate-border: oklch(0.62 0.035 250 / 0.44);
+  --landing-slate-shadow: 0 30px 82px -38px rgb(0 0 0 / 0.72), inset 0 1px 0 rgb(255 255 255 / 0.09);
+}
+
+.marketing-shell :is(
+  .landing-premium-card,
+  .landing-app-window,
+  .landing-scene-card,
+  .landing-evidence-card,
+  .landing-loop-card,
+  .landing-route-card,
+  .landing-demo-shell,
+  .landing-demo-code-window,
+  .landing-demo-app-window,
+  .landing-demo-inbox,
+  .landing-demo-release-app,
+  .landing-demo-update-card,
+  .landing-demo-float,
+  .landing-product-cinema,
+  .landing-product-code-window,
+  .landing-product-app-preview,
+  .landing-product-settings-window,
+  .landing-product-toast,
+  .landing-feedback-capture-card,
+  .landing-feedback-inbox,
+  .landing-feedback-update
+) {
+  border-color: var(--landing-slate-border) !important;
+  background: var(--landing-slate-surface) !important;
+  box-shadow: var(--landing-slate-shadow) !important;
+}
+
+.marketing-shell :is(
+  .landing-capture-stage,
+  .landing-triage-main,
+  .landing-triage-sidebar,
+  .landing-scene-card > :not(.landing-window-titlebar),
+  .landing-loop-card > :not(.landing-window-titlebar),
+  .landing-capture-success
+) {
+  background: var(--landing-slate-surface-raised) !important;
+}
+
+.marketing-shell :is(.landing-window-titlebar, .landing-demo-topbar) {
+  border-color: var(--landing-slate-border) !important;
+  background: var(--landing-slate-titlebar) !important;
+}
+
+.marketing-shell :is(
+  .landing-premium-card,
+  .landing-app-window,
+  .landing-scene-card,
+  .landing-evidence-card,
+  .landing-loop-card,
+  .landing-route-card
+):hover {
+  border-color: oklch(var(--primary) / 0.42) !important;
+}
+
 /* ─── Windows 98 appearance ──────────────────────────────────────────────── */
 
 .windows98 body {
