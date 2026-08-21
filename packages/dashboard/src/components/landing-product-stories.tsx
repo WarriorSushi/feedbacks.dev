@@ -72,13 +72,13 @@ export function LandingProductStories() {
         <Image className="landing-section-mascot landing-mascot-context-v2" src="/mascots-v2/context-detective.png" alt="" width={1024} height={1536} sizes="(max-width: 767px) 150px, 230px" aria-hidden="true" />
       </section>
 
-      <section className="landing-inbox-section landing-reveal win98-section-window border-b py-20 text-zinc-100 sm:py-28">
+      <section className="landing-inbox-section landing-reveal win98-section-window border-b py-20 sm:py-28">
         <Win98Chrome title="feedbacks.dev - Feedback inbox" />
         <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-lime-300">Inside feedbacks.dev</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Inside feedbacks.dev</p>
             <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Open the inbox and know what deserves attention.</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-zinc-400">New messages are distinct, technical context is already attached, and the next action is visible. It feels like triage, not archaeology.</p>
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">New messages are distinct, technical context is already attached, and the next action is visible. It feels like triage, not archaeology.</p>
           </div>
           <TriageDashboardScene />
           <Image className="landing-section-mascot landing-mascot-inbox" src="/mascots-v2/inbox-controller.png" alt="" width={1536} height={1024} sizes="(max-width: 767px) 220px, 400px" aria-hidden="true" />
@@ -314,7 +314,7 @@ function TriageDashboardScene() {
   return (
     <div className="landing-triage-stage relative mx-auto mt-12 max-w-6xl">
       <span className="landing-triage-backlight" aria-hidden="true" />
-      <figure className="landing-app-window landing-triage-dashboard relative z-[1] overflow-hidden rounded-2xl border border-white/10 bg-[#0d100d]">
+      <figure className="landing-app-window landing-triage-dashboard relative z-[1] overflow-hidden rounded-2xl border border-white/10 bg-[#0d100d] text-zinc-100">
         <div className="landing-window-titlebar flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-lime-300 text-[10px] font-black text-zinc-950">f.</span><p className="text-xs font-semibold">feedbacks.dev</p></div>
           <span className="inline-flex items-center gap-2 text-[9px] text-zinc-500"><CircleDot className="h-3 w-3 text-lime-300" />ACME App workspace</span>
