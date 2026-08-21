@@ -98,7 +98,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="landing-proof-strip landing-reveal relative overflow-hidden border-b py-6 sm:py-8">
+        <section className="landing-proof-strip landing-reveal relative border-b py-6 sm:py-8">
           <div className="relative z-[2] mx-auto grid max-w-7xl gap-3 px-5 sm:px-6 md:grid-cols-3">
             {proofPoints.map(({ Icon, value, label }) => (
               <div key={value} className="flex items-start gap-4 rounded-xl border bg-card p-5">
