@@ -1457,11 +1457,27 @@
   pointer-events: none;
 }
 
+.landing-triage-stage {
+  isolation: isolate;
+}
+
+.landing-triage-backlight {
+  position: absolute;
+  inset: 3.5rem 2.75rem -2rem;
+  z-index: 0;
+  border-radius: 3rem;
+  background:
+    radial-gradient(ellipse at 50% 38%, rgb(190 242 100 / 0.34), rgb(132 204 22 / 0.17) 42%, transparent 74%);
+  filter: blur(36px);
+  opacity: 0.94;
+  pointer-events: none;
+}
+
 .landing-triage-dashboard {
   box-shadow:
-    0 0 0 1px rgb(190 242 100 / 0.08),
-    0 0 110px 20px rgb(132 204 22 / 0.12),
-    0 40px 120px -50px rgb(0 0 0 / 0.95) !important;
+    0 0 0 1px rgb(190 242 100 / 0.14),
+    0 0 80px 14px rgb(132 204 22 / 0.2),
+    0 44px 120px -42px rgb(0 0 0 / 0.95) !important;
 }
 
 .landing-inbox-section > div {
@@ -3615,6 +3631,10 @@ html.windows98 {
 }
 
 .windows98 .landing-inbox-section::after {
+  display: none;
+}
+
+.windows98 .landing-triage-backlight {
   display: none;
 }
 

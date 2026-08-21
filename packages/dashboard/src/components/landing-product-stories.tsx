@@ -1,25 +1,36 @@
 import Image from 'next/image'
 import {
+  ArrowUpDown,
   ArrowRight,
   BellRing,
+  Bug,
   Camera,
   Check,
+  ChevronDown,
   ChevronUp,
   CircleDot,
+  ClipboardPenLine,
+  Code2,
   Clock3,
   ExternalLink,
-  GitBranch,
+  Flag,
   Globe2,
+  House,
   Inbox,
   Lightbulb,
+  Megaphone,
   MessageSquareText,
   MonitorSmartphone,
   Paperclip,
+  PanelLeftClose,
   Rocket,
   Search,
+  SlidersHorizontal,
+  Star,
   Tag,
   Webhook,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 export function LandingProductStories() {
   return (
@@ -250,46 +261,116 @@ function ContextEvidenceScene() {
 
 function TriageDashboardScene() {
   const rows = [
-    ['Notification time resets after save', 'Bug · just now', 'New'],
-    ['Keyboard shortcuts for quick capture', 'Idea · 42m', 'Planned'],
-    ['The new editor feels much faster', 'Praise · 3h', 'Reviewed'],
+    {
+      title: 'My notification time resets after I save.',
+      preview: 'I expected 9:00 AM, but the page shows 8:00 AM when I return.',
+      status: 'New',
+      statusTone: 'bg-rose-400',
+      type: 'Bug',
+      Icon: Bug,
+      source: 'Widget',
+      time: 'Just now',
+      tag: 'Notifications',
+      unread: true,
+      priority: 'High',
+    },
+    {
+      title: 'Keyboard shortcuts would make capture much faster.',
+      preview: 'A quick command menu would help us file ideas without leaving the keyboard.',
+      status: 'Planned',
+      statusTone: 'bg-sky-400',
+      type: 'Idea',
+      Icon: Lightbulb,
+      source: 'Widget',
+      time: '42m',
+      tag: 'Editor',
+      unread: false,
+    },
+    {
+      title: 'The new editor feels much faster.',
+      preview: 'Everything opens immediately now. Really nice improvement.',
+      status: 'Reviewed',
+      statusTone: 'bg-emerald-400',
+      type: 'Praise',
+      Icon: MessageSquareText,
+      source: 'Public board',
+      time: '3h',
+      tag: 'Performance',
+      unread: false,
+    },
   ]
+  const navGroups: { label?: string; items: { label: string; Icon: LucideIcon; active?: boolean }[] }[] = [
+    { items: [{ label: 'Home', Icon: House }] },
+    { label: 'Collect', items: [{ label: 'Feedback form', Icon: ClipboardPenLine }, { label: 'Feedback inbox', Icon: Inbox, active: true }] },
+    { label: 'Share with users', items: [{ label: 'Updates for users', Icon: Megaphone }, { label: 'Public feedback board', Icon: Globe2 }] },
+    { label: 'Connect', items: [{ label: 'Install & verify', Icon: Code2 }, { label: 'Integrations', Icon: Webhook }] },
+  ]
+
   return (
-    <figure className="landing-app-window landing-triage-dashboard mx-auto mt-12 max-w-6xl overflow-hidden rounded-2xl border border-white/10 bg-[#0d100d] shadow-[0_40px_120px_-50px_rgb(0_0_0/0.95)]">
-      <div className="landing-window-titlebar flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
-        <div className="flex items-center gap-3"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-lime-300 text-xs font-black text-zinc-950">f.</span><div><p className="text-xs font-semibold">feedbacks.dev dashboard</p><p className="mt-0.5 text-[9px] text-zinc-500">Project: Orbit Notes</p></div></div>
-        <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5 text-[9px] text-zinc-400"><CircleDot className="h-3 w-3 text-lime-300" />Inbox live</span>
-      </div>
-      <div className="grid min-h-[500px] md:grid-cols-[160px_0.88fr_1.12fr]">
-        <nav className="hidden border-r border-white/10 bg-white/[0.018] p-3 text-[10px] text-zinc-500 md:block" aria-label="Dashboard example">
-          <p className="px-2 pb-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-600">Collect</p>
-          <span className="flex items-center gap-2 rounded-md bg-lime-300/10 px-2 py-2.5 font-semibold text-lime-200"><Inbox className="h-3.5 w-3.5" />Feedback inbox</span>
-          <span className="mt-1 flex items-center gap-2 px-2 py-2.5"><MessageSquareText className="h-3.5 w-3.5" />Feedback form</span>
-          <p className="mt-5 px-2 pb-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-zinc-600">Share</p>
-          <span className="flex items-center gap-2 px-2 py-2.5"><Rocket className="h-3.5 w-3.5" />Product updates</span>
-          <span className="flex items-center gap-2 px-2 py-2.5"><Globe2 className="h-3.5 w-3.5" />Public board</span>
-        </nav>
-        <div className="border-b border-white/10 md:border-b-0 md:border-r">
-          <div className="flex items-center gap-2 border-b border-white/10 p-3"><div className="flex min-h-9 flex-1 items-center gap-2 rounded-md border border-white/10 px-3 text-[10px] text-zinc-500"><Search className="h-3.5 w-3.5" />Search feedback</div><span className="rounded-md border border-white/10 px-3 py-2 text-[9px]">Filter</span></div>
-          {rows.map(([title, meta, status], index) => (
-            <div key={title} className={`landing-inbox-row border-b border-white/10 p-4 ${index === 0 ? 'is-active' : ''}`}>
-              <div className="flex items-start gap-3"><span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${index === 0 ? 'bg-rose-400' : index === 1 ? 'bg-sky-400' : 'bg-amber-300'}`} /><div className="min-w-0"><p className="truncate text-xs font-semibold text-zinc-200">{title}</p><p className="mt-1 text-[9px] text-zinc-500">{meta}</p></div><span className="ml-auto text-[9px] text-zinc-500">{status}</span></div>
+    <div className="landing-triage-stage relative mx-auto mt-12 max-w-6xl">
+      <span className="landing-triage-backlight" aria-hidden="true" />
+      <figure className="landing-app-window landing-triage-dashboard relative z-[1] overflow-hidden rounded-2xl border border-white/10 bg-[#0d100d]">
+        <div className="landing-window-titlebar flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
+          <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-lime-300 text-[10px] font-black text-zinc-950">f.</span><p className="text-xs font-semibold">feedbacks.dev</p></div>
+          <span className="inline-flex items-center gap-2 text-[9px] text-zinc-500"><CircleDot className="h-3 w-3 text-lime-300" />Orbit Notes workspace</span>
+        </div>
+
+        <div className="grid min-h-[530px] md:grid-cols-[190px_1fr]">
+          <aside className="landing-triage-sidebar hidden flex-col border-r border-white/10 bg-white/[0.018] md:flex" aria-label="Dashboard example">
+            <div className="flex h-12 items-center justify-between border-b border-white/10 px-3"><PanelLeftClose className="h-3.5 w-3.5 text-zinc-500" /><span className="text-[11px] font-semibold">feedbacks.dev</span></div>
+            <div className="border-b border-white/10 p-2.5">
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.025] px-2.5 py-2">
+                <span className="flex min-w-0 items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-lime-300/10 text-sm">🪐</span><span className="min-w-0"><span className="block text-[8px] font-medium uppercase tracking-[0.11em] text-zinc-600">Current project</span><span className="block truncate text-[10px] font-semibold text-zinc-300">Orbit Notes</span></span></span>
+                <ChevronDown className="h-3 w-3 text-zinc-600" />
+              </div>
             </div>
-          ))}
+            <nav className="flex-1 space-y-3 overflow-hidden p-2.5 text-[9px]" aria-label="Workspace navigation">
+              {navGroups.map((group) => (
+                <div key={group.label || 'home'} className="space-y-0.5">
+                  {group.label && <p className="mb-1 px-2 text-[8px] font-semibold uppercase tracking-[0.14em] text-zinc-600">{group.label}</p>}
+                  {group.items.map(({ label, Icon, active }) => (
+                    <span key={label} className={`flex items-center gap-2 rounded-lg px-2 py-1.5 font-medium ${active ? 'bg-lime-300/10 text-lime-200' : 'text-zinc-500'}`}><Icon className={`h-3.5 w-3.5 ${active ? 'text-lime-300' : ''}`} />{label}</span>
+                  ))}
+                </div>
+              ))}
+            </nav>
+            <div className="flex items-center justify-between border-t border-white/10 p-2.5"><span className="rounded-md border border-white/10 px-2 py-1 text-[8px] text-zinc-500">Theme</span><span className="flex h-6 w-6 items-center justify-center rounded-full bg-lime-300/10 text-[9px] font-semibold text-lime-200">M</span></div>
+          </aside>
+
+          <div className="landing-triage-main bg-[#090c09] p-4 sm:p-5">
+            <header className="flex items-end justify-between gap-5 border-b border-white/10 pb-4">
+              <div><p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-lime-300">Inbox</p><h3 className="mt-1 text-xl font-semibold tracking-[-0.035em]">Feedback</h3><p className="mt-1 text-[10px] text-zinc-500">Review new messages and move the useful signal forward.</p></div>
+              <div className="text-right"><p className="text-lg font-semibold tabular-nums">3</p><p className="text-[9px] text-zinc-500">messages</p></div>
+            </header>
+
+            <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.018] p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex h-8 min-w-[180px] flex-1 items-center gap-2 rounded-md border border-white/10 bg-black/10 px-3 text-[9px] text-zinc-500"><Search className="h-3.5 w-3.5" />Search feedback…</div>
+                {['All', 'Unread', 'New', 'Planned'].map((filter, index) => <span key={filter} className={`inline-flex h-7 items-center gap-1.5 rounded-md border px-2 text-[8px] font-medium ${index === 0 ? 'border-lime-300/25 bg-lime-300/10 text-zinc-200' : 'border-transparent bg-white/[0.035] text-zinc-500'}`}>{index > 0 && <span className={`h-1.5 w-1.5 rounded-full ${index === 1 ? 'bg-lime-300' : index === 2 ? 'bg-rose-400' : 'bg-sky-400'}`} />}{filter}</span>)}
+                <span className="inline-flex h-7 items-center gap-1.5 rounded-md bg-white/[0.035] px-2 text-[8px] text-zinc-500"><SlidersHorizontal className="h-3 w-3" />More filters</span>
+                <span className="ml-auto inline-flex h-7 items-center gap-1.5 rounded-md border border-white/10 px-2 text-[8px] text-zinc-400"><ArrowUpDown className="h-3 w-3" />Newest</span>
+              </div>
+              <div className="mt-2 flex items-center gap-2 border-t border-white/10 pt-2 text-[8px]"><span className="text-zinc-600">Project</span><span className="rounded-md bg-white/[0.035] px-2 py-1 text-zinc-500">All projects</span><span className="rounded-md border border-lime-300/25 bg-lime-300/10 px-2 py-1 font-medium text-lime-200">Orbit Notes</span></div>
+            </div>
+
+            <div className="mt-3 overflow-hidden rounded-lg border border-white/10 bg-white/[0.012]">
+              <div className="flex items-center gap-2 border-b border-white/10 bg-white/[0.018] px-4 py-2.5 text-[9px] text-zinc-500"><span className="h-3.5 w-3.5 rounded border border-white/20" />Select all on this page</div>
+              {rows.map(({ title, preview, status, statusTone, type, Icon, source, time, tag, unread, priority }) => (
+                <div key={title} className={`landing-inbox-row border-b border-white/10 px-4 py-3 last:border-b-0 ${unread ? 'is-active' : ''}`}>
+                  <div className="flex items-start gap-2.5">
+                    <span className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border border-white/20" />
+                    <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${unread ? 'bg-lime-300 shadow-[0_0_0_3px_rgb(190_242_100/0.11)]' : 'bg-transparent'}`} />
+                    <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" />
+                    <div className="min-w-0 flex-1"><p className={`truncate text-[11px] leading-4 ${unread ? 'font-semibold text-zinc-100' : 'text-zinc-300'}`}>{title}</p><p className="mt-1 truncate text-[9px] text-zinc-600">{preview}</p><div className="mt-2 flex flex-wrap items-center gap-1.5 text-[8px] text-zinc-500"><span className="inline-flex items-center gap-1"><span className={`h-1.5 w-1.5 rounded-full ${statusTone}`} />{status}</span>{priority && <><span className="text-zinc-700">·</span><span className="inline-flex items-center gap-1 font-medium text-amber-300"><Flag className="h-2.5 w-2.5" />{priority}</span></>}<span className="text-zinc-700">·</span><span>{type}</span><span className="text-zinc-700">·</span><span>{source}</span><span className="text-zinc-700">·</span><span>Orbit Notes</span><span className="rounded border border-white/10 px-1.5 py-0.5 text-[7px]">{tag}</span><span className="text-zinc-700">·</span><span>{time}</span></div></div>
+                    {type === 'Praise' && <span className="mt-1 flex gap-px">{Array.from({ length: 5 }, (_, index) => <Star key={index} className="h-2.5 w-2.5 fill-amber-300 text-amber-300" />)}</span>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="p-5 sm:p-7">
-          <div className="flex flex-wrap gap-2 text-[9px]"><span className="rounded-md bg-rose-400/10 px-2 py-1 text-rose-300">Bug</span><span className="rounded-md bg-lime-300/10 px-2 py-1 text-lime-200">Notifications</span><span className="rounded-md bg-amber-300/10 px-2 py-1 text-amber-200">High signal</span></div>
-          <h3 className="mt-5 max-w-lg text-xl font-semibold leading-7 sm:text-2xl">Notification time resets after save</h3>
-          <p className="mt-3 max-w-lg text-sm leading-6 text-zinc-400">My notification time resets after I save. I expected 9:00 AM, but the page shows 8:00 AM when I return.</p>
-          <dl className="mt-7 divide-y divide-white/10 border-y border-white/10 text-xs">
-            <div className="flex items-center justify-between py-3"><dt className="text-zinc-500">Status</dt><dd className="font-medium text-lime-200">Planned</dd></div>
-            <div className="flex items-center justify-between py-3"><dt className="text-zinc-500">Page</dt><dd className="font-mono text-zinc-300">/settings/notifications</dd></div>
-            <div className="flex items-center justify-between py-3"><dt className="text-zinc-500">Destination</dt><dd className="font-medium">GitHub issue #184</dd></div>
-          </dl>
-          <div className="mt-6 flex flex-wrap gap-2"><span className="landing-triage-action inline-flex items-center gap-2 rounded-md bg-lime-300 px-3 py-2 text-[10px] font-bold text-zinc-950"><GitBranch className="h-3.5 w-3.5" />Open issue</span><span className="rounded-md border border-white/10 px-3 py-2 text-[10px] font-semibold">Add note</span></div>
-        </div>
-      </div>
-    </figure>
+      </figure>
+    </div>
   )
 }
 
