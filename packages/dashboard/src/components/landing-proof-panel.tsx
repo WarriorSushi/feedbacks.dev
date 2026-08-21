@@ -15,8 +15,8 @@ export function LandingProofPanel({ installSnippet }: { installSnippet: string }
     <div className="overflow-hidden rounded-xl border border-foreground/15 bg-card shadow-[var(--shadow-float)]" aria-label="A project moving from install to feedback to a user update">
       <header className="flex items-center justify-between border-b bg-[oklch(var(--surface-raised))] px-4 py-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-sm">🪐</span>
-          <div className="min-w-0"><p className="truncate text-xs font-semibold">Orbit</p><p className="text-[10px] text-muted-foreground">Production project</p></div>
+          <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-sm font-black text-primary">A</span>
+          <div className="min-w-0"><p className="truncate text-xs font-semibold">ACME App</p><p className="text-[10px] text-muted-foreground">Production project</p></div>
         </div>
         <span className="inline-flex items-center gap-1.5 text-[10px] font-medium text-primary"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Connected</span>
       </header>

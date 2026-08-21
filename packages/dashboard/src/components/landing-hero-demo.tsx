@@ -55,7 +55,7 @@ export function LandingHeroDemo({ installSnippet }: { installSnippet: string }) 
       <div className="landing-demo-topbar">
         <div className="flex min-w-0 items-center gap-2.5">
           <span className="landing-demo-status" aria-hidden="true" />
-          <span className="truncate text-[11px] font-semibold text-zinc-100">Orbit / production</span>
+          <span className="truncate text-[11px] font-semibold text-zinc-100">ACME App / production</span>
           <span className="hidden text-[10px] text-zinc-500 sm:inline">Live product walkthrough</span>
         </div>
         <button
@@ -148,7 +148,7 @@ function CollectScene() {
       <SceneLabel step="02 / Collect">Users report the problem without leaving your app.</SceneLabel>
       <div className="landing-demo-app-window">
         <div className="flex h-10 items-center justify-between border-b border-white/10 px-4">
-          <span className="text-[10px] font-semibold text-zinc-200">Orbit reports</span>
+          <span className="text-[10px] font-semibold text-zinc-200">ACME reports</span>
           <span className="text-[9px] text-zinc-500">/reports/export</span>
         </div>
         <div className="grid h-[210px] grid-cols-[74px_1fr] sm:h-[245px] sm:grid-cols-[110px_1fr]">
@@ -166,7 +166,7 @@ function CollectScene() {
       </div>
       <div className="landing-demo-feedback-card">
         <div className="flex items-start justify-between gap-3 border-b border-zinc-200 px-4 py-3">
-          <div><p className="text-[11px] font-bold text-zinc-900">Report a problem</p><p className="mt-0.5 text-[9px] text-zinc-500">Orbit team</p></div>
+          <div><p className="text-[11px] font-bold text-zinc-900">Report a problem</p><p className="mt-0.5 text-[9px] text-zinc-500">ACME team</p></div>
           <span className="rounded bg-rose-50 px-1.5 py-1 text-[8px] font-bold text-rose-700">BUG</span>
         </div>
         <div className="p-4">
@@ -217,7 +217,7 @@ function CloseLoopScene() {
     <>
       <SceneLabel step="04 / Close the loop">Ship the fix. Tell users inside the same app.</SceneLabel>
       <div className="landing-demo-release-app">
-        <div className="flex h-11 items-center justify-between border-b border-white/10 px-4"><span className="text-[10px] font-semibold text-zinc-200">Orbit</span><span className="inline-flex items-center gap-1.5 text-[9px] text-zinc-500"><BellRing className="h-3 w-3" />1 update</span></div>
+        <div className="flex h-11 items-center justify-between border-b border-white/10 px-4"><span className="text-[10px] font-semibold text-zinc-200">ACME App</span><span className="inline-flex items-center gap-1.5 text-[9px] text-zinc-500"><BellRing className="h-3 w-3" />1 update</span></div>
         <div className="p-5 sm:p-7"><div className="h-3 w-32 bg-white/10" /><div className="mt-5 grid grid-cols-3 gap-3"><div className="h-20 border border-white/10 bg-white/[0.02]" /><div className="h-20 border border-white/10 bg-white/[0.02]" /><div className="h-20 border border-white/10 bg-white/[0.02]" /></div></div>
       </div>
       <div className="landing-demo-update-card">

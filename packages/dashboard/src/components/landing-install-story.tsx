@@ -78,7 +78,7 @@ export function LandingInstallStory({ snippet }: { snippet: string }) {
             <span className="h-2 w-2 rounded-full bg-lime-300" />
           </div>
           <span className="hidden items-center gap-2 text-[10px] font-medium text-zinc-400 sm:inline-flex">
-            <Radio className="h-3 w-3 text-lime-300" /> Orbit · live setup
+            <Radio className="h-3 w-3 text-lime-300" /> ACME App · live setup
           </span>
           <span className="font-mono text-[9px] text-zinc-500">0{active + 1} / 03</span>
         </div>
@@ -157,7 +157,7 @@ function TestScene() {
   return (
     <div className="landing-product-test-scene">
       <div className="landing-product-app-preview">
-        <div className="flex h-10 items-center justify-between border-b border-white/10 px-4 text-[9px] text-zinc-500"><span className="font-semibold text-zinc-300">Orbit reports</span><span>/reports/export</span></div>
+        <div className="flex h-10 items-center justify-between border-b border-white/10 px-4 text-[9px] text-zinc-500"><span className="font-semibold text-zinc-300">ACME reports</span><span>/reports/export</span></div>
         <div className="grid h-[235px] grid-cols-[92px_1fr]">
           <div className="border-r border-white/10 p-3"><div className="h-2 w-10 rounded-full bg-white/15" /><div className="mt-5 space-y-3"><div className="h-7 bg-white/[0.07]" /><div className="h-7 bg-white/[0.03]" /><div className="h-7 bg-white/[0.03]" /></div></div>
           <div className="p-5"><div className="h-2 w-28 rounded-full bg-white/15" /><div className="mt-5 h-24 border border-white/10 bg-white/[0.025]" /></div>

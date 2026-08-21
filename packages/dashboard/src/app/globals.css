@@ -1526,7 +1526,19 @@
   background: oklch(var(--primary) / 0.08);
 }
 
+.landing-update-scrim {
+  background:
+    linear-gradient(rgb(5 7 5 / 0.48), rgb(5 7 5 / 0.42)),
+    radial-gradient(circle at 72% 76%, transparent 0 28%, rgb(5 7 5 / 0.18) 58%);
+  backdrop-filter: saturate(0.62) blur(0.7px);
+  pointer-events: none;
+}
+
 .landing-update-pop {
+  box-shadow:
+    0 0 0 1px oklch(var(--primary) / 0.13),
+    0 28px 72px -24px rgb(0 0 0 / 0.72),
+    0 14px 34px -24px oklch(var(--primary) / 0.36);
   animation: landing-update-pop-loop 7.4s var(--ease-in-out) infinite;
 }
 
@@ -3566,6 +3578,11 @@ html.windows98 {
 
 .windows98 .landing-capture-scrim {
   background: rgb(0 0 0 / 0.22) !important;
+}
+
+.windows98 .landing-update-scrim {
+  background: rgb(0 0 0 / 0.2) !important;
+  backdrop-filter: none;
 }
 
 .windows98 .landing-capture-success {

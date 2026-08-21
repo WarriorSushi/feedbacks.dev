@@ -120,12 +120,12 @@ function ProductCaptureScene() {
           <span className="h-2 w-2 rounded-full bg-rose-400" />
           <span className="h-2 w-2 rounded-full bg-amber-300" />
           <span className="h-2 w-2 rounded-full bg-emerald-500" />
-          <span className="ml-2 truncate font-mono">orbit-notes.app/settings/notifications</span>
+          <span className="ml-2 truncate font-mono">acme.app/settings/notifications</span>
         </div>
       </div>
       <div className="landing-capture-stage relative min-h-[390px] overflow-hidden bg-[linear-gradient(145deg,oklch(var(--card)),oklch(var(--muted)/0.45))] p-5">
         <div className="landing-capture-host max-w-[82%]">
-          <p className="text-[10px] font-semibold text-muted-foreground">ORBIT NOTES</p>
+          <p className="text-[10px] font-semibold text-muted-foreground">ACME APP</p>
           <h3 className="mt-3 text-xl font-semibold">Notification schedule</h3>
           <p className="mt-2 text-xs leading-5 text-muted-foreground">Choose when your daily digest arrives.</p>
           <div className="mt-5 grid gap-3 rounded-xl border bg-background/80 p-4 text-xs">
@@ -166,7 +166,7 @@ function FeedbackInboxScene() {
     <article className="landing-app-window landing-scene-card overflow-hidden rounded-2xl border bg-card">
       <SceneLabel number="02" title="feedbacks.dev" />
       <div className="flex items-center justify-between border-b px-4 py-3">
-        <div><p className="text-xs font-semibold">Orbit Notes inbox</p><p className="mt-1 text-[9px] text-muted-foreground">1 new message</p></div>
+        <div><p className="text-xs font-semibold">ACME App inbox</p><p className="mt-1 text-[9px] text-muted-foreground">1 new message</p></div>
         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2 py-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-300"><CircleDot className="h-3 w-3" />Live</span>
       </div>
       <div className="min-h-[390px] p-4">
@@ -229,7 +229,7 @@ function ContextEvidenceScene() {
       <div className="landing-app-window landing-evidence-card landing-evidence-window rounded-2xl border bg-card p-5 sm:row-span-2">
         <div className="landing-window-titlebar flex items-center justify-between"><span className="inline-flex items-center gap-2 text-xs font-semibold"><Camera className="h-4 w-4 text-primary" />What they saw</span><span className="text-[9px] text-muted-foreground">Optional screenshot</span></div>
         <div className="mt-5 rounded-xl border bg-muted/30 p-4">
-          <p className="text-[9px] font-semibold text-muted-foreground">ORBIT NOTES · NOTIFICATIONS</p>
+          <p className="text-[9px] font-semibold text-muted-foreground">ACME APP · NOTIFICATIONS</p>
           <div className="landing-evidence-highlight mt-4 rounded-lg border border-rose-400/40 bg-card p-3 shadow-sm">
             <div className="flex items-center justify-between text-[10px]"><span>Delivery time</span><span className="font-semibold">9:00 AM</span></div>
             <p className="mt-3 rounded-md bg-rose-500/10 p-2 text-[9px] font-medium text-rose-600 dark:text-rose-300">Resets to 8:00 AM after save</p>
@@ -312,7 +312,7 @@ function TriageDashboardScene() {
       <figure className="landing-app-window landing-triage-dashboard relative z-[1] overflow-hidden rounded-2xl border border-white/10 bg-[#0d100d]">
         <div className="landing-window-titlebar flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-lime-300 text-[10px] font-black text-zinc-950">f.</span><p className="text-xs font-semibold">feedbacks.dev</p></div>
-          <span className="inline-flex items-center gap-2 text-[9px] text-zinc-500"><CircleDot className="h-3 w-3 text-lime-300" />Orbit Notes workspace</span>
+          <span className="inline-flex items-center gap-2 text-[9px] text-zinc-500"><CircleDot className="h-3 w-3 text-lime-300" />ACME App workspace</span>
         </div>
 
         <div className="grid min-h-[530px] md:grid-cols-[190px_1fr]">
@@ -320,7 +320,7 @@ function TriageDashboardScene() {
             <div className="flex h-12 items-center justify-between border-b border-white/10 px-3"><PanelLeftClose className="h-3.5 w-3.5 text-zinc-500" /><span className="text-[11px] font-semibold">feedbacks.dev</span></div>
             <div className="border-b border-white/10 p-2.5">
               <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.025] px-2.5 py-2">
-                <span className="flex min-w-0 items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-lime-300/10 text-sm">🪐</span><span className="min-w-0"><span className="block text-[8px] font-medium uppercase tracking-[0.11em] text-zinc-600">Current project</span><span className="block truncate text-[10px] font-semibold text-zinc-300">Orbit Notes</span></span></span>
+                <span className="flex min-w-0 items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-lime-300/10 text-[10px] font-black text-lime-200">A</span><span className="min-w-0"><span className="block text-[8px] font-medium uppercase tracking-[0.11em] text-zinc-600">Current project</span><span className="block truncate text-[10px] font-semibold text-zinc-300">ACME App</span></span></span>
                 <ChevronDown className="h-3 w-3 text-zinc-600" />
               </div>
             </div>
@@ -350,7 +350,7 @@ function TriageDashboardScene() {
                 <span className="inline-flex h-7 items-center gap-1.5 rounded-md bg-white/[0.035] px-2 text-[8px] text-zinc-500"><SlidersHorizontal className="h-3 w-3" />More filters</span>
                 <span className="ml-auto inline-flex h-7 items-center gap-1.5 rounded-md border border-white/10 px-2 text-[8px] text-zinc-400"><ArrowUpDown className="h-3 w-3" />Newest</span>
               </div>
-              <div className="mt-2 flex items-center gap-2 border-t border-white/10 pt-2 text-[8px]"><span className="text-zinc-600">Project</span><span className="rounded-md bg-white/[0.035] px-2 py-1 text-zinc-500">All projects</span><span className="rounded-md border border-lime-300/25 bg-lime-300/10 px-2 py-1 font-medium text-lime-200">Orbit Notes</span></div>
+              <div className="mt-2 flex items-center gap-2 border-t border-white/10 pt-2 text-[8px]"><span className="text-zinc-600">Project</span><span className="rounded-md bg-white/[0.035] px-2 py-1 text-zinc-500">All projects</span><span className="rounded-md border border-lime-300/25 bg-lime-300/10 px-2 py-1 font-medium text-lime-200">ACME App</span></div>
             </div>
 
             <div className="mt-3 overflow-hidden rounded-lg border border-white/10 bg-white/[0.012]">
@@ -361,7 +361,7 @@ function TriageDashboardScene() {
                     <span className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border border-white/20" />
                     <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${unread ? 'bg-lime-300 shadow-[0_0_0_3px_rgb(190_242_100/0.11)]' : 'bg-transparent'}`} />
                     <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" />
-                    <div className="min-w-0 flex-1"><p className={`truncate text-[11px] leading-4 ${unread ? 'font-semibold text-zinc-100' : 'text-zinc-300'}`}>{title}</p><p className="mt-1 truncate text-[9px] text-zinc-600">{preview}</p><div className="mt-2 flex flex-wrap items-center gap-1.5 text-[8px] text-zinc-500"><span className="inline-flex items-center gap-1"><span className={`h-1.5 w-1.5 rounded-full ${statusTone}`} />{status}</span>{priority && <><span className="text-zinc-700">·</span><span className="inline-flex items-center gap-1 font-medium text-amber-300"><Flag className="h-2.5 w-2.5" />{priority}</span></>}<span className="text-zinc-700">·</span><span>{type}</span><span className="text-zinc-700">·</span><span>{source}</span><span className="text-zinc-700">·</span><span>Orbit Notes</span><span className="rounded border border-white/10 px-1.5 py-0.5 text-[7px]">{tag}</span><span className="text-zinc-700">·</span><span>{time}</span></div></div>
+                    <div className="min-w-0 flex-1"><p className={`truncate text-[11px] leading-4 ${unread ? 'font-semibold text-zinc-100' : 'text-zinc-300'}`}>{title}</p><p className="mt-1 truncate text-[9px] text-zinc-600">{preview}</p><div className="mt-2 flex flex-wrap items-center gap-1.5 text-[8px] text-zinc-500"><span className="inline-flex items-center gap-1"><span className={`h-1.5 w-1.5 rounded-full ${statusTone}`} />{status}</span>{priority && <><span className="text-zinc-700">·</span><span className="inline-flex items-center gap-1 font-medium text-amber-300"><Flag className="h-2.5 w-2.5" />{priority}</span></>}<span className="text-zinc-700">·</span><span>{type}</span><span className="text-zinc-700">·</span><span>{source}</span><span className="text-zinc-700">·</span><span>ACME App</span><span className="rounded border border-white/10 px-1.5 py-0.5 text-[7px]">{tag}</span><span className="text-zinc-700">·</span><span>{time}</span></div></div>
                     {type === 'Praise' && <span className="mt-1 flex gap-px">{Array.from({ length: 5 }, (_, index) => <Star key={index} className="h-2.5 w-2.5 fill-amber-300 text-amber-300" />)}</span>}
                   </div>
                 </div>
@@ -377,14 +377,15 @@ function TriageDashboardScene() {
 function ProductUpdateScene() {
   return (
     <article className="landing-app-window landing-loop-card overflow-hidden rounded-2xl border bg-card">
-      <div className="landing-window-titlebar flex items-center justify-between border-b px-5 py-4"><div><p className="text-xs font-semibold">What customers see inside Orbit Notes</p><p className="mt-1 text-[9px] text-muted-foreground">In-product update</p></div><span className="landing-update-bell"><BellRing className="h-4 w-4 text-primary" /></span></div>
+      <div className="landing-window-titlebar flex items-center justify-between border-b px-5 py-4"><div><p className="text-xs font-semibold">What customers see inside ACME App</p><p className="mt-1 text-[9px] text-muted-foreground">In-product update</p></div><span className="landing-update-bell"><BellRing className="h-4 w-4 text-primary" /></span></div>
       <div className="landing-update-stage relative min-h-[390px] bg-[radial-gradient(circle_at_25%_15%,oklch(var(--primary)/0.14),transparent_42%),oklch(var(--muted)/0.28)] p-5 sm:p-7">
-        <div className="max-w-sm">
-          <p className="text-[10px] font-semibold text-muted-foreground">ORBIT NOTES</p>
+        <div className="relative z-0 max-w-sm">
+          <p className="text-[10px] font-semibold text-muted-foreground">ACME APP</p>
           <h3 className="mt-3 text-2xl font-semibold">Your notes, in motion.</h3>
           <p className="mt-3 text-xs leading-5 text-muted-foreground">A calm home for daily thinking and useful reminders.</p>
         </div>
-        <div className="landing-app-window landing-update-pop absolute bottom-5 right-5 w-[82%] max-w-sm overflow-hidden rounded-xl border bg-card shadow-[0_26px_70px_-28px_rgb(0_0_0/0.55)]">
+        <div className="landing-update-scrim absolute inset-0 z-[1]" aria-hidden="true" />
+        <div className="landing-app-window landing-update-pop absolute bottom-5 right-5 z-[2] w-[82%] max-w-sm overflow-hidden rounded-xl border bg-card">
           <div className="landing-window-titlebar flex items-center justify-between border-b px-4 py-3"><span className="inline-flex items-center gap-2 text-xs font-semibold"><Rocket className="h-3.5 w-3.5 text-primary" />What&apos;s new</span><span className="text-[9px] text-muted-foreground">Just shipped</span></div>
           <div className="p-4"><span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[9px] font-semibold text-emerald-600 dark:text-emerald-300">Shipped</span><h4 className="mt-3 text-base font-semibold">Notification schedules now save instantly</h4><p className="mt-2 text-xs leading-5 text-muted-foreground">Your chosen time now stays exactly where you put it, on every device.</p><p className="mt-4 text-[9px] font-semibold text-primary">Thanks to everyone who reported this.</p></div>
         </div>
@@ -396,9 +397,9 @@ function ProductUpdateScene() {
 function PublicBoardScene() {
   return (
     <article className="landing-app-window landing-loop-card overflow-hidden rounded-2xl border bg-card">
-      <div className="landing-window-titlebar flex items-center justify-between border-b px-5 py-4"><div><p className="text-xs font-semibold">What customers see on the public web</p><p className="mt-1 font-mono text-[9px] text-muted-foreground">feedbacks.dev/p/orbit-notes</p></div><ExternalLink className="h-4 w-4 text-primary" /></div>
+      <div className="landing-window-titlebar flex items-center justify-between border-b px-5 py-4"><div><p className="text-xs font-semibold">What customers see on the public web</p><p className="mt-1 font-mono text-[9px] text-muted-foreground">feedbacks.dev/p/acme-app</p></div><ExternalLink className="h-4 w-4 text-primary" /></div>
       <div className="min-h-[390px] p-5 sm:p-7">
-        <div className="flex items-start justify-between gap-5"><div><div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-black text-primary-foreground">O</span><div><h3 className="text-sm font-semibold">Orbit Notes feedback</h3><p className="mt-1 text-[9px] text-muted-foreground">Ideas, decisions, and shipped work</p></div></div></div><span className="rounded-md bg-primary px-3 py-2 text-[10px] font-semibold text-primary-foreground">Submit idea</span></div>
+        <div className="flex items-start justify-between gap-5"><div><div className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-sm font-black text-primary-foreground">A</span><div><h3 className="text-sm font-semibold">ACME App feedback</h3><p className="mt-1 text-[9px] text-muted-foreground">Ideas, decisions, and shipped work</p></div></div></div><span className="rounded-md bg-primary px-3 py-2 text-[10px] font-semibold text-primary-foreground">Submit idea</span></div>
         <div className="mt-5 flex gap-2 border-y py-3 text-[9px]"><span className="rounded-full bg-foreground px-3 py-1 font-semibold text-background">Top ideas</span><span className="rounded-full px-3 py-1 text-muted-foreground">Planned</span><span className="rounded-full px-3 py-1 text-muted-foreground">Shipped</span></div>
         <div className="divide-y">
           <BoardRow votes="38" title="Add a weekly review view" meta="Planned · 12 replies" active />
