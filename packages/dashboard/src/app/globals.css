@@ -871,6 +871,10 @@
   stroke-dasharray: 9 11;
 }
 
+.landing-callout-arrowhead {
+  stroke: transparent;
+}
+
 .landing-callout-path-label {
   color: oklch(var(--foreground) / 0.94);
   font-size: 17px;
@@ -1180,9 +1184,7 @@
     oklch(var(--background));
 }
 
-.landing-setup-section > div,
-.landing-final-cta > div,
-.landing-final-cta > span {
+.landing-setup-section > div {
   position: relative;
 }
 

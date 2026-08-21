@@ -154,10 +154,17 @@ function HeroAnnotations({
               <motion.path
                 className="landing-callout-line"
                 d={callout.d}
-                markerEnd="url(#landing-arrowhead)"
                 initial={reduceMotion ? false : { opacity: 0, strokeDashoffset: 48 }}
                 animate={{ opacity: 1, strokeDashoffset: 0 }}
                 transition={{ duration: reduceMotion ? 0 : 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
+              />
+              <motion.path
+                className="landing-callout-arrowhead"
+                d={callout.d}
+                markerEnd="url(#landing-arrowhead)"
+                initial={reduceMotion ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: reduceMotion ? 0 : 0.18, delay: reduceMotion ? 0 : delay + 0.9 }}
               />
               <motion.text
                 className="landing-callout-path-label"
