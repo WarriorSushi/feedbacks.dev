@@ -9,6 +9,7 @@ Last updated: 2026-08-22
 - Founding Beta applications are validated on the server, abuse-limited, and stored in a service-only `beta_applications` table. Anonymous and authenticated database roles have no table privileges, RLS is enabled, and the explicit deny policy was verified on the live Supabase project.
 - Cron, health, and internal job bearer credentials now use constant-time comparison. Public CSP reports are byte-bounded and rate-limited before logging. The framework-identifying response header is disabled.
 - The current baseline is 217 unit tests, passing TypeScript and ESLint, no known production dependency vulnerabilities, and a passing live Supabase schema contract.
+- The release passed `pnpm ci:verify` and production deployment `dpl_4QaQWDFBm6Vnu5KwFbRCjW8eafQa` for commit `1ed713d` is Ready on all canonical aliases; post-deploy public browser smoke and error/5xx log scans are clean.
 - The one remaining Supabase security-advisor warning is the account-level leaked-password-protection setting. It must be enabled in Supabase Auth when the current plan supports it; it is not a repository migration.
 
 This document tracks the stable product status after the full product audit in `docs/review/2026-06-21-full-product-audit-and-phase-plan.md`. Use it as the short source of truth for what is shipped, what is intentionally deferred, and what should not be promoted as complete yet.

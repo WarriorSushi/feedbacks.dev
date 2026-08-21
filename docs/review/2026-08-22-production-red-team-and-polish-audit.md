@@ -99,18 +99,21 @@ The performance advisor reports information-only notices for read-only quarantin
 - Unit tests: 217 passing.
 - TypeScript: passing across all packages.
 - ESLint: passing.
+- Full `pnpm ci:verify`: passing, including the optimized production build, 17,626-byte gzip widget budget, and all 36 dashboard route budgets.
 - Production dependency audit: no known vulnerabilities.
 - Live schema contract: passing, including the new beta table.
 - Live security advisor after migration: one external Auth warning, no table or RLS error.
 - Local browser: homepage and beta application render without console errors or horizontal overflow at desktop and 390 px mobile widths.
+- Production browser smoke: public acquisition, auth, documentation, and widget-fallback checks pass. The optional-ad-provider test is skipped when those providers are not configured in the test process.
 - Local hostile request probes: expected 400, 401, 403, 413, and 204 outcomes.
 - Production hostile request probes: expected 401 and 403 outcomes, with no mutation.
+- Production deployment `dpl_4QaQWDFBm6Vnu5KwFbRCjW8eafQa` for commit `1ed713d` reached Ready and serves the canonical marketing and app aliases. Canonical homepage, Founding Beta, privacy, auth, and widget assets return 200; the post-deploy scan found no error-level or 5xx runtime logs.
 
 ## Residual release risks
 
 1. Dodo Payments is intentionally still in test mode. Production credentials and the live webhook are the final billing gate.
 2. Leaked-password protection should be enabled in Supabase Auth when the plan permits.
-3. A production deploy and post-deploy smoke test are still required for the code changes in this pass.
+3. The data-mutating Playwright acceptance suite requires a dedicated non-production E2E Supabase project and therefore remains skipped in this local environment; the required environment guard correctly forbids using production Supabase for it.
 4. Real campaign volume should be increased only after the first-feedback activation funnel is measured reliably.
 
 ## Security operating rule
