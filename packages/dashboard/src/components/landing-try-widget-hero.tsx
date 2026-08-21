@@ -282,7 +282,6 @@ export function LandingTryWidgetHero() {
 
         <motion.div ref={stageRef} layout="position" className={cn('landing-try-stage relative mx-auto flex min-h-[300px] w-full flex-col items-center justify-center', open && 'landing-try-stage-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
           <div className="landing-try-grid absolute inset-0" aria-hidden="true" />
-          <Image className={cn('landing-section-mascot landing-mascot-hero', open && 'is-hidden')} src="/mascots-v2/hero-bungee.png" alt="" width={1024} height={1536} sizes="(max-width: 767px) 96px, 230px" priority aria-hidden="true" />
           <AnimatePresence>{!open && <HeroAnnotations reduceMotion={reduceMotion} stageRef={stageRef} buttonRef={launchButtonRef} />}</AnimatePresence>
 
           <div className="widget-theme-preview contents">
@@ -364,20 +363,23 @@ export function LandingTryWidgetHero() {
 
                 <div className="flex items-center justify-between gap-3 border-t pt-3.5">
                   <p className="text-[11px] text-muted-foreground">Page + browser context included</p>
-                  <button type="button" disabled={!message.trim()} onClick={() => setSubmitted(true)} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground transition-[transform,opacity] hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-9">Send <ChevronRight className="h-3.5 w-3.5" /></button>
+                  <button type="button" disabled={!message.trim()} onClick={() => setSubmitted(true)} className="landing-demo-submit relative inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground transition-[transform,opacity] hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-9">Send <ChevronRight className="h-3.5 w-3.5" /></button>
                 </div>
               </div>
             </motion.div>
             )}
 
             {open && submitted && (
-            <motion.div key="success" layoutId="landing-widget-demo" initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }} className="landing-app-window landing-demo-success relative z-20 flex min-h-[390px] w-full max-w-[470px] flex-col items-center justify-center overflow-hidden rounded-xl border bg-card px-6 py-10 text-center shadow-[0_32px_90px_-38px_rgb(0_0_0/0.62)] sm:px-10" aria-live="polite">
-              <div className="landing-window-chrome">feedbacks.dev</div>
-              {confetti.map(([left, rotate, delay], index) => <span key={`${left}-${index}`} className={cn('landing-success-confetti', index % 3 === 0 ? 'bg-primary' : index % 3 === 1 ? 'bg-amber-400' : 'bg-sky-400')} style={{ left, rotate, animationDelay: delay }} aria-hidden="true" />)}
-              <span className="landing-success-mark relative flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground"><MessageSquareText className="h-9 w-9" /></span>
-              <h2 className="mt-6 text-3xl font-semibold tracking-[-0.04em]">Feedback received.</h2>
-              <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">The team gets your message, page, browser, rating{ screenshotReady ? ', and screenshot' : ''} together, ready to review.</p>
-              <button type="button" onClick={launchDemo} className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-lg border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted"><RotateCcw className="h-4 w-4" />Try it again</button>
+            <motion.div key="success" layoutId="landing-widget-demo" initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }} className="landing-demo-success-wrap relative z-20 w-full max-w-[470px]">
+              <div className="landing-app-window landing-demo-success relative flex min-h-[390px] w-full flex-col items-center justify-center overflow-hidden rounded-xl border bg-card px-6 py-10 text-center shadow-[0_32px_90px_-38px_rgb(0_0_0/0.62)] sm:px-10" aria-live="polite">
+                <div className="landing-window-chrome">feedbacks.dev</div>
+                {confetti.map(([left, rotate, delay], index) => <span key={`${left}-${index}`} className={cn('landing-success-confetti', index % 3 === 0 ? 'bg-primary' : index % 3 === 1 ? 'bg-amber-400' : 'bg-sky-400')} style={{ left, rotate, animationDelay: delay }} aria-hidden="true" />)}
+                <span className="landing-success-mark relative flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground"><MessageSquareText className="h-9 w-9" /></span>
+                <h2 className="mt-6 text-3xl font-semibold tracking-[-0.04em]">Feedback received.</h2>
+                <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">The team gets your message, page, browser, rating{ screenshotReady ? ', and screenshot' : ''} together, ready to review.</p>
+                <button type="button" onClick={launchDemo} className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-lg border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted"><RotateCcw className="h-4 w-4" />Try it again</button>
+              </div>
+              <Image className="landing-post-send-mascot absolute" src="/mascots-v2/hero-bungee.png" alt="" width={1024} height={1536} sizes="88px" aria-hidden="true" />
             </motion.div>
             )}
             </AnimatePresence>

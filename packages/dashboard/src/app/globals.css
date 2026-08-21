@@ -755,18 +755,6 @@
   transition: opacity 320ms var(--ease-standard), filter 320ms var(--ease-standard);
 }
 
-.landing-mascot-hero {
-  top: -12rem;
-  left: clamp(1rem, 4vw, 4rem);
-  width: clamp(10rem, 14vw, 14.5rem);
-  --mascot-rest: 2deg;
-  --mascot-peak: -2deg;
-  --mascot-shift-y: -8px;
-  --mascot-speed: 5.2s;
-}
-
-.landing-mascot-hero.is-hidden { opacity: 0; }
-
 .landing-mascot-journey {
   bottom: -3rem;
   left: -5.5rem;
@@ -862,14 +850,6 @@
 }
 
 @media (max-width: 1099px) {
-  .landing-mascot-hero {
-    top: -2.5rem;
-    right: -1rem;
-    left: auto;
-    width: 7rem;
-    opacity: 0.76;
-  }
-
   .landing-mascot-journey,
   .landing-mascot-loop { left: -6.5rem; }
 
@@ -880,7 +860,6 @@
 
 @media (max-width: 767px) {
   .landing-section-mascot { filter: drop-shadow(0 14px 18px rgb(0 0 0 / 0.2)); }
-  .landing-mascot-hero { top: -1.5rem; right: -1.25rem; width: 5.75rem; opacity: 0.62; }
   .landing-mascot-journey { bottom: -1.5rem; left: -4.25rem; width: 13rem; }
   .landing-mascot-context-v2 { right: -3.8rem; bottom: -2.5rem; width: 9.5rem; }
   .landing-mascot-inbox { right: -4rem; bottom: -2.5rem; width: 15rem; opacity: 0.82; }
@@ -1073,6 +1052,25 @@
   50% { transform: translateY(5px); }
 }
 
+@keyframes landing-form-send-attention {
+  0%, 58%, 100% { transform: translateY(0) scale(1); }
+  66% { transform: translateY(-3px) scale(1.035); }
+  72% { transform: translateY(0) scale(0.97); }
+  79% { transform: translateY(-5px) scale(1.045); }
+  88% { transform: translateY(0) scale(1); }
+}
+
+@keyframes landing-form-send-ring {
+  0%, 54%, 100% { opacity: 0; transform: scale(0.86); }
+  65% { opacity: 0.62; }
+  90% { opacity: 0; transform: scale(1.65); }
+}
+
+@keyframes landing-post-send-hang {
+  0%, 100% { transform: translateY(0) rotate(4deg); }
+  50% { transform: translateY(7px) rotate(-2deg); }
+}
+
 .landing-try-radiation {
   position: absolute;
   left: 50%;
@@ -1161,6 +1159,26 @@
 
 .landing-demo-form { will-change: transform, opacity; }
 
+.landing-demo-submit:not(:disabled) {
+  isolation: isolate;
+  box-shadow:
+    0 0 0 3px oklch(var(--primary) / 0.18),
+    0 10px 24px -10px oklch(var(--primary) / 0.82);
+  animation: landing-form-send-attention 2.5s var(--ease-in-out) infinite;
+}
+
+.landing-demo-submit:not(:disabled)::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  z-index: 0;
+  border: 2px solid oklch(var(--primary) / 0.7);
+  border-radius: inherit;
+  opacity: 0;
+  animation: landing-form-send-ring 2.5s var(--ease-out-expo) infinite;
+  pointer-events: none;
+}
+
 .landing-type-caret {
   position: absolute;
   right: 0.9rem;
@@ -1172,6 +1190,19 @@
 }
 
 .landing-demo-success { animation: landing-demo-form-enter 520ms var(--ease-spring) both; }
+
+.landing-post-send-mascot {
+  right: 1.1rem;
+  bottom: -5.4rem;
+  z-index: 3;
+  width: clamp(4.4rem, 6vw, 5.5rem);
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 12px 14px rgb(0 0 0 / 0.24));
+  transform-origin: 50% 0;
+  animation: landing-post-send-hang 2.4s var(--ease-in-out) infinite;
+}
 
 .landing-success-confetti {
   position: absolute;
@@ -1431,6 +1462,27 @@
   -webkit-mask-image: radial-gradient(circle at 50% 55%, black, transparent 78%);
   mask-image: radial-gradient(circle at 50% 55%, black, transparent 78%);
   pointer-events: none;
+}
+
+.landing-inbox-section::after {
+  content: "";
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  z-index: 0;
+  width: min(82rem, 94vw);
+  height: min(42rem, 72vw);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse at center, oklch(0.75 0.19 133 / 0.2), oklch(0.65 0.16 133 / 0.07) 42%, transparent 72%);
+  filter: blur(14px);
+  pointer-events: none;
+}
+
+.landing-triage-dashboard {
+  box-shadow:
+    0 0 0 1px rgb(190 242 100 / 0.08),
+    0 0 110px 20px rgb(132 204 22 / 0.12),
+    0 40px 120px -50px rgb(0 0 0 / 0.95) !important;
 }
 
 .landing-inbox-section > div {
@@ -3581,6 +3633,19 @@ html.windows98 {
 
 .windows98 .landing-inbox-section {
   color: var(--win98-text) !important;
+}
+
+.windows98 .landing-inbox-section::after {
+  display: none;
+}
+
+.windows98 .landing-demo-submit:not(:disabled)::after {
+  border-color: var(--win98-title);
+  border-radius: 0;
+}
+
+.windows98 .landing-post-send-mascot {
+  filter: none;
 }
 
 .windows98 .landing-inbox-section :is(.text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400) {
