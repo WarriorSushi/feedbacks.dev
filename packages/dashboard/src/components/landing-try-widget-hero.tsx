@@ -96,8 +96,9 @@ function HeroAnnotations({
   if (!geometry) return null
 
   const { width, height, buttonLeft, buttonRight, buttonTop, buttonBottom } = geometry
-  const leftTarget = Math.max(0, buttonLeft - 14)
-  const rightTarget = Math.min(width, buttonRight + 14)
+  const arrowGap = 34
+  const leftTarget = Math.max(0, buttonLeft - arrowGap)
+  const rightTarget = Math.min(width, buttonRight + arrowGap)
   const centerY = (buttonTop + buttonBottom) / 2
   const paths = [
     {
@@ -146,18 +147,44 @@ function HeroAnnotations({
           <marker id="landing-arrowhead" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="strokeWidth">
             <path d="M 1 1 L 10 6 L 1 11" fill="none" stroke="currentColor" strokeWidth="1.6" />
           </marker>
+          {paths.map((callout, index) => {
+            const delay = reduceMotion ? 0 : 0.18 + index * 0.16
+            return (
+              <mask
+                key={`${callout.id}-draw-mask`}
+                id={`landing-${callout.id}-draw-mask`}
+                x="0"
+                y="0"
+                width={width}
+                height={height}
+                maskUnits="userSpaceOnUse"
+                maskContentUnits="userSpaceOnUse"
+              >
+                <motion.path
+                  d={callout.d}
+                  fill="none"
+                  pathLength="1"
+                  stroke="white"
+                  strokeDasharray="1 1"
+                  strokeLinecap="round"
+                  strokeWidth="10"
+                  initial={reduceMotion ? false : { strokeDashoffset: 1 }}
+                  animate={{ strokeDashoffset: 0 }}
+                  transition={{ duration: reduceMotion ? 0 : 1.05, delay, ease: [0.16, 1, 0.3, 1] }}
+                />
+              </mask>
+            )
+          })}
           {paths.map((callout) => <path key={`${callout.id}-text-path`} id={`landing-${callout.id}-text-path`} d={callout.textD} />)}
         </defs>
         {paths.map((callout, index) => {
           const delay = reduceMotion ? 0 : 0.18 + index * 0.16
           return (
             <g key={callout.id} className="landing-callout-stroke" fill="none" stroke="currentColor">
-              <motion.path
+              <path
                 className="landing-callout-line"
                 d={callout.d}
-                initial={reduceMotion ? false : { opacity: 0, strokeDashoffset: 48 }}
-                animate={{ opacity: 1, strokeDashoffset: 0 }}
-                transition={{ duration: reduceMotion ? 0 : 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
+                mask={`url(#landing-${callout.id}-draw-mask)`}
               />
               <motion.path
                 className="landing-callout-arrowhead"
@@ -165,7 +192,7 @@ function HeroAnnotations({
                 markerEnd="url(#landing-arrowhead)"
                 initial={reduceMotion ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: reduceMotion ? 0 : 0.18, delay: reduceMotion ? 0 : delay + 0.9 }}
+                transition={{ duration: reduceMotion ? 0 : 0.18, delay: reduceMotion ? 0 : delay + 1.05 }}
               />
               <motion.text
                 className="landing-callout-path-label"
@@ -174,7 +201,7 @@ function HeroAnnotations({
                 stroke="none"
                 initial={reduceMotion ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ duration: reduceMotion ? 0 : 0.4, delay: delay + 0.62 }}
+                transition={{ duration: reduceMotion ? 0 : 0.4, delay: delay + 0.58 }}
               >
                 <textPath href={`#landing-${callout.id}-text-path`} startOffset={callout.startOffset}>{callout.label}</textPath>
               </motion.text>
@@ -301,9 +328,6 @@ export function LandingTryWidgetHero() {
                 transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }}
                 className="landing-try-launch group relative z-10 inline-flex min-h-16 items-center gap-3 rounded-full px-8 text-base font-semibold transition-[box-shadow] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 sm:min-h-20 sm:px-11 sm:text-lg"
               >
-                <span className="landing-try-radiation landing-try-radiation-one" aria-hidden="true" />
-                <span className="landing-try-radiation landing-try-radiation-two" aria-hidden="true" />
-                <span className="landing-try-radiation landing-try-radiation-three" aria-hidden="true" />
                 <span className="relative z-[1]">Send feedback</span>
                 <MessageSquareText className="relative z-[1] h-5 w-5 text-primary" />
               </motion.button>
