@@ -8,7 +8,43 @@ test('public acquisition, auth, and documentation routes render', async ({ page 
   }
 })
 
+test('optional measurement stays off until consent and withdrawal clears attribution', async ({ page }) => {
+  await page.context().addCookies([{
+    name: 'feedbacks_attribution',
+    value: 'test-attribution',
+    url: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3000',
+    httpOnly: true,
+    sameSite: 'Lax',
+  }])
+
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  const choices = page.getByRole('dialog', { name: 'Cookie and advertising measurement choices' })
+  await expect(choices).toBeVisible()
+  await expect(page.locator('script[src*="googletagmanager"]')).toHaveCount(0)
+  await expect(choices.getByRole('button', { name: 'Reject optional' })).toBeVisible()
+  await expect(choices.getByRole('button', { name: 'Allow optional' })).toBeVisible()
+
+  await choices.getByRole('button', { name: 'Reject optional' }).click()
+  await expect(choices).toBeHidden()
+  await expect.poll(async () => page.context().cookies()).not.toContainEqual(
+    expect.objectContaining({ name: 'feedbacks_attribution' }),
+  )
+  await expect.poll(async () => page.context().cookies()).toContainEqual(
+    expect.objectContaining({ name: 'feedbacks_marketing_consent', value: 'v1.denied' }),
+  )
+
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await expect(choices).toBeHidden()
+  await expect(page.locator('script[src*="googletagmanager"]')).toHaveCount(0)
+})
+
 test('widget stays usable when bootstrap is unavailable', async ({ page }) => {
+  await page.context().addCookies([{
+    name: 'feedbacks_marketing_consent',
+    value: 'v1.denied',
+    url: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3000',
+    sameSite: 'Lax',
+  }])
   await page.route('**/api/widget/bootstrap**', (route) => route.abort('failed'))
   await page.goto('/', { waitUntil: 'domcontentloaded' })
 

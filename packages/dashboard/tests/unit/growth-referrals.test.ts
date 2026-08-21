@@ -97,11 +97,19 @@ test('advertising integrations remain consent-gated and outside customer widgets
   assert.match(measurement, /choice !== 'granted'/)
   assert.match(measurement, /consent', 'default'/)
   assert.match(measurement, /ad_user_data: 'denied'/)
+  assert.match(measurement, /revokeLoadedProviders/)
+  assert.match(measurement, /clearReadableMeasurementCookies/)
+  assert.match(measurement, /method: 'DELETE'/)
+  assert.match(measurement, /window\.location\.reload\(\)/)
   assert.match(measurement, /eventID: detail\.eventId/)
   assert.match(measurement, /conversionId: detail\.eventId/)
   assert.match(marketing, /metadata: \{ conversion_id: args\.eventId \}/)
   assert.match(marketing, /event_id: args\.eventId/)
   assert.doesNotMatch(widget, /facebook|redditstatic|googletagmanager|fbq|rdt\(/i)
+
+  const attributionRoute = read('../../src/app/api/marketing/attribution/route.ts')
+  assert.match(attributionRoute, /export async function DELETE/)
+  assert.match(attributionRoute, /maxAge: 0/)
 })
 
 test('lead capture distinguishes email consent from advertising measurement', () => {

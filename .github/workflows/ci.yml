@@ -17,7 +17,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -33,7 +33,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -50,7 +50,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -90,7 +90,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -113,6 +113,7 @@ jobs:
       E2E_SUPABASE_PROJECT_REF: browsersmoke
       E2E_EXPECTED_HOSTNAME: 127.0.0.1
       E2E_TEST_NAMESPACE: e2e:browser-smoke
+      NEXT_PUBLIC_GOOGLE_TAG_ID: G-BROWSER-SMOKE
     steps:
       - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v5

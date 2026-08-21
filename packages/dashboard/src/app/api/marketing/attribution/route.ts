@@ -31,3 +31,20 @@ export async function POST(request: NextRequest) {
   }
   return response
 }
+
+export async function DELETE(request: NextRequest) {
+  const response = NextResponse.json(
+    { cleared: true },
+    { headers: { 'Cache-Control': 'no-store' } },
+  )
+  const hostname = request.nextUrl.hostname.toLowerCase()
+  response.cookies.set(MARKETING_ATTRIBUTION_COOKIE, '', {
+    httpOnly: true,
+    secure: request.nextUrl.protocol === 'https:',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+    ...(hostname === 'feedbacks.dev' || hostname.endsWith('.feedbacks.dev') ? { domain: '.feedbacks.dev' } : {}),
+  })
+  return response
+}

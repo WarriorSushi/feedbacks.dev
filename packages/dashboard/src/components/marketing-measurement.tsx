@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ShieldCheck, X } from 'lucide-react'
@@ -34,6 +35,26 @@ function getConsentCookie(): ConsentChoice {
   if (value === `${MARKETING_CONSENT_VERSION}.granted`) return 'granted'
   if (value === `${MARKETING_CONSENT_VERSION}.denied`) return 'denied'
   return 'unknown'
+}
+
+function clearReadableMeasurementCookies() {
+  const names = document.cookie
+    .split(';')
+    .map((part) => part.slice(0, part.indexOf('=')).trim())
+    .filter((name) => /^(?:_ga(?:_|$)|_gid$|_gat(?:_|$)|_gcl_|_fbp$|_fbc$|_rdt_)/.test(name))
+  const attributes = `Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax${window.location.protocol === 'https:' ? '; Secure' : ''}`
+
+  for (const name of names) {
+    document.cookie = `${name}=; ${attributes}`
+    if (cookieDomain()) document.cookie = `${name}=; ${attributes}${cookieDomain()}`
+  }
+}
+
+function revokeLoadedProviders() {
+  window.gtag?.('consent', 'update', {
+    ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied',
+  })
+  window.fbq?.('consent', 'revoke')
 }
 
 function loadScript(src: string, id: string) {
@@ -175,30 +196,46 @@ export function MarketingMeasurement({ showBanner, config }: MarketingMeasuremen
     }
   }, [choice, config, hasProvider, pathname, searchParams, showBanner])
 
-  const choose = (next: Exclude<ConsentChoice, 'unknown'>) => {
+  const choose = async (next: Exclude<ConsentChoice, 'unknown'>) => {
+    const wasGranted = choice === 'granted'
     setConsentCookie(next)
     setChoice(next)
     setPreferencesOpen(false)
+
+    if (next === 'denied') {
+      revokeLoadedProviders()
+      clearReadableMeasurementCookies()
+      try {
+        await fetch('/api/marketing/attribution', { method: 'DELETE' })
+      } finally {
+        // A fresh document guarantees that optional scripts already loaded after
+        // an earlier grant are no longer present after consent is withdrawn.
+        if (wasGranted) window.location.reload()
+      }
+    }
   }
 
   if (!hasProvider || (!showBanner && !preferencesOpen)) return null
   if (choice !== 'unknown' && !preferencesOpen) return null
 
   return (
-    <div className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-2xl rounded-xl border bg-background/95 p-4 shadow-[var(--shadow-float)] backdrop-blur sm:p-5" role="dialog" aria-label="Advertising measurement choices">
+    <div className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-2xl rounded-xl border bg-background/95 p-4 shadow-[var(--shadow-float)] backdrop-blur sm:p-5" role="dialog" aria-label="Cookie and advertising measurement choices">
       <div className="flex items-start gap-3">
         <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
-            <p className="text-sm font-semibold">Your privacy choice</p>
+            <p className="text-sm font-semibold">Cookie choices</p>
             {preferencesOpen && choice !== 'unknown' && (
               <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => setPreferencesOpen(false)} aria-label="Close privacy choices"><X className="h-4 w-4" /></button>
             )}
           </div>
-          <p className="mt-1 text-xs leading-5 text-muted-foreground">With permission, we use Google, Meta, and Reddit measurement to understand which ads lead to signups. Nothing is loaded in customer widgets, and you can change this choice later.</p>
-          <div className="mt-3 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button variant="outline" size="sm" onClick={() => choose('denied')}>Only necessary</Button>
-            <Button size="sm" onClick={() => choose('granted')}>Allow measurement</Button>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+            Necessary cookies keep sign-in and security working. Optional Google, Meta, and Reddit measurement stays off unless you allow it, and is never loaded in customer widgets.{' '}
+            <Link href="/privacy#advertising-measurement" className="font-medium text-foreground underline underline-offset-2">Learn more</Link>
+          </p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            <Button variant="outline" size="sm" onClick={() => void choose('denied')}>Reject optional</Button>
+            <Button variant="outline" size="sm" onClick={() => void choose('granted')}>Allow optional</Button>
           </div>
         </div>
       </div>

@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
 import { ProductFeedbackPanel } from '@/components/product-feedback-panel'
 import { persistSharedAppearance } from '@/lib/appearance'
+import { PrivacyChoicesButton } from '@/components/privacy-choices-button'
 
 export default function SettingsPage() {
   const supabase = React.useMemo(() => createClient(), [])
@@ -192,7 +193,7 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <PageHeader eyebrow="Account" title="Settings" description="Manage your profile, alerts, appearance, and account." />
+      <PageHeader eyebrow="Account" title="Settings" description="Manage your profile, alerts, privacy, appearance, and account." />
 
       <div className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
         <section className="grid gap-6 p-5 sm:p-6 md:grid-cols-[150px_minmax(0,1fr)]">
@@ -319,6 +320,22 @@ export default function SettingsPage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Mail className="h-4 w-4" />
               Slack, Discord, GitHub, and webhooks are set up inside each project.
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-6 p-5 sm:p-6 md:grid-cols-[150px_minmax(0,1fr)]">
+          <div>
+            <h2 className="font-semibold">Privacy</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Control optional advertising measurement.</p>
+          </div>
+          <div className="space-y-3">
+            <p className="text-sm leading-6 text-muted-foreground">
+              Necessary sign-in and security cookies stay active. Optional Google, Meta, and Reddit measurement remains off unless you allow it.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <PrivacyChoicesButton className="inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm hover:bg-accent" />
+              <Button variant="ghost" size="sm" asChild><Link href="/privacy">Read the privacy policy</Link></Button>
             </div>
           </div>
         </section>

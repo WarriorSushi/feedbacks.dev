@@ -22,7 +22,7 @@ export default function PrivacyPage() {
 
         <h1 className="text-3xl font-bold tracking-tight">Privacy Policy</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Last updated: August 20, 2026
+          Last updated: August 22, 2026
         </p>
 
         <div className="prose prose-zinc mt-8 max-w-none dark:prose-invert">
@@ -69,6 +69,15 @@ export default function PrivacyPage() {
             configure allowed origins for sensitive applications.
           </p>
 
+          <h2>Sign-in and Necessary Cookies</h2>
+          <p>
+            We use secure, same-site authentication cookies to keep you signed in on the browser and
+            device you used. These cookies are necessary to provide your account, refresh the session,
+            and protect private workspace routes, so they are not used for advertising and do not depend
+            on optional measurement consent. Your session ends when you sign out, revoke the session, or
+            an applicable security or session-lifetime limit is reached.
+          </p>
+
           <h2>Third-Party Services</h2>
           <ul>
             <li><strong>Supabase:</strong> database and authentication</li>
@@ -84,7 +93,7 @@ export default function PrivacyPage() {
 
           <h2 id="advertising-measurement">Advertising Measurement and Cookies</h2>
           <p>
-            Google, Meta, and Reddit measurement is optional and off until you choose “Allow measurement.”
+            Google, Meta, and Reddit measurement is optional and off until you choose “Allow optional.”
             If enabled, browser tags may use advertising identifiers and cookies. For completed lead or
             signup events, our server may send a matching event identifier, a hashed normalized email,
             campaign click identifiers, IP address, user agent, and the page where the conversion happened.
@@ -93,8 +102,10 @@ export default function PrivacyPage() {
           <p>
             Advertising tags are limited to feedbacks.dev marketing and signup measurement. They are not
             installed in customer widgets, customer websites, submitted feedback, or public feedback boards.
-            Choosing “Only necessary” prevents these tags and server conversion calls. You can change or
-            withdraw your choice at any time.
+            Choosing “Reject optional” prevents these tags and server conversion calls. Your choice is
+            remembered for up to 180 days. You can change or withdraw it at any time; withdrawal stops
+            optional tags, clears the stored campaign attribution and known readable measurement cookies,
+            and reloads the page if a tag had already been loaded.
           </p>
           <PrivacyChoicesButton className="not-prose inline-flex rounded-md border px-3 py-2 text-sm font-medium" />
 
