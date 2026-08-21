@@ -60,6 +60,7 @@ const proofPoints = [
 export default function LandingPage() {
   return (
     <div className="marketing-shell min-h-screen bg-background text-foreground">
+      <div className="landing-page-grain" aria-hidden="true" />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationJsonLd).replace(/</g, '\\u003c') }} />
       <AuthenticatedRedirect appOrigin={appOrigin} />
 
