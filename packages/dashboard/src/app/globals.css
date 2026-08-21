@@ -1090,6 +1090,10 @@
   transition: transform 320ms var(--ease-out-quart), box-shadow 320ms var(--ease-out-quart), border-color 320ms var(--ease-out-quart);
 }
 
+.landing-window-chrome {
+  display: none;
+}
+
 .landing-scene-card:hover,
 .landing-evidence-card:hover,
 .landing-loop-card:hover {
@@ -2893,6 +2897,27 @@ html.windows98 {
   font-weight: 700;
 }
 
+.windows98 .landing-try-hero > .relative::after {
+  content: "_  □  ×";
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 21;
+  display: flex;
+  height: 18px;
+  min-width: 52px;
+  align-items: center;
+  justify-content: center;
+  background: var(--win98-face);
+  color: var(--win98-text);
+  box-shadow: var(--win98-raised);
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: pre;
+}
+
 .windows98 .landing-try-heading {
   padding-top: clamp(8rem, 18vh, 9.75rem);
 }
@@ -3045,6 +3070,262 @@ html.windows98 {
 .windows98 [class*="bg-gradient"],
 .windows98 [class*="bg-[linear-gradient"] {
   background-image: none !important;
+}
+
+/* Landing-page Windows 98 hierarchy: windows, work areas, groups, and controls
+   must not all share the same raised-button treatment. */
+.windows98 .marketing-shell [class~="bg-card"][class*="border"]:not(.widget-theme-preview *) {
+  border: 1px solid var(--win98-shadow) !important;
+  background: var(--win98-face) !important;
+  box-shadow: none !important;
+}
+
+.windows98 .marketing-shell .landing-app-window {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--win98-face) !important;
+  box-shadow:
+    3px 3px 0 rgb(5 5 8 / 0.38),
+    var(--win98-raised) !important;
+}
+
+.windows98 .landing-window-titlebar,
+.windows98 .landing-window-chrome {
+  position: relative;
+  display: flex;
+  min-height: 24px;
+  align-items: center;
+  border: 0 !important;
+  background: linear-gradient(90deg, var(--win98-title), var(--win98-title-end)) !important;
+  color: var(--win98-highlight) !important;
+  box-shadow: none !important;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.windows98 .landing-window-titlebar {
+  padding: 4px 62px 4px 6px !important;
+}
+
+.windows98 .landing-window-chrome {
+  padding: 4px 62px 4px 6px;
+}
+
+.windows98 .landing-window-titlebar::after,
+.windows98 .landing-window-chrome::after {
+  content: "_  □  ×";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: flex;
+  height: 18px;
+  min-width: 52px;
+  align-items: center;
+  justify-content: center;
+  background: var(--win98-face);
+  color: var(--win98-text);
+  box-shadow: var(--win98-raised);
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: pre;
+}
+
+.windows98 .landing-window-titlebar :is(p, span),
+.windows98 .landing-window-titlebar svg {
+  color: var(--win98-highlight) !important;
+}
+
+.windows98 .landing-demo-form .landing-window-titlebar {
+  padding-right: 4px !important;
+}
+
+.windows98 .landing-demo-form .landing-window-titlebar::after {
+  display: none;
+}
+
+.windows98 .landing-demo-form .landing-window-titlebar button {
+  width: 20px !important;
+  height: 18px !important;
+  min-height: 0 !important;
+  background: var(--win98-face) !important;
+  color: var(--win98-text) !important;
+}
+
+.windows98 .landing-demo-form .landing-window-titlebar button svg {
+  width: 12px;
+  height: 12px;
+  color: var(--win98-text) !important;
+}
+
+.windows98 .landing-demo-success .landing-window-chrome {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  left: 3px;
+  z-index: 4;
+  text-align: left;
+}
+
+.windows98 .landing-evidence-window {
+  padding: 20px !important;
+}
+
+.windows98 .landing-evidence-window > .landing-window-titlebar {
+  margin: -17px -17px 18px;
+}
+
+.windows98 .landing-scene-card > :not(.landing-window-titlebar),
+.windows98 .landing-loop-card > :not(.landing-window-titlebar),
+.windows98 .landing-demo-form > :not(.landing-window-titlebar),
+.windows98 .landing-install-shell > .grid,
+.windows98 .landing-triage-dashboard > :not(.landing-window-titlebar) {
+  background-color: var(--win98-face) !important;
+}
+
+.windows98 .landing-scene-card > [class*="bg-muted"],
+.windows98 .landing-scene-card > .relative,
+.windows98 .landing-loop-card > .relative,
+.windows98 .landing-loop-card > [class*="min-h"] {
+  box-shadow: var(--win98-sunken);
+}
+
+.windows98 .landing-scene-card [class~="bg-background"][class*="border"],
+.windows98 .landing-route-card,
+.windows98 .landing-evidence-field,
+.windows98 .landing-evidence-window > [class*="bg-muted"],
+.windows98 .landing-board-vote {
+  border: 0 !important;
+  background: var(--win98-window) !important;
+  box-shadow: var(--win98-sunken) !important;
+}
+
+.windows98 .landing-evidence-status,
+.windows98 .landing-proof-strip [class~="bg-card"],
+.windows98 .landing-final-chip {
+  border: 0 !important;
+  background: var(--win98-window) !important;
+  box-shadow: var(--win98-sunken) !important;
+}
+
+.windows98 .landing-context-section [class~="bg-card"][class*="border"]:not(.landing-evidence-window) {
+  background: var(--win98-window) !important;
+  box-shadow: var(--win98-sunken) !important;
+}
+
+.windows98 .landing-context-section .landing-evidence-field,
+.windows98 .landing-context-section .landing-evidence-status {
+  padding: 1rem !important;
+}
+
+.windows98 .landing-triage-dashboard,
+.windows98 .landing-install-shell,
+.windows98 .landing-pro-plan {
+  color: var(--win98-text) !important;
+}
+
+.windows98 .landing-inbox-section {
+  color: var(--win98-text) !important;
+}
+
+.windows98 .landing-inbox-section :is(.text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400) {
+  color: var(--win98-text) !important;
+}
+
+.windows98 .landing-inbox-section :is(.text-zinc-500, .text-zinc-600) {
+  color: var(--win98-dark-shadow) !important;
+}
+
+.windows98 .landing-inbox-section .text-lime-300 {
+  color: var(--win98-title) !important;
+}
+
+.windows98 .landing-triage-dashboard :is(.text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400),
+.windows98 .landing-install-shell :is(.text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400),
+.windows98 .landing-pro-plan :is(.text-zinc-100, .text-zinc-200, .text-zinc-300, .text-zinc-400) {
+  color: var(--win98-text) !important;
+}
+
+.windows98 .landing-triage-dashboard :is(.text-zinc-500, .text-zinc-600),
+.windows98 .landing-install-shell :is(.text-zinc-500, .text-zinc-600),
+.windows98 .landing-pro-plan :is(.text-zinc-500, .text-zinc-600) {
+  color: var(--win98-dark-shadow) !important;
+}
+
+.windows98 .landing-triage-dashboard :is(.text-lime-200, .text-lime-300),
+.windows98 .landing-install-shell .text-lime-300,
+.windows98 .landing-pro-plan .text-lime-300 {
+  color: var(--win98-title) !important;
+}
+
+.windows98 .landing-triage-dashboard nav,
+.windows98 .landing-triage-dashboard > div > div,
+.windows98 .landing-install-shell > .grid > div {
+  border-color: var(--win98-shadow) !important;
+  background: var(--win98-face) !important;
+}
+
+.windows98 .landing-triage-dashboard nav,
+.windows98 .landing-triage-dashboard > div > div:last-child,
+.windows98 .landing-install-shell pre {
+  box-shadow: var(--win98-sunken);
+}
+
+.windows98 .landing-triage-dashboard [class*="border-white"],
+.windows98 .landing-install-shell [class*="border-white"],
+.windows98 .landing-pro-plan [class*="border-white"] {
+  border-color: var(--win98-shadow) !important;
+}
+
+.windows98 .landing-install-shell li,
+.windows98 .landing-install-shell [role="tablist"] {
+  border: 1px solid var(--win98-shadow) !important;
+  background: var(--win98-face) !important;
+  box-shadow: none !important;
+}
+
+.windows98 .landing-install-shell pre {
+  border: 0 !important;
+  background: var(--win98-window) !important;
+  color: var(--win98-text) !important;
+}
+
+.windows98 .landing-free-plan,
+.windows98 .landing-pro-plan,
+.windows98 .landing-faq-section details {
+  border: 1px solid var(--win98-dark-shadow) !important;
+  background: var(--win98-face) !important;
+  box-shadow: none !important;
+}
+
+.windows98 .landing-free-plan li {
+  border: 1px solid var(--win98-shadow);
+  background: var(--win98-window) !important;
+}
+
+.windows98 .landing-pro-plan .landing-pro-glow,
+.windows98 .landing-final-orb {
+  display: none;
+}
+
+.windows98 .landing-faq-section details[open] {
+  background: var(--win98-window) !important;
+  box-shadow: var(--win98-sunken) !important;
+}
+
+.windows98 .landing-final-cta > .relative {
+  max-width: 780px;
+  padding: 2rem;
+  border: 1px solid var(--win98-shadow);
+  background: var(--win98-face);
+}
+
+.windows98 .landing-final-cta > .relative > span {
+  border: 0 !important;
+  background: var(--win98-face) !important;
+  box-shadow: var(--win98-raised) !important;
 }
 
 @media (max-width: 767px) {

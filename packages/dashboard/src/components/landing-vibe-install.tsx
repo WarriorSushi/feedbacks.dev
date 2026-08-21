@@ -27,7 +27,8 @@ export function LandingVibeInstall({ snippet }: { snippet: string }) {
   }
 
   return (
-    <div className="landing-install-shell overflow-hidden rounded-2xl border bg-[#0b0e0b] text-[#f5f7f1] shadow-[0_36px_110px_-52px_rgb(0_0_0/0.9)]">
+    <div className="landing-app-window landing-install-shell overflow-hidden rounded-2xl border bg-[#0b0e0b] text-[#f5f7f1] shadow-[0_36px_110px_-52px_rgb(0_0_0/0.9)]">
+      <div className="landing-window-chrome">feedbacks.dev Setup Wizard</div>
       <div className="grid lg:grid-cols-[0.78fr_1.22fr]">
         <div className="border-b border-white/10 p-6 sm:p-9 lg:border-b-0 lg:border-r">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-lime-300">Install once</p>

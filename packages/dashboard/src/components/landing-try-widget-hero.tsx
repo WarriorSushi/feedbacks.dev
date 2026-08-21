@@ -316,9 +316,9 @@ export function LandingTryWidgetHero() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: reduceMotion ? 0 : 0.48, ease: [0.16, 1, 0.3, 1] }}
-              className="landing-demo-form relative z-20 w-full max-w-[470px] overflow-hidden rounded-xl border bg-card text-card-foreground shadow-[0_32px_90px_-38px_rgb(0_0_0/0.62)]"
+              className="landing-app-window landing-demo-form relative z-20 w-full max-w-[470px] overflow-hidden rounded-xl border bg-card text-card-foreground shadow-[0_32px_90px_-38px_rgb(0_0_0/0.62)]"
             >
-              <div className="flex items-center justify-between gap-5 border-b px-4 py-3">
+              <div className="landing-window-titlebar flex items-center justify-between gap-5 border-b px-4 py-3">
                 <p className="text-sm font-semibold">Send feedback</p>
                 <button ref={closeButtonRef} type="button" onClick={closeDemo} className="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-8 sm:w-8" aria-label="Close demo feedback form"><X className="h-4 w-4" /></button>
               </div>
@@ -369,7 +369,8 @@ export function LandingTryWidgetHero() {
             )}
 
             {open && submitted && (
-            <motion.div key="success" layoutId="landing-widget-demo" initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }} className="landing-demo-success relative z-20 flex min-h-[390px] w-full max-w-[470px] flex-col items-center justify-center overflow-hidden rounded-xl border bg-card px-6 py-10 text-center shadow-[0_32px_90px_-38px_rgb(0_0_0/0.62)] sm:px-10" aria-live="polite">
+            <motion.div key="success" layoutId="landing-widget-demo" initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }} className="landing-app-window landing-demo-success relative z-20 flex min-h-[390px] w-full max-w-[470px] flex-col items-center justify-center overflow-hidden rounded-xl border bg-card px-6 py-10 text-center shadow-[0_32px_90px_-38px_rgb(0_0_0/0.62)] sm:px-10" aria-live="polite">
+              <div className="landing-window-chrome">feedbacks.dev</div>
               {confetti.map(([left, rotate, delay], index) => <span key={`${left}-${index}`} className={cn('landing-success-confetti', index % 3 === 0 ? 'bg-primary' : index % 3 === 1 ? 'bg-amber-400' : 'bg-sky-400')} style={{ left, rotate, animationDelay: delay }} aria-hidden="true" />)}
               <span className="landing-success-mark relative flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground"><MessageSquareText className="h-9 w-9" /></span>
               <h2 className="mt-6 text-3xl font-semibold tracking-[-0.04em]">Feedback received.</h2>
