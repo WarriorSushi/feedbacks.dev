@@ -26,7 +26,7 @@ export function LandingProductStories() {
       <section id="product" className="landing-journey landing-reveal border-b py-20 sm:py-28">
         <div className="mx-auto max-w-7xl px-5 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">The whole trip, clearly labeled</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">From message to shipped fix</p>
             <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">One small message becomes work your team can act on.</h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">Your customer never leaves the product. feedbacks.dev keeps the useful context attached, then hands the important work to the tools your team already opens.</p>
           </div>
@@ -39,7 +39,6 @@ export function LandingProductStories() {
             <WorkflowScene />
           </div>
 
-          <p className="mt-7 text-center text-xs text-muted-foreground">Every surface says what it is. No mystery company, no empty dashboard, no fake loading state.</p>
         </div>
       </section>
 

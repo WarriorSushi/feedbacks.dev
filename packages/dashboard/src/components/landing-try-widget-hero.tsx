@@ -101,31 +101,31 @@ function HeroAnnotations({
   const paths = [
     {
       id: 'top-left',
-      d: `M 0 ${height * 0.12} C ${width * 0.22} ${height * 0.13}, ${width * 0.32} ${height * 0.2}, ${leftTarget} ${centerY - 10}`,
-      label: 'Click the button',
-      x: width * 0.1,
-      y: height * 0.13,
+      d: `M 0 ${height * 0.14} C ${width * 0.12} ${height * 0.13}, ${width * 0.18} ${height * 0.09}, ${width * 0.27} ${height * 0.18} C ${width * 0.34} ${height * 0.24}, ${width * 0.37} ${height * 0.32}, ${leftTarget} ${centerY - 12}`,
+      textD: `M 0 ${height * 0.14} C ${width * 0.12} ${height * 0.13}, ${width * 0.18} ${height * 0.09}, ${width * 0.27} ${height * 0.18} C ${width * 0.34} ${height * 0.24}, ${width * 0.37} ${height * 0.32}, ${leftTarget} ${centerY - 12}`,
+      label: 'Feedback starts right here',
+      startOffset: '8%',
     },
     {
       id: 'top-right',
-      d: `M ${width} ${height * 0.12} C ${width * 0.78} ${height * 0.12}, ${width * 0.7} ${height * 0.2}, ${rightTarget} ${centerY - 10}`,
-      label: 'Press the button',
-      x: width * 0.76,
-      y: height * 0.13,
+      d: `M ${width} ${height * 0.12} C ${width * 0.85} ${height * 0.11}, ${width * 0.82} ${height * 0.2}, ${width * 0.73} ${height * 0.18} C ${width * 0.65} ${height * 0.16}, ${width * 0.64} ${height * 0.33}, ${rightTarget} ${centerY - 12}`,
+      textD: `M ${rightTarget} ${centerY - 12} C ${width * 0.64} ${height * 0.33}, ${width * 0.65} ${height * 0.16}, ${width * 0.73} ${height * 0.18} C ${width * 0.82} ${height * 0.2}, ${width * 0.85} ${height * 0.11}, ${width} ${height * 0.12}`,
+      label: 'No support portal required',
+      startOffset: '42%',
     },
     {
       id: 'bottom-left',
-      d: `M 0 ${height * 0.88} C ${width * 0.2} ${height * 0.68}, ${width * 0.34} ${height * 0.76}, ${leftTarget} ${centerY + 10}`,
-      label: 'See the real interaction',
-      x: width * 0.08,
-      y: height * 0.8,
+      d: `M 0 ${height * 0.9} C ${width * 0.11} ${height * 0.77}, ${width * 0.18} ${height * 0.82}, ${width * 0.27} ${height * 0.74} C ${width * 0.36} ${height * 0.66}, ${width * 0.34} ${height * 0.55}, ${leftTarget} ${centerY + 12}`,
+      textD: `M 0 ${height * 0.9} C ${width * 0.11} ${height * 0.77}, ${width * 0.18} ${height * 0.82}, ${width * 0.27} ${height * 0.74} C ${width * 0.36} ${height * 0.66}, ${width * 0.34} ${height * 0.55}, ${leftTarget} ${centerY + 12}`,
+      label: 'Your customer stays on the page',
+      startOffset: '7%',
     },
     {
       id: 'bottom-right',
-      d: `M ${width} ${height * 0.88} C ${width * 0.8} ${height * 0.77}, ${width * 0.68} ${height * 0.72}, ${rightTarget} ${centerY + 10}`,
-      label: 'The button is the product',
-      x: width * 0.73,
-      y: height * 0.8,
+      d: `M ${width} ${height * 0.89} C ${width * 0.88} ${height * 0.82}, ${width * 0.82} ${height * 0.71}, ${width * 0.73} ${height * 0.74} C ${width * 0.66} ${height * 0.76}, ${width * 0.64} ${height * 0.58}, ${rightTarget} ${centerY + 12}`,
+      textD: `M ${rightTarget} ${centerY + 12} C ${width * 0.64} ${height * 0.58}, ${width * 0.66} ${height * 0.76}, ${width * 0.73} ${height * 0.74} C ${width * 0.82} ${height * 0.71}, ${width * 0.88} ${height * 0.82}, ${width} ${height * 0.89}`,
+      label: 'Page and browser context come along',
+      startOffset: '40%',
     },
   ]
 
@@ -145,29 +145,30 @@ function HeroAnnotations({
           <marker id="landing-arrowhead" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="strokeWidth">
             <path d="M 1 1 L 10 6 L 1 11" fill="none" stroke="currentColor" strokeWidth="1.6" />
           </marker>
+          {paths.map((callout) => <path key={`${callout.id}-text-path`} id={`landing-${callout.id}-text-path`} d={callout.textD} />)}
         </defs>
         {paths.map((callout, index) => {
           const delay = reduceMotion ? 0 : 0.18 + index * 0.16
           return (
             <g key={callout.id} className="landing-callout-stroke" fill="none" stroke="currentColor">
               <motion.path
+                className="landing-callout-line"
                 d={callout.d}
                 markerEnd="url(#landing-arrowhead)"
-                initial={reduceMotion ? false : { pathLength: 0, opacity: 0.35 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: reduceMotion ? 0 : 1.05, delay, ease: [0.16, 1, 0.3, 1] }}
+                initial={reduceMotion ? false : { opacity: 0, strokeDashoffset: 48 }}
+                animate={{ opacity: 1, strokeDashoffset: 0 }}
+                transition={{ duration: reduceMotion ? 0 : 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
               />
               <motion.text
                 className="landing-callout-path-label"
-                x={callout.x}
-                y={callout.y}
+                dy="-9"
                 fill="currentColor"
                 stroke="none"
                 initial={reduceMotion ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: reduceMotion ? 0 : 0.4, delay: delay + 0.62 }}
               >
-                {callout.label}
+                <textPath href={`#landing-${callout.id}-text-path`} startOffset={callout.startOffset}>{callout.label}</textPath>
               </motion.text>
             </g>
           )
@@ -292,8 +293,11 @@ export function LandingTryWidgetHero() {
                 transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }}
                 className="landing-try-launch group relative z-10 inline-flex min-h-16 items-center gap-3 rounded-full px-8 text-base font-semibold transition-[box-shadow] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4 sm:min-h-20 sm:px-11 sm:text-lg"
               >
-                Send feedback
-                <MessageSquareText className="h-5 w-5 text-primary" />
+                <span className="landing-try-radiation landing-try-radiation-one" aria-hidden="true" />
+                <span className="landing-try-radiation landing-try-radiation-two" aria-hidden="true" />
+                <span className="landing-try-radiation landing-try-radiation-three" aria-hidden="true" />
+                <span className="relative z-[1]">Send feedback</span>
+                <MessageSquareText className="relative z-[1] h-5 w-5 text-primary" />
               </motion.button>
             )}
 
@@ -361,8 +365,8 @@ export function LandingTryWidgetHero() {
             <motion.div key="success" layoutId="landing-widget-demo" initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }} className="landing-demo-success relative z-20 flex min-h-[390px] w-full max-w-[470px] flex-col items-center justify-center overflow-hidden rounded-xl border bg-card px-6 py-10 text-center shadow-[0_32px_90px_-38px_rgb(0_0_0/0.62)] sm:px-10" aria-live="polite">
               {confetti.map(([left, rotate, delay], index) => <span key={`${left}-${index}`} className={cn('landing-success-confetti', index % 3 === 0 ? 'bg-primary' : index % 3 === 1 ? 'bg-amber-400' : 'bg-sky-400')} style={{ left, rotate, animationDelay: delay }} aria-hidden="true" />)}
               <span className="landing-success-mark relative flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground"><MessageSquareText className="h-9 w-9" /></span>
-              <h2 className="mt-6 text-3xl font-semibold tracking-[-0.04em]">That was the whole thing.</h2>
-              <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">In a real app, the team would now have your message, page, browser, rating{ screenshotReady ? ', and screenshot' : ''}. Here, it vanished responsibly.</p>
+              <h2 className="mt-6 text-3xl font-semibold tracking-[-0.04em]">Feedback received.</h2>
+              <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">The team gets your message, page, browser, rating{ screenshotReady ? ', and screenshot' : ''} together, ready to review.</p>
               <button type="button" onClick={launchDemo} className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-lg border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted"><RotateCcw className="h-4 w-4" />Try it again</button>
             </motion.div>
             )}
@@ -376,10 +380,10 @@ export function LandingTryWidgetHero() {
               initial={reduceMotion ? false : { opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: reduceMotion ? 0 : 0.3 }}
-              className="landing-scroll-cue relative z-20 mt-5 inline-flex min-h-12 flex-col items-center justify-center gap-1 rounded-full px-5 text-xs font-semibold text-foreground/75 transition-colors hover:text-foreground"
+              className="landing-scroll-cue relative z-20 mt-6 inline-flex min-h-16 flex-col items-center justify-center gap-2 rounded-full px-8 text-base font-semibold tracking-[-0.02em] text-foreground/80 transition-colors hover:text-foreground sm:mt-16 sm:min-h-20 sm:text-xl"
             >
-              <span>{submitted ? 'See the complete feedback loop' : 'Continue below when you are ready'}</span>
-              <ChevronDown className="h-4 w-4" />
+              <span>{submitted ? 'See the complete feedback loop' : 'Scroll below when ready'}</span>
+              <ChevronDown className="h-7 w-7" />
             </motion.button>
           )}
         </motion.div>

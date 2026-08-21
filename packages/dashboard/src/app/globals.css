@@ -867,6 +867,10 @@
   vector-effect: non-scaling-stroke;
 }
 
+.landing-callout-line {
+  stroke-dasharray: 9 11;
+}
+
 .landing-callout-path-label {
   color: oklch(var(--foreground) / 0.94);
   font-size: 17px;
@@ -896,10 +900,10 @@
   }
 }
 
-@keyframes landing-send-ring {
-  0%, 35% { opacity: 0; transform: scale(0.94); }
-  52% { opacity: 0.48; }
-  82%, 100% { opacity: 0; transform: scale(1.22); }
+@keyframes landing-send-radiate {
+  0% { opacity: 0; transform: scale(0.55); }
+  16% { opacity: 0.5; }
+  72%, 100% { opacity: 0; transform: scale(2.7); }
 }
 
 @keyframes landing-send-breathe {
@@ -912,16 +916,23 @@
   50% { transform: translateY(5px); }
 }
 
-.landing-try-launch::before {
-  content: "";
+.landing-try-radiation {
   position: absolute;
-  inset: -2px;
+  left: 50%;
+  top: 50%;
+  width: 6rem;
+  height: 6rem;
+  translate: -50% -50%;
   z-index: -1;
-  border: 2px solid oklch(var(--primary) / 0.7);
-  border-radius: inherit;
-  animation: landing-send-ring 2.8s var(--ease-out-expo) infinite;
+  border: 1.5px solid oklch(var(--primary) / 0.58);
+  border-radius: 50%;
+  opacity: 0;
+  animation: landing-send-radiate 3s var(--ease-out-expo) infinite;
   pointer-events: none;
 }
+
+.landing-try-radiation-two { animation-delay: 1s; }
+.landing-try-radiation-three { animation-delay: 2s; }
 
 .landing-try-launch::after {
   content: "";
@@ -988,7 +999,7 @@
 }
 
 .landing-scroll-cue svg {
-  animation: landing-scroll-cue 1.35s var(--ease-in-out) infinite;
+  animation: landing-scroll-cue 1.15s var(--ease-in-out) infinite;
 }
 
 .landing-demo-form { will-change: transform, opacity; }

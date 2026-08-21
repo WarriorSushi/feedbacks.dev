@@ -121,7 +121,7 @@ export default function LandingPage() {
                 <div className="absolute right-0 top-0 rounded-bl-xl bg-primary px-4 py-2 text-[10px] font-bold text-primary-foreground">START HERE</div>
                 <p className="text-sm font-semibold">Free forever</p>
                 <div className="mt-5 flex items-end gap-2"><p className="text-6xl font-semibold tracking-[-0.06em]">${freePlan.monthlyPrice}</p><span className="pb-2 text-sm text-muted-foreground">no card needed</span></div>
-                <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">For side projects, launches, and growing products that want the real system, not a stripped demo.</p>
+                <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">For side projects, launches, and growing products collecting their first useful signals.</p>
                 <ul className="mt-8 grid gap-3 text-sm sm:grid-cols-2">
                   {[`${freePlan.projectLimit} projects`, `${freePlan.feedbackMonthlyLimit} feedback / month`, `${freePlan.historyDays} days of history`, 'Feedback form + inbox', 'Public board + product updates', 'REST API + MCP + 1 webhook'].map((item) => <li key={item} className="flex items-start gap-2 rounded-lg bg-muted/35 p-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
                 </ul>
