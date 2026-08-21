@@ -348,8 +348,8 @@ export function LandingTryWidgetHero() {
                 <button ref={closeButtonRef} type="button" onClick={closeDemo} className="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-8 sm:w-8" aria-label="Close demo feedback form"><X className="h-4 w-4" /></button>
               </div>
 
-              <div className="space-y-3.5 p-4">
-                <fieldset>
+              <div className="landing-demo-form-body space-y-3.5 p-4">
+                <fieldset className="landing-demo-type-field">
                   <legend className="mb-1.5 text-[11px] font-semibold">What kind of feedback?</legend>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {feedbackTypes.map(({ value, label, Icon }) => (
@@ -358,7 +358,7 @@ export function LandingTryWidgetHero() {
                   </div>
                 </fieldset>
 
-                <div>
+                <div className="landing-demo-message-field">
                   <label htmlFor="landing-demo-message" className="mb-1.5 block text-[11px] font-semibold">Your message</label>
                   <div className="relative">
                     <textarea
@@ -367,25 +367,25 @@ export function LandingTryWidgetHero() {
                       onChange={(event) => { userEdited.current = true; setMessage(event.target.value) }}
                       onFocus={() => { userEdited.current = true }}
                       rows={3}
-                      className="min-h-20 w-full resize-none rounded-md border bg-background px-3 py-2.5 text-sm leading-5 outline-none transition-[border-color,box-shadow] focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      className="landing-demo-textarea min-h-20 w-full resize-none rounded-md border bg-background px-3 py-2.5 text-sm leading-5 outline-none transition-[border-color,box-shadow] focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />
                     {!userEdited.current && message.length < typedMessage.length && <span className="landing-type-caret" aria-hidden="true" />}
                   </div>
                 </div>
 
-                <div className="flex flex-col items-stretch gap-3 border-t pt-3.5 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
+                <div className="landing-demo-rating-row flex flex-col items-stretch gap-3 border-t pt-3.5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="landing-demo-rating">
                     <p className="mb-1 text-[11px] font-semibold">How was it?</p>
                     <div className="flex gap-1" aria-label={`${rating} out of 5 stars`}>
                       {[1, 2, 3, 4, 5].map((value) => (
-                        <button key={value} type="button" onClick={() => { userRated.current = true; setRating(value) }} aria-label={`Rate ${value} stars`} className="inline-flex h-10 w-10 items-center justify-center rounded text-amber-400 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-8 sm:w-8"><Star className={cn('h-5 w-5', value <= rating && 'fill-current')} /></button>
+                        <button key={value} type="button" onClick={() => { userRated.current = true; setRating(value) }} aria-label={`Rate ${value} stars`} className="landing-demo-star inline-flex h-10 w-10 items-center justify-center rounded text-amber-400 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:h-8 sm:w-8"><Star className={cn('h-5 w-5', value <= rating && 'fill-current')} /></button>
                       ))}
                     </div>
                   </div>
-                  <button type="button" onClick={() => setScreenshotReady((ready) => !ready)} aria-pressed={screenshotReady} className={cn('inline-flex min-h-10 items-center justify-center gap-2 rounded-md border px-3 text-xs font-semibold transition-colors sm:min-h-9', screenshotReady ? 'border-primary/40 bg-primary/10 text-foreground' : 'bg-background text-muted-foreground hover:text-foreground')}><Camera className="h-3.5 w-3.5" />{screenshotReady ? 'Screenshot ready' : 'Add screenshot'}</button>
+                  <button type="button" onClick={() => setScreenshotReady((ready) => !ready)} aria-label={screenshotReady ? 'Screenshot ready' : 'Add screenshot'} aria-pressed={screenshotReady} className={cn('landing-demo-screenshot inline-flex min-h-10 items-center justify-center gap-2 rounded-md border px-3 text-xs font-semibold transition-colors sm:min-h-9', screenshotReady ? 'border-primary/40 bg-primary/10 text-foreground' : 'bg-background text-muted-foreground hover:text-foreground')}><Camera className="h-3.5 w-3.5" /><span className="landing-demo-screenshot-label">{screenshotReady ? 'Screenshot ready' : 'Add screenshot'}</span></button>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 border-t pt-3.5">
+                <div className="landing-demo-actions flex items-center justify-between gap-3 border-t pt-3.5">
                   <p className="text-[11px] text-muted-foreground">Page + browser context included</p>
                   <button type="button" disabled={!message.trim()} onClick={() => setSubmitted(true)} className="landing-demo-submit relative inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-md bg-primary px-4 text-xs font-semibold text-primary-foreground transition-[transform,opacity] hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 sm:min-h-9">Send <ChevronRight className="h-3.5 w-3.5" /></button>
                 </div>
