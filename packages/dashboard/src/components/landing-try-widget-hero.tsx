@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { LandingBackgroundBeams } from '@/components/landing-background-beams'
 import { Button } from '@/components/ui/button'
 
 type FeedbackType = 'bug' | 'idea' | 'praise' | 'question'
@@ -405,7 +406,8 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
   }
 
   return (
-    <section ref={sectionRef} className="landing-try-hero relative isolate overflow-hidden border-b" aria-labelledby="try-widget-title">
+    <section ref={sectionRef} className="landing-try-hero landing-atmosphere-section landing-tone-hero relative isolate overflow-hidden border-b" aria-labelledby="try-widget-title">
+      <LandingBackgroundBeams />
       <motion.div layout className={cn('landing-try-shell relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-[1600px] flex-col px-5 pb-8 sm:px-6', open && 'landing-try-shell-open', completed && 'landing-try-shell-complete')} transition={{ layout: { duration: reduceMotion || completed ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
         <motion.div layout="position" className={cn('landing-try-heading relative z-[2] mx-auto max-w-[920px] text-center', open && 'landing-try-heading-open', completed && 'landing-try-heading-complete')} transition={{ layout: { duration: reduceMotion || completed ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
           <AnimatePresence initial={false}>

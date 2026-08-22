@@ -36,7 +36,7 @@ import type { LucideIcon } from 'lucide-react'
 export function LandingProductStories() {
   return (
     <>
-      <section id="product" className="landing-journey landing-reveal border-b py-20 sm:py-28">
+      <section id="product" className="landing-journey landing-atmosphere-section landing-tone-cool landing-reveal border-b py-20 sm:py-28">
         <div className="relative z-[2] mx-auto max-w-[1400px] px-5 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-[2.75rem]">One feedback from your customer becomes work your team can act on.</h2>
@@ -60,7 +60,7 @@ export function LandingProductStories() {
         <Image className="landing-section-mascot landing-mascot-journey" src="/mascots-v2/journey-runner.png" alt="" width={1536} height={1024} sizes="(max-width: 767px) 190px, 360px" aria-hidden="true" />
       </section>
 
-      <section className="landing-context-section landing-reveal border-b py-20 sm:py-28">
+      <section className="landing-context-section landing-atmosphere-section landing-tone-warm landing-reveal border-b py-20 sm:py-28">
         <div className="relative z-[2] mx-auto grid max-w-7xl gap-12 px-5 sm:px-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:gap-20">
           <div className="max-w-xl">
             <h2 className="text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Your first reply can be useful instead of “which page were you on?”</h2>
@@ -74,7 +74,7 @@ export function LandingProductStories() {
         <Image className="landing-section-mascot landing-mascot-context-v2" src="/mascots-v2/context-detective.png" alt="" width={1024} height={1536} sizes="(max-width: 767px) 150px, 230px" aria-hidden="true" />
       </section>
 
-      <section className="landing-inbox-section landing-reveal border-b py-20 sm:py-28">
+      <section className="landing-inbox-section landing-atmosphere-section landing-tone-focus landing-reveal border-b py-20 sm:py-28">
         <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Open your dashboard and know what deserves attention.</h2>
@@ -85,7 +85,7 @@ export function LandingProductStories() {
         </div>
       </section>
 
-      <section className="landing-close-loop landing-reveal relative overflow-hidden border-b py-20 sm:py-28">
+      <section className="landing-close-loop landing-atmosphere-section landing-tone-aurora landing-reveal relative overflow-hidden border-b py-20 sm:py-28">
         <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
             <h2 className="text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Let users see what happened next.</h2>
