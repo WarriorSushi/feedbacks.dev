@@ -137,6 +137,8 @@ export function ProductTour({
   const tutorialSaveQueue = React.useRef(Promise.resolve())
   const panelRef = React.useRef<HTMLDivElement>(null)
   const maskId = React.useId().replace(/:/g, '')
+  const handledStandardInitialOffer = React.useRef(false)
+  const previousNavigationTourRequest = React.useRef(false)
 
   const tutorial = getGuidedTutorial(tutorialId) || getGuidedTutorial('navigation')!
   const steps = React.useMemo(
@@ -166,17 +168,22 @@ export function ProductTour({
 
   React.useEffect(() => {
     if (required) return
+    const newNavigationTourRequest = navigationTourRequested && !previousNavigationTourRequest.current
+    previousNavigationTourRequest.current = navigationTourRequested
     setWelcomeOpen(false)
     const requestedTutorial = getGuidedTutorial(requestedTutorialId)
     if (requestedTutorial) {
+      handledStandardInitialOffer.current = true
       const saved = readTutorialProgress(requestedTutorial.id) || initialTutorialProgress[requestedTutorial.id]
       setTutorialId(requestedTutorial.id)
       setStepIndex(saved?.completedAt ? 0 : Math.min(saved?.stepIndex || 0, requestedTutorial.steps.length - 1))
       setOpen(true)
-    } else if (navigationTourRequested || initialOpen) {
+    } else if (newNavigationTourRequest || (initialOpen && !handledStandardInitialOffer.current)) {
+      handledStandardInitialOffer.current = true
       setTutorialId('navigation')
       setStepIndex(0)
-      setOpen(true)
+      setOpen(false)
+      setWelcomeOpen(true)
     }
   }, [initialOpen, initialTutorialProgress, navigationTourRequested, requestedTutorialId, required])
 
@@ -185,7 +192,10 @@ export function ProductTour({
       setTutorialId('navigation')
       setStepIndex(0)
       if (required) setWelcomeOpen(true)
-      else setOpen(true)
+      else {
+        setOpen(false)
+        setWelcomeOpen(true)
+      }
     }
     window.addEventListener('feedbacks:start-product-tour', startTour)
     return () => window.removeEventListener('feedbacks:start-product-tour', startTour)
@@ -376,6 +386,7 @@ export function ProductTour({
       if (tutorialId === 'navigation') await savePreference('productTourDismissedAt')
       else saveTutorialProgress(tutorialId, { stepIndex, dismissedAt: new Date().toISOString() })
       toast({ title: tutorialId === 'navigation' ? 'Tour hidden for now' : 'Tutorial saved for later' })
+      setWelcomeOpen(false)
       closeTour()
     } catch (error) {
       toast({
@@ -390,8 +401,12 @@ export function ProductTour({
     try {
       if (tutorialId === 'navigation') {
         await savePreference('productTourCompletedAt')
-        const programmeResponse = await fetch('/api/early-adopter/onboarding', { method: 'POST' })
-        const programme = await programmeResponse.json().catch(() => null) as { error?: string; granted?: boolean; reason?: string; complimentaryProUntil?: string } | null
+        const programmeResponse = required
+          ? await fetch('/api/early-adopter/onboarding', { method: 'POST' })
+          : null
+        const programme = programmeResponse
+          ? await programmeResponse.json().catch(() => null) as { error?: string; granted?: boolean; reason?: string; complimentaryProUntil?: string } | null
+          : null
         if (required && programme?.reason === 'capacity_full') {
           toast({
             title: 'All 100 programme places have been claimed',
@@ -402,7 +417,7 @@ export function ProductTour({
           router.refresh()
           return
         }
-        if (required && (!programmeResponse.ok || (!programme?.granted && programme?.reason !== 'already_completed'))) {
+        if (required && (!programmeResponse?.ok || (!programme?.granted && programme?.reason !== 'already_completed'))) {
           throw new Error('Pro could not be activated yet. Your guided onboarding will stay open so you can retry.')
         }
         if (programme?.granted) {
@@ -445,29 +460,40 @@ export function ProductTour({
               <Sparkles className="h-6 w-6 text-primary" />
             </span>
             <h1 id="onboarding-welcome-title" className="mt-6 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">
-              Complete the guided tour to unlock Pro.
+              {required ? 'Complete the guided tour to unlock Pro.' : 'Learn feedbacks.dev with a guided tour.'}
             </h1>
             <p id="onboarding-welcome-description" className="mt-3 text-base leading-7 text-muted-foreground">
-              Learn project setup, themes, form customization, installation, real feedback use cases, inbox triage, updates, boards, and integrations. Pro activates automatically when you finish the last step.
+              {required
+                ? 'Learn project setup, themes, form customization, installation, real feedback use cases, inbox triage, updates, boards, and integrations. Pro activates automatically when you finish the last step.'
+                : 'Learn project setup, themes, form customization, installation, real feedback use cases, inbox triage, updates, boards, and integrations. The tour explains the product without changing your saved settings.'}
             </p>
           </div>
           <div className="relative mt-7 border-t pt-5">
             <p className="mb-4 text-sm leading-6 text-muted-foreground">
-              This guided onboarding is required for the Early Adopter Programme and cannot be skipped.
+              {required
+                ? 'This guided onboarding is required for the Early Adopter Programme and cannot be skipped.'
+                : 'Take it now or come back later from Product tour in the account menu.'}
             </p>
-            <Button
-              size="lg"
-              className="h-12 w-full gap-2 sm:w-auto"
-              onClick={() => {
-                setWelcomeOpen(false)
-                setTutorialId('navigation')
-                setStepIndex(0)
-                setOpen(true)
-              }}
-              autoFocus
-            >
-              Begin guided tour <ArrowRight className="h-4 w-4" />
-            </Button>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
+              {!required ? (
+                <Button variant="ghost" size="lg" className="h-12" onClick={() => void skipTour()} disabled={saving}>
+                  Not now
+                </Button>
+              ) : null}
+              <Button
+                size="lg"
+                className="h-12 w-full gap-2 sm:w-auto"
+                onClick={() => {
+                  setWelcomeOpen(false)
+                  setTutorialId('navigation')
+                  setStepIndex(0)
+                  setOpen(true)
+                }}
+                autoFocus
+              >
+                {required ? 'Begin guided tour' : 'Start product tour'} <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </section>
       </div>

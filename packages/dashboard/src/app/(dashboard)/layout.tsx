@@ -87,6 +87,13 @@ export default async function DashboardLayout({
     effectiveEarlyAdopterMembership
     && ['accepted', 'onboarding'].includes(effectiveEarlyAdopterMembership.status)
   )
+  const hasProjectForOnboarding = Boolean(currentProjectId || projects?.[0]?.id)
+  const shouldOfferStandardOnboarding = Boolean(
+    !requiredEarlyAdopterOnboarding
+    && hasProjectForOnboarding
+    && !preferences.productTourCompletedAt
+    && !preferences.productTourDismissedAt
+  )
   return (
     <div className="dashboard-shell flex h-dvh flex-col bg-background md:flex-row">
       <Sidebar
@@ -112,7 +119,7 @@ export default async function DashboardLayout({
         <div className="workspace-route-enter mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 md:px-8 md:py-7">{children}</div>
       </main>
       <ProductTour
-        initialOpen={requiredEarlyAdopterOnboarding}
+        initialOpen={requiredEarlyAdopterOnboarding || shouldOfferStandardOnboarding}
         required={requiredEarlyAdopterOnboarding}
         defaultProjectId={currentProjectId || projects?.[0]?.id}
         initialTutorialProgress={preferences.guidedTutorialProgress}

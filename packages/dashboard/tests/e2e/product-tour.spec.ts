@@ -33,6 +33,10 @@ test.describe('product tour', () => {
     await createProjectViaApi(page, { name: `Playwright Tour Desktop ${Date.now().toString(36)}` })
     await page.goto('/dashboard?tour=1')
 
+    const welcome = page.getByRole('dialog')
+    await expect(welcome.getByRole('heading', { name: 'Learn feedbacks.dev with a guided tour.' })).toBeVisible()
+    await welcome.getByRole('button', { name: 'Start product tour' }).click()
+
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
 
@@ -61,6 +65,10 @@ test.describe('product tour', () => {
     await createProjectViaApi(page, { name: `Playwright Tour Mobile ${Date.now().toString(36)}` })
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/dashboard?tour=1')
+
+    const welcome = page.getByRole('dialog')
+    await expect(welcome.getByRole('heading', { name: 'Learn feedbacks.dev with a guided tour.' })).toBeVisible()
+    await welcome.getByRole('button', { name: 'Start product tour' }).click()
 
     const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
