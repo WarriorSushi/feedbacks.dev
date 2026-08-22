@@ -755,6 +755,16 @@
   50% { transform: translate3d(0, -13px, 0) rotate(2deg); }
 }
 
+@keyframes mascot-spotlight-idle {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-0.6deg); }
+  50% { transform: translate3d(0, -5px, 0) rotate(0.8deg); }
+}
+
+.mascot-spotlight-image {
+  transform-origin: 52% 78%;
+  animation: mascot-spotlight-idle 5.8s var(--ease-in-out) infinite;
+}
+
 @keyframes landing-mascot-drift {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(var(--mascot-rest, -2deg)); }
   48% { transform: translate3d(var(--mascot-shift-x, 4px), var(--mascot-shift-y, -12px), 0) rotate(var(--mascot-peak, 2deg)); }
@@ -2665,6 +2675,7 @@ html:not(.dark):not(.windows98) .auth-form-pane {
   .landing-success-confetti,
   .landing-success-mark,
   .landing-mascot-float,
+  .mascot-spotlight-image,
   .landing-section-mascot,
   .landing-final-chip,
   .landing-capture-form,
@@ -3791,6 +3802,7 @@ html.windows98 {
 }
 
 .windows98 .landing-mascot-float,
+.windows98 .mascot-spotlight-image,
 .windows98 .landing-section-mascot,
 .windows98 .landing-capture-mascot,
 .windows98 .landing-context-mascot,

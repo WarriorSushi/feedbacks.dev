@@ -135,6 +135,42 @@ test('hosted widget assets are cross-origin compatible and bounded by a short br
   assert.doesNotMatch(nextConfig, /bodySizeLimit: '10mb'/)
 })
 
+test('mascot moments stay contextual across marketing, docs, account, rewards, and guided onboarding', () => {
+  const mascot = read('../../src/components/mascot-spotlight.tsx')
+  const earlyAccess = read('../../src/app/early-access/page.tsx')
+  const programme = read('../../src/app/(dashboard)/early-adopter/page.tsx')
+  const docs = read('../../src/app/docs/[[...slug]]/page.tsx')
+  const settings = read('../../src/app/(dashboard)/settings/page.tsx')
+  const billing = read('../../src/app/(dashboard)/billing/page.tsx')
+  const invites = read('../../src/app/(dashboard)/invites/page.tsx')
+  const tour = read('../../src/components/product-tour.tsx')
+  const css = read('../../src/app/globals.css')
+
+  for (const asset of [
+    'early-adopter-host.png',
+    'docs-librarian.png',
+    'settings-mechanic.png',
+    'tour-navigator.png',
+    'pro-for-free-gift.png',
+    'billing-concierge.png',
+  ]) {
+    assert.match(mascot, new RegExp(asset.replace('.', '\\.')))
+    assert.equal(existsSync(fileURLToPath(new URL(`../../public/mascots-dashboard/${asset}`, import.meta.url))), true)
+  }
+  assert.match(earlyAccess, /variant="early-adopter"/)
+  assert.match(programme, /variant="early-adopter"/)
+  assert.match(docs, /variant="docs"/)
+  assert.match(settings, /variant="settings"/)
+  assert.match(billing, /variant="billing"/)
+  assert.match(invites, /variant="pro-for-free"/)
+  assert.match(tour, /getTourMascotVariant/)
+  assert.match(tour, /target\.includes\('theme'\)/)
+  assert.match(tour, /target\.includes\('install'\)/)
+  assert.match(css, /mascot-spotlight-idle/)
+  assert.match(css, /prefers-reduced-motion: reduce[\s\S]*mascot-spotlight-image/)
+  assert.match(css, /windows98 \.mascot-spotlight-image/)
+})
+
 test('marketing routes expose a crawlable acquisition foundation without indexing private workspaces', () => {
   const layout = read('../../src/app/layout.tsx')
   const landing = read('../../src/app/page.tsx')

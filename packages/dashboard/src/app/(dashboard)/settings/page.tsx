@@ -16,6 +16,7 @@ import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
 import { ProductFeedbackPanel } from '@/components/product-feedback-panel'
 import { persistSharedAppearance } from '@/lib/appearance'
 import { PrivacyChoicesButton } from '@/components/privacy-choices-button'
+import { MascotSpotlight } from '@/components/mascot-spotlight'
 
 export default function SettingsPage() {
   const supabase = React.useMemo(() => createClient(), [])
@@ -193,7 +194,7 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      <PageHeader eyebrow="Account" title="Settings" description="Manage your profile, alerts, privacy, appearance, and account." />
+      <PageHeader eyebrow="Account" title="Settings" description="Manage your profile, alerts, privacy, appearance, and account." action={<MascotSpotlight variant="settings" className="h-24 w-24" sizes="96px" />} />
 
       <div className="divide-y overflow-hidden rounded-lg border bg-card shadow-sm">
         <section className="grid gap-6 p-5 sm:p-6 md:grid-cols-[150px_minmax(0,1fr)]">

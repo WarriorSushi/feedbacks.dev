@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import Image from 'next/image'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Check, Lightbulb, Loader2, Sparkles, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
@@ -9,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
 import { GUIDED_TUTORIAL_PROGRESS_KEY, getGuidedTutorial, resolveTutorialHref, type GuidedTutorialId, type GuidedTutorialProgress } from '@/lib/guided-tutorials'
 import { getTourPanelPosition } from '@/lib/tour-position'
+import { MascotSpotlight, type MascotVariant } from '@/components/mascot-spotlight'
 
 interface SpotlightRect {
   top: number
@@ -107,6 +107,12 @@ function isSidebarTourTarget(selector: string) {
   return selector.includes('nav-')
     || selector.includes('project-switcher')
     || selector.includes('theme-switcher')
+}
+
+function getTourMascotVariant(target: string): MascotVariant {
+  if (target.includes('theme') || target.includes('widget-')) return 'settings'
+  if (target.includes('install') || target.includes('verify')) return 'docs'
+  return 'tour'
 }
 
 export function ProductTour({
@@ -448,9 +454,7 @@ export function ProductTour({
           aria-describedby="onboarding-welcome-description"
           className="relative w-full max-w-[520px] overflow-hidden rounded-xl border bg-card p-6 shadow-[0_30px_90px_rgb(0_0_0/0.38)] sm:p-8"
         >
-          <div className="pointer-events-none absolute -right-5 -top-5 h-36 w-36 opacity-90 sm:h-44 sm:w-44" aria-hidden="true">
-            <Image src="/mascots-v2/final-victory.png" alt="" fill sizes="176px" className="object-contain" priority />
-          </div>
+          <MascotSpotlight variant="tour" className="pointer-events-none absolute -right-5 -top-5 h-36 w-36 sm:h-44 sm:w-44" sizes="176px" priority />
           <div className="relative max-w-[350px]">
             <span className="flex h-14 w-14 items-center justify-center rounded-xl border border-primary/25 bg-primary/[0.08] shadow-sm" aria-hidden="true">
               <Sparkles className="h-6 w-6 text-primary" />
@@ -506,6 +510,7 @@ export function ProductTour({
     sidebarStep: isSidebarStep,
   })
   const finalStep = stepIndex === steps.length - 1
+  const tourMascotVariant = getTourMascotVariant(activeStep.target)
 
   return (
     <div className="fixed inset-0 z-[90] pointer-events-none">
@@ -565,15 +570,18 @@ export function ProductTour({
               Step {stepIndex + 1} of {steps.length} · {tutorial.title}
             </p>
           </div>
-          {!required ? <button
-            type="button"
-            onClick={() => void skipTour()}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-            aria-label="Skip tour"
-            disabled={saving}
-          >
-            <X className="h-4 w-4" />
-          </button> : null}
+          <div className="-my-3 flex shrink-0 items-start gap-1">
+            <MascotSpotlight key={tourMascotVariant} variant={tourMascotVariant} className="h-16 w-16" sizes="64px" />
+            {!required ? <button
+              type="button"
+              onClick={() => void skipTour()}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              aria-label="Skip tour"
+              disabled={saving}
+            >
+              <X className="h-4 w-4" />
+            </button> : null}
+          </div>
         </div>
         <p id="product-tour-description" className="mt-3 text-[15px] leading-6 text-muted-foreground">
           {activeStep.body}

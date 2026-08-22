@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft, BadgeDollarSign, CalendarCheck2, Check, GraduationCap, RefreshCw, Users } from 'lucide-react'
 import { BrandWordmark } from '@/components/brand-wordmark'
+import { MascotSpotlight } from '@/components/mascot-spotlight'
 import { BackgroundBeams } from '@/components/ui/background-beams'
 import { getEarlyAdopterAvailability } from '@/lib/early-adopter'
 import { LeadForm } from './lead-form'
@@ -55,13 +56,14 @@ export default async function EarlyAccessPage() {
           </div>
         </section>
 
-        <aside className="lg:sticky lg:top-6">
-          <div className="mb-4 flex items-end justify-between gap-4">
+        <aside className="relative lg:sticky lg:top-6">
+          <MascotSpotlight variant="early-adopter" className="absolute -right-2 -top-7 h-28 w-24 sm:h-32 sm:w-28" sizes="112px" priority />
+          <div className="mb-4 pr-24 sm:pr-28">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">Claim your place</h2>
               <p className="mt-1 text-sm text-foreground/75 sm:text-base">Sign in and finish onboarding to confirm it.</p>
             </div>
-            <p className="shrink-0 text-base font-semibold text-primary">{availability.remaining} of {availability.capacity} unclaimed</p>
+            <p className="mt-2 text-sm font-semibold text-primary sm:text-base">{availability.remaining} of {availability.capacity} unclaimed</p>
           </div>
           <LeadForm open={availability.open} />
         </aside>

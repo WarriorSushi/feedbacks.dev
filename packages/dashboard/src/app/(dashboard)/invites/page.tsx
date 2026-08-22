@@ -4,6 +4,7 @@ import { createServerSupabase } from '@/lib/supabase-server'
 import { getReferralProgramSummary } from '@/lib/referrals'
 import { getMarketingOrigin } from '@/lib/domain-routing'
 import { PageHeader } from '@/components/ui/workspace-shell'
+import { MascotSpotlight } from '@/components/mascot-spotlight'
 import { InviteLink } from './invite-link'
 import { InviteGuide } from './invite-guide'
 
@@ -24,7 +25,7 @@ export default async function InvitesPage() {
         eyebrow="Invite program"
         title="Give feedbacks.dev a proper introduction"
         description="Five genuinely activated accounts unlock one complimentary month of Pro. Email confirmation alone does not fill a spot."
-        action={<InviteGuide />}
+        action={<div className="flex items-end justify-between gap-3 sm:justify-end"><MascotSpotlight variant="pro-for-free" className="h-24 w-24" sizes="96px" /><InviteGuide /></div>}
       />
 
       <section className="overflow-hidden rounded-xl border bg-card shadow-[var(--shadow-soft)]">

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowRight, BookOpen, ExternalLink, Menu, TriangleAlert, Info, CheckCircle2 } from 'lucide-react'
 import { BrandWordmark } from '@/components/brand-wordmark'
+import { MascotSpotlight } from '@/components/mascot-spotlight'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { DOCS_CATEGORIES, DOCS_PAGES, DOCS_REVISION, getDocsPage, type DocsBlock } from '@/lib/docs-content'
@@ -129,10 +130,13 @@ export default async function DocsPage({ params }: { params: Promise<{ slug?: st
           <aside className="hidden border-r pr-5 lg:block"><div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto py-8"><DocsNavigation activeSlug={page.slug} /></div></aside>
 
           <main className="docs-content min-w-0 py-8 lg:px-8 xl:px-0 xl:py-12">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{page.category}</p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{page.title}</h1>
-            <p className="mt-4 max-w-[68ch] text-base leading-7 text-muted-foreground">{page.description}</p>
-            <p className="mt-3 text-xs text-muted-foreground">Documentation revision {DOCS_REVISION}</p>
+            <div className="relative min-h-28 pr-0 sm:pr-36">
+              <MascotSpotlight variant="docs" className="absolute -right-2 -top-8 hidden h-36 w-36 sm:block" sizes="144px" />
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{page.category}</p>
+              <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{page.title}</h1>
+              <p className="mt-4 max-w-[68ch] text-base leading-7 text-muted-foreground">{page.description}</p>
+              <p className="mt-3 text-xs text-muted-foreground">Documentation revision {DOCS_REVISION}</p>
+            </div>
             <div className="mt-10 space-y-6">{page.blocks.map(renderBlock)}</div>
 
             <nav aria-label="Adjacent documentation" className="mt-12 grid gap-3 border-t pt-6 sm:grid-cols-2">

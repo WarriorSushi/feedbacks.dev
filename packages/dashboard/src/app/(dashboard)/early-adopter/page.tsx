@@ -9,6 +9,7 @@ import {
   isEarlyAdopterFeedbackOpen,
 } from '@/lib/early-adopter'
 import { EarlyAdopterFeedbackForm } from './feedback-form'
+import { MascotSpotlight } from '@/components/mascot-spotlight'
 
 function formatDate(value: string | null) {
   return value ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(value)) : 'Not scheduled yet'
@@ -29,9 +30,10 @@ export default async function EarlyAdopterProgrammePage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
-      <header>
+      <header className="relative min-h-40 overflow-hidden rounded-lg border bg-card px-5 py-6 pr-32 shadow-sm sm:px-7 sm:py-7 sm:pr-52">
+        <MascotSpotlight variant="early-adopter" className="absolute -bottom-5 -right-3 h-44 w-36 sm:-bottom-8 sm:right-2 sm:h-56 sm:w-48" sizes="(max-width: 639px) 144px, 192px" priority />
         <h1 className="max-w-3xl text-3xl font-semibold tracking-[-0.035em] sm:text-5xl">Your Early Adopter Programme</h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">{membership.seat_number ? `You have seat ${membership.seat_number} of 100.` : 'Your place is ready to claim.'} Complete onboarding once to confirm the place and activate Pro, then share one useful check-in near the end of each month to earn up to 12 Pro months.</p>
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">{membership.seat_number ? `You have seat ${membership.seat_number} of 100.` : 'Your place is ready to claim.'} Complete onboarding once to confirm the place and activate Pro, then share one useful check-in near the end of each month to earn up to 12 Pro months.</p>
       </header>
 
       <section className="grid overflow-hidden rounded-lg border bg-card sm:grid-cols-3">
