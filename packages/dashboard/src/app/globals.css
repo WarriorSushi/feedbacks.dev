@@ -4697,6 +4697,168 @@ html.windows98 {
   display: none;
 }
 
+/* Refined landing art direction: one calm product canvas with restrained light. */
+.marketing-shell {
+  --landing-canvas: oklch(0.972 0.007 238);
+  --landing-canvas-raised: oklch(0.989 0.005 228);
+  --landing-atmosphere-line: oklch(0.48 0.026 238 / 0.16);
+  --landing-atmosphere-highlight: rgb(255 255 255 / 0.78);
+}
+
+.marketing-shell main {
+  background:
+    radial-gradient(ellipse 72rem 132rem at 4% 30%, oklch(0.91 0.035 154 / 0.15), transparent 70%),
+    radial-gradient(ellipse 76rem 146rem at 100% 70%, oklch(0.89 0.036 246 / 0.14), transparent 72%),
+    var(--landing-canvas);
+}
+
+.marketing-shell .landing-atmosphere-section.landing-tone-hero {
+  background:
+    radial-gradient(ellipse 62% 70% at 12% 4%, oklch(0.93 0.05 92 / 0.58), transparent 72%),
+    radial-gradient(ellipse 58% 74% at 96% 12%, oklch(0.9 0.055 157 / 0.42), transparent 74%),
+    linear-gradient(145deg, oklch(0.991 0.008 90), oklch(0.958 0.016 145) 52%, oklch(0.946 0.018 232)) !important;
+}
+
+.marketing-shell .landing-atmosphere-section.landing-tone-cool {
+  background:
+    radial-gradient(ellipse 62% 78% at 100% 28%, oklch(0.88 0.04 238 / 0.32), transparent 74%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.925 0.016 239) 50%, var(--landing-canvas)) !important;
+}
+
+.marketing-shell .landing-atmosphere-section.landing-tone-warm {
+  background:
+    radial-gradient(ellipse 64% 82% at 8% 76%, oklch(0.94 0.036 91 / 0.3), transparent 74%),
+    radial-gradient(ellipse 58% 76% at 96% 20%, oklch(0.9 0.04 155 / 0.3), transparent 74%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.943 0.015 128) 52%, var(--landing-canvas)) !important;
+}
+
+.marketing-shell .landing-atmosphere-section.landing-tone-focus {
+  background:
+    radial-gradient(ellipse 62% 76% at 88% 20%, oklch(0.84 0.042 229 / 0.3), transparent 74%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.895 0.019 235) 48%, oklch(0.91 0.016 232)) !important;
+}
+
+.marketing-shell .landing-atmosphere-section.landing-tone-aurora {
+  background:
+    radial-gradient(ellipse 62% 78% at 6% 22%, oklch(0.93 0.035 92 / 0.28), transparent 74%),
+    radial-gradient(ellipse 64% 82% at 98% 78%, oklch(0.87 0.043 220 / 0.28), transparent 76%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.92 0.018 164) 50%, var(--landing-canvas)) !important;
+}
+
+.marketing-shell .landing-atmosphere-section.landing-tone-code {
+  background:
+    radial-gradient(ellipse 58% 72% at 94% 24%, oklch(0.86 0.04 230 / 0.26), transparent 74%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.9 0.018 232) 50%, var(--landing-canvas)) !important;
+}
+
+.marketing-shell .landing-atmosphere-section.landing-tone-quiet {
+  background:
+    radial-gradient(ellipse 62% 86% at 96% 52%, oklch(0.9 0.028 238 / 0.24), transparent 76%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.944 0.011 232) 50%, var(--landing-canvas)) !important;
+}
+
+.marketing-shell .landing-atmosphere-section.landing-tone-pricing {
+  background:
+    radial-gradient(ellipse 58% 76% at 10% 20%, oklch(0.91 0.038 148 / 0.28), transparent 74%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.925 0.016 165) 50%, var(--landing-canvas)) !important;
+}
+
+.marketing-shell .landing-atmosphere-section.landing-tone-final {
+  background:
+    radial-gradient(circle at 50% 50%, oklch(0.88 0.07 146 / 0.3), transparent 38%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.9 0.022 183) 56%, oklch(0.91 0.018 226)) !important;
+}
+
+.landing-final-orb {
+  background: radial-gradient(circle, oklch(0.84 0.1 140 / 0.34), oklch(0.76 0.07 190 / 0.12) 44%, transparent 72%) !important;
+}
+
+.landing-mascot-context-v2 {
+  opacity: 1;
+  filter: drop-shadow(0 24px 30px rgb(0 0 0 / 0.24)) brightness(1.08) saturate(1.08) contrast(1.03);
+}
+
+@media (min-width: 1100px) {
+  .landing-mascot-inbox { right: 0; bottom: 0.25rem; margin-right: -2.5rem; }
+  .landing-mascot-install { right: 0.75rem; bottom: 3rem; }
+  .landing-mascot-faq { right: 0; margin-right: -0.25rem; }
+}
+
+.landing-footer {
+  border-color: var(--landing-atmosphere-line) !important;
+  background: linear-gradient(90deg, oklch(0.956 0.009 244), oklch(0.943 0.012 226)) !important;
+  box-shadow: inset 0 1px 0 var(--landing-atmosphere-highlight);
+}
+
+.dark .marketing-shell {
+  --landing-canvas: oklch(0.115 0.012 238);
+  --landing-canvas-raised: oklch(0.15 0.014 230);
+  --landing-atmosphere-line: oklch(0.76 0.025 232 / 0.12);
+}
+
+.dark .marketing-shell main {
+  background:
+    radial-gradient(ellipse 72rem 132rem at 4% 30%, oklch(0.28 0.045 154 / 0.11), transparent 70%),
+    radial-gradient(ellipse 76rem 146rem at 100% 70%, oklch(0.25 0.04 246 / 0.1), transparent 72%),
+    var(--landing-canvas);
+}
+
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-hero {
+  background:
+    radial-gradient(ellipse 62% 70% at 12% 4%, oklch(0.31 0.07 92 / 0.18), transparent 72%),
+    radial-gradient(ellipse 58% 74% at 96% 12%, oklch(0.29 0.065 157 / 0.18), transparent 74%),
+    linear-gradient(145deg, oklch(0.15 0.016 90), oklch(0.12 0.017 145) 52%, oklch(0.125 0.019 232)) !important;
+}
+
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-cool,
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-focus,
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-code,
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-quiet {
+  background:
+    radial-gradient(ellipse 64% 82% at 96% 28%, oklch(0.25 0.045 235 / 0.16), transparent 76%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.105 0.014 236) 52%, var(--landing-canvas)) !important;
+}
+
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-warm,
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-aurora,
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-pricing {
+  background:
+    radial-gradient(ellipse 64% 82% at 8% 76%, oklch(0.28 0.05 148 / 0.14), transparent 76%),
+    radial-gradient(ellipse 58% 78% at 96% 22%, oklch(0.24 0.045 225 / 0.13), transparent 76%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.115 0.015 176) 52%, var(--landing-canvas)) !important;
+}
+
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-final {
+  background:
+    radial-gradient(circle at 50% 50%, oklch(0.3 0.07 146 / 0.2), transparent 40%),
+    linear-gradient(180deg, var(--landing-canvas), oklch(0.105 0.016 192) 56%, oklch(0.11 0.014 226)) !important;
+}
+
+.dark .landing-footer {
+  background: linear-gradient(90deg, oklch(0.105 0.012 244), oklch(0.095 0.014 226)) !important;
+}
+
+.windows98 .marketing-shell .landing-atmosphere-section {
+  border-color: var(--win98-shadow) !important;
+  background: var(--win98-face) !important;
+  box-shadow: none;
+}
+
+.windows98 .landing-footer {
+  padding-block: 0.75rem !important;
+  background: var(--win98-face) !important;
+  box-shadow: inset 0 1px var(--win98-highlight);
+}
+
+@media (max-width: 767px) {
+  .landing-mascot-context-v2 {
+    opacity: 1;
+    filter: drop-shadow(0 14px 18px rgb(0 0 0 / 0.2)) brightness(1.08) saturate(1.08) contrast(1.03);
+  }
+  .landing-mascot-install { bottom: 1.25rem; }
+  .landing-mascot-faq { right: 0; }
+}
+
 @media (max-width: 767px) {
   .landing-atmosphere-section {
     background-size: auto, auto, auto, 100% 100% !important;

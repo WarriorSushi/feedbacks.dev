@@ -62,13 +62,13 @@ export default async function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
-        {appearanceSyncScript && (
+        {appearanceSyncScript ? (
           <script
             nonce={nonce}
             suppressHydrationWarning
             dangerouslySetInnerHTML={{ __html: appearanceSyncScript }}
           />
-        )}
+        ) : null}
       </head>
       <body className={inter.className}>
         <ThemeProvider

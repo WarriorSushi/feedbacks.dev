@@ -7,6 +7,7 @@ import { AuthenticatedRedirect } from './authenticated-redirect'
 import { BrandWordmark } from '@/components/brand-wordmark'
 import { LandingProductStories } from '@/components/landing-product-stories'
 import { LandingMobileMenu } from '@/components/landing-mobile-menu'
+import { LandingBackToTop } from '@/components/landing-back-to-top'
 import { LandingScrollHeader } from '@/components/landing-scroll-header'
 import { LandingSectionObserver } from '@/components/landing-section-observer'
 import { LandingTryWidgetHero } from '@/components/landing-try-widget-hero'
@@ -184,11 +185,12 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t px-5 py-8 sm:px-6">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 sm:flex-row">
+      <LandingBackToTop />
+      <footer className="landing-footer border-t px-5 py-5 sm:px-6">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 sm:flex-row">
           <BrandWordmark className="text-sm font-semibold" markClassName="h-5 w-5" />
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground"><Link href="/feedback-widget">Feedback widget</Link><Link href="/feedback-widget/nextjs">Next.js guide</Link><Link href="/docs" prefetch={false}>Docs</Link><Link href="/boards" prefetch={false}>Public boards</Link><Link href="/early-access">Early adopter programme</Link><Link href="/privacy">Privacy</Link><PrivacyChoicesButton /><Link href="/terms">Terms</Link></div>
-          <a href="https://github.com/WarriorSushi/Feedbacks.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><Github className="h-4 w-4" /> Source available</a>
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 text-[11px] text-muted-foreground"><Link href="/feedback-widget">Feedback widget</Link><Link href="/feedback-widget/nextjs">Next.js guide</Link><Link href="/docs" prefetch={false}>Docs</Link><Link href="/boards" prefetch={false}>Public boards</Link><Link href="/early-access">Early adopter programme</Link><Link href="/privacy">Privacy</Link><PrivacyChoicesButton /><Link href="/terms">Terms</Link></div>
+          <a href="https://github.com/WarriorSushi/Feedbacks.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground"><Github className="h-3.5 w-3.5" /> Source available</a>
         </div>
       </footer>
       <a href={dashboardHref} className="sr-only">Open dashboard</a>
