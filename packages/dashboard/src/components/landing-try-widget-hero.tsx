@@ -38,7 +38,11 @@ const confetti = [
   ['68%', '-16deg', '120ms'], ['78%', '24deg', '260ms'], ['90%', '-34deg', '200ms'],
 ] as const
 
-const easeOutExpo = (progress: number) => progress === 1 ? 1 : 1 - 2 ** (-10 * progress)
+const easeInOutCubic = (progress: number) => (
+  progress < 0.5
+    ? 4 * progress ** 3
+    : 1 - ((-2 * progress + 2) ** 3) / 2
+)
 
 function waitForMotion(milliseconds: number, signal: AbortSignal) {
   return new Promise<void>((resolve) => {
@@ -66,7 +70,7 @@ function animateWindowScroll(top: number, duration: number, signal: AbortSignal)
     const tick = (now: number) => {
       if (signal.aborted) return resolve()
       const progress = Math.min(1, (now - startedAt) / duration)
-      window.scrollTo({ top: start + distance * easeOutExpo(progress), left: 0, behavior: 'auto' })
+      window.scrollTo({ top: start + distance * easeInOutCubic(progress), left: 0, behavior: 'auto' })
       if (progress < 1) {
         frame = window.requestAnimationFrame(tick)
         return
@@ -373,10 +377,10 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
       if (signal.aborted) return
 
       const peekTop = heroTop + (productTop - heroTop) * 0.5
-      window.scrollTo({ top: peekTop, left: 0, behavior: 'auto' })
-      await waitForMotion(180, signal)
+      await animateWindowScroll(peekTop, 1200, signal)
+      await waitForMotion(320, signal)
       if (signal.aborted) return
-      await animateWindowScroll(heroTop, 680, signal)
+      await animateWindowScroll(heroTop, 1100, signal)
       preparedProduct.classList.remove('landing-reveal-prepared')
       preparedProduct = null
     }
