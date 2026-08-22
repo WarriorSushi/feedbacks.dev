@@ -7,6 +7,7 @@ interface BrandWordmarkProps {
   textClassName?: string
   dotClassName?: string
   markSrc?: string
+  markAnchor?: boolean
   priority?: boolean
   intro?: boolean
 }
@@ -17,12 +18,14 @@ export function BrandWordmark({
   textClassName,
   dotClassName,
   markSrc = '/new_logo_feedbacks.dev.svg',
+  markAnchor = false,
   priority = false,
   intro = false,
 }: BrandWordmarkProps) {
   return (
     <span className={cn('inline-flex items-center gap-2', className)}>
       <Image
+        data-pro-brand-anchor={markAnchor ? '' : undefined}
         src={markSrc}
         alt=""
         width={28}

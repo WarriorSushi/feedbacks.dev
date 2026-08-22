@@ -244,12 +244,12 @@ export async function notifyEarlyAdopterWelcome(input: { email: string; seatNumb
     return await sendResendEmail({
       to: input.email,
       subject: '[feedbacks.dev] Your Early Adopter place is reserved',
-      text: `You’re in. Place ${input.seatNumber} of 100 is reserved for you.\n\nSign in with this email and complete the guided onboarding. Pro month one activates automatically when the tour is complete.\n\nStart guided onboarding: ${onboardingUrl}`,
+      text: `You’re in. Place ${input.seatNumber} of 100 is reserved for you.\n\nSign in with this email and complete every step of the guided onboarding. Pro activates automatically at the end.\n\nStart guided onboarding: ${onboardingUrl}`,
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.6;color:#17211b;max-width:580px">
           <h2>Your Early Adopter place is reserved</h2>
           <p>You’re in. Place ${input.seatNumber} of 100 is reserved for you.</p>
-          <p>Sign in with this email and complete the guided onboarding. Pro month one activates automatically when the tour is complete.</p>
+          <p>Sign in with this email and complete every step of the guided onboarding. Pro activates automatically at the end.</p>
           <p><a href="${escapeEmailHtml(onboardingUrl)}" style="display:inline-block;padding:11px 16px;border-radius:6px;background:#286b12;color:#f8fbf6;text-decoration:none;font-weight:700">Start guided onboarding</a></p>
           <p style="color:#59645d">Programme reminders are service emails for the benefit you requested. Marketing emails remain a separate choice.</p>
         </div>

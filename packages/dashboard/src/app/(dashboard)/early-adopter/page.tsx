@@ -54,8 +54,8 @@ export default async function EarlyAdopterProgrammePage() {
 
       {onboarding ? (
         <section className="border-y bg-primary/[0.055] px-5 py-8 sm:rounded-lg sm:border sm:px-8">
-          <h2 className="text-2xl font-semibold tracking-tight">Month one unlocks after guided onboarding.</h2>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">The tour shows where feedback arrives, how to configure and install the form, and where to connect the tools you already use.</p>
+          <h2 className="text-2xl font-semibold tracking-tight">Complete guided onboarding to activate Pro.</h2>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">Every step is required. The tour shows where feedback arrives, how to configure and install the form, and where to connect the tools you already use. Pro activates automatically at the end.</p>
           <Button asChild size="lg" className="mt-6"><Link href="/dashboard?tour=1">Start guided onboarding</Link></Button>
         </section>
       ) : feedbackOpen ? (

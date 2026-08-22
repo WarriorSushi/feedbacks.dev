@@ -22,7 +22,7 @@ export function EarlyAdopterBanner({ membership }: { membership: EarlyAdopterMem
   const finishing = status === 'finishing'
 
   const title = onboarding
-    ? 'Finish the tour to unlock your first Pro month.'
+    ? 'Finish guided onboarding to activate Pro.'
     : finishing
       ? 'You earned all 12 Early Adopter Pro months.'
       : grace
@@ -31,7 +31,7 @@ export function EarlyAdopterBanner({ membership }: { membership: EarlyAdopterMem
           ? 'Your monthly feedback check-in is ready.'
           : `Early Adopter Pro month ${membership.pro_months_earned} of 12 is active.`
   const detail = onboarding
-    ? 'The guided onboarding teaches the core workflow, then activates month one automatically.'
+    ? 'Every step is required. Pro activates automatically at the end of the guided tour.'
     : finishing
       ? `The programme completes ${formatDate(membership.programme_ends_at) || 'after your final month'}. Your feedback history and projects stay intact.`
       : grace

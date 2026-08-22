@@ -26,7 +26,7 @@ test('Early Adopter service emails explain rewards, deadlines, grace, completion
 
   assert.match(notifications, /notifyEarlyAdopterWelcome/)
   assert.match(notifications, /Place \$\{input\.seatNumber\} of 100/)
-  assert.match(notifications, /Pro month one activates automatically/)
+  assert.match(notifications, /Pro activates automatically at the end/)
   assert.match(notifications, /claim Pro month \$\{nextMonth\}/)
   assert.match(notifications, /two-month grace period/i)
   assert.match(notifications, /Final week to keep your Early Adopter place/)
@@ -47,4 +47,19 @@ test('password, magic-link, OAuth, and already signed-in enrolments all link the
   assert.match(activateRoute, /supabase\.auth\.getUser\(\)/)
   assert.match(activateRoute, /activateEarlyAdopterMembership\(user\.id, user\.email\)/)
   assert.match(joinRoute, /user\.email\.toLowerCase\(\) === email/)
+})
+
+test('programme onboarding cannot be dismissed and activates Pro only after the guided tour', () => {
+  const tour = read('../../src/components/product-tour.tsx')
+  const layout = read('../../src/app/(dashboard)/layout.tsx')
+  const onboardingRoute = read('../../src/app/api/early-adopter/onboarding/route.ts')
+  const migration = read('../../../../sql/065_early_adopter_programme.sql')
+
+  assert.match(tour, /if \(required\) return/)
+  assert.match(tour, /Finish and activate Pro/)
+  assert.match(tour, /Pro activates at the end/)
+  assert.match(layout, /required=\{requiredEarlyAdopterOnboarding\}/)
+  assert.doesNotMatch(layout, /!preferences\.productTourDismissedAt/)
+  assert.match(onboardingRoute, /Finish every tour step before activating Pro/)
+  assert.match(migration, /productTourCompletedAt/)
 })

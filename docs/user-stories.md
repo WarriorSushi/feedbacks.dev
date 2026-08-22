@@ -351,7 +351,7 @@ As an early adopter, I want an automatic, clearly scheduled way to earn Pro by g
 Acceptance criteria:
 - the programme accepts no more than 100 members and automatically accepts every enrolment while a seat remains
 - the account email links the reserved place to guided onboarding
-- completing onboarding grants Pro month one
+- programme members cannot skip guided onboarding, and completing it activates Pro
 - a structured feedback check-in grants one later month at a time, up to 12 total months
 - the check-in opens seven days before its due date and is reachable from a dashboard banner
 - lifecycle emails explain the due date, two-month grace period, final week, completion, and removal

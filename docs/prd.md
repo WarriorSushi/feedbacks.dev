@@ -148,7 +148,7 @@ Must support:
 - Provide a focused lead-capture page with explicit email consent and clear distinction from account creation.
 - Provide a separate 100-seat Early Adopter Programme that accepts available-seat enrolments automatically rather than implying human application review.
 - Link programme enrolment to the account with the same verified email and automatically launch a persisted product tour.
-- Grant the first complimentary Pro month after the tour completes, then grant one additional month for each structured monthly feedback submission, up to 12 total months.
+- Make the guided tour mandatory for programme members and activate Pro after it completes, then extend Pro by one month for each structured monthly feedback submission, up to 12 total months.
 - Open monthly feedback seven days before its due date, show an authenticated dashboard banner, send deduplicated lifecycle emails, and allow a two-month grace period inside a maximum 14-month programme window before automatic removal.
 - Keep programme feedback private, mirror it into the internal product inbox, and preserve every customer project and feedback item when the programme completes or ends.
 - Support consent-gated Google Ads, Meta Pixel + Conversions API, and Reddit Pixel + Conversions API measurement.

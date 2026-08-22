@@ -5,8 +5,11 @@ import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { useRouter } from 'next/navigation'
+import { announceProActivation } from '@/lib/pro-activation'
 
 export function EarlyAdopterFeedbackForm({ nextMonth }: { nextMonth: number }) {
+  const router = useRouter()
   const [good, setGood] = React.useState('')
   const [bad, setBad] = React.useState('')
   const [improve, setImprove] = React.useState('')
@@ -25,9 +28,11 @@ export function EarlyAdopterFeedbackForm({ nextMonth }: { nextMonth: number }) {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ good, bad, improve, anythingElse }),
       })
-      const payload = await response.json() as { renewed?: boolean; error?: string }
+      const payload = await response.json() as { renewed?: boolean; error?: string; complimentaryProUntil?: string }
       if (!response.ok || !payload.renewed) throw new Error(payload.error || 'Your check-in could not be renewed.')
       setComplete(true)
+      announceProActivation(payload.complimentaryProUntil)
+      router.refresh()
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : 'Your check-in could not be renewed.')
     } finally {

@@ -5,7 +5,7 @@ Last updated: 2026-08-22
 ## August 22 launch-readiness refresh
 
 - General Free signup remains open to every visitor. The optional Early Adopter Programme automatically accepts up to 100 members without a review call or observed onboarding session.
-- Early Adopter onboarding is handled by the persisted product tour. Completing it activates the first complimentary Pro month; structured monthly feedback renews one month at a time up to 12 total months.
+- Early Adopter onboarding is handled by the persisted, mandatory product tour. Completing every step activates Pro; structured monthly feedback renews it one month at a time up to 12 total months.
 - Programme feedback opens seven days before each due date, remains claimable through a two-month grace period inside a maximum 14-month programme window, and is mirrored into the private product inbox. A dashboard banner, daily lifecycle job, deduplicated service emails, and explicit completed/removed states make the programme end predictably without deleting customer data.
 - Free and Pro now both expose complete feedback history. The old 30-day Free visibility cutoff did not delete or materially reduce stored data, so it was removed from the entitlement matrix and every customer-facing surface.
 - Cron, health, and internal job bearer credentials now use constant-time comparison. Public CSP reports are byte-bounded and rate-limited before logging. The framework-identifying response header is disabled.

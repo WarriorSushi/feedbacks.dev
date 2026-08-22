@@ -95,8 +95,8 @@ export default function TermsPage() {
           <h2>10. Early Adopter Programme</h2>
           <p>
             The Early Adopter Programme accepts up to 100 members while places remain. Completing guided
-            onboarding grants the first complimentary Pro month. Each complete monthly product-feedback
-            check-in may grant one additional month, up to 12 total months. Missed check-ins have a two-month
+            onboarding activates Pro. Each complete monthly product-feedback check-in may extend Pro by one
+            month, for up to 12 total months. Missed check-ins have a two-month
             grace period within a programme window of no more than 14 months after onboarding. The programme
             ends after the final earned month, when the applicable grace period expires, or at that final window.
             Programme access is non-transferable, has no cash value, and may be closed for abuse. Lifecycle

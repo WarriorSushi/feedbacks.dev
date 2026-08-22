@@ -40,6 +40,12 @@ import { CURRENT_PROJECT_COOKIE } from '@/lib/project-selection'
 import { DEFAULT_PROJECT_ICON } from '@/lib/project-icons'
 import { getProjectDestination } from '@/lib/project-navigation'
 import { getProjectRoute, getProjectRouteSection } from '@/lib/project-routes'
+import {
+  hasActivePro,
+  PRO_ACTIVATED_EVENT,
+  PRO_CELEBRATION_COMPLETE_EVENT,
+  PRO_CELEBRATION_STARTED_EVENT,
+} from '@/lib/pro-activation'
 
 type SidebarProject = Pick<Project, 'id' | 'name'> & { settings?: Project['settings'] | null }
 
@@ -127,6 +133,8 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   const [projectOpen, setProjectOpen] = React.useState(false)
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [collapsed, setCollapsed] = React.useState(false)
+  const [proActivatedInSession, setProActivatedInSession] = React.useState(false)
+  const [proBrandSuppressed, setProBrandSuppressed] = React.useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
   const mobileDrawerRef = React.useRef<HTMLElement>(null)
   const mobileMenuButtonRef = React.useRef<HTMLButtonElement>(null)
@@ -171,12 +179,24 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   }, [])
 
   const currentProject = visibleProjects.find((p) => p.id === resolvedCurrentProjectId) || visibleProjects[0]
-  const showProBrand = Boolean(
-    (billingAccount?.plan_tier === 'pro' &&
-      (billingAccount.billing_status === 'active' || billingAccount.billing_status === 'trialing')) ||
-    (billingAccount?.complimentary_pro_until && new Date(billingAccount.complimentary_pro_until).getTime() > Date.now()) ||
-    (billingAccount?.grace_ends_at && new Date(billingAccount.grace_ends_at).getTime() > Date.now())
-  )
+  const showProBrand = (hasActivePro(billingAccount) || proActivatedInSession) && !proBrandSuppressed
+
+  React.useEffect(() => {
+    const showPro = () => setProActivatedInSession(true)
+    const hideDuringFlight = () => setProBrandSuppressed(true)
+    const landProBrand = () => {
+      setProActivatedInSession(true)
+      setProBrandSuppressed(false)
+    }
+    window.addEventListener(PRO_ACTIVATED_EVENT, showPro)
+    window.addEventListener(PRO_CELEBRATION_STARTED_EVENT, hideDuringFlight)
+    window.addEventListener(PRO_CELEBRATION_COMPLETE_EVENT, landProBrand)
+    return () => {
+      window.removeEventListener(PRO_ACTIVATED_EVENT, showPro)
+      window.removeEventListener(PRO_CELEBRATION_STARTED_EVENT, hideDuringFlight)
+      window.removeEventListener(PRO_CELEBRATION_COMPLETE_EVENT, landProBrand)
+    }
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -335,6 +355,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
               className="text-[17px]"
               markClassName={cn('h-6 w-6', showProBrand && 'rounded-lg')}
               markSrc={showProBrand ? '/feedbacks.dev_pro_monthly.svg' : undefined}
+              markAnchor
               intro={!collapsed}
             />
           </Link>
@@ -678,6 +699,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
             className="text-[17px]"
             markClassName={cn('h-6 w-6', showProBrand && 'rounded-lg')}
             markSrc={showProBrand ? '/feedbacks.dev_pro_monthly.svg' : undefined}
+            markAnchor
           />
         </Link>
       </div>

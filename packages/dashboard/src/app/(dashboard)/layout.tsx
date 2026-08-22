@@ -7,6 +7,8 @@ import { ProductTour } from '@/components/product-tour'
 import { CURRENT_PROJECT_COOKIE } from '@/lib/project-selection'
 import { EarlyAdopterBanner } from '@/components/early-adopter-banner'
 import { deriveEarlyAdopterStatus, getEarlyAdopterMembershipForUser, isEarlyAdopterProgrammeActive } from '@/lib/early-adopter'
+import { ProActivationCelebration } from '@/components/pro-activation-celebration'
+import { getProActivationKey, hasActivePro } from '@/lib/pro-activation'
 
 export default async function DashboardLayout({
   children,
@@ -37,7 +39,7 @@ export default async function DashboardLayout({
       .order('created_at', { ascending: false }),
     supabase
       .from('billing_accounts')
-      .select('plan_tier, billing_status, complimentary_pro_until, grace_ends_at')
+      .select('plan_tier, billing_status, complimentary_pro_until, grace_ends_at, current_period_start, last_event_at, updated_at')
       .eq('user_id', user.id)
       .maybeSingle(),
     supabase
@@ -82,6 +84,10 @@ export default async function DashboardLayout({
   const effectiveEarlyAdopterMembership = earlyAdopterMembership
     ? { ...earlyAdopterMembership, status: deriveEarlyAdopterStatus(earlyAdopterMembership) }
     : null
+  const requiredEarlyAdopterOnboarding = Boolean(
+    effectiveEarlyAdopterMembership
+    && ['accepted', 'onboarding'].includes(effectiveEarlyAdopterMembership.status)
+  )
   return (
     <div className="dashboard-shell flex h-dvh flex-col bg-background md:flex-row">
       <Sidebar
@@ -100,14 +106,15 @@ export default async function DashboardLayout({
         <div className="workspace-route-enter mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 md:px-8 md:py-7">{children}</div>
       </main>
       <ProductTour
-        initialOpen={Boolean(
-          effectiveEarlyAdopterMembership
-          && ['accepted', 'onboarding'].includes(effectiveEarlyAdopterMembership.status)
-          && !preferences.productTourCompletedAt
-          && !preferences.productTourDismissedAt
-        )}
+        initialOpen={requiredEarlyAdopterOnboarding}
+        required={requiredEarlyAdopterOnboarding}
         defaultProjectId={currentProjectId || projects?.[0]?.id}
         initialTutorialProgress={preferences.guidedTutorialProgress}
+      />
+      <ProActivationCelebration
+        userId={user.id}
+        active={hasActivePro(billingAccount)}
+        activationKey={getProActivationKey(billingAccount)}
       />
     </div>
   )

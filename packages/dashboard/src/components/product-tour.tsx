@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 import { GUIDED_TUTORIAL_PROGRESS_KEY, getGuidedTutorial, resolveTutorialHref, type GuidedTutorialId, type GuidedTutorialProgress } from '@/lib/guided-tutorials'
 import { getTourPanelPosition } from '@/lib/tour-position'
+import { announceProActivation } from '@/lib/pro-activation'
 
 interface SpotlightRect {
   top: number
@@ -107,10 +108,12 @@ export function ProductTour({
   initialOpen,
   defaultProjectId,
   initialTutorialProgress = EMPTY_TUTORIAL_PROGRESS,
+  required = false,
 }: {
   initialOpen: boolean
   defaultProjectId?: string
   initialTutorialProgress?: Record<string, GuidedTutorialProgress>
+  required?: boolean
 }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -138,8 +141,8 @@ export function ProductTour({
   const navigationTourRequested = searchParams.get('tour') === '1'
 
   React.useEffect(() => {
-    if (initialOpen && pathname === '/dashboard') setOpen(true)
-  }, [initialOpen, pathname])
+    if (initialOpen) setOpen(true)
+  }, [initialOpen])
 
   React.useEffect(() => {
     const updateViewport = () => {
@@ -151,6 +154,11 @@ export function ProductTour({
   }, [])
 
   React.useEffect(() => {
+    if (required) {
+      setTutorialId('navigation')
+      setOpen(true)
+      return
+    }
     const requestedTutorial = getGuidedTutorial(requestedTutorialId)
     if (requestedTutorial) {
       const saved = readTutorialProgress(requestedTutorial.id) || initialTutorialProgress[requestedTutorial.id]
@@ -162,7 +170,7 @@ export function ProductTour({
       setStepIndex(0)
       setOpen(true)
     }
-  }, [initialTutorialProgress, navigationTourRequested, requestedTutorialId])
+  }, [initialTutorialProgress, navigationTourRequested, requestedTutorialId, required])
 
   React.useEffect(() => {
     const startTour = () => {
@@ -324,7 +332,8 @@ export function ProductTour({
     setPendingStepIndex(null)
   }, [pathname, pendingStepIndex, saveTutorialProgress, searchParams, steps, tutorialId])
 
-  const closeTour = React.useCallback((returnToDashboard = false) => {
+  const closeTour = React.useCallback((returnToDashboard = false, completionConfirmed = false) => {
+    if (required && !completionConfirmed) return
     setOpen(false)
     setSpotlight(null)
     if (returnToDashboard) {
@@ -334,7 +343,7 @@ export function ProductTour({
     if (pathname === '/dashboard' && searchParams.get('tour') === '1') {
       router.replace('/dashboard')
     }
-  }, [pathname, router, searchParams])
+  }, [pathname, required, router, searchParams])
 
   const goToStep = (nextIndex: number) => {
     const safeIndex = clamp(nextIndex, 0, steps.length - 1)
@@ -349,6 +358,7 @@ export function ProductTour({
   }
 
   const skipTour = async () => {
+    if (required) return
     try {
       if (tutorialId === 'navigation') await savePreference('productTourDismissedAt')
       else saveTutorialProgress(tutorialId, { stepIndex, dismissedAt: new Date().toISOString() })
@@ -368,11 +378,16 @@ export function ProductTour({
       if (tutorialId === 'navigation') {
         await savePreference('productTourCompletedAt')
         const programmeResponse = await fetch('/api/early-adopter/onboarding', { method: 'POST' })
-        const programme = await programmeResponse.json().catch(() => null) as { granted?: boolean } | null
-        toast({
-          title: programme?.granted ? 'Onboarding complete. Your first Pro month is active.' : 'Product tour complete',
-        })
-        closeTour(true)
+        const programme = await programmeResponse.json().catch(() => null) as { granted?: boolean; reason?: string; complimentaryProUntil?: string } | null
+        if (required && (!programmeResponse.ok || (!programme?.granted && programme?.reason !== 'already_completed'))) {
+          throw new Error('Pro could not be activated yet. Your guided onboarding will stay open so you can retry.')
+        }
+        if (programme?.granted) {
+          announceProActivation(programme.complimentaryProUntil)
+        }
+        if (required || programme?.granted) router.refresh()
+        toast({ title: required || programme?.granted ? 'Onboarding complete. Pro is active.' : 'Product tour complete' })
+        closeTour(true, true)
       } else {
         saveTutorialProgress(tutorialId, { stepIndex: steps.length - 1, completedAt: new Date().toISOString() })
         toast({ title: `${tutorial.title} complete` })
@@ -458,7 +473,7 @@ export function ProductTour({
               {activeStep.title}
             </h2>
           </div>
-          <button
+          {!required ? <button
             type="button"
             onClick={() => void skipTour()}
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -466,11 +481,16 @@ export function ProductTour({
             disabled={saving}
           >
             <X className="h-4 w-4" />
-          </button>
+          </button> : null}
         </div>
         <p id="product-tour-description" className="mt-2 text-sm leading-6 text-muted-foreground">
           {activeStep.body}
         </p>
+        {required ? (
+          <p className="mt-3 border-l-2 border-primary pl-3 text-sm font-medium text-foreground">
+            Complete every step of this guided onboarding. Pro activates at the end.
+          </p>
+        ) : null}
         {!spotlight && (
           <p className="mt-2 text-xs leading-5 text-muted-foreground">
             Opening the right section now. If the highlight does not appear, use Next to continue.
@@ -488,9 +508,11 @@ export function ProductTour({
             Back
           </Button>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-8" onClick={() => void skipTour()} disabled={saving || pendingStepIndex !== null}>
-              Skip
-            </Button>
+            {!required ? (
+              <Button variant="outline" size="sm" className="h-8" onClick={() => void skipTour()} disabled={saving || pendingStepIndex !== null}>
+                Skip
+              </Button>
+            ) : null}
             <Button
               size="sm"
               className="h-8 gap-1.5"
@@ -507,7 +529,7 @@ export function ProductTour({
               ) : (
                 <ArrowRight className="h-3.5 w-3.5" />
               )}
-              {finalStep ? 'Finish' : 'Next'}
+              {finalStep ? (required ? 'Finish and activate Pro' : 'Finish') : 'Next'}
             </Button>
           </div>
         </div>

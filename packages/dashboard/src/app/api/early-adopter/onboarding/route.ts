@@ -10,10 +10,10 @@ export async function POST() {
   try {
     const result = await completeEarlyAdopterOnboarding(user.id)
     if (!result.granted && !['already_completed', 'not_enrolled'].includes(result.reason || '')) {
-      return NextResponse.json({ error: 'Finish every tour step before claiming your first Pro month.', reason: result.reason }, { status: 409 })
+      return NextResponse.json({ error: 'Finish every tour step before activating Pro.', reason: result.reason }, { status: 409 })
     }
     return NextResponse.json(result)
   } catch {
-    return NextResponse.json({ error: 'We could not activate your first Pro month. Please retry.' }, { status: 500 })
+    return NextResponse.json({ error: 'We could not activate Pro. Please retry.' }, { status: 500 })
   }
 }
