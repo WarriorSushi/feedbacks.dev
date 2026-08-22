@@ -6,6 +6,9 @@ export async function POST() {
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) return NextResponse.json({ error: 'Sign in to continue.' }, { status: 401 })
+  if (!user.email_confirmed_at) {
+    return NextResponse.json({ error: 'Verify your email before claiming an Early Adopter place.' }, { status: 403 })
+  }
 
   try {
     return NextResponse.json(await activateEarlyAdopterMembership(user.id, user.email))

@@ -15,6 +15,7 @@ type CaptchaApi = {
       callback: (token: string) => void
       'expired-callback': () => void
       'error-callback': () => void
+      action?: string
     },
   ) => string
   reset: (widgetId: string) => void
@@ -39,11 +40,13 @@ export function AuthCaptcha({
   siteKey,
   resetKey,
   onToken,
+  action,
 }: {
   provider: CaptchaProvider
   siteKey: string
   resetKey: number
   onToken: (token: string | null) => void
+  action?: string
 }) {
   const hostRef = React.useRef<HTMLDivElement>(null)
   const widgetIdRef = React.useRef<string | null>(null)
@@ -57,18 +60,21 @@ export function AuthCaptcha({
     const api = getApi()
     if (!api || !hostRef.current || widgetIdRef.current) return
 
-    widgetIdRef.current = api.render(hostRef.current, {
+    const options = {
       sitekey: siteKey,
       theme: captchaTheme,
       callback: (token) => onToken(token),
       'expired-callback': () => onToken(null),
       'error-callback': () => onToken(null),
-    })
-  }, [captchaTheme, getApi, onToken, siteKey])
+      ...(provider === 'turnstile' && action ? { action } : {}),
+    } satisfies Parameters<CaptchaApi['render']>[1]
+    widgetIdRef.current = api.render(hostRef.current, options)
+  }, [action, captchaTheme, getApi, onToken, provider, siteKey])
 
   React.useEffect(() => {
     window.feedbacksCaptchaReady = renderWidget
     setScriptReady(true)
+    renderWidget()
     return () => {
       if (window.feedbacksCaptchaReady === renderWidget) delete window.feedbacksCaptchaReady
     }
@@ -92,7 +98,7 @@ export function AuthCaptcha({
 
   return (
     <>
-      {scriptReady ? <Script src={providerScripts[provider]} strategy="afterInteractive" /> : null}
+      {scriptReady ? <Script src={providerScripts[provider]} strategy="afterInteractive" onLoad={renderWidget} /> : null}
       <div ref={hostRef} className="flex min-h-[78px] justify-center" />
     </>
   )

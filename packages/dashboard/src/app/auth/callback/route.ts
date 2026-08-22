@@ -19,7 +19,9 @@ export async function GET(request: Request) {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
           acquisition = await recordNewUserAcquisition(request, user)
-          if (user.email) await activateEarlyAdopterMembership(user.id, user.email)
+          if (user.email && user.email_confirmed_at) {
+            await activateEarlyAdopterMembership(user.id, user.email)
+          }
         }
         if (user && acquisition?.marketingConsent) {
           after(() => recordMarketingConversion({

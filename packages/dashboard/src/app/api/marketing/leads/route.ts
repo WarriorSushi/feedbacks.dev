@@ -11,6 +11,8 @@ import {
 } from '@/lib/marketing'
 import { activateEarlyAdopterMembership, joinEarlyAdopterProgramme } from '@/lib/early-adopter'
 import { notifyEarlyAdopterWelcome } from '@/lib/notifications'
+import { hasE2EBypass } from '@/lib/e2e'
+import { verifyEarlyAdopterCaptcha } from '@/lib/captcha'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -29,6 +31,7 @@ export async function POST(request: NextRequest) {
     newsletterConsent?: boolean
     programmeTermsAccepted?: boolean
     companyWebsite?: string
+    captchaToken?: string
   }>(request)
   if (!result.ok) return result.response
 
@@ -46,6 +49,18 @@ export async function POST(request: NextRequest) {
       error: 'Confirm the programme renewal terms.',
       fieldErrors: { programmeTermsAccepted: ['Accept the programme terms to claim a place through onboarding.'] },
     }, { status: 400 })
+  }
+
+  if (!hasE2EBypass(request)) {
+    const captcha = await verifyEarlyAdopterCaptcha(request, result.data.captchaToken)
+    if (!captcha.ok) {
+      const configurationError = captcha.reason === 'misconfigured' || captcha.reason === 'unavailable'
+      return NextResponse.json({
+        error: configurationError
+          ? 'Bot protection is temporarily unavailable. Please try again shortly.'
+          : 'The bot check expired or could not be verified. Complete it again to continue.',
+      }, { status: configurationError ? 503 : 400 })
+    }
   }
 
   let membership: Awaited<ReturnType<typeof joinEarlyAdopterProgramme>>
@@ -79,7 +94,8 @@ export async function POST(request: NextRequest) {
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
   const matchesSignedInAccount = Boolean(user?.email && user.email.toLowerCase() === email)
-  const activation = user && matchesSignedInAccount
+  const hasVerifiedMatchingAccount = Boolean(matchesSignedInAccount && user?.email_confirmed_at)
+  const activation = user && hasVerifiedMatchingAccount
     ? await activateEarlyAdopterMembership(user.id, email)
     : null
   if (activation?.reason === 'capacity_full') {

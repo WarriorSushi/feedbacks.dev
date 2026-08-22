@@ -5,6 +5,7 @@ import { ArrowRight, Check, Loader2, LockKeyhole } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { normalizeAppearanceTheme } from '@/lib/appearance'
+import { AuthCaptcha } from '@/components/auth-captcha'
 
 type JoinResponse = {
   accepted?: boolean
@@ -26,11 +27,26 @@ export function LeadForm({ open }: { open: boolean }) {
   const [error, setError] = React.useState('')
   const [submitting, setSubmitting] = React.useState(false)
   const [result, setResult] = React.useState<JoinResponse | null>(null)
+  const [captchaToken, setCaptchaToken] = React.useState<string | null>(null)
+  const [captchaResetKey, setCaptchaResetKey] = React.useState(0)
+  const hcaptchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  const captchaProvider = hcaptchaSiteKey ? 'hcaptcha' : turnstileSiteKey ? 'turnstile' : null
+  const captchaSiteKey = hcaptchaSiteKey || turnstileSiteKey
+  const captchaUnavailable = process.env.NODE_ENV === 'production' && !captchaProvider
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError('')
     setFieldErrors({})
+    if (captchaUnavailable) {
+      setError('Bot protection is temporarily unavailable. Please try again shortly.')
+      return
+    }
+    if (captchaProvider && !captchaToken) {
+      setError('Complete the short bot check, then continue.')
+      return
+    }
     setSubmitting(true)
     const form = new FormData(event.currentTarget)
     try {
@@ -42,6 +58,7 @@ export function LeadForm({ open }: { open: boolean }) {
           programmeTermsAccepted,
           newsletterConsent,
           companyWebsite: form.get('companyWebsite'),
+          captchaToken,
         }),
       })
       const data = await response.json() as JoinResponse
@@ -60,6 +77,7 @@ export function LeadForm({ open }: { open: boolean }) {
       setError('We could not reach the server. Check your connection and try again.')
     } finally {
       setSubmitting(false)
+      if (captchaProvider) setCaptchaResetKey((current) => current + 1)
     }
   }
 
@@ -113,9 +131,21 @@ export function LeadForm({ open }: { open: boolean }) {
       </div>
       <div className="absolute left-[-9999px]" aria-hidden="true"><label htmlFor="companyWebsite">Company website</label><input id="companyWebsite" name="companyWebsite" tabIndex={-1} autoComplete="off" /></div>
 
+      {captchaProvider && captchaSiteKey ? (
+        <div className="rounded-lg border border-border bg-background/70 px-3 py-2">
+          <AuthCaptcha
+            provider={captchaProvider}
+            siteKey={captchaSiteKey}
+            resetKey={captchaResetKey}
+            onToken={setCaptchaToken}
+            action="early_adopter_claim"
+          />
+        </div>
+      ) : null}
+
       <div className="flex items-start gap-3 text-sm leading-6 text-muted-foreground"><LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><p>Programme reminders are service emails for the benefit you request. Advertising measurement remains controlled separately by your privacy choice.</p></div>
       {error ? <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">{error}</p> : null}
-      <Button type="submit" size="lg" className="h-12 w-full" disabled={submitting || !email || !programmeTermsAccepted}>
+      <Button type="submit" size="lg" className="h-12 w-full" disabled={submitting || !email || !programmeTermsAccepted || captchaUnavailable || Boolean(captchaProvider && !captchaToken)}>
         {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
         Continue to claim a programme place
       </Button>

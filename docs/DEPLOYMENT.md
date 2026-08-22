@@ -101,7 +101,7 @@ Do not treat `sql/000_full_reset_v2-ran this one for v2. nothing else needed.sql
 
 ## Step 2: Supabase Auth Configuration
 
-For signup abuse protection, configure hCaptcha or Cloudflare Turnstile in Supabase Authentication → Bot and Abuse Protection, then set the matching `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` or `NEXT_PUBLIC_TURNSTILE_SITE_KEY` in the dashboard deployment. If both public site keys are set, auth follows the hCaptcha configuration. The auth page passes the resulting token directly to Supabase Auth. Never expose `HCAPTCHA_SECRET_KEY` or `TURNSTILE_SECRET_KEY` in a `NEXT_PUBLIC_` variable.
+For signup and Early Adopter claim abuse protection, configure hCaptcha or Cloudflare Turnstile in Supabase Authentication → Bot and Abuse Protection, then set the matching public and private key pair in the dashboard deployment: `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` plus `HCAPTCHA_SECRET_KEY`, or `NEXT_PUBLIC_TURNSTILE_SITE_KEY` plus `TURNSTILE_SECRET_KEY`. If both public site keys are set, auth and claims follow the hCaptcha configuration. Auth passes the token to Supabase Auth; the Early Adopter claim endpoint separately verifies it with the provider before writing data. A claim can link to onboarding only after Supabase reports the same account email as confirmed. Production claims fail closed if the CAPTCHA pair is absent or invalid. Never expose either secret in a `NEXT_PUBLIC_` variable.
 
 Go to **Supabase Dashboard** → **Authentication**:
 

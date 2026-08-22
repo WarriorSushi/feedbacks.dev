@@ -17,6 +17,7 @@ import {
   validateAndSanitizeFeedbackImage,
 } from '@/lib/feedback-media-validation'
 import { insertFeedbackWithAtomicQuota } from '@/lib/atomic-quota-writes'
+import { verifyCaptchaToken } from '@/lib/captcha'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -40,50 +41,6 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status, headers: CORS_HEADERS })
-}
-
-async function verifyCaptcha(provider: 'turnstile' | 'hcaptcha', token: string): Promise<boolean> {
-  // Check that the required secret key env var is set
-  const secret = provider === 'turnstile'
-    ? process.env.TURNSTILE_SECRET_KEY
-    : process.env.HCAPTCHA_SECRET_KEY
-
-  if (!secret) {
-    // Fail closed when no secret is configured.
-    return false
-  }
-
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 3000)
-
-    if (provider === 'turnstile') {
-      const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ secret, response: token }),
-        signal: controller.signal,
-      })
-      clearTimeout(timeout)
-      const data = await res.json()
-      return data.success === true
-    }
-
-    if (provider === 'hcaptcha') {
-      const res = await fetch('https://api.hcaptcha.com/siteverify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ secret, response: token }),
-        signal: controller.signal,
-      })
-      clearTimeout(timeout)
-      const data = await res.json()
-      return data.success === true
-    }
-  } catch {
-    // Fail closed when the verification service fails.
-  }
-  return false
 }
 
 /** Sanitize filename: only allow alphanumerics, dots, hyphens, underscores */
@@ -252,8 +209,17 @@ export async function POST(request: NextRequest) {
         ? fields.turnstileToken
         : fields.hcaptchaToken
       if (!token) return jsonError('Captcha verification required', 400)
-      const valid = await verifyCaptcha(widgetConfig.captchaProvider, token)
-      if (!valid) return jsonError('Captcha verification failed', 400)
+      const verification = await verifyCaptchaToken({
+        provider: widgetConfig.captchaProvider,
+        token,
+        secretKey: widgetConfig.captchaProvider === 'turnstile'
+          ? process.env.TURNSTILE_SECRET_KEY
+          : process.env.HCAPTCHA_SECRET_KEY,
+        siteKey: widgetConfig.captchaProvider === 'turnstile'
+          ? widgetConfig.turnstileSiteKey
+          : widgetConfig.hcaptchaSiteKey,
+      })
+      if (!verification.ok) return jsonError('Captcha verification failed', 400)
     }
 
     const submittedId = fields.submissionId?.trim() || null

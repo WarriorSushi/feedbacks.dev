@@ -45,9 +45,12 @@ test('password, magic-link, OAuth, and already signed-in enrolments all link the
 
   assert.match(authPage, /fetch\('\/api\/early-adopter\/activate', \{ method: 'POST' \}\)/)
   assert.match(callback, /activateEarlyAdopterMembership/)
+  assert.match(callback, /user\.email && user\.email_confirmed_at/)
   assert.match(activateRoute, /supabase\.auth\.getUser\(\)/)
+  assert.match(activateRoute, /user\.email_confirmed_at/)
   assert.match(activateRoute, /activateEarlyAdopterMembership\(user\.id, user\.email\)/)
   assert.match(joinRoute, /user\.email\.toLowerCase\(\) === email/)
+  assert.match(joinRoute, /hasVerifiedMatchingAccount/)
 })
 
 test('programme onboarding cannot be dismissed and activates Pro only after the guided tour', () => {
@@ -112,4 +115,21 @@ test('programme marketing keeps places scarce and protects member pricing', () =
   assert.match(terms, /maximum Pro list price for at least five years/)
   assert.doesNotMatch(programmePage, /accepted automatically/i)
   assert.doesNotMatch(leadForm, /accepted automatically/i)
+})
+
+test('programme claims are CAPTCHA-verified before any membership or email side effect', () => {
+  const leadForm = read('../../src/app/early-access/lead-form.tsx')
+  const joinRoute = read('../../src/app/api/marketing/leads/route.ts')
+  const captcha = read('../../src/lib/captcha.ts')
+
+  assert.match(leadForm, /action="early_adopter_claim"/)
+  assert.match(leadForm, /captchaToken/)
+  assert.match(leadForm, /setCaptchaResetKey/)
+  assert.match(joinRoute, /verifyEarlyAdopterCaptcha\(request, result\.data\.captchaToken\)/)
+  assert.ok(joinRoute.indexOf('verifyEarlyAdopterCaptcha') < joinRoute.indexOf('joinEarlyAdopterProgramme(email)'))
+  assert.match(captcha, /process\.env\.NODE_ENV !== 'production'/)
+  assert.match(captcha, /reason: 'misconfigured'/)
+  assert.match(captcha, /body\.set\('remoteip', remoteIp\)/)
+  assert.match(captcha, /body\.set\('sitekey', siteKey\)/)
+  assert.match(captcha, /result\.action === expectedAction/)
 })
