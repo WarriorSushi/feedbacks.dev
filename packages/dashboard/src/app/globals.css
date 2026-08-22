@@ -774,9 +774,11 @@
 }
 
 .landing-mascot-context-v2 {
-  right: 1.25rem;
-  bottom: 0.75rem;
-  width: clamp(9rem, 12vw, 12rem);
+  right: 0.75rem;
+  bottom: 0.5rem;
+  z-index: 1;
+  width: clamp(6.5rem, 7.5vw, 8rem);
+  opacity: 0.78;
   --mascot-rest: -5deg;
   --mascot-peak: -1deg;
   --mascot-shift-x: -8px;
@@ -864,13 +866,15 @@
   .landing-mascot-pricing,
   .landing-mascot-faq { right: 1rem; }
 
+  .landing-mascot-context-v2 { right: 0.75rem; }
+
   .landing-proof-strip { padding-bottom: 7rem; }
 }
 
 @media (max-width: 767px) {
   .landing-section-mascot { filter: drop-shadow(0 14px 18px rgb(0 0 0 / 0.2)); }
   .landing-mascot-journey { bottom: 0.25rem; left: 0.75rem; width: 11.5rem; }
-  .landing-mascot-context-v2 { right: 0.75rem; bottom: 0.25rem; width: 7.5rem; }
+  .landing-mascot-context-v2 { right: 0.75rem; bottom: 0.25rem; width: 5.5rem; opacity: 0.72; }
   .landing-mascot-inbox { right: 0.75rem; bottom: 0.25rem; width: 12rem; opacity: 0.86; }
   .landing-mascot-loop { bottom: 0.25rem; left: 0.75rem; width: 11.5rem; }
   .landing-mascot-install { right: 0.75rem; bottom: 0.5rem; width: 11.5rem; opacity: 0.92; }
@@ -1618,6 +1622,22 @@
   box-shadow: 0 30px 82px -42px oklch(var(--foreground) / 0.5);
 }
 
+.landing-story-window-header {
+  min-height: 5.75rem;
+  padding: 0 0 1.125rem;
+}
+
+.landing-story-window-number {
+  border: 1px solid oklch(var(--primary) / 0.35);
+  color: oklch(var(--primary));
+  background: oklch(var(--primary) / 0.11);
+  box-shadow: inset 0 1px 0 oklch(var(--background) / 0.8);
+}
+
+.landing-story-window {
+  height: calc(100% - 5.75rem);
+}
+
 .landing-capture-pop {
   animation: landing-card-hover 4.8s var(--ease-in-out) infinite;
 }
@@ -1653,10 +1673,37 @@
   animation: landing-success-mark-loop 8.4s var(--ease-spring) infinite;
 }
 
+.landing-flow-connector {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0;
+  color: oklch(var(--foreground));
+}
+
 .landing-flow-line {
-  background-image: linear-gradient(90deg, transparent, oklch(var(--primary)), transparent);
-  background-size: 32px 100%;
-  animation: landing-flow-travel 1.4s linear infinite;
+  width: 3px;
+  min-height: 1rem;
+  flex: 1 1 auto;
+  border-radius: 999px;
+  background: linear-gradient(180deg, transparent, oklch(var(--primary) / 0.72), transparent);
+}
+
+.landing-flow-pill {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid oklch(var(--primary) / 0.34);
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  background: oklch(var(--background) / 0.9);
+  box-shadow: 0 12px 28px -20px oklch(var(--foreground) / 0.55), inset 0 1px 0 oklch(var(--background));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1rem;
+  white-space: nowrap;
 }
 
 .landing-route-card {
@@ -1684,10 +1731,18 @@
   bottom: 17%;
   left: 31px;
   z-index: -1;
-  width: 2px;
-  background: linear-gradient(transparent, oklch(var(--primary) / 0.5), transparent);
-  background-size: 100% 42%;
-  animation: landing-flow-travel-vertical 1.8s linear infinite;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(transparent, oklch(var(--primary) / 0.62), transparent);
+}
+
+.landing-context-row {
+  border: 1px solid oklch(var(--foreground) / 0.075);
+  background: oklch(var(--muted) / 0.42);
+}
+
+.landing-route-track {
+  position: relative;
 }
 
 .landing-evidence-highlight {
@@ -1764,6 +1819,32 @@
     0 44px 120px -42px rgb(0 0 0 / 0.95) !important;
 }
 
+.landing-triage-list,
+.landing-triage-focus {
+  background: oklch(0.135 0.017 140);
+}
+
+.landing-triage-focus {
+  background:
+    radial-gradient(circle at 88% 8%, oklch(0.48 0.12 135 / 0.16), transparent 42%),
+    oklch(0.105 0.014 140);
+}
+
+.landing-triage-compact-row {
+  border: 1px solid transparent;
+  background: oklch(0.18 0.014 140 / 0.58);
+  transition: border-color 260ms var(--ease-out-quart), background-color 260ms var(--ease-out-quart), transform 260ms var(--ease-out-quart);
+}
+
+.landing-triage-compact-row.is-active {
+  border-color: oklch(0.82 0.17 132 / 0.32);
+  background: oklch(0.82 0.17 132 / 0.09);
+}
+
+.landing-triage-compact-row.is-active:hover {
+  transform: translateX(3px);
+}
+
 .landing-inbox-section > div {
   position: relative;
 }
@@ -1836,6 +1917,40 @@
   animation: landing-soft-arrival-loop 7.2s var(--ease-in-out) 1.1s infinite;
 }
 
+@media (min-width: 1024px) {
+  .landing-flow-connector {
+    min-height: 0;
+    flex-direction: row;
+    padding: 5.75rem 0.45rem 0;
+  }
+
+  .landing-flow-line {
+    width: auto;
+    min-width: 0.5rem;
+    min-height: 3px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, oklch(var(--primary) / 0.72), transparent);
+  }
+
+  .landing-flow-pill {
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.6rem;
+    text-align: center;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 1023px) {
+  .landing-flow-connector {
+    flex-direction: column;
+  }
+
+  .landing-flow-pill svg {
+    transform: rotate(90deg);
+  }
+}
+
 .landing-install-code-frame {
   box-shadow: 0 24px 68px -42px rgb(0 0 0 / 0.9);
 }
@@ -1899,9 +2014,10 @@
     radial-gradient(ellipse 46% 64% at 28% 78%, oklch(0.87 0.1 312 / 0.32), transparent 72%),
     linear-gradient(128deg, oklch(0.973 0.026 78), oklch(0.948 0.035 135) 48%, oklch(0.944 0.038 229));
   --landing-slate-section:
-    radial-gradient(ellipse 68% 96% at 102% 4%, oklch(0.86 0.035 235 / 0.54), transparent 72%),
-    radial-gradient(ellipse 58% 84% at -4% 96%, oklch(0.9 0.026 260 / 0.42), transparent 72%),
-    linear-gradient(135deg, oklch(0.975 0.008 248), oklch(0.94 0.015 245) 52%, oklch(0.955 0.012 225));
+    radial-gradient(ellipse 72% 98% at 104% -4%, oklch(0.77 0.075 235 / 0.46), transparent 70%),
+    radial-gradient(ellipse 62% 90% at -6% 104%, oklch(0.8 0.052 286 / 0.4), transparent 72%),
+    radial-gradient(ellipse 48% 64% at 52% 42%, oklch(0.82 0.055 158 / 0.24), transparent 70%),
+    linear-gradient(132deg, oklch(0.93 0.018 250), oklch(0.88 0.026 246) 52%, oklch(0.91 0.023 222));
   background: oklch(0.95 0.014 236);
 }
 
@@ -1947,9 +2063,10 @@
     radial-gradient(ellipse 46% 64% at 28% 78%, oklch(0.34 0.1 312 / 0.24), transparent 72%),
     linear-gradient(128deg, oklch(0.175 0.028 32), oklch(0.14 0.028 137) 48%, oklch(0.155 0.033 235));
   --landing-slate-section:
-    radial-gradient(ellipse 68% 96% at 102% 4%, oklch(0.3 0.038 238 / 0.28), transparent 72%),
-    radial-gradient(ellipse 58% 84% at -4% 96%, oklch(0.28 0.032 278 / 0.22), transparent 72%),
-    linear-gradient(135deg, oklch(0.18 0.012 248), oklch(0.135 0.018 245) 52%, oklch(0.155 0.015 224));
+    radial-gradient(ellipse 72% 98% at 104% -4%, oklch(0.36 0.065 238 / 0.36), transparent 70%),
+    radial-gradient(ellipse 62% 90% at -6% 104%, oklch(0.32 0.055 286 / 0.3), transparent 72%),
+    radial-gradient(ellipse 48% 64% at 52% 42%, oklch(0.34 0.052 158 / 0.2), transparent 70%),
+    linear-gradient(132deg, oklch(0.17 0.02 250), oklch(0.105 0.022 246) 52%, oklch(0.135 0.02 222));
   background: oklch(0.14 0.016 238);
 }
 
@@ -1983,19 +2100,6 @@
 .landing-final-chip-top-right { --chip-rotate: 3deg; --chip-peak: 1deg; --chip-shift-x: -4px; animation-delay: 650ms; }
 .landing-final-chip-bottom-left { --chip-rotate: 4deg; --chip-peak: 2deg; --chip-shift-x: 5px; animation-delay: 1.25s; }
 .landing-final-chip-right { --chip-rotate: -3deg; --chip-peak: -1deg; --chip-shift-x: -3px; animation-delay: 1.9s; }
-
-@media (min-width: 1024px) {
-  .landing-flow-connector .landing-flow-line {
-    background-image: linear-gradient(180deg, transparent, oklch(var(--primary)), transparent);
-    background-size: 100% 32px;
-    animation-name: landing-flow-travel-vertical;
-  }
-}
-
-@keyframes landing-flow-travel-vertical {
-  from { background-position: 0 0; }
-  to { background-position: 0 32px; }
-}
 
 .landing-feature {
   position: relative;
@@ -3162,18 +3266,18 @@ html:not(.dark):not(.windows98) .auth-form-pane {
 
 /* Shared landing surfaces: cool slate keeps cards distinct in both color themes. */
 .marketing-shell {
-  --landing-slate-surface: linear-gradient(145deg, oklch(0.985 0.006 250), oklch(0.955 0.012 250) 54%, oklch(0.925 0.018 250));
-  --landing-slate-surface-raised: linear-gradient(155deg, oklch(0.995 0.004 250), oklch(0.965 0.011 250) 58%, oklch(0.94 0.017 250));
-  --landing-slate-titlebar: linear-gradient(180deg, oklch(0.99 0.005 250), oklch(0.945 0.014 250));
-  --landing-slate-border: oklch(0.7 0.025 250 / 0.52);
-  --landing-slate-shadow: 0 28px 72px -42px rgb(30 41 59 / 0.38), inset 0 1px 0 rgb(255 255 255 / 0.84);
+  --landing-slate-surface: linear-gradient(145deg, oklch(0.992 0.005 250), oklch(0.973 0.011 250) 54%, oklch(0.95 0.018 250));
+  --landing-slate-surface-raised: linear-gradient(155deg, oklch(0.997 0.003 250), oklch(0.98 0.009 250) 58%, oklch(0.955 0.016 250));
+  --landing-slate-titlebar: linear-gradient(180deg, oklch(0.995 0.004 250), oklch(0.96 0.014 250));
+  --landing-slate-border: oklch(0.62 0.035 250 / 0.58);
+  --landing-slate-shadow: 0 30px 76px -40px oklch(0.3 0.04 250 / 0.5), inset 0 1px 0 oklch(0.998 0.002 250 / 0.9);
 }
 
 .dark .marketing-shell {
-  --landing-slate-surface: linear-gradient(145deg, oklch(0.3 0.022 250), oklch(0.245 0.02 250) 52%, oklch(0.205 0.018 250));
-  --landing-slate-surface-raised: linear-gradient(150deg, oklch(0.34 0.024 250), oklch(0.275 0.021 250) 56%, oklch(0.225 0.019 250));
-  --landing-slate-titlebar: linear-gradient(180deg, oklch(0.34 0.024 250), oklch(0.265 0.02 250));
-  --landing-slate-border: oklch(0.62 0.035 250 / 0.44);
+  --landing-slate-surface: linear-gradient(145deg, oklch(0.33 0.025 250), oklch(0.275 0.022 250) 52%, oklch(0.23 0.02 250));
+  --landing-slate-surface-raised: linear-gradient(150deg, oklch(0.37 0.028 250), oklch(0.3 0.024 250) 56%, oklch(0.25 0.021 250));
+  --landing-slate-titlebar: linear-gradient(180deg, oklch(0.37 0.027 250), oklch(0.285 0.022 250));
+  --landing-slate-border: oklch(0.65 0.04 250 / 0.5);
   --landing-slate-shadow: 0 30px 82px -38px rgb(0 0 0 / 0.72), inset 0 1px 0 rgb(255 255 255 / 0.09);
 }
 
@@ -3207,6 +3311,9 @@ html:not(.dark):not(.windows98) .auth-form-pane {
 
 .marketing-shell :is(
   .landing-capture-stage,
+  .landing-evidence-shot,
+  .landing-inbox-summary,
+  .landing-workflow-stack,
   .landing-triage-main,
   .landing-triage-sidebar,
   .landing-scene-card > :not(.landing-window-titlebar),
@@ -3223,15 +3330,15 @@ html:not(.dark):not(.windows98) .auth-form-pane {
 
 /* The inbox is a dark product preview, not another page-level color field. */
 .marketing-shell .landing-inbox-section .landing-triage-dashboard {
-  background: linear-gradient(145deg, #111611, #080b08) !important;
+  background: linear-gradient(145deg, oklch(0.18 0.018 140), oklch(0.08 0.012 140)) !important;
 }
 
 .marketing-shell .landing-inbox-section .landing-triage-dashboard :is(
   .landing-window-titlebar,
-  .landing-triage-main,
-  .landing-triage-sidebar
+  .landing-triage-list,
+  .landing-triage-focus
 ) {
-  background: linear-gradient(145deg, #111611, #090c09) !important;
+  background: linear-gradient(145deg, oklch(0.18 0.018 140), oklch(0.095 0.013 140)) !important;
 }
 
 /* The install wizard is intentionally a dark code surface in every modern theme. */
