@@ -8,12 +8,22 @@ test.skip(!env.ready, env.skipReason)
 const TOUR_STEP_TIMEOUT_MS = 60_000
 
 const tourSteps = [
-  { title: 'Start from Home', path: /\/dashboard(?:\?.*)?$/, target: 'nav-dashboard' },
-  { title: 'Shape the Feedback form', path: /\/projects\/[^/]+\/feedback-form$/, target: 'nav-feedback-form' },
-  { title: 'Triage the Feedback inbox', path: /\/feedback(?:\?.*)?$/, target: 'nav-feedback' },
-  { title: 'Show updates to users', path: /\/projects\/[^/]+\/release-notes$/, target: 'nav-updates' },
-  { title: 'Install and verify once', path: /\/projects\/[^/]+\/install$/, target: 'nav-install' },
-  { title: 'Connect the rest when needed', path: /\/projects\/[^/]+\/integrations$/, target: 'nav-integrations' },
+  { title: 'Understand the feedback loop', path: /\/dashboard(?:\?.*)?$/, target: 'nav-dashboard' },
+  { title: 'Know which project you are changing', path: /\/dashboard(?:\?.*)?$/, target: 'project-switcher' },
+  { title: 'Make the workspace comfortable', path: /\/dashboard(?:\?.*)?$/, target: 'theme-switcher' },
+  { title: 'Choose how customers open the form', path: /\/projects\/[^/]+\/feedback-form$/, target: 'widget-placement' },
+  { title: 'Match the launcher to your product', path: /\/projects\/[^/]+\/feedback-form$/, target: 'widget-appearance' },
+  { title: 'Ask for a useful message', path: /\/projects\/[^/]+\/feedback-form$/, target: 'widget-content' },
+  { title: 'Add fields only when they earn their place', path: /\/projects\/[^/]+\/feedback-form$/, target: 'widget-protection' },
+  { title: 'Preview before you save', path: /\/projects\/[^/]+\/feedback-form$/, target: 'widget-preview' },
+  { title: 'Choose the install guide for your app', path: /\/projects\/[^/]+\/install$/, target: 'install-platforms' },
+  { title: 'Install once, then verify with a real test', path: /\/projects\/[^/]+\/install$/, target: 'install-code' },
+  { title: 'Turn messages into decisions', path: /\/feedback(?:\?.*)?$/, target: 'inbox-filters' },
+  { title: 'Use each feedback type differently', path: /\/feedback(?:\?.*)?$/, target: 'inbox-list' },
+  { title: 'Close the loop with product updates', path: /\/projects\/[^/]+\/release-notes$/, target: 'nav-updates' },
+  { title: 'Use a public board for shared demand', path: /\/projects\/[^/]+\/board$/, target: 'nav-boards' },
+  { title: 'Route high-signal work to your team', path: /\/projects\/[^/]+\/integrations$/, target: 'integration-endpoint' },
+  { title: 'Run your first complete loop', path: /\/dashboard(?:\?.*)?$/, target: 'dashboard-capabilities' },
 ]
 
 test.describe('product tour', () => {
@@ -34,7 +44,6 @@ test.describe('product tour', () => {
 
       const visibleTarget = page.locator(`[data-tour="${step.target}"]:visible`)
       await expect(visibleTarget).toBeVisible({ timeout: TOUR_STEP_TIMEOUT_MS })
-      await expect(visibleTarget).toHaveClass(/text-primary/)
 
       if (index < tourSteps.length - 1) {
         await page.getByRole('button', { name: 'Next', exact: true }).click()
@@ -64,7 +73,6 @@ test.describe('product tour', () => {
 
       const target = page.locator(`[data-tour="${step.target}"]:visible`)
       await expect(target).toBeVisible({ timeout: TOUR_STEP_TIMEOUT_MS })
-      await expect(target).toHaveClass(/text-primary/)
 
       const [dialogBox, targetBox] = await Promise.all([dialog.boundingBox(), target.boundingBox()])
       expect(dialogBox).not.toBeNull()

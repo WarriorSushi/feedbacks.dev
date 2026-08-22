@@ -68,6 +68,8 @@ test('programme onboarding cannot be dismissed and activates Pro only after the 
   assert.match(tour, /cannot be skipped/)
   assert.match(tour, /Finish and activate Pro/)
   assert.match(tour, /Pro activates at the end/)
+  assert.match(tour, /required && stepIndex === 0/)
+  assert.equal((tour.match(/Complete every step of this guided onboarding/g) || []).length, 1)
   assert.match(layout, /required=\{requiredEarlyAdopterOnboarding\}/)
   assert.doesNotMatch(layout, /EarlyAdopterBanner/)
   assert.match(sidebar, /Early Adopter Programme/)

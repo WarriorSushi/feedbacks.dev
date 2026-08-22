@@ -352,6 +352,8 @@ Acceptance criteria:
 - entering an email creates a claim-ready record but does not reduce the 100 available places
 - the account email links the claim to guided onboarding
 - claimants cannot skip guided onboarding; the same atomic completion that activates Pro assigns the seat, and concurrent completions cannot exceed 100 members
+- the first onboarding card explains that every step is required to activate Pro; later cards focus on the lesson without repeating that requirement
+- guided onboarding teaches project scope, theme switching, form placement and copy, optional fields and spam protection, live preview, installation and verification, common feedback use cases, inbox triage, product updates, public boards, integrations, and a complete first feedback loop
 - a structured feedback check-in grants one later month at a time, up to 12 total months
 - the check-in opens seven days before its due date and is reachable from a dashboard banner
 - lifecycle emails explain the due date, two-month grace period, final week, completion, and removal

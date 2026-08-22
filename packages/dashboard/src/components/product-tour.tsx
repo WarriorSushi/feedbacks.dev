@@ -3,10 +3,9 @@
 import * as React from 'react'
 import Image from 'next/image'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Lightbulb, Loader2, Sparkles, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { toast } from '@/hooks/use-toast'
 import { GUIDED_TUTORIAL_PROGRESS_KEY, getGuidedTutorial, resolveTutorialHref, type GuidedTutorialId, type GuidedTutorialProgress } from '@/lib/guided-tutorials'
 import { getTourPanelPosition } from '@/lib/tour-position'
@@ -21,8 +20,8 @@ interface SpotlightRect {
 }
 
 const SPOTLIGHT_PADDING = 8
-const PANEL_WIDTH = 360
-const PANEL_HEIGHT_ESTIMATE = 284
+const PANEL_WIDTH = 420
+const PANEL_HEIGHT_ESTIMATE = 360
 const EMPTY_TUTORIAL_PROGRESS: Record<string, GuidedTutorialProgress> = {}
 
 function readTutorialProgress(id: GuidedTutorialId): GuidedTutorialProgress | null {
@@ -103,6 +102,12 @@ function getSpotlightRect(selector: string): SpotlightRect | null {
   const radius = Math.min(targetRadius + SPOTLIGHT_PADDING, width / 2, height / 2)
 
   return { top, left, width, height, radius }
+}
+
+function isSidebarTourTarget(selector: string) {
+  return selector.includes('nav-')
+    || selector.includes('project-switcher')
+    || selector.includes('theme-switcher')
 }
 
 export function ProductTour({
@@ -206,7 +211,11 @@ export function ProductTour({
 
   React.useEffect(() => {
     if (!open) return
-    window.dispatchEvent(new CustomEvent('feedbacks:expand-sidebar'))
+    window.dispatchEvent(new CustomEvent(
+      isSidebarTourTarget(activeStep.target)
+        ? 'feedbacks:expand-sidebar'
+        : 'feedbacks:close-mobile-sidebar',
+    ))
 
     let frame = 0
     const measureSpotlight = () => {
@@ -439,7 +448,7 @@ export function ProductTour({
               Complete the guided tour to unlock Pro.
             </h1>
             <p id="onboarding-welcome-description" className="mt-3 text-base leading-7 text-muted-foreground">
-              We’ll walk you through the feedback form, inbox, installation, updates, and integrations. Pro activates automatically when you finish the last step.
+              Learn project setup, themes, form customization, installation, real feedback use cases, inbox triage, updates, boards, and integrations. Pro activates automatically when you finish the last step.
             </p>
           </div>
           <div className="relative mt-7 border-t pt-5">
@@ -467,7 +476,7 @@ export function ProductTour({
 
   if (!open) return null
 
-  const isSidebarStep = activeStep.target.includes('nav-')
+  const isSidebarStep = isSidebarTourTarget(activeStep.target)
   const panelPosition = getTourPanelPosition({
     spotlight,
     panel: panelSize,
@@ -522,17 +531,17 @@ export function ProductTour({
         aria-modal="true"
         aria-labelledby="product-tour-title"
         aria-describedby="product-tour-description"
-        className="pointer-events-auto fixed w-[calc(100vw-2rem)] max-w-[360px] rounded-lg border bg-card p-5 shadow-[0_24px_70px_rgb(0_0_0/0.32)]"
+        className="pointer-events-auto fixed w-[calc(100vw-2rem)] max-w-[420px] rounded-xl border bg-card p-6 shadow-[0_24px_70px_rgb(0_0_0/0.32)]"
         style={{ top: panelPosition.top, left: panelPosition.left }}
       >
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-semibold text-primary">
-              {tutorial.title} · {stepIndex + 1} of {steps.length}
-            </p>
-            <h2 id="product-tour-title" className="mt-2 text-base font-semibold">
+          <div className="min-w-0">
+            <h2 id="product-tour-title" className="text-lg font-semibold leading-6">
               {activeStep.title}
             </h2>
+            <p className="mt-1 text-xs font-semibold text-primary">
+              Step {stepIndex + 1} of {steps.length} · {tutorial.title}
+            </p>
           </div>
           {!required ? <button
             type="button"
@@ -544,10 +553,16 @@ export function ProductTour({
             <X className="h-4 w-4" />
           </button> : null}
         </div>
-        <p id="product-tour-description" className="mt-2 text-sm leading-6 text-muted-foreground">
+        <p id="product-tour-description" className="mt-3 text-[15px] leading-6 text-muted-foreground">
           {activeStep.body}
         </p>
-        {required ? (
+        {activeStep.tip ? (
+          <div className="mt-4 flex gap-2.5 rounded-lg border border-primary/20 bg-primary/[0.06] p-3 text-sm leading-5">
+            <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+            <p><span className="font-semibold text-foreground">Pro tip:</span> <span className="text-muted-foreground">{activeStep.tip}</span></p>
+          </div>
+        ) : null}
+        {required && stepIndex === 0 ? (
           <p className="mt-3 border-l-2 border-primary pl-3 text-sm font-medium text-foreground">
             Complete every step of this guided onboarding. Pro activates at the end.
           </p>
@@ -594,19 +609,11 @@ export function ProductTour({
             </Button>
           </div>
         </div>
-        <div
-          className="mt-3 grid gap-1"
-          style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
-        >
-          {steps.map((step, index) => (
-            <span
-              key={step.title}
-              className={cn(
-                'h-1 rounded-full',
-                index <= stepIndex ? 'bg-primary' : 'bg-muted',
-              )}
-            />
-          ))}
+        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
+            style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
+          />
         </div>
       </div>
     </div>

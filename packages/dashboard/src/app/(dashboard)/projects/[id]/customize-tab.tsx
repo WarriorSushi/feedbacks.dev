@@ -409,7 +409,7 @@ export function CustomizeTab({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-7">
-            <div className="space-y-3">
+            <div data-tour="widget-placement" className="space-y-3">
               <div>
                 <p className="text-sm font-semibold text-foreground">Placement</p>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -507,7 +507,7 @@ export function CustomizeTab({
 
             <Separator />
 
-            <div className="space-y-3">
+            <div data-tour="widget-appearance" className="space-y-3">
               <div>
                 <p className="text-sm font-semibold text-foreground">Appearance</p>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -577,7 +577,7 @@ export function CustomizeTab({
 
             <Separator />
 
-            <div className="space-y-3">
+            <div data-tour="widget-content" className="space-y-3">
               <div>
                 <p className="text-sm font-semibold text-foreground">Form content</p>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -606,7 +606,7 @@ export function CustomizeTab({
 
             <Separator />
 
-            <details className="group rounded-md border bg-surface-raised/45">
+            <details data-tour="widget-protection" className="group rounded-md border bg-surface-raised/45">
               <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3">
                 <div>
                   <p className="text-sm font-semibold text-foreground">Optional fields and protection</p>

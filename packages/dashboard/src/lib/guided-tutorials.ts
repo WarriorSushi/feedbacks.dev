@@ -12,6 +12,7 @@ export interface GuidedTutorialStep {
   body: string
   href: string
   target: string
+  tip?: string
 }
 
 export interface GuidedTutorialDefinition {
@@ -32,15 +33,121 @@ export const GUIDED_TUTORIAL_PROGRESS_KEY = 'feedbacks-guided-tutorial-progress'
 export const GUIDED_TUTORIALS: GuidedTutorialDefinition[] = [
   {
     id: 'navigation',
-    title: 'Your workspace in 6 steps',
-    description: 'See the core loop first. Advanced tools stay available when you need them.',
+    title: 'Guided product onboarding',
+    description: 'Learn the complete feedback loop, then put it into practice with your first project.',
     steps: [
-      { title: 'Start from Home', body: 'Home shows the health of the selected project, recent feedback, and the clearest next action.', href: '/dashboard', target: '[data-tour="nav-dashboard"]' },
-      { title: 'Shape the Feedback form', body: 'Choose the placement, wording, fields, color, and anti-spam settings. Saved changes reach the embed remotely.', href: '/projects/{projectId}/feedback-form', target: '[data-tour="nav-feedback-form"]' },
-      { title: 'Triage the Feedback inbox', body: 'User messages land here with page and browser context. Search, filter, tag, and decide what needs action.', href: '/feedback', target: '[data-tour="nav-feedback"]' },
-      { title: 'Show updates to users', body: 'Tell users what shipped through the in-product “What’s new” popup. These are updates for your product, not feedbacks.dev.', href: '/projects/{projectId}/release-notes', target: '[data-tour="nav-updates"]' },
-      { title: 'Install and verify once', body: 'Add the shared embed, send one known-good test, and confirm the connection before customizing further.', href: '/projects/{projectId}/install', target: '[data-tour="nav-install"]' },
-      { title: 'Connect the rest when needed', body: 'Public boards, integrations, API access, billing, and settings stay in the sidebar without blocking first setup.', href: '/projects/{projectId}/integrations', target: '[data-tour="nav-integrations"]' },
+      {
+        title: 'Understand the feedback loop',
+        body: 'feedbacks.dev helps you collect a useful message, keep its page and browser context, decide what deserves action, and tell users what shipped.',
+        href: '/dashboard',
+        target: '[data-tour="nav-dashboard"]',
+        tip: 'Start small: one project, one form, and one real test submission.',
+      },
+      {
+        title: 'Know which project you are changing',
+        body: 'Each website, app, or SaaS product is a project. Its form, inbox, installation, board, updates, and integrations stay grouped together.',
+        href: '/dashboard',
+        target: '[data-tour="project-switcher"]',
+        tip: 'Check the selected project before copying code or changing settings.',
+      },
+      {
+        title: 'Make the workspace comfortable',
+        body: 'Switch between Light, Dark, Windows 98, or your device theme here. This changes your feedbacks.dev workspace without changing the form your customers see.',
+        href: '/dashboard',
+        target: '[data-tour="theme-switcher"]',
+        tip: 'Theme choice follows you across the landing page, sign-in, and dashboard.',
+      },
+      {
+        title: 'Choose how customers open the form',
+        body: 'Use the floating button for the fastest setup, a custom trigger to reuse your own feedback button, or an inline form for a dedicated feedback page.',
+        href: '/projects/{projectId}/feedback-form',
+        target: '[data-tour="widget-placement"]',
+        tip: 'The floating button is the best default. Change modes only when your product layout calls for it.',
+      },
+      {
+        title: 'Match the launcher to your product',
+        body: 'Set the primary color, button label, and screen position. These settings are delivered remotely to every installed embed.',
+        href: '/projects/{projectId}/feedback-form',
+        target: '[data-tour="widget-appearance"]',
+        tip: 'Use a clear label such as Send feedback instead of a clever phrase users may not recognize.',
+      },
+      {
+        title: 'Ask for a useful message',
+        body: 'Customize the form title and message prompt so customers know what detail helps. Good prompts ask what happened, what they expected, or what they were trying to do.',
+        href: '/projects/{projectId}/feedback-form',
+        target: '[data-tour="widget-content"]',
+        tip: 'Keep the main prompt broad enough for bugs, ideas, praise, and questions.',
+      },
+      {
+        title: 'Add fields only when they earn their place',
+        body: 'Type and rating help with triage. Screenshots help explain visual bugs. Email enables follow-up. Human verification protects public forms from automated abuse.',
+        href: '/projects/{projectId}/feedback-form',
+        target: '[data-tour="widget-protection"]',
+        tip: 'Every required field adds friction. Begin with the message, then add fields based on real feedback.',
+      },
+      {
+        title: 'Preview before you save',
+        body: 'The live preview shows draft placement, color, copy, and optional fields. Saving publishes the configuration without asking you to replace the installed snippet.',
+        href: '/projects/{projectId}/feedback-form',
+        target: '[data-tour="widget-preview"]',
+        tip: 'Test the form at mobile width too, especially after changing copy or enabling more fields.',
+      },
+      {
+        title: 'Choose the install guide for your app',
+        body: 'Website works for plain HTML and most script-based sites. Choose React, Next.js, Vue, or WordPress when that guide matches the shared shell of your product.',
+        href: '/projects/{projectId}/install',
+        target: '[data-tour="install-platforms"]',
+        tip: 'Install once in the shared layout or app shell, not separately on every page.',
+      },
+      {
+        title: 'Install once, then verify with a real test',
+        body: 'Copy the generated embed, load your product, and submit a known-good message. Verification confirms that the browser project key and inbox are connected.',
+        href: '/projects/{projectId}/install',
+        target: '[data-tour="install-code"]',
+        tip: 'Use a recognizable test message so it is easy to find and remove from the inbox.',
+      },
+      {
+        title: 'Turn messages into decisions',
+        body: 'The inbox brings message, page, browser, device, time, rating, and optional screenshot together. Search and filter before changing workflow status.',
+        href: '/feedback',
+        target: '[data-tour="inbox-filters"]',
+        tip: 'Unread is a reading state. New, Reviewed, Planned, In Progress, and Closed describe the work.',
+      },
+      {
+        title: 'Use each feedback type differently',
+        body: 'Investigate bugs with captured context, group ideas into recurring themes, share praise with the team, and answer questions while the customer intent is still clear.',
+        href: '/feedback',
+        target: '[data-tour="inbox-list"]',
+        tip: 'Tags should describe durable themes such as onboarding or billing, not repeat the full message.',
+      },
+      {
+        title: 'Close the loop with product updates',
+        body: 'Publish what shipped so customers see progress inside your product. Updates are for your product and customers, not announcements about feedbacks.dev.',
+        href: '/projects/{projectId}/release-notes',
+        target: '[data-tour="nav-updates"]',
+        tip: 'Write the customer outcome first, then add implementation detail only when it helps.',
+      },
+      {
+        title: 'Use a public board for shared demand',
+        body: 'A public feedback board lets customers browse, submit, and vote on ideas. Keep sensitive bug reports and account-specific feedback private in the inbox.',
+        href: '/projects/{projectId}/board',
+        target: '[data-tour="nav-boards"]',
+        tip: 'A focused board with clear categories is easier to trust than an uncurated feature dump.',
+      },
+      {
+        title: 'Route high-signal work to your team',
+        body: 'Connect Slack, Discord, GitHub, or a webhook when important feedback should enter an existing workflow. Save and test every endpoint before relying on it.',
+        href: '/projects/{projectId}/integrations',
+        target: '[data-tour="integration-endpoint"]',
+        tip: 'Route deliberately. Forwarding every message creates noise and makes important feedback easier to miss.',
+      },
+      {
+        title: 'Run your first complete loop',
+        body: 'Customize the form, install it, submit one test, inspect its context, set a workflow status, and publish an update when something ships. You now know the complete product path.',
+        href: '/dashboard',
+        target: '[data-tour="dashboard-capabilities"]',
+        tip: 'Your next best step is to install the floating button on one real product and collect the first customer message.',
+      },
     ],
   },
   {

@@ -313,8 +313,13 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
         setMobileOpen(true)
       }
     }
+    const closeMobileForTour = () => setMobileOpen(false)
     window.addEventListener('feedbacks:expand-sidebar', expandForTour)
-    return () => window.removeEventListener('feedbacks:expand-sidebar', expandForTour)
+    window.addEventListener('feedbacks:close-mobile-sidebar', closeMobileForTour)
+    return () => {
+      window.removeEventListener('feedbacks:expand-sidebar', expandForTour)
+      window.removeEventListener('feedbacks:close-mobile-sidebar', closeMobileForTour)
+    }
   }, [])
 
   const beginNavigation = React.useCallback(
@@ -648,7 +653,9 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
 
       {/* Footer stays visible at the bottom. */}
       <div className={cn('shrink-0 p-2', collapsed ? 'space-y-1' : 'flex items-center gap-1.5')}>
-        <ThemeToggle collapsed={collapsed} className={cn(!collapsed && 'min-w-0 flex-1')} />
+        <div data-tour="theme-switcher" className={cn(!collapsed && 'min-w-0 flex-1')}>
+          <ThemeToggle collapsed={collapsed} className={cn(!collapsed && 'w-full')} />
+        </div>
 
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
