@@ -71,6 +71,12 @@ export function AuthCaptcha({
     widgetIdRef.current = api.render(hostRef.current, options)
   }, [action, captchaTheme, getApi, onToken, provider, siteKey])
 
+  const renderCachedScript = React.useCallback(() => {
+    // Next can report a cached script as ready just before the provider finishes
+    // restoring its global API. The provider onload callback remains the fast path.
+    window.setTimeout(renderWidget, 250)
+  }, [renderWidget])
+
   React.useEffect(() => {
     window.feedbacksCaptchaReady = renderWidget
     setScriptReady(true)
@@ -97,7 +103,7 @@ export function AuthCaptcha({
 
   return (
     <>
-      {scriptReady ? <Script src={providerScripts[provider]} strategy="afterInteractive" onReady={renderWidget} /> : null}
+      {scriptReady ? <Script src={providerScripts[provider]} strategy="afterInteractive" onReady={renderCachedScript} /> : null}
       <div ref={hostRef} className="flex min-h-[78px] justify-center" />
     </>
   )

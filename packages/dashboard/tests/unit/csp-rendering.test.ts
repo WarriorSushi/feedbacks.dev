@@ -30,6 +30,6 @@ test('auth bot protection supports hCaptcha first and Turnstile as a fallback', 
   assert.match(auth, /captchaToken: captchaToken \|\| undefined/)
   assert.match(auth, /AuthCaptcha/)
   assert.match(captcha, /https:\/\/js\.hcaptcha\.com/)
-  assert.match(captcha, /onReady=\{renderWidget\}/)
+  assert.match(captcha, /onReady=\{renderCachedScript\}/)
   assert.doesNotMatch(auth, /HCAPTCHA_SECRET_KEY|TURNSTILE_SECRET_KEY/)
 })
