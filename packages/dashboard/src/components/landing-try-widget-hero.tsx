@@ -98,36 +98,39 @@ function HeroAnnotations({
   if (!geometry) return null
 
   const { width, height, buttonLeft, buttonRight, buttonTop, buttonBottom } = geometry
-  const arrowGap = 34
-  const leftTarget = Math.max(0, buttonLeft - arrowGap)
-  const rightTarget = Math.min(width, buttonRight + arrowGap)
-  const centerY = (buttonTop + buttonBottom) / 2
+  const buttonWidth = buttonRight - buttonLeft
+  const targetInset = Math.min(58, buttonWidth * 0.27)
+  const targetGap = 20
+  const topLeftTarget = { x: buttonLeft + targetInset, y: buttonTop - targetGap }
+  const topRightTarget = { x: buttonRight - targetInset, y: buttonTop - targetGap }
+  const bottomLeftTarget = { x: buttonLeft + targetInset, y: buttonBottom + targetGap }
+  const bottomRightTarget = { x: buttonRight - targetInset, y: buttonBottom + targetGap }
   const paths = [
     {
       id: 'top-left',
-      d: `M 0 ${height * 0.14} C ${width * 0.12} ${height * 0.13}, ${width * 0.18} ${height * 0.09}, ${width * 0.27} ${height * 0.18} C ${width * 0.34} ${height * 0.24}, ${width * 0.37} ${height * 0.32}, ${leftTarget} ${centerY - 12}`,
-      textD: `M 0 ${height * 0.14} C ${width * 0.12} ${height * 0.13}, ${width * 0.18} ${height * 0.09}, ${width * 0.27} ${height * 0.18} C ${width * 0.34} ${height * 0.24}, ${width * 0.37} ${height * 0.32}, ${leftTarget} ${centerY - 12}`,
+      d: `M 0 ${height * 0.14} C ${width * 0.12} ${height * 0.13}, ${width * 0.18} ${height * 0.09}, ${width * 0.27} ${height * 0.18} C ${width * 0.34} ${height * 0.24}, ${topLeftTarget.x - 92} ${topLeftTarget.y - 52}, ${topLeftTarget.x} ${topLeftTarget.y}`,
+      textD: `M 0 ${height * 0.14} C ${width * 0.12} ${height * 0.13}, ${width * 0.18} ${height * 0.09}, ${width * 0.27} ${height * 0.18} C ${width * 0.34} ${height * 0.24}, ${topLeftTarget.x - 92} ${topLeftTarget.y - 52}, ${topLeftTarget.x} ${topLeftTarget.y}`,
       label: 'Feedback starts right here',
       startOffset: '8%',
     },
     {
       id: 'top-right',
-      d: `M ${width} ${height * 0.12} C ${width * 0.85} ${height * 0.11}, ${width * 0.82} ${height * 0.2}, ${width * 0.73} ${height * 0.18} C ${width * 0.65} ${height * 0.16}, ${width * 0.64} ${height * 0.33}, ${rightTarget} ${centerY - 12}`,
-      textD: `M ${rightTarget} ${centerY - 12} C ${width * 0.64} ${height * 0.33}, ${width * 0.65} ${height * 0.16}, ${width * 0.73} ${height * 0.18} C ${width * 0.82} ${height * 0.2}, ${width * 0.85} ${height * 0.11}, ${width} ${height * 0.12}`,
+      d: `M ${width} ${height * 0.12} C ${width * 0.85} ${height * 0.11}, ${width * 0.82} ${height * 0.2}, ${width * 0.73} ${height * 0.18} C ${width * 0.65} ${height * 0.16}, ${topRightTarget.x + 92} ${topRightTarget.y - 52}, ${topRightTarget.x} ${topRightTarget.y}`,
+      textD: `M ${topRightTarget.x} ${topRightTarget.y} C ${topRightTarget.x + 92} ${topRightTarget.y - 52}, ${width * 0.65} ${height * 0.16}, ${width * 0.73} ${height * 0.18} C ${width * 0.82} ${height * 0.2}, ${width * 0.85} ${height * 0.11}, ${width} ${height * 0.12}`,
       label: 'No support portal required',
       startOffset: '42%',
     },
     {
       id: 'bottom-left',
-      d: `M 0 ${height * 0.9} C ${width * 0.11} ${height * 0.77}, ${width * 0.18} ${height * 0.82}, ${width * 0.27} ${height * 0.74} C ${width * 0.36} ${height * 0.66}, ${width * 0.34} ${height * 0.55}, ${leftTarget} ${centerY + 12}`,
-      textD: `M 0 ${height * 0.9} C ${width * 0.11} ${height * 0.77}, ${width * 0.18} ${height * 0.82}, ${width * 0.27} ${height * 0.74} C ${width * 0.36} ${height * 0.66}, ${width * 0.34} ${height * 0.55}, ${leftTarget} ${centerY + 12}`,
+      d: `M 0 ${height * 0.9} C ${width * 0.11} ${height * 0.77}, ${width * 0.18} ${height * 0.82}, ${width * 0.27} ${height * 0.74} C ${width * 0.36} ${height * 0.66}, ${bottomLeftTarget.x - 92} ${bottomLeftTarget.y + 52}, ${bottomLeftTarget.x} ${bottomLeftTarget.y}`,
+      textD: `M 0 ${height * 0.9} C ${width * 0.11} ${height * 0.77}, ${width * 0.18} ${height * 0.82}, ${width * 0.27} ${height * 0.74} C ${width * 0.36} ${height * 0.66}, ${bottomLeftTarget.x - 92} ${bottomLeftTarget.y + 52}, ${bottomLeftTarget.x} ${bottomLeftTarget.y}`,
       label: 'Your customer stays on the page',
       startOffset: '7%',
     },
     {
       id: 'bottom-right',
-      d: `M ${width} ${height * 0.89} C ${width * 0.88} ${height * 0.82}, ${width * 0.82} ${height * 0.71}, ${width * 0.73} ${height * 0.74} C ${width * 0.66} ${height * 0.76}, ${width * 0.64} ${height * 0.58}, ${rightTarget} ${centerY + 12}`,
-      textD: `M ${rightTarget} ${centerY + 12} C ${width * 0.64} ${height * 0.58}, ${width * 0.66} ${height * 0.76}, ${width * 0.73} ${height * 0.74} C ${width * 0.82} ${height * 0.71}, ${width * 0.88} ${height * 0.82}, ${width} ${height * 0.89}`,
+      d: `M ${width} ${height * 0.89} C ${width * 0.88} ${height * 0.82}, ${width * 0.82} ${height * 0.71}, ${width * 0.73} ${height * 0.74} C ${width * 0.66} ${height * 0.76}, ${bottomRightTarget.x + 92} ${bottomRightTarget.y + 52}, ${bottomRightTarget.x} ${bottomRightTarget.y}`,
+      textD: `M ${bottomRightTarget.x} ${bottomRightTarget.y} C ${bottomRightTarget.x + 92} ${bottomRightTarget.y + 52}, ${width * 0.66} ${height * 0.76}, ${width * 0.73} ${height * 0.74} C ${width * 0.82} ${height * 0.71}, ${width * 0.88} ${height * 0.82}, ${width} ${height * 0.89}`,
       label: 'Page and browser context come along',
       startOffset: '40%',
     },
@@ -146,7 +149,7 @@ function HeroAnnotations({
       <span className="landing-try-halo landing-try-halo-right" />
       <svg className="landing-try-callouts" viewBox={`0 0 ${width} ${height}`} fill="none" preserveAspectRatio="none">
         <defs>
-          <marker id="landing-arrowhead" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="strokeWidth">
+          <marker id="landing-arrowhead" viewBox="0 0 12 12" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="userSpaceOnUse">
             <path d="M 1 1 L 10 6 L 1 11" fill="none" stroke="currentColor" strokeWidth="1.6" />
           </marker>
           {paths.map((callout, index) => {
