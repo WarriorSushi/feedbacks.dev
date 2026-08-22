@@ -351,6 +351,7 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
     if (!completed) return
     const controller = new AbortController()
     const { signal } = controller
+    let preparedProduct: HTMLElement | null = null
 
     const revealAndReturn = async () => {
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve())))
@@ -368,11 +369,19 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
         return
       }
 
+      preparedProduct = product
+      product.dataset.visible = 'true'
+      product.classList.add('landing-reveal-prepared')
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve())))
+      if (signal.aborted) return
+
       const peekTop = heroTop + (productTop - heroTop) * 0.5
       window.scrollTo({ top: peekTop, left: 0, behavior: 'auto' })
       await waitForMotion(180, signal)
       if (signal.aborted) return
       await animateWindowScroll(heroTop, 680, signal)
+      preparedProduct.classList.remove('landing-reveal-prepared')
+      preparedProduct = null
     }
 
     const cancelMotion = () => controller.abort()
@@ -383,6 +392,7 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
     void revealAndReturn()
     return () => {
       controller.abort()
+      preparedProduct?.classList.remove('landing-reveal-prepared')
       window.removeEventListener('wheel', cancelMotion)
       window.removeEventListener('touchstart', cancelMotion)
       window.removeEventListener('pointerdown', cancelMotion)

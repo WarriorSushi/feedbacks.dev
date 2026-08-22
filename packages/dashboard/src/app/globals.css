@@ -687,6 +687,16 @@
   contain-intrinsic-size: auto 900px;
 }
 
+.marketing-shell main > section.landing-reveal-prepared {
+  content-visibility: visible;
+}
+
+.landing-reveal.landing-reveal-prepared > div:not(.win98-chrome) {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition: none;
+}
+
 .landing-use-case-row {
   transition:
     padding var(--duration-slow) var(--ease-spring),
