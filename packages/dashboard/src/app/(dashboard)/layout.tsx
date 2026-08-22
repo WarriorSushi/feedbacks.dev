@@ -5,8 +5,7 @@ import { createServerSupabase } from '@/lib/supabase-server'
 import { Sidebar } from '@/components/sidebar'
 import { ProductTour } from '@/components/product-tour'
 import { CURRENT_PROJECT_COOKIE } from '@/lib/project-selection'
-import { EarlyAdopterBanner } from '@/components/early-adopter-banner'
-import { deriveEarlyAdopterStatus, getEarlyAdopterMembershipForUser, isEarlyAdopterProgrammeActive } from '@/lib/early-adopter'
+import { deriveEarlyAdopterStatus, getEarlyAdopterMembershipForUser, isEarlyAdopterFeedbackOpen, isEarlyAdopterProgrammeActive } from '@/lib/early-adopter'
 import { ProActivationCelebration } from '@/components/pro-activation-celebration'
 import { getProActivationKey, hasActivePro } from '@/lib/pro-activation'
 
@@ -100,9 +99,16 @@ export default async function DashboardLayout({
         boardSlugs={boardSlugs}
         billingAccount={billingAccount}
         earlyAdopterProgrammeActive={isEarlyAdopterProgrammeActive(effectiveEarlyAdopterMembership)}
+        earlyAdopterProgramme={effectiveEarlyAdopterMembership ? {
+          status: effectiveEarlyAdopterMembership.status,
+          proMonthsEarned: effectiveEarlyAdopterMembership.pro_months_earned,
+          feedbackOpensAt: effectiveEarlyAdopterMembership.feedback_opens_at,
+          graceEndsAt: effectiveEarlyAdopterMembership.grace_ends_at,
+          programmeEndsAt: effectiveEarlyAdopterMembership.programme_ends_at,
+          feedbackOpen: isEarlyAdopterFeedbackOpen(effectiveEarlyAdopterMembership),
+        } : null}
       />
       <main className="min-h-0 flex-1 overflow-y-auto bg-background pb-[env(safe-area-inset-bottom,0px)]">
-        <EarlyAdopterBanner membership={effectiveEarlyAdopterMembership} />
         <div className="workspace-route-enter mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 md:px-8 md:py-7">{children}</div>
       </main>
       <ProductTour

@@ -31,6 +31,7 @@ import {
   Library,
   Megaphone,
   Gift,
+  Sparkles,
 } from 'lucide-react'
 import type { Project } from '@/lib/types'
 import { createClient } from '@/lib/supabase-browser'
@@ -116,9 +117,40 @@ interface SidebarProps {
     grace_ends_at: string | null
   } | null
   earlyAdopterProgrammeActive?: boolean
+  earlyAdopterProgramme?: {
+    status: 'accepted' | 'onboarding' | 'active' | 'grace' | 'finishing' | 'completed' | 'removed'
+    proMonthsEarned: number
+    feedbackOpensAt: string | null
+    graceEndsAt: string | null
+    programmeEndsAt: string | null
+    feedbackOpen: boolean
+  } | null
 }
 
-export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, billingAccount, earlyAdopterProgrammeActive = false }: SidebarProps) {
+function formatProgrammeDate(value: string | null) {
+  if (!value) return null
+  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date(value))
+}
+
+function getProgrammeSummary(programme: NonNullable<SidebarProps['earlyAdopterProgramme']>) {
+  const onboarding = programme.status === 'accepted' || programme.status === 'onboarding'
+  const attention = onboarding || programme.status === 'grace' || programme.feedbackOpen
+  if (onboarding) return { detail: 'Guided onboarding required', attention }
+  if (programme.status === 'grace') {
+    return { detail: `Renew by ${formatProgrammeDate(programme.graceEndsAt) || 'the grace deadline'}`, attention }
+  }
+  if (programme.feedbackOpen) return { detail: 'Feedback check-in ready', attention }
+  if (programme.status === 'finishing') return { detail: 'All 12 Pro months earned', attention }
+  if (programme.status === 'completed') return { detail: 'Programme complete', attention }
+  if (programme.status === 'removed') return { detail: 'Programme ended', attention }
+  const nextCheckIn = formatProgrammeDate(programme.feedbackOpensAt)
+  return {
+    detail: `Pro month ${programme.proMonthsEarned} of 12 · ${nextCheckIn ? `Next ${nextCheckIn}` : 'Active'}`,
+    attention,
+  }
+}
+
+export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, billingAccount, earlyAdopterProgrammeActive = false, earlyAdopterProgramme = null }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -311,6 +343,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   }, [rememberProject, routeProjectId])
 
   const projectIcon = (project?: SidebarProject) => project?.settings?.icon || DEFAULT_PROJECT_ICON
+  const programmeSummary = earlyAdopterProgramme ? getProgrammeSummary(earlyAdopterProgramme) : null
 
   /* ── Shared sidebar content (used in both mobile drawer & desktop aside) ── */
   const sidebarContent = (
@@ -562,6 +595,27 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
 
       <div className="shrink-0 border-t p-2">
         <div className="space-y-0.5">
+          {earlyAdopterProgramme && programmeSummary ? (
+            <Link
+              href="/early-adopter"
+              onClick={() => beginNavigation('/early-adopter')}
+              title={collapsed ? `Early Adopter Programme. ${programmeSummary.detail}` : undefined}
+              aria-label={collapsed ? `Early Adopter Programme. ${programmeSummary.detail}` : undefined}
+              className={cn(
+                'early-adopter-sidebar-item group relative mb-1 flex min-h-10 items-center gap-3 overflow-hidden rounded-lg border border-border/80 bg-card/70 py-1.5 text-[12px] transition-[background-color,border-color,transform] duration-150 hover:border-primary/30 hover:bg-surface-raised active:scale-[0.98]',
+                collapsed ? 'justify-center px-2' : 'px-2.5',
+                programmeSummary.attention && 'early-adopter-sidebar-item-attention',
+              )}
+            >
+              <Sparkles className={cn('relative z-[1] h-[17px] w-[17px] shrink-0', programmeSummary.attention ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
+              {!collapsed ? (
+                <span className="relative z-[1] min-w-0 leading-tight">
+                  <span className="block truncate font-semibold text-foreground">Early Adopter Programme</span>
+                  <span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{programmeSummary.detail}</span>
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
           {bottomNavItems
             .filter((item) => item.href !== '/invites' || !earlyAdopterProgrammeActive)
             .map((item) => {

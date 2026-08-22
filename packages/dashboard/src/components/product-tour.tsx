@@ -1,8 +1,9 @@
 'use client'
 
 import * as React from 'react'
+import Image from 'next/image'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, ArrowRight, Check, Loader2, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -120,6 +121,7 @@ export function ProductTour({
   const searchParams = useSearchParams()
   const supabase = React.useMemo(() => createClient(), [])
   const [open, setOpen] = React.useState(false)
+  const [welcomeOpen, setWelcomeOpen] = React.useState(false)
   const [stepIndex, setStepIndex] = React.useState(0)
   const [tutorialId, setTutorialId] = React.useState<GuidedTutorialId>('navigation')
   const [pendingStepIndex, setPendingStepIndex] = React.useState<number | null>(null)
@@ -141,10 +143,6 @@ export function ProductTour({
   const navigationTourRequested = searchParams.get('tour') === '1'
 
   React.useEffect(() => {
-    if (initialOpen) setOpen(true)
-  }, [initialOpen])
-
-  React.useEffect(() => {
     const updateViewport = () => {
       setViewport({ width: window.innerWidth, height: window.innerHeight })
     }
@@ -154,33 +152,39 @@ export function ProductTour({
   }, [])
 
   React.useEffect(() => {
-    if (required) {
-      setTutorialId('navigation')
-      setOpen(true)
-      return
-    }
+    if (!required) return
+    setTutorialId('navigation')
+    setStepIndex(0)
+    setOpen(false)
+    setWelcomeOpen(true)
+  }, [required])
+
+  React.useEffect(() => {
+    if (required) return
+    setWelcomeOpen(false)
     const requestedTutorial = getGuidedTutorial(requestedTutorialId)
     if (requestedTutorial) {
       const saved = readTutorialProgress(requestedTutorial.id) || initialTutorialProgress[requestedTutorial.id]
       setTutorialId(requestedTutorial.id)
       setStepIndex(saved?.completedAt ? 0 : Math.min(saved?.stepIndex || 0, requestedTutorial.steps.length - 1))
       setOpen(true)
-    } else if (navigationTourRequested) {
+    } else if (navigationTourRequested || initialOpen) {
       setTutorialId('navigation')
       setStepIndex(0)
       setOpen(true)
     }
-  }, [initialTutorialProgress, navigationTourRequested, requestedTutorialId, required])
+  }, [initialOpen, initialTutorialProgress, navigationTourRequested, requestedTutorialId, required])
 
   React.useEffect(() => {
     const startTour = () => {
       setTutorialId('navigation')
       setStepIndex(0)
-      setOpen(true)
+      if (required) setWelcomeOpen(true)
+      else setOpen(true)
     }
     window.addEventListener('feedbacks:start-product-tour', startTour)
     return () => window.removeEventListener('feedbacks:start-product-tour', startTour)
-  }, [])
+  }, [required])
 
   React.useEffect(() => {
     if (!open) return
@@ -402,6 +406,53 @@ export function ProductTour({
         variant: 'destructive',
       })
     }
+  }
+
+  if (welcomeOpen) {
+    return (
+      <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black/65 p-4 backdrop-blur-sm">
+        <section
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="onboarding-welcome-title"
+          aria-describedby="onboarding-welcome-description"
+          className="relative w-full max-w-[520px] overflow-hidden rounded-xl border bg-card p-6 shadow-[0_30px_90px_rgb(0_0_0/0.38)] sm:p-8"
+        >
+          <div className="pointer-events-none absolute -right-5 -top-5 h-36 w-36 opacity-90 sm:h-44 sm:w-44" aria-hidden="true">
+            <Image src="/mascots-v2/final-victory.png" alt="" fill sizes="176px" className="object-contain" priority />
+          </div>
+          <div className="relative max-w-[350px]">
+            <span className="flex h-14 w-14 items-center justify-center rounded-xl border border-primary/25 bg-primary/[0.08] shadow-sm" aria-hidden="true">
+              <Sparkles className="h-6 w-6 text-primary" />
+            </span>
+            <h1 id="onboarding-welcome-title" className="mt-6 text-2xl font-semibold tracking-[-0.025em] sm:text-3xl">
+              Complete the guided tour to unlock Pro.
+            </h1>
+            <p id="onboarding-welcome-description" className="mt-3 text-base leading-7 text-muted-foreground">
+              We’ll walk you through the feedback form, inbox, installation, updates, and integrations. Pro activates automatically when you finish the last step.
+            </p>
+          </div>
+          <div className="relative mt-7 border-t pt-5">
+            <p className="mb-4 text-sm leading-6 text-muted-foreground">
+              This guided onboarding is required for the Early Adopter Programme and cannot be skipped.
+            </p>
+            <Button
+              size="lg"
+              className="h-12 w-full gap-2 sm:w-auto"
+              onClick={() => {
+                setWelcomeOpen(false)
+                setTutorialId('navigation')
+                setStepIndex(0)
+                setOpen(true)
+              }}
+              autoFocus
+            >
+              Begin guided tour <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </section>
+      </div>
+    )
   }
 
   if (!open) return null

@@ -7,6 +7,7 @@ const DASHBOARD_ROUTES = [
   '/api-docs',
   '/billing',
   '/dashboard',
+  '/early-adopter',
   '/feedback',
   '/integrations',
   '/invites',

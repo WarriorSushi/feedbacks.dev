@@ -14,6 +14,8 @@ import { sanitizeRedirectPath } from '@/lib/redirects'
 import { AuthCaptcha } from '@/components/auth-captcha'
 import { AuthUseCaseCarousel } from '@/components/auth-use-case-carousel'
 import { SITE_ORIGIN } from '@/lib/site'
+import { useTheme } from 'next-themes'
+import { normalizeAppearanceTheme, persistSharedAppearance } from '@/lib/appearance'
 
 type OAuthProvider = 'google' | 'github'
 
@@ -32,6 +34,7 @@ const marketingHomeHref = process.env.NEXT_PUBLIC_MARKETING_ORIGIN
   || (process.env.NODE_ENV === 'development' ? '/' : SITE_ORIGIN)
 
 function AuthPageInner() {
+  const { setTheme } = useTheme()
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [loading, setLoading] = React.useState(false)
@@ -53,6 +56,13 @@ function AuthPageInner() {
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
   const captchaProvider = hcaptchaSiteKey ? 'hcaptcha' : turnstileSiteKey ? 'turnstile' : null
   const captchaSiteKey = hcaptchaSiteKey || turnstileSiteKey
+
+  React.useEffect(() => {
+    const requestedAppearance = normalizeAppearanceTheme(searchParams.get('appearance'))
+    if (!requestedAppearance) return
+    persistSharedAppearance(requestedAppearance)
+    setTheme(requestedAppearance)
+  }, [searchParams, setTheme])
 
   React.useEffect(() => {
     const suggestedEmail = searchParams.get('email')?.trim() || ''

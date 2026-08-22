@@ -29,7 +29,7 @@ export function BackgroundBeams({ className = '' }: { className?: string }) {
         <ellipse cx="720" cy="440" rx="650" ry="430" fill="url(#early-adopter-glow)" />
         {beamPaths.map((path, index) => (
           <React.Fragment key={path}>
-            <path d={path} stroke="rgb(63 63 70)" strokeOpacity="0.24" strokeWidth="0.8" />
+            <path d={path} stroke="oklch(var(--border))" strokeOpacity="0.48" strokeWidth="0.8" />
             <motion.path
               d={path}
               stroke="url(#early-adopter-beam)"
@@ -42,7 +42,10 @@ export function BackgroundBeams({ className = '' }: { className?: string }) {
           </React.Fragment>
         ))}
       </svg>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(10,10,12,0.2)_48%,rgba(10,10,12,0.88)_100%)]" />
+      <div
+        className="absolute inset-0"
+        style={{ background: 'radial-gradient(circle at center, transparent 0%, oklch(var(--background) / 0.18) 48%, oklch(var(--background) / 0.92) 100%)' }}
+      />
     </div>
   )
 }

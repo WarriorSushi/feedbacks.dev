@@ -9,13 +9,15 @@ import {
   PRO_CELEBRATION_STARTED_EVENT,
 } from '@/lib/pro-activation'
 
-const DISPLAY_MS = 3_000
+const HOLD_MS = 3_000
+const FLIGHT_MS = 1_050
+const DISPLAY_MS = HOLD_MS + FLIGHT_MS
 const RECENT_CELEBRATION_MS = 60_000
 const CONFETTI = Array.from({ length: 30 }, (_, index) => ({
   id: index,
   left: `${4 + ((index * 37) % 92)}%`,
-  delay: (index % 10) * 0.045,
-  duration: 1.35 + (index % 5) * 0.16,
+  delay: (index % 10) * 0.11,
+  duration: 2.1 + (index % 5) * 0.18,
   rotate: 100 + ((index * 53) % 260),
   color: ['#b6f446', '#ffffff', '#6fa91e', '#f4c95d', '#b69cff'][index % 5],
 }))
@@ -58,7 +60,7 @@ export function ProActivationCelebration({ userId, active, activationKey }: ProA
     timerRef.current = window.setTimeout(() => {
       setVisibleKey(null)
       window.dispatchEvent(new CustomEvent(PRO_CELEBRATION_COMPLETE_EVENT))
-    }, reduceMotion ? 1_800 : DISPLAY_MS)
+    }, reduceMotion ? HOLD_MS : DISPLAY_MS)
   }, [recentKey, reduceMotion, seenKey])
 
   React.useEffect(() => {
@@ -97,18 +99,18 @@ export function ProActivationCelebration({ userId, active, activationKey }: ProA
           key={visibleKey}
           data-pro-celebration
           className="pointer-events-none fixed inset-0 z-[120] overflow-hidden"
-          initial={{ opacity: 0 }}
+          initial={{ opacity: 1 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: reduceMotion ? 0 : 0.2 }}
+          transition={{ duration: reduceMotion ? 0 : 0.14 }}
           role="status"
           aria-live="polite"
           aria-label="Pro is active"
         >
           <motion.div
-            className="absolute inset-0 bg-background/88 backdrop-blur-sm"
-            animate={reduceMotion ? undefined : { opacity: [1, 1, 0] }}
-            transition={{ duration: 2.9, times: [0, 0.68, 1], ease: [0.16, 1, 0.3, 1] }}
+            className="absolute inset-0 bg-background backdrop-blur-sm"
+            animate={reduceMotion ? undefined : { opacity: [1, 1, 1, 0] }}
+            transition={{ duration: DISPLAY_MS / 1000, times: [0, 0.74, 0.94, 1], ease: [0.16, 1, 0.3, 1] }}
           />
 
           {!reduceMotion && CONFETTI.map((piece) => (
@@ -133,7 +135,7 @@ export function ProActivationCelebration({ userId, active, activationKey }: ProA
               scale: [0.55, 1, 1, 0.16, 0.16],
               opacity: [0, 1, 1, 1, 0],
             }}
-            transition={{ duration: 2.85, times: [0, 0.14, 0.61, 0.91, 1], ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: DISPLAY_MS / 1000, times: [0, 0.09, 0.74, 0.96, 1], ease: [0.16, 1, 0.3, 1] }}
           >
             <Image src="/feedbacks.dev_pro_monthly.png" alt="" fill sizes="176px" className="object-contain drop-shadow-[0_22px_40px_rgb(0_0_0/0.28)]" priority />
           </motion.div>
@@ -143,7 +145,7 @@ export function ProActivationCelebration({ userId, active, activationKey }: ProA
             className="absolute left-[calc(50%+64px)] top-[calc(50%+40px)] z-20 h-36 w-36 sm:left-[calc(50%+84px)] sm:h-48 sm:w-48"
             initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 20, scale: 0.92 }}
             animate={reduceMotion ? { opacity: 1 } : { opacity: [0, 1, 1, 0], y: [20, 0, 0, -10], scale: [0.92, 1, 1, 0.96] }}
-            transition={{ duration: 2.35, times: [0, 0.18, 0.72, 1], ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: DISPLAY_MS / 1000, times: [0, 0.09, 0.74, 0.9], ease: [0.16, 1, 0.3, 1] }}
           >
             <Image src="/mascots-v2/final-victory.png" alt="" fill sizes="192px" className="object-contain" />
           </motion.div>
@@ -152,7 +154,7 @@ export function ProActivationCelebration({ userId, active, activationKey }: ProA
             className="absolute inset-x-0 top-[calc(50%+104px)] z-10 mx-auto w-[min(90vw,420px)] text-center sm:top-[calc(50%+124px)]"
             initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 10 }}
             animate={reduceMotion ? { opacity: 1 } : { opacity: [0, 1, 1, 0], y: [10, 0, 0, -8] }}
-            transition={{ duration: 2.35, times: [0, 0.18, 0.72, 1], ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: DISPLAY_MS / 1000, times: [0, 0.09, 0.74, 0.9], ease: [0.16, 1, 0.3, 1] }}
           >
             <p className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Pro is active.</p>
             <p className="mt-1 text-sm text-muted-foreground">Your dashboard is now fully unlocked.</p>

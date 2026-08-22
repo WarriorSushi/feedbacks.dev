@@ -61,7 +61,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body className={inter.className}>
+      <head>
         {appearanceSyncScript && (
           <script
             nonce={nonce}
@@ -69,6 +69,8 @@ export default async function RootLayout({
             dangerouslySetInnerHTML={{ __html: appearanceSyncScript }}
           />
         )}
+      </head>
+      <body className={inter.className}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

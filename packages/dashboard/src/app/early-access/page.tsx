@@ -24,33 +24,33 @@ const benefits = [
 export default async function EarlyAccessPage() {
   const availability = await getEarlyAdopterAvailability()
   return (
-    <main className="early-adopter-shell relative min-h-screen overflow-hidden bg-neutral-950 font-sans text-neutral-100 antialiased">
+    <main className="early-adopter-shell relative min-h-screen overflow-hidden bg-background font-sans text-foreground antialiased">
       <BackgroundBeams />
-      <header className="relative z-20 border-b border-neutral-800/80 bg-neutral-950/80">
+      <header className="relative z-20 border-b border-border/80 bg-background/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
-          <Link href="/" className="font-semibold"><BrandWordmark className="text-[17px] text-neutral-100" markClassName="h-6 w-6" dotClassName="text-lime-400" /></Link>
-          <Link href="/" className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-neutral-400 transition-colors hover:text-neutral-100"><ArrowLeft className="h-4 w-4" /> Back to product</Link>
+          <Link href="/" className="font-semibold"><BrandWordmark className="text-[17px] text-foreground" markClassName="h-6 w-6" dotClassName="text-primary" /></Link>
+          <Link href="/" className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to product</Link>
         </div>
       </header>
 
       <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_460px] lg:items-center lg:gap-20 lg:py-20">
         <section>
           <h1 className="max-w-4xl text-5xl font-semibold leading-[0.98] tracking-[-0.055em] sm:text-6xl lg:text-7xl">Use Pro for a year by helping us make it better.</h1>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-neutral-400 sm:text-xl">The Early Adopter Programme turns honest monthly product feedback into up to 12 months of Pro. Everything is automated, clearly scheduled, and handled inside your dashboard.</p>
+          <p className="mt-7 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">The Early Adopter Programme turns honest monthly product feedback into up to 12 months of Pro. Everything is automated, clearly scheduled, and handled inside your dashboard.</p>
 
-          <div className="mt-10 border-y border-neutral-800">
+          <div className="mt-10 border-y border-border">
             {benefits.map(({ icon: Icon, title, body }) => (
-              <div key={title} className="grid gap-3 border-b border-neutral-800 py-5 last:border-b-0 sm:grid-cols-[240px_1fr] sm:gap-8">
-                <p className="flex items-start gap-3 font-semibold text-neutral-100"><Icon className="mt-0.5 h-5 w-5 shrink-0 text-lime-400" />{title}</p>
-                <p className="text-base leading-7 text-neutral-400">{body}</p>
+              <div key={title} className="grid gap-3 border-b border-border py-5 last:border-b-0 sm:grid-cols-[240px_1fr] sm:gap-8">
+                <p className="flex items-start gap-3 font-semibold text-foreground"><Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />{title}</p>
+                <p className="text-base leading-7 text-muted-foreground">{body}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3 text-sm text-neutral-300">
-            <span className="flex items-center gap-2"><Check className="h-4 w-4 text-lime-400" /> Fully automated onboarding</span>
-            <span className="flex items-center gap-2"><Check className="h-4 w-4 text-lime-400" /> Feedback goes to the product inbox</span>
-            <span className="flex items-center gap-2"><Check className="h-4 w-4 text-lime-400" /> Product data stays when it ends</span>
+          <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3 text-sm text-foreground/80">
+            <span className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Fully automated onboarding</span>
+            <span className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Feedback goes to the product inbox</span>
+            <span className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Product data stays when it ends</span>
           </div>
         </section>
 
@@ -58,9 +58,9 @@ export default async function EarlyAccessPage() {
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">Reserve your place</h2>
-              <p className="mt-1 text-base text-neutral-400">Accepted immediately when submitted.</p>
+              <p className="mt-1 text-base text-muted-foreground">Accepted immediately when submitted.</p>
             </div>
-            <p className="shrink-0 text-base font-semibold text-lime-400">{availability.remaining} of {availability.capacity} left</p>
+            <p className="shrink-0 text-base font-semibold text-primary">{availability.remaining} of {availability.capacity} left</p>
           </div>
           <LeadForm open={availability.open} />
         </aside>
