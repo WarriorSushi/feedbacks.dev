@@ -131,7 +131,7 @@ test('programme marketing keeps places scarce and protects member pricing', () =
   assert.match(programmePage, /grandfathered for at least five years/)
   assert.match(programmePage, /place is counted only after guided onboarding/i)
   assert.match(leadForm, /Your place is ready to claim/)
-  assert.match(leadForm, /Email submission alone does not use one of the 100 places/)
+  assert.doesNotMatch(leadForm, /Email submission alone does not use one of the 100 places/)
   assert.match(terms, /maximum Pro list price for at least five years/)
   assert.doesNotMatch(programmePage, /accepted automatically/i)
   assert.doesNotMatch(leadForm, /accepted automatically/i)

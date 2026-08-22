@@ -28,38 +28,38 @@ export default async function EarlyAccessPage() {
     <main className="early-adopter-shell relative min-h-screen overflow-hidden bg-background font-sans text-foreground antialiased">
       <BackgroundBeams />
       <header className="relative z-20 border-b border-border/80 bg-background/85 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5 sm:h-16 sm:px-8">
           <Link href="/" className="font-semibold"><BrandWordmark className="text-[17px] text-foreground" markClassName="h-6 w-6" dotClassName="text-primary" /></Link>
-          <Link href="/" className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to product</Link>
+          <Link href="/" className="inline-flex min-h-10 items-center gap-2 text-sm font-medium text-foreground/75 transition-colors hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to product</Link>
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto grid max-w-7xl gap-12 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_460px] lg:items-center lg:gap-20 lg:py-20">
+      <div className="relative z-10 mx-auto grid max-w-7xl gap-9 px-5 py-8 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_460px] lg:items-start lg:gap-16 lg:py-12">
         <section>
-          <h1 className="max-w-4xl text-5xl font-semibold leading-[0.98] tracking-[-0.055em] sm:text-6xl lg:text-7xl">Use Pro for a year by helping us make it better.</h1>
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">The Early Adopter Programme turns honest monthly product feedback into up to 12 months of Pro. Everything is automated, clearly scheduled, and handled inside your dashboard.</p>
+          <h1 className="max-w-4xl text-4xl font-semibold leading-[0.98] tracking-[-0.05em] sm:text-5xl lg:text-6xl">Use Pro for a year by helping us make it better.</h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-foreground/75 sm:text-lg">Complete guided onboarding, then share one honest check-in near each month&apos;s end. Each completed check-in earns the next Pro month, up to 12.</p>
 
-          <div className="mt-10 border-y border-border">
+          <div className="mt-7 border-y border-border/90">
             {benefits.map(({ icon: Icon, title, body }) => (
-              <div key={title} className="grid gap-3 border-b border-border py-5 last:border-b-0 sm:grid-cols-[240px_1fr] sm:gap-8">
+              <div key={title} className="grid gap-2 border-b border-border/90 py-3.5 last:border-b-0 sm:grid-cols-[210px_1fr] sm:gap-6">
                 <p className="flex items-start gap-3 font-semibold text-foreground"><Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" />{title}</p>
-                <p className="text-base leading-7 text-muted-foreground">{body}</p>
+                <p className="text-sm leading-6 text-foreground/75 sm:text-base">{body}</p>
               </div>
             ))}
           </div>
 
-          <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3 text-sm text-foreground/80">
+          <div className="mt-5 flex flex-wrap gap-x-6 gap-y-2 text-sm text-foreground/80">
             <span className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Fully automated onboarding</span>
             <span className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Feedback goes to the product inbox</span>
             <span className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Product data stays when it ends</span>
           </div>
         </section>
 
-        <aside className="lg:sticky lg:top-10">
-          <div className="mb-5 flex items-end justify-between gap-4">
+        <aside className="lg:sticky lg:top-6">
+          <div className="mb-4 flex items-end justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">Claim your place</h2>
-              <p className="mt-1 text-base text-muted-foreground">Sign in and finish onboarding to confirm it.</p>
+              <p className="mt-1 text-sm text-foreground/75 sm:text-base">Sign in and finish onboarding to confirm it.</p>
             </div>
             <p className="shrink-0 text-base font-semibold text-primary">{availability.remaining} of {availability.capacity} unclaimed</p>
           </div>
