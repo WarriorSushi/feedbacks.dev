@@ -3335,6 +3335,8 @@ html:not(.dark):not(.windows98) .auth-form-pane {
 
 .marketing-shell .landing-inbox-section .landing-triage-dashboard :is(
   .landing-window-titlebar,
+  .landing-triage-main,
+  .landing-triage-sidebar,
   .landing-triage-list,
   .landing-triage-focus
 ) {

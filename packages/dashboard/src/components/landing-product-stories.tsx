@@ -1,22 +1,33 @@
 import Image from 'next/image'
 import type { ReactNode } from 'react'
 import {
+  ArrowUpDown,
   ArrowRight,
   BellRing,
   Bug,
   Camera,
   Check,
+  ChevronDown,
   ChevronUp,
   CircleDot,
+  ClipboardPenLine,
+  Code2,
   Clock3,
   ExternalLink,
   Flag,
   Globe2,
+  House,
+  Inbox,
   Lightbulb,
+  Megaphone,
   MessageSquareText,
   MonitorSmartphone,
   Paperclip,
+  PanelLeftClose,
   Rocket,
+  Search,
+  SlidersHorizontal,
+  Star,
   Tag,
   Webhook,
 } from 'lucide-react'
@@ -69,10 +80,7 @@ export function LandingProductStories() {
             <h2 className="text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Open your dashboard and know what deserves attention.</h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">New feedback is obvious, the important context is already attached, and a clear next action is always within reach.</p>
           </div>
-          <div className="mx-auto mt-14 max-w-5xl">
-            <StoryWindowHeader title="Signal first, noise second" note="The urgent report is selected, explained, and ready to move forward." />
-            <TriageDashboardScene />
-          </div>
+          <TriageDashboardScene />
           <Image className="landing-section-mascot landing-mascot-inbox" src="/mascots-v2/inbox-controller.png" alt="" width={1536} height={1024} sizes="(max-width: 767px) 220px, 400px" aria-hidden="true" />
         </div>
       </section>
@@ -168,7 +176,7 @@ function FeedbackInboxScene() {
   return (
     <article className="landing-app-window landing-scene-card landing-story-window overflow-hidden rounded-2xl border bg-card">
       <div className="landing-window-titlebar flex items-center justify-between border-b px-4 py-3">
-        <div><p className="text-xs font-semibold">ACME App inbox</p><p className="mt-0.5 text-[10px] text-muted-foreground">1 new report</p></div>
+        <div><p className="text-xs font-semibold">feedbacks.dev dashboard</p><p className="mt-0.5 text-[10px] text-muted-foreground">1 new report</p></div>
         <span className="inline-flex items-center gap-1.5 rounded-md bg-rose-500/10 px-2 py-1 text-[10px] font-semibold text-rose-600 dark:text-rose-300"><CircleDot className="h-3 w-3" />New</span>
       </div>
       <div className="landing-inbox-summary min-h-[320px] p-5">
@@ -254,41 +262,116 @@ function ContextEvidenceScene() {
 
 function TriageDashboardScene() {
   const rows = [
-    { title: 'Notification time resets after save', meta: 'Bug · just now', tone: 'bg-rose-400', active: true },
-    { title: 'Keyboard shortcut for capture', meta: 'Idea · 42m', tone: 'bg-sky-400' },
-    { title: 'The new editor feels faster', meta: 'Praise · 3h', tone: 'bg-emerald-400' },
+    {
+      title: 'My notification time resets after I save.',
+      preview: 'I expected 9:00 AM, but the page shows 8:00 AM when I return.',
+      status: 'New',
+      statusTone: 'bg-rose-400',
+      type: 'Bug',
+      Icon: Bug,
+      source: 'Widget',
+      time: 'Just now',
+      tag: 'Notifications',
+      unread: true,
+      priority: 'High',
+    },
+    {
+      title: 'Keyboard shortcuts would make capture much faster.',
+      preview: 'A quick command menu would help us file ideas without leaving the keyboard.',
+      status: 'Planned',
+      statusTone: 'bg-sky-400',
+      type: 'Idea',
+      Icon: Lightbulb,
+      source: 'Widget',
+      time: '42m',
+      tag: 'Editor',
+      unread: false,
+    },
+    {
+      title: 'The new editor feels much faster.',
+      preview: 'Everything opens immediately now. Really nice improvement.',
+      status: 'Reviewed',
+      statusTone: 'bg-emerald-400',
+      type: 'Praise',
+      Icon: MessageSquareText,
+      source: 'Public board',
+      time: '3h',
+      tag: 'Performance',
+      unread: false,
+    },
   ]
+  const navGroups: { label?: string; items: { label: string; Icon: LucideIcon; active?: boolean }[] }[] = [
+    { items: [{ label: 'Home', Icon: House }] },
+    { label: 'Collect', items: [{ label: 'Feedback form', Icon: ClipboardPenLine }, { label: 'Feedback inbox', Icon: Inbox, active: true }] },
+    { label: 'Share with users', items: [{ label: 'Updates for users', Icon: Megaphone }, { label: 'Public feedback board', Icon: Globe2 }] },
+    { label: 'Connect', items: [{ label: 'Install & verify', Icon: Code2 }, { label: 'Integrations', Icon: Webhook }] },
+  ]
+
   return (
-    <figure className="landing-app-window landing-triage-dashboard relative mt-5 overflow-hidden rounded-2xl border text-zinc-100">
-      <div className="landing-window-titlebar flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
-        <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-lime-300 text-[10px] font-black text-zinc-950">f.</span><p className="text-xs font-semibold">Feedback inbox</p></div>
-        <span className="inline-flex items-center gap-2 text-[10px] text-zinc-400"><CircleDot className="h-3 w-3 text-lime-300" />3 reports</span>
-      </div>
-      <div className="grid md:grid-cols-[0.9fr_1.1fr]">
-        <div className="landing-triage-list border-b border-white/10 p-3 md:border-b-0 md:border-r sm:p-4">
-          <p className="px-2 pb-3 text-xs font-semibold text-zinc-300">Newest feedback</p>
-          <div className="space-y-2">
-            {rows.map((row) => (
-              <div key={row.title} className={`landing-triage-compact-row flex items-start gap-3 rounded-lg px-3 py-3 ${row.active ? 'is-active' : ''}`}>
-                <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${row.tone}`} />
-                <div className="min-w-0"><p className="truncate text-xs font-semibold text-zinc-100">{row.title}</p><p className="mt-1 text-[10px] text-zinc-500">{row.meta}</p></div>
-                {row.active ? <ArrowRight className="ml-auto mt-1 h-4 w-4 shrink-0 text-lime-300" /> : null}
+    <div className="landing-triage-stage relative mx-auto mt-12 max-w-6xl">
+      <span className="landing-triage-backlight" aria-hidden="true" />
+      <figure className="landing-app-window landing-triage-dashboard relative z-[1] overflow-hidden rounded-2xl border border-white/10 bg-[#0d100d] text-zinc-100">
+        <div className="landing-window-titlebar flex items-center justify-between border-b border-white/10 px-4 py-3 sm:px-5">
+          <div className="flex items-center gap-2.5"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-lime-300 text-[10px] font-black text-zinc-950">f.</span><p className="text-xs font-semibold">feedbacks.dev</p></div>
+          <span className="inline-flex items-center gap-2 text-[9px] text-zinc-500"><CircleDot className="h-3 w-3 text-lime-300" />ACME App workspace</span>
+        </div>
+
+        <div className="grid min-h-[530px] md:grid-cols-[190px_1fr]">
+          <aside className="landing-triage-sidebar hidden flex-col border-r border-white/10 bg-white/[0.018] md:flex" aria-label="Dashboard example">
+            <div className="flex h-12 items-center justify-between border-b border-white/10 px-3"><PanelLeftClose className="h-3.5 w-3.5 text-zinc-500" /><span className="text-[11px] font-semibold">feedbacks.dev</span></div>
+            <div className="border-b border-white/10 p-2.5">
+              <div className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.025] px-2.5 py-2">
+                <span className="flex min-w-0 items-center gap-2"><span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-lime-300/10 text-[10px] font-black text-lime-200">A</span><span className="min-w-0"><span className="block text-[8px] font-medium uppercase tracking-[0.11em] text-zinc-600">Current project</span><span className="block truncate text-[10px] font-semibold text-zinc-300">ACME App</span></span></span>
+                <ChevronDown className="h-3 w-3 text-zinc-600" />
               </div>
-            ))}
+            </div>
+            <nav className="flex-1 space-y-3 overflow-hidden p-2.5 text-[9px]" aria-label="Workspace navigation">
+              {navGroups.map((group) => (
+                <div key={group.label || 'home'} className="space-y-0.5">
+                  {group.label ? <p className="mb-1 px-2 text-[8px] font-semibold uppercase tracking-[0.14em] text-zinc-600">{group.label}</p> : null}
+                  {group.items.map(({ label, Icon, active }) => (
+                    <span key={label} className={`flex items-center gap-2 rounded-lg px-2 py-1.5 font-medium ${active ? 'bg-lime-300/10 text-lime-200' : 'text-zinc-500'}`}><Icon className={`h-3.5 w-3.5 ${active ? 'text-lime-300' : ''}`} />{label}</span>
+                  ))}
+                </div>
+              ))}
+            </nav>
+            <div className="flex items-center justify-between border-t border-white/10 p-2.5"><span className="rounded-md border border-white/10 px-2 py-1 text-[8px] text-zinc-500">Theme</span><span className="flex h-6 w-6 items-center justify-center rounded-full bg-lime-300/10 text-[9px] font-semibold text-lime-200">M</span></div>
+          </aside>
+
+          <div className="landing-triage-main bg-[#090c09] p-4 sm:p-5">
+            <header className="flex items-end justify-between gap-5 border-b border-white/10 pb-4">
+              <div><p className="text-[8px] font-semibold uppercase tracking-[0.14em] text-lime-300">Inbox</p><h3 className="mt-1 text-xl font-semibold tracking-[-0.035em]">Feedback</h3><p className="mt-1 text-[10px] text-zinc-500">Review new messages and move the useful signal forward.</p></div>
+              <div className="text-right"><p className="text-lg font-semibold tabular-nums">3</p><p className="text-[9px] text-zinc-500">messages</p></div>
+            </header>
+
+            <div className="mt-4 rounded-lg border border-white/10 bg-white/[0.018] p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex h-8 min-w-[180px] flex-1 items-center gap-2 rounded-md border border-white/10 bg-black/10 px-3 text-[9px] text-zinc-500"><Search className="h-3.5 w-3.5" />Search feedback…</div>
+                {['All', 'Unread', 'New', 'Planned'].map((filter, index) => <span key={filter} className={`inline-flex h-7 items-center gap-1.5 rounded-md border px-2 text-[8px] font-medium ${index === 0 ? 'border-lime-300/25 bg-lime-300/10 text-zinc-200' : 'border-transparent bg-white/[0.035] text-zinc-500'}`}>{index > 0 ? <span className={`h-1.5 w-1.5 rounded-full ${index === 1 ? 'bg-lime-300' : index === 2 ? 'bg-rose-400' : 'bg-sky-400'}`} /> : null}{filter}</span>)}
+                <span className="inline-flex h-7 items-center gap-1.5 rounded-md bg-white/[0.035] px-2 text-[8px] text-zinc-500"><SlidersHorizontal className="h-3 w-3" />More filters</span>
+                <span className="ml-auto inline-flex h-7 items-center gap-1.5 rounded-md border border-white/10 px-2 text-[8px] text-zinc-400"><ArrowUpDown className="h-3 w-3" />Newest</span>
+              </div>
+              <div className="mt-2 flex items-center gap-2 border-t border-white/10 pt-2 text-[8px]"><span className="text-zinc-600">Project</span><span className="rounded-md bg-white/[0.035] px-2 py-1 text-zinc-500">All projects</span><span className="rounded-md border border-lime-300/25 bg-lime-300/10 px-2 py-1 font-medium text-lime-200">ACME App</span></div>
+            </div>
+
+            <div className="mt-3 overflow-hidden rounded-lg border border-white/10 bg-white/[0.012]">
+              <div className="flex items-center gap-2 border-b border-white/10 bg-white/[0.018] px-4 py-2.5 text-[9px] text-zinc-500"><span className="h-3.5 w-3.5 rounded border border-white/20" />Select all on this page</div>
+              {rows.map(({ title, preview, status, statusTone, type, Icon, source, time, tag, unread, priority }) => (
+                <div key={title} className={`landing-inbox-row border-b border-white/10 px-4 py-3 last:border-b-0 ${unread ? 'is-active' : ''}`}>
+                  <div className="flex items-start gap-2.5">
+                    <span className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border border-white/20" />
+                    <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${unread ? 'bg-lime-300 shadow-[0_0_0_3px_rgb(190_242_100/0.11)]' : 'bg-transparent'}`} />
+                    <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-500" />
+                    <div className="min-w-0 flex-1"><p className={`truncate text-[11px] leading-4 ${unread ? 'font-semibold text-zinc-100' : 'text-zinc-300'}`}>{title}</p><p className="mt-1 truncate text-[9px] text-zinc-600">{preview}</p><div className="mt-2 flex flex-wrap items-center gap-1.5 text-[8px] text-zinc-500"><span className="inline-flex items-center gap-1"><span className={`h-1.5 w-1.5 rounded-full ${statusTone}`} />{status}</span>{priority ? <><span className="text-zinc-700">·</span><span className="inline-flex items-center gap-1 font-medium text-amber-300"><Flag className="h-2.5 w-2.5" />{priority}</span></> : null}<span className="text-zinc-700">·</span><span>{type}</span><span className="text-zinc-700">·</span><span>{source}</span><span className="text-zinc-700">·</span><span>ACME App</span><span className="rounded border border-white/10 px-1.5 py-0.5 text-[7px]">{tag}</span><span className="text-zinc-700">·</span><span>{time}</span></div></div>
+                    {type === 'Praise' ? <span className="mt-1 flex gap-px">{Array.from({ length: 5 }, (_, index) => <Star key={index} className="h-2.5 w-2.5 fill-amber-300 text-amber-300" />)}</span> : null}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="landing-triage-focus p-5 sm:p-7">
-          <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold"><span className="rounded-md bg-rose-400/15 px-2 py-1 text-rose-300">Bug</span><span className="rounded-md bg-amber-300/10 px-2 py-1 text-amber-200">High priority</span></div>
-          <h3 className="mt-5 text-xl font-semibold tracking-[-0.03em] sm:text-2xl">Notification time resets after save</h3>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-300">“I chose 9:00 AM, but the page shows 8:00 AM when I return.”</p>
-          <div className="mt-5 grid gap-2 sm:grid-cols-2">
-            <span className="rounded-lg bg-white/[0.045] px-3 py-2 text-[10px] text-zinc-400">Page <strong className="ml-1 text-zinc-200">/settings/notifications</strong></span>
-            <span className="rounded-lg bg-white/[0.045] px-3 py-2 text-[10px] text-zinc-400">Device <strong className="ml-1 text-zinc-200">Chrome · macOS</strong></span>
-          </div>
-          <div className="mt-6 flex flex-wrap gap-2 border-t border-white/10 pt-5"><span className="rounded-md bg-lime-300 px-3 py-2 text-[10px] font-semibold text-zinc-950">Mark planned</span><span className="rounded-md border border-white/15 px-3 py-2 text-[10px] font-semibold text-zinc-200">Send to GitHub</span></div>
-        </div>
-      </div>
-    </figure>
+      </figure>
+    </div>
   )
 }
 
