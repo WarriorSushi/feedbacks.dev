@@ -74,7 +74,6 @@ export function AuthCaptcha({
   React.useEffect(() => {
     window.feedbacksCaptchaReady = renderWidget
     setScriptReady(true)
-    renderWidget()
     return () => {
       if (window.feedbacksCaptchaReady === renderWidget) delete window.feedbacksCaptchaReady
     }
@@ -98,7 +97,7 @@ export function AuthCaptcha({
 
   return (
     <>
-      {scriptReady ? <Script src={providerScripts[provider]} strategy="afterInteractive" onLoad={renderWidget} /> : null}
+      {scriptReady ? <Script src={providerScripts[provider]} strategy="afterInteractive" onReady={renderWidget} /> : null}
       <div ref={hostRef} className="flex min-h-[78px] justify-center" />
     </>
   )
