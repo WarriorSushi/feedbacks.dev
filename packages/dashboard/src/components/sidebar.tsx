@@ -84,15 +84,18 @@ const primaryNavGroups: NavGroup[] = [
       { href: '/install', label: 'Install & verify', icon: Code2, tourId: 'nav-install', projectTab: 'install' },
       { href: '/integrations', label: 'Integrations', icon: Webhook, tourId: 'nav-integrations', projectTab: 'integrations' },
       { href: '/api', label: 'API & MCP', icon: Code2, tourId: 'nav-api', projectTab: 'api' },
-      { href: 'https://www.feedbacks.dev/docs', label: 'Docs', icon: Library, tourId: 'nav-docs', external: true },
-      { href: '/invites', label: 'Earn free Pro', icon: Gift, tourId: 'nav-invites' },
     ],
   },
 ]
 
-const utilityNavItems: NavItem[] = [
+const accountMenuItems: NavItem[] = [
   { href: '/billing',   label: 'Billing',   icon: CreditCard, tourId: 'nav-billing' },
-  { href: '/settings',  label: 'Settings',  icon: Settings, tourId: 'nav-settings' },
+]
+
+const bottomNavItems: NavItem[] = [
+  { href: 'https://www.feedbacks.dev/docs', label: 'Docs', icon: Library, tourId: 'nav-docs', external: true },
+  { href: '/invites', label: 'Pro for free', icon: Gift, tourId: 'nav-invites' },
+  { href: '/settings', label: 'Settings', icon: Settings, tourId: 'nav-settings' },
 ]
 
 interface SidebarProps {
@@ -106,9 +109,10 @@ interface SidebarProps {
     complimentary_pro_until: string | null
     grace_ends_at: string | null
   } | null
+  earlyAdopterProgrammeActive?: boolean
 }
 
-export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, billingAccount }: SidebarProps) {
+export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, billingAccount, earlyAdopterProgrammeActive = false }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -535,8 +539,40 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
 
       </nav>
 
+      <div className="shrink-0 border-t p-2">
+        <div className="space-y-0.5">
+          {bottomNavItems
+            .filter((item) => item.href !== '/invites' || !earlyAdopterProgrammeActive)
+            .map((item) => {
+              const isActive = !item.external && (pathname === item.href || pathname.startsWith(item.href + '/'))
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  data-tour={item.tourId}
+                  title={collapsed ? item.label : undefined}
+                  aria-label={collapsed ? item.label : undefined}
+                  aria-current={isActive ? 'page' : undefined}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
+                  onClick={() => { if (!item.external) beginNavigation(item.href) }}
+                  className={cn(
+                    'group flex min-h-10 items-center gap-3 rounded-lg py-2 text-[13px] font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98]',
+                    collapsed ? 'justify-center px-2' : 'px-3',
+                    isActive ? 'bg-surface-selected text-primary' : 'text-muted-foreground hover:bg-surface-raised hover:text-foreground',
+                  )}
+                >
+                  {pendingHref === item.href ? <Loader2 className="h-[17px] w-[17px] animate-spin text-primary" /> : <item.icon className="h-[17px] w-[17px] shrink-0" />}
+                  {!collapsed && <span className="truncate">{item.label}</span>}
+                  {!collapsed && item.external ? <ExternalLink className="ml-auto h-3 w-3 opacity-60" /> : null}
+                </Link>
+              )
+            })}
+        </div>
+      </div>
+
       {/* Footer stays visible at the bottom. */}
-      <div className={cn('shrink-0 border-t p-2', collapsed ? 'space-y-1' : 'flex items-center gap-1.5')}>
+      <div className={cn('shrink-0 p-2', collapsed ? 'space-y-1' : 'flex items-center gap-1.5')}>
         <ThemeToggle collapsed={collapsed} className={cn(!collapsed && 'min-w-0 flex-1')} />
 
         <DropdownMenu.Root>
@@ -566,7 +602,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                 {user.email ? <p className="mt-0.5 truncate text-xs text-muted-foreground">{user.email}</p> : null}
               </div>
               <DropdownMenu.Separator className="my-1 h-px bg-border" />
-              {utilityNavItems.map((item) => (
+              {accountMenuItems.map((item) => (
                 <DropdownMenu.Item key={item.href} asChild>
                   <Link
                     href={item.href}

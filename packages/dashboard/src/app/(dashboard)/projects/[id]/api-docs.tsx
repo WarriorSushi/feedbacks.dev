@@ -157,7 +157,7 @@ export function ApiDocs({
         <div className="divide-y border-t bg-surface-raised/35">
           {[
             ['Project scope', 'Each API key can access only its attached project.'],
-            ['Plan limits', 'Free access follows the shared Free plan quotas and history window; Pro removes the short history limit.'],
+            ['Plan limits', 'Free access follows the shared project, monthly feedback, routing, analytics, and branding limits. Feedback history remains complete on both plans.'],
             ['Rate limits', 'Public submission paths are rate limited and return friendly errors instead of exposing internals.'],
             ['Pagination', 'List endpoints accept an opaque cursor and limit (maximum 100), then return nextCursor and hasMore. The legacy page parameter is temporarily supported and explicitly marked deprecated in response metadata.'],
             ['Idempotency', 'Send a unique Idempotency-Key on feedback creation. Safe retries replay the original response; a different body with the same key returns 409.'],

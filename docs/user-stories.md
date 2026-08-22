@@ -343,6 +343,22 @@ Acceptance criteria:
 - hashed device reuse and network velocity trigger graduated review instead of relying on IP alone
 - abuse signals are removed after 90 days
 
+### US-10.5
+
+Story:
+As an early adopter, I want an automatic, clearly scheduled way to earn Pro by giving useful feedback so I never depend on a vague application review or founder call.
+
+Acceptance criteria:
+- the programme accepts no more than 100 members and automatically accepts every enrolment while a seat remains
+- the account email links the reserved place to guided onboarding
+- completing onboarding grants Pro month one
+- a structured feedback check-in grants one later month at a time, up to 12 total months
+- the check-in opens seven days before its due date and is reachable from a dashboard banner
+- lifecycle emails explain the due date, two-month grace period, final week, completion, and removal
+- the complete programme closes no later than 14 months after onboarding
+- duplicate or concurrent submissions cannot grant duplicate months
+- programme completion or removal never deletes projects or feedback
+
 ## Epic 11: Talk with the feedbacks.dev team
 
 ### US-11.1
@@ -393,6 +409,7 @@ Acceptance criteria:
 - US-10.3
 - US-12.1
 - US-10.4
+- US-10.5
 - US-11.1
 
 ### Should-have shortly after v1

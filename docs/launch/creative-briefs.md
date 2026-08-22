@@ -60,7 +60,7 @@ Capture after the final production deploy with a clean demonstration account. Us
 3. **Context proof (desktop, 16:9):** received feedback detail showing safe demo page/browser context.
 4. **Triage proof (desktop, 16:9):** inbox with 5–7 realistic reports, filters, statuses, and tags.
 5. **Close-loop proof (desktop + mobile):** a published product update and its public rendering.
-6. **Free-plan proof (square):** pricing card showing two projects, 500 feedback/month, 30 days, and no card.
+6. **Free-plan proof (square):** pricing card showing two projects, 500 feedback/month, full feedback history, and no card.
 
 Use the same demo product and narrative across every capture:
 

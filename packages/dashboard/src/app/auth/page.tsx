@@ -55,6 +55,13 @@ function AuthPageInner() {
   const captchaSiteKey = hcaptchaSiteKey || turnstileSiteKey
 
   React.useEffect(() => {
+    const suggestedEmail = searchParams.get('email')?.trim() || ''
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(suggestedEmail)) {
+      setEmail((current) => current || suggestedEmail)
+    }
+  }, [searchParams])
+
+  React.useEffect(() => {
     if (!callbackError) return
     const messages: Record<string, string> = {
       auth_failed: 'That sign-in link is expired, already used, or was opened in the wrong browser. Request a new link below.',
@@ -86,6 +93,7 @@ function AuthPageInner() {
     setLoading(false)
     if (captchaProvider) setCaptchaResetKey((current) => current + 1)
     if (authError) return setError('The email or password was not accepted. Check both fields or request a secure sign-in link.')
+    await fetch('/api/early-adopter/activate', { method: 'POST' }).catch(() => undefined)
     window.location.href = redirect
   }
 

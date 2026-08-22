@@ -34,7 +34,7 @@ export default function PrivacyPage() {
             <li>Account information (email and name provided through Google OAuth, GitHub OAuth, or email sign-in)</li>
             <li>Project configuration data</li>
             <li>Feedback submitted through your widgets (messages, ratings, page URL, browser context, optional screenshots or image attachments, and optional contact details)</li>
-            <li>Lead-list and beta-application information you submit (email, product use case, stage, install timing, current tool, consent time, and campaign attribution)</li>
+            <li>Early Adopter Programme information (email, seat, programme status, onboarding completion, monthly check-ins, renewal dates, consent time, and campaign attribution)</li>
             <li>Referral codes, successful referred signups, and one-time reward status</li>
           </ul>
 
@@ -113,12 +113,11 @@ export default function PrivacyPage() {
           <p>
             Your data is retained as long as your account is active. When you delete a project,
             all associated feedback, screenshots, and uploaded attachments are permanently removed.
-            Free plans only surface the most recent 30 days of history in the product, but upgrading
-            restores older stored history without recreating it. Account deletion removes account-owned
+            Free and Pro plans both surface full feedback history. Account deletion removes account-owned
             product data and uploaded feedback media. Operational delivery and security records are
             retained only as needed to operate, secure, and troubleshoot the service, with destinations
             redacted and credentials excluded.
-            Lead-list and beta-application records are kept until you unsubscribe or ask us to remove them. Advertising conversion
+            Early Adopter Programme records are kept for the programme lifecycle and associated account history, or until an applicable deletion request is completed. Advertising conversion
             records retain hashed match fields and delivery status only as long as needed for attribution,
             troubleshooting, deletion requests, and fraud prevention.
           </p>

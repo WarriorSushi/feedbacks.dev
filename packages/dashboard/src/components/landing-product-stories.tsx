@@ -41,7 +41,7 @@ export function LandingProductStories() {
         <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">From message to shipped fix</p>
-            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">One small message becomes work your team can act on.</h2>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-[2.75rem]">One feedback from your customer becomes work your team can act on.</h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">Your customer never leaves the product. feedbacks.dev keeps the useful context attached, then hands the important work to the tools your team already opens.</p>
           </div>
 
@@ -61,8 +61,8 @@ export function LandingProductStories() {
         <div className="relative z-[2] mx-auto grid max-w-7xl gap-12 px-5 sm:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-center lg:gap-20">
           <div className="max-w-xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Context without interrogation</p>
-            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">The short message is only the beginning.</h2>
-            <p className="mt-5 text-base leading-7 text-muted-foreground">The page, browser, device, time, rating, and optional screenshot arrive beside the message. Your first reply can be useful instead of “which page were you on?”</p>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Your first reply can be useful instead of “which page were you on?”</h2>
+            <p className="mt-5 text-base leading-7 text-muted-foreground">The page, browser, device, time, rating, and optional screenshot arrive beside the message, so your team can respond with context already in hand.</p>
             <div className="mt-7 flex flex-wrap gap-2 text-xs font-medium">
               {['Captured automatically', 'Visible to your team', 'Screenshot stays optional'].map((item) => <span key={item} className="rounded-full border bg-card px-3 py-2">{item}</span>)}
             </div>
@@ -77,7 +77,7 @@ export function LandingProductStories() {
         <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Inside feedbacks.dev</p>
-            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Open the inbox and know what deserves attention.</h2>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Open your dashboard and know what deserves attention.</h2>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">New messages are distinct, technical context is already attached, and the next action is visible. It feels like triage, not archaeology.</p>
           </div>
           <TriageDashboardScene />

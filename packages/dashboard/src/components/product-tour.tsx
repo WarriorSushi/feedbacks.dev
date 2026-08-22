@@ -367,7 +367,11 @@ export function ProductTour({
     try {
       if (tutorialId === 'navigation') {
         await savePreference('productTourCompletedAt')
-        toast({ title: 'Product tour complete' })
+        const programmeResponse = await fetch('/api/early-adopter/onboarding', { method: 'POST' })
+        const programme = await programmeResponse.json().catch(() => null) as { granted?: boolean } | null
+        toast({
+          title: programme?.granted ? 'Onboarding complete. Your first Pro month is active.' : 'Product tour complete',
+        })
         closeTour(true)
       } else {
         saveTutorialProgress(tutorialId, { stepIndex: steps.length - 1, completedAt: new Date().toISOString() })

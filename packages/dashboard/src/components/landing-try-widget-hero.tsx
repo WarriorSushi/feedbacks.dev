@@ -12,7 +12,6 @@ import {
   CircleHelp,
   Lightbulb,
   MessageSquareText,
-  RotateCcw,
   Sparkles,
   Star,
   UsersRound,
@@ -23,7 +22,7 @@ import { Button } from '@/components/ui/button'
 
 type FeedbackType = 'bug' | 'idea' | 'praise' | 'question'
 
-const typedMessage = "I love this app, and I can't wait to tell my friends about it."
+const typedMessage = 'Here is where your customer will write. Press send below.'
 
 const feedbackTypes: { value: FeedbackType; label: string; Icon: typeof Bug }[] = [
   { value: 'bug', label: 'Bug', Icon: Bug },
@@ -223,6 +222,7 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
   const [feedbackType, setFeedbackType] = React.useState<FeedbackType>('praise')
   const [rating, setRating] = React.useState(0)
   const [screenshotReady, setScreenshotReady] = React.useState(false)
+  const [closeCountdown, setCloseCountdown] = React.useState(3)
   const reduceMotion = useReducedMotion() ?? false
   const sectionRef = React.useRef<HTMLElement>(null)
   const stageRef = React.useRef<HTMLDivElement>(null)
@@ -278,11 +278,26 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
 
   React.useEffect(() => {
     if (!submitted) return
+    setCloseCountdown(3)
     const frame = window.requestAnimationFrame(() => {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
     })
-    return () => window.cancelAnimationFrame(frame)
-  }, [submitted])
+    const countdown = window.setInterval(() => {
+      setCloseCountdown((current) => Math.max(0, current - 1))
+    }, 1000)
+    const closeTimer = window.setTimeout(() => {
+      setOpen(false)
+      setSubmitted(false)
+      window.setTimeout(() => {
+        document.getElementById('product')?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' })
+      }, reduceMotion ? 0 : 480)
+    }, 3000)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearInterval(countdown)
+      window.clearTimeout(closeTimer)
+    }
+  }, [reduceMotion, submitted])
 
   const launchDemo = () => {
     setOpen(true)
@@ -291,6 +306,7 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
     setRating(0)
     setFeedbackType('praise')
     setScreenshotReady(false)
+    setCloseCountdown(3)
     userEdited.current = false
     userRated.current = false
   }
@@ -410,22 +426,22 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
             )}
 
             {open && submitted && (
-            <motion.div key="success" layoutId="landing-widget-demo" initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : 0.42, ease: [0.16, 1, 0.3, 1] }} className="landing-demo-success-wrap relative z-20 w-full max-w-[470px]">
-              <div className="landing-app-window landing-demo-success relative flex min-h-[390px] w-full flex-col items-center justify-center overflow-hidden rounded-xl border bg-card px-6 py-10 text-center shadow-[0_32px_90px_-38px_rgb(0_0_0/0.62)] sm:px-10" aria-live="polite">
+            <motion.div key="success" layoutId="landing-widget-demo" initial={reduceMotion ? false : { opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.2, y: -80 }} transition={{ duration: reduceMotion ? 0 : 0.46, ease: [0.16, 1, 0.3, 1] }} className="landing-demo-success-wrap relative z-20 w-full max-w-[470px]">
+              <div className="landing-app-window landing-demo-success relative flex min-h-[320px] w-full flex-col items-center justify-center overflow-hidden rounded-xl border bg-card px-6 py-9 text-center shadow-[0_32px_90px_-38px_rgb(0_0_0/0.62)] sm:px-10" aria-live="polite">
                 <div className="landing-window-chrome">feedbacks.dev</div>
                 {confetti.map(([left, rotate, delay], index) => <span key={`${left}-${index}`} className={cn('landing-success-confetti', index % 3 === 0 ? 'bg-primary' : index % 3 === 1 ? 'bg-amber-400' : 'bg-sky-400')} style={{ left, rotate, animationDelay: delay }} aria-hidden="true" />)}
                 <span className="landing-success-mark relative flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground"><MessageSquareText className="h-9 w-9" /></span>
                 <h2 className="mt-6 text-3xl font-semibold tracking-[-0.04em]">Feedback received.</h2>
                 <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">The team gets your message, page, browser, rating{ screenshotReady ? ', and screenshot' : ''} together, ready to review.</p>
-                <button type="button" onClick={launchDemo} className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-lg border bg-background px-4 text-sm font-semibold transition-colors hover:bg-muted"><RotateCcw className="h-4 w-4" />Try it again</button>
               </div>
               <Image className="landing-post-send-mascot absolute" src="/mascots-v2/hero-bungee.png" alt="" width={1024} height={1536} sizes="88px" aria-hidden="true" />
+              <p className="mt-3 text-center text-xs font-medium text-foreground/60">Closing in {closeCountdown}…</p>
             </motion.div>
             )}
             </AnimatePresence>
           </div>
 
-          {open && (
+          {open && !submitted && (
             <motion.button
               type="button"
               onClick={() => document.getElementById('product')?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' })}
@@ -451,9 +467,9 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
             >
               <div className="flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row">
                 <Button asChild size="lg" className="h-12 px-7"><Link href={authHref}>Start free</Link></Button>
-                <Button asChild size="lg" variant="outline" className="h-12 gap-2 px-7"><Link href="/early-access"><UsersRound className="h-4 w-4" />Apply for the Founding Beta</Link></Button>
+                <Button asChild size="lg" variant="outline" className="h-12 gap-2 px-7"><Link href="/early-access"><UsersRound className="h-4 w-4" />Join the Early Adopter Programme</Link></Button>
               </div>
-              <p className="mt-3 text-[11px] leading-5 text-muted-foreground">Free signup is open to everyone. The small beta cohort adds hands-on onboarding, not a gate.</p>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">Free signup is open to everyone. The 100-member programme adds guided onboarding and up to 12 earned Pro months.</p>
             </motion.div>
           )}
         </AnimatePresence>

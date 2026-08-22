@@ -1,27 +1,28 @@
 'use client'
 
 import * as React from 'react'
+import { ArrowRight, Check, Loader2, LockKeyhole } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { ArrowRight, Check, Loader2 } from 'lucide-react'
-import {
-  BETA_STAGE_OPTIONS,
-  BETA_TIMELINE_OPTIONS,
-  type BetaApplicationFieldErrors,
-} from '@/lib/beta-application'
 
-export function LeadForm() {
+type JoinResponse = {
+  accepted?: boolean
+  accountLinked?: boolean
+  alreadyJoined?: boolean
+  seatNumber?: number
+  eventId?: string
+  full?: boolean
+  error?: string
+  fieldErrors?: { email?: string[]; programmeTermsAccepted?: string[] }
+}
+
+export function LeadForm({ open }: { open: boolean }) {
   const [email, setEmail] = React.useState('')
-  const [useCase, setUseCase] = React.useState('')
-  const [applicationStage, setApplicationStage] = React.useState('')
-  const [installTimeline, setInstallTimeline] = React.useState('')
-  const [currentTool, setCurrentTool] = React.useState('')
+  const [programmeTermsAccepted, setProgrammeTermsAccepted] = React.useState(false)
   const [newsletterConsent, setNewsletterConsent] = React.useState(false)
-  const [fieldErrors, setFieldErrors] = React.useState<BetaApplicationFieldErrors>({})
+  const [fieldErrors, setFieldErrors] = React.useState<JoinResponse['fieldErrors']>({})
   const [error, setError] = React.useState('')
   const [submitting, setSubmitting] = React.useState(false)
-  const [complete, setComplete] = React.useState(false)
+  const [result, setResult] = React.useState<JoinResponse | null>(null)
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -35,21 +36,18 @@ export function LeadForm() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           email,
-          useCase,
-          applicationStage,
-          installTimeline,
-          currentTool,
+          programmeTermsAccepted,
           newsletterConsent,
           companyWebsite: form.get('companyWebsite'),
         }),
       })
-      const data = await response.json() as { accepted?: boolean; eventId?: string; error?: string; fieldErrors?: BetaApplicationFieldErrors }
+      const data = await response.json() as JoinResponse
       if (!response.ok) {
-        setError(data.error || 'We could not save your request. Please try again.')
+        setError(data.error || 'We could not reserve your place. Please try again.')
         setFieldErrors(data.fieldErrors || {})
         return
       }
-      setComplete(true)
+      setResult(data)
       if (data.eventId) {
         window.dispatchEvent(new CustomEvent('feedbacks:marketing-conversion', {
           detail: { eventName: 'Lead', eventId: data.eventId, email },
@@ -62,67 +60,58 @@ export function LeadForm() {
     }
   }
 
-  if (complete) {
+  if (!open && !result) {
     return (
-      <div className="border-y border-primary/25 bg-primary/[0.045] px-5 py-8 text-center sm:rounded-xl sm:border">
-        <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary"><Check className="h-5 w-5" /></span>
-        <h2 className="mt-4 text-xl font-semibold tracking-tight">Application received.</h2>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted-foreground">We review applications in small batches and email invitations as space opens. You do not need to wait to use the Free plan.</p>
-        <Button asChild className="mt-5"><a href="https://app.feedbacks.dev/auth">Create your free project now <ArrowRight className="ml-2 h-4 w-4" /></a></Button>
+      <div className="rounded-xl border border-neutral-800 bg-neutral-900/90 p-7">
+        <h3 className="text-xl font-semibold">All 100 places are reserved.</h3>
+        <p className="mt-3 text-base leading-7 text-neutral-400">Free signup remains open, and the normal Pro-for-free referral programme is available from the dashboard.</p>
+        <Button asChild size="lg" className="mt-6"><a href="https://app.feedbacks.dev/auth">Create a free account <ArrowRight className="ml-2 h-4 w-4" /></a></Button>
+      </div>
+    )
+  }
+
+  if (result?.accepted) {
+    const redirect = '/dashboard?tour=1'
+    const href = result.accountLinked
+      ? redirect
+      : `/auth?redirect=${encodeURIComponent(redirect)}&email=${encodeURIComponent(email)}`
+    return (
+      <div className="rounded-xl border border-lime-400/35 bg-neutral-900/95 p-7 shadow-2xl shadow-lime-950/20">
+        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-lime-400 text-neutral-950"><Check className="h-6 w-6" /></span>
+        <h3 className="mt-6 text-2xl font-semibold tracking-tight">You’re in. Seat {result.seatNumber} is yours.</h3>
+        <p className="mt-3 text-base leading-7 text-neutral-400">{result.alreadyJoined ? 'Your existing place is confirmed.' : 'Your place was accepted automatically.'} Sign in with <strong className="text-neutral-100">{email}</strong>, finish the guided tour, and Pro month one activates automatically.</p>
+        <Button asChild size="lg" className="mt-7 h-12 w-full bg-lime-400 text-neutral-950 hover:bg-lime-300"><a href={href}>{result.accountLinked ? 'Start guided onboarding' : 'Create or sign in to your account'} <ArrowRight className="ml-2 h-4 w-4" /></a></Button>
       </div>
     )
   }
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-4 border-y bg-card px-5 py-6 shadow-[var(--shadow-soft)] sm:rounded-xl sm:border sm:p-6">
-      <div className="space-y-1.5">
-        <Label htmlFor="lead-email">Work email</Label>
-        <Input id="lead-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'lead-email-error' : undefined} placeholder="you@company.com" required />
-        {fieldErrors.email?.[0] && <p id="lead-email-error" className="text-xs text-destructive">{fieldErrors.email[0]}</p>}
+    <form onSubmit={submit} noValidate className="space-y-5 rounded-xl border border-neutral-800 bg-neutral-900/95 p-6 shadow-2xl shadow-black/35 sm:p-7">
+      <div className="space-y-2">
+        <label htmlFor="early-adopter-email" className="block text-sm font-semibold text-neutral-100">Account email</label>
+        <input id="early-adopter-email" type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} aria-invalid={Boolean(fieldErrors?.email)} aria-describedby={fieldErrors?.email ? 'early-adopter-email-error' : undefined} placeholder="you@company.com" required className="h-12 w-full rounded-lg border border-neutral-700 bg-neutral-950 px-4 text-base text-neutral-100 outline-none placeholder:text-neutral-600 focus:border-lime-400 focus:ring-2 focus:ring-lime-400/20" />
+        {fieldErrors?.email?.[0] ? <p id="early-adopter-email-error" className="text-sm text-red-300">{fieldErrors.email[0]}</p> : null}
       </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="lead-use-case">What are you building, and where does feedback break down?</Label>
-        <textarea id="lead-use-case" value={useCase} onChange={(event) => setUseCase(event.target.value)} minLength={20} maxLength={500} rows={4} aria-invalid={Boolean(fieldErrors.useCase)} aria-describedby={fieldErrors.useCase ? 'lead-use-case-error' : undefined} className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring" placeholder="We run a developer tool with 80 active users. Bug reports arrive in Discord without the page or browser context…" required />
-        {fieldErrors.useCase?.[0] && <p id="lead-use-case-error" className="text-xs text-destructive">{fieldErrors.useCase[0]}</p>}
+
+      <div className="space-y-4 border-y border-neutral-800 py-5">
+        <label className="flex items-start gap-3 text-sm leading-6 text-neutral-300">
+          <input type="checkbox" checked={programmeTermsAccepted} onChange={(event) => setProgrammeTermsAccepted(event.target.checked)} className="mt-1 h-4 w-4 rounded border-neutral-600 accent-lime-400" />
+          <span>I agree to complete the guided onboarding and provide one honest feedback check-in per earned month. I understand the two-month grace period, 12-Pro-month limit, and 14-month programme window.</span>
+        </label>
+        {fieldErrors?.programmeTermsAccepted?.[0] ? <p className="text-sm text-red-300">{fieldErrors.programmeTermsAccepted[0]}</p> : null}
+        <label className="flex items-start gap-3 text-sm leading-6 text-neutral-400">
+          <input type="checkbox" checked={newsletterConsent} onChange={(event) => setNewsletterConsent(event.target.checked)} className="mt-1 h-4 w-4 rounded border-neutral-600 accent-lime-400" />
+          <span>Also send me optional product news and practical feedback-collection notes. I can unsubscribe at any time.</span>
+        </label>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <Label htmlFor="lead-stage">Product stage</Label>
-          <select id="lead-stage" value={applicationStage} onChange={(event) => setApplicationStage(event.target.value)} aria-invalid={Boolean(fieldErrors.applicationStage)} aria-describedby={fieldErrors.applicationStage ? 'lead-stage-error' : undefined} className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" required>
-            <option value="">Choose one</option>
-            {BETA_STAGE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
-          {fieldErrors.applicationStage?.[0] && <p id="lead-stage-error" className="text-xs text-destructive">{fieldErrors.applicationStage[0]}</p>}
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="lead-timeline">Install timing</Label>
-          <select id="lead-timeline" value={installTimeline} onChange={(event) => setInstallTimeline(event.target.value)} aria-invalid={Boolean(fieldErrors.installTimeline)} aria-describedby={fieldErrors.installTimeline ? 'lead-timeline-error' : undefined} className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" required>
-            <option value="">Choose one</option>
-            {BETA_TIMELINE_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
-          {fieldErrors.installTimeline?.[0] && <p id="lead-timeline-error" className="text-xs text-destructive">{fieldErrors.installTimeline[0]}</p>}
-        </div>
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="lead-current-tool">What do you use today? <span className="font-normal text-muted-foreground">Optional</span></Label>
-        <Input id="lead-current-tool" value={currentTool} onChange={(event) => setCurrentTool(event.target.value)} maxLength={120} aria-invalid={Boolean(fieldErrors.currentTool)} aria-describedby={fieldErrors.currentTool ? 'lead-current-tool-error' : undefined} placeholder="Discord, email, Canny, a custom form…" />
-        {fieldErrors.currentTool?.[0] && <p id="lead-current-tool-error" className="text-xs text-destructive">{fieldErrors.currentTool[0]}</p>}
-      </div>
-      <div className="absolute left-[-9999px]" aria-hidden="true">
-        <Label htmlFor="companyWebsite">Company website</Label>
-        <Input id="companyWebsite" name="companyWebsite" tabIndex={-1} autoComplete="off" />
-      </div>
-      <label className="flex items-start gap-3 text-xs leading-5 text-muted-foreground">
-        <input type="checkbox" checked={newsletterConsent} onChange={(event) => setNewsletterConsent(event.target.checked)} aria-invalid={Boolean(fieldErrors.newsletterConsent)} aria-describedby={fieldErrors.newsletterConsent ? 'lead-consent-error' : undefined} className="mt-0.5 h-4 w-4 rounded border-input accent-primary" />
-        <span>Email me product updates and practical feedback-collection notes. I can unsubscribe at any time.</span>
-      </label>
-      {fieldErrors.newsletterConsent?.[0] && <p id="lead-consent-error" className="text-xs text-destructive">{fieldErrors.newsletterConsent[0]}</p>}
-      {error && <p role="alert" className="rounded-md border border-destructive/25 bg-destructive/5 px-3 py-2 text-xs text-destructive">{error}</p>}
-      <Button type="submit" className="h-11 w-full" disabled={submitting || !email || !newsletterConsent}>
+      <div className="absolute left-[-9999px]" aria-hidden="true"><label htmlFor="companyWebsite">Company website</label><input id="companyWebsite" name="companyWebsite" tabIndex={-1} autoComplete="off" /></div>
+
+      <div className="flex items-start gap-3 text-sm leading-6 text-neutral-400"><LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-lime-400" /><p>Programme reminders are service emails for the benefit you request. Advertising measurement remains controlled separately by your privacy choice.</p></div>
+      {error ? <p role="alert" className="rounded-lg border border-red-400/30 bg-red-950/30 px-4 py-3 text-sm text-red-200">{error}</p> : null}
+      <Button type="submit" size="lg" className="h-12 w-full bg-lime-400 text-neutral-950 hover:bg-lime-300" disabled={submitting || !email || !programmeTermsAccepted}>
         {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-        Apply for the Founding Beta
+        Join the Early Adopter Programme
       </Button>
-      <p className="text-center text-[11px] leading-4 text-muted-foreground">Applying does not create an account or block Free signup. Advertising measurement is controlled separately by your privacy choice.</p>
     </form>
   )
 }

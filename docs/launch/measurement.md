@@ -36,7 +36,7 @@ Every distributed link uses lowercase values and one canonical campaign:
 ```text
 utm_source=x|reddit|linkedin|facebook|instagram|producthunt|hackernews|indiehackers|devto|newsletter|direct_outreach
 utm_medium=organic_social|community|directory|paid_social|email|dm|content
-utm_campaign=founding_beta_2026q3|public_launch_2026q3|product_hunt_2026q3
+utm_campaign=early_adopter_2026q3|public_launch_2026q3|product_hunt_2026q3
 utm_content=<asset-or-angle>
 utm_term=<paid-audience-only>
 ```
@@ -45,7 +45,7 @@ Examples:
 
 ```text
 /?utm_source=x&utm_medium=organic_social&utm_campaign=public_launch_2026q3&utm_content=install_clip
-/?utm_source=reddit&utm_medium=community&utm_campaign=founding_beta_2026q3&utm_content=bug_context_checklist
+/?utm_source=reddit&utm_medium=community&utm_campaign=early_adopter_2026q3&utm_content=bug_context_checklist
 /?utm_source=producthunt&utm_medium=directory&utm_campaign=public_launch_2026q3&utm_content=launch_page
 ```
 
@@ -63,19 +63,19 @@ Instead, evaluate activation internally by joining:
 
 Ad networks may optimize for `ProjectCreated` until enough privacy-safe, consent-valid owner-side value events can be implemented. Business decisions use the internal activated-project cost.
 
-## Founding Beta review rubric
+## Early Adopter Programme health
 
-Score applications 0–2 per item:
+There is no application-review rubric. Every valid enrolment is accepted while one of the 100 places remains. Measure whether the automated exchange works:
 
-| Criterion | 0 | 1 | 2 |
-| --- | --- | --- | --- |
-| Product stage | Idea only | Private/low traffic | Live with active users |
-| Install timing | Unknown/>30 days | 8–30 days | Within 7 days |
-| Problem intensity | Curious | Scattered feedback | Active painful workflow |
-| Technical fit | Native-only/no web surface | Needs help | Can install web snippet |
-| Research commitment | No details | Async feedback | Session + follow-ups |
+| Signal | Initial target | Action when weak |
+| --- | ---: | --- |
+| Reserved place -> linked account | 80% | Clarify same-email sign-in |
+| Linked account -> tour complete | 65% | Fix guided onboarding |
+| Tour complete -> first feedback renewal | 55% | Improve prompt timing and questions |
+| On-time monthly renewal | 60% | Improve banner and reminder emails |
+| Grace-period recovery | Observe | Clarify deadline and benefit |
 
-Invite highest-fit applicants while preserving variety across frameworks and company stages. Do not use protected characteristics or infer sensitive traits. Record a one-line decision reason. Review twice weekly; reply within three business days.
+Review responses for product learning, not member selection. Never use protected characteristics or inferred sensitive traits. Duplicate month grants, more than 100 seats, or access beyond the twelfth earned month are release-blocking defects.
 
 ## Weekly source scorecard
 

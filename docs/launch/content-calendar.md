@@ -10,17 +10,17 @@ Use “Day 1” as the first day after the production release gate. Do not compr
 - Prepare the tagged-link sheet and daily dashboard.
 - List 30 researched founder prospects and 20 community conversations worth joining.
 - Capture real desktop/mobile screenshots and the three short product clips in `creative-briefs.md`.
-- Invite no one until the accepted/rejected beta email templates are ready.
+- Invite no one until the automated Early Adopter lifecycle emails and account-linking path are verified.
 
 ## Week 1 - prove activation with people
 
 | Day | Primary action | Supporting action | Exit evidence |
 | ---: | --- | --- | --- |
-| 1 | Send five warm beta invitations | Publish X short post #1; answer relevant replies | First sessions booked |
-| 2 | Run two watched installs | Log every hesitation; ship the smallest fix | Timed install recordings/notes |
-| 3 | Send five researched outreach notes | Publish the actionable-report LinkedIn carousel | Four qualified applications |
-| 4 | Run two watched installs | Publish X build thread using real data | Project-to-verify baseline |
-| 5 | Review beta batch; invite four | Join five Reddit conversations without product links | Batch 1 confirmed |
+| 1 | Send five warm Early Adopter invitations | Publish X short post #1; answer relevant replies | First programme enrolments |
+| 2 | Review onboarding-tour completion | Log every hesitation; ship the smallest fix | Tour-to-install baseline |
+| 3 | Send five researched outreach notes | Publish the actionable-report LinkedIn carousel | Qualified programme enrolments |
+| 4 | Review first guided installs | Publish X build thread using real data | Project-to-verify baseline |
+| 5 | Verify automatic acceptance and seat count | Join five Reddit conversations without product links | Programme lifecycle confirmed |
 | 6 | Publish one public changelog lesson | Edit r/SaaS draft to match actual data; verify rules | Proof, not claims |
 | 7 | Weekly review; no launch blast | Fix the largest activation drop | Gate decision documented |
 
@@ -29,10 +29,10 @@ Use “Day 1” as the first day after the production release gate. Do not compr
 | Day | Primary action | Supporting action | Exit evidence |
 | ---: | --- | --- | --- |
 | 8 | Publish one moderator-approved Reddit post | Stay in thread for two hours | Substantive questions/replies |
-| 9 | Run beta follow-ups | Publish 15-second real install clip on X | First-feedback rate measured |
+| 9 | Review Early Adopter onboarding follow-ups | Publish 15-second real install clip on X | First-feedback rate measured |
 | 10 | Publish technical article on owned site/DEV | Answer every technical comment | Searchable artifact live |
 | 11 | Publish founder LinkedIn launch post | Five high-quality X replies | Qualified founder conversations |
-| 12 | Contact second beta batch if capacity permits | Publish one X lesson with raw numbers | Cohort remains ≤4 active installs |
+| 12 | Invite more Early Adopters if capacity remains | Publish one X lesson with raw numbers | Seat and activation counts reconcile |
 | 13 | Submit accurate profiles to Uneed/BetaList | No paid acceleration | Directory baselines tagged |
 | 14 | Weekly review and activation fix | Draft Product Hunt page; do not schedule | Organic activation count |
 
@@ -42,10 +42,10 @@ Use “Day 1” as the first day after the production release gate. Do not compr
 | ---: | --- | --- | --- |
 | 15 | Publish first customer story with permission | Include install time, first report, decision | Credible proof asset |
 | 16 | Publish X feedback-to-update clip | Update landing copy only if evidence warrants | Clip engagement quality |
-| 17 | Indie Hackers two-lane beta post | Reply with numbers, not slogans | Builder discussion |
+| 17 | Indie Hackers Free-plus-programme post | Reply with numbers, not slogans | Builder discussion |
 | 18 | Second community post only in a different, rule-compliant venue | Use a different standalone angle | No duplicate content |
 | 19 | Finalize Product Hunt gallery/demo | Check mobile crops, pricing, links | Launch draft complete |
-| 20 | Invite batch 3 only if support capacity is clear | Publish changelog and known limitation | Support load healthy |
+| 20 | Review programme email delivery and check-in readiness | Publish changelog and known limitation | Support load healthy |
 | 21 | Release gate review | Decide launch/no-launch against thresholds | Written decision |
 
 ## Week 4 - coordinated launch and measured follow-through
@@ -104,5 +104,5 @@ Use “Day 1” as the first day after the production release gate. Do not compr
 - **Product Hunt not featured:** continue replying and measure activation; do not relaunch or manufacture engagement.
 - **Reddit removal:** do not repost. Read the reason, contact moderators once if unclear, and continue participating without promotion.
 - **Traffic without activation:** pause distribution, watch installs, fix the exact funnel stage.
-- **More accepted beta users than capacity:** keep Free open, place high-touch applications in the next dated batch, and give a clear response time.
-- **Low application count but healthy direct signups:** this is not failure; the beta is research capacity, not the product funnel.
+- **Programme reaches 100 members:** close enrolment automatically, keep Free open, and show the capacity state plainly.
+- **Low programme enrolment but healthy direct signups:** this is not failure; the programme is a product-learning channel, not the product funnel.

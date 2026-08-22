@@ -5,22 +5,22 @@ These are working drafts. Replace every bracketed proof point with a true value 
 Canonical CTA by intent:
 
 - ready now: **Start free - no card, no trial clock.**
-- high-touch collaborator: **Apply to the optional Founding Beta. You can still start free immediately.**
+- early adopter: **Join the 100-member Early Adopter Programme and earn up to 12 Pro months through monthly product check-ins.**
 - community post: **Try the install and tell me exactly where you hesitate.**
 
 ## Founder outreach
 
 ### Warm DM/email
 
-Subject: Could I watch you try a 10-minute feedback install?
+Subject: Could you try a 10-minute feedback install?
 
 > Hey [name] - I noticed [specific product/surface]. I’m building feedbacks.dev, a small in-product feedback widget that captures the page, browser context, and optional screenshot, then gives the team a clean inbox and update loop.
 >
-> The product is already open and free to use. I’m also onboarding a small Founding Beta cohort because I want to watch real installs, not guess from signup numbers.
+> The product is already open and free to use. I’m also opening a 100-member Early Adopter Programme: enrolment is automatic while places remain, the onboarding tour unlocks month one of Pro, and an honest monthly product check-in can unlock each following month, up to 12 total.
 >
-> Would you be open to a 25-minute call next week? I’ll mostly stay quiet while you install it, then fix whatever is confusing. No pitch and no obligation to keep it.
+> If that sounds useful, join with your work email and follow the guided setup. No call or application review is required.
 >
-> [Founding Beta link]
+> [Early Adopter Programme link]
 
 ### Cold but researched note
 
@@ -30,41 +30,53 @@ Subject: A feedback setup for [product], not a generic demo
 >
 > feedbacks.dev installs with one snippet, keeps the widget under 20 KB gzip, and sends feedback into an inbox with useful technical context. The Free plan is open-no card or application.
 >
-> I’m looking for a few live products whose founders will let me observe the first install. If that is useful, here is the short optional beta application: [link]. If not, the public product is here: [link].
+> The optional Early Adopter Programme has 100 places and accepts people automatically while a place remains. Complete the guided onboarding to activate the first Pro month, then submit one useful product check-in near each renewal to earn the next month, up to 12. Join here: [link]. The public Free product is here: [link].
 
 No automated follow-up chain. One considerate follow-up after five business days is the maximum.
 
-## Founding Beta email sequence
+## Early Adopter Programme email sequence
 
-### Application received
+### Place reserved
 
-Subject: Your feedbacks.dev Founding Beta application
+Subject: Your Early Adopter Programme place is reserved
 
-> Thanks for applying. I review applications twice a week and will reply within three business days.
+> You’re in. Place [seat] of 100 is reserved for [email].
 >
-> The beta is optional, not a waitlist. You can create a Free project now-no card and no approval required: [start link]
+> Sign in with that email and complete the guided onboarding. When the tour is finished, your first complimentary Pro month activates automatically.
 >
-> If you do, reply with the project name and I’ll use that context when reviewing your application.
+> [Continue onboarding]
 
-### Accepted
+### Monthly check-in opens
 
-Subject: You’re in the feedbacks.dev Founding Beta
+Subject: Your next complimentary Pro month is ready to earn
 
-> I’d like to include [product] in the next four-team batch. Your [specific use case] is exactly the kind of real install I want to learn from.
+> Your Early Adopter check-in is open until [due date]. Tell us what is working, what is not, and what would make feedbacks.dev more useful. A complete submission activates Pro month [number] automatically.
 >
-> Please choose a 25-minute setup session here: [scheduling link]. Before the call, create your free account but stop before installing the widget: [start link]
->
-> During the four-week cycle I’ll ask for one observed install and two short follow-ups. In return you’ll get direct founder support and one complimentary Pro month after completing the cycle. You keep full control of your data and can leave at any time.
+> [Share this month’s check-in]
 
-### Not this batch
+### Grace period
 
-Subject: feedbacks.dev beta update - the product is still open
+Subject: Your Early Adopter check-in is overdue - your grace period is active
 
-> Thanks for the thoughtful application. I’m keeping each onboarding batch to four teams, and I can’t give [product] the attention it deserves in this batch.
+> The due date passed, but your place is still protected. You have until [grace date] to submit the check-in and claim the next complimentary Pro month.
 >
-> This is not a product rejection or access gate. You can use the complete Free plan now: [start link]
+> If no check-in arrives by that date, the programme will end automatically. Your account, projects, and feedback history will remain intact on the plan available to you.
 >
-> I’ll keep your application for the next batch and send only the updates you consented to receive.
+> [Complete the check-in]
+
+### Final grace reminder
+
+Subject: One week remains to keep your Early Adopter place
+
+> Your final grace deadline is [grace date]. Submit this month’s check-in before then to activate the next Pro month. If it is not submitted, your Early Adopter membership will close automatically; your product data will not be deleted.
+>
+> [Complete the check-in]
+
+### Programme completed
+
+Subject: You completed the feedbacks.dev Early Adopter Programme
+
+> Thank you. You completed all 12 Early Adopter months. Your final complimentary Pro month remains active through [end date], then normal plan and billing rules resume automatically. Your account and feedback history remain available.
 
 ### Installed, not verified (24 hours)
 
@@ -98,14 +110,14 @@ Subject: Your widget is live-send the first test report
 >
 > [tagged link]
 
-### Launch post B - beta clarity
+### Launch post B - programme clarity
 
-> I’m onboarding 12 products into the feedbacks.dev Founding Beta in batches of four.
+> The feedbacks.dev Early Adopter Programme is open to the first 100 members.
 >
-> Important: the product is not waitlisted. Anyone can start free now. The beta is for founders willing to let me watch the install and give blunt feedback.
+> Joining is automatic while places remain. Finish the guided onboarding for Pro month one, then give one honest product check-in near each renewal to earn the next month, up to 12 total. A two-month grace period protects a missed check-in.
 >
 > Start: [link]
-> Apply: [link]
+> Join the programme: [link]
 
 ### Build thread
 
@@ -113,8 +125,8 @@ Subject: Your widget is live-send the first test report
 2. `The install target is under 10 minutes: create a project, copy one snippet, deploy, verify. Customization is deliberately after the first working loop.`
 3. `The widget is under 20 KB gzip, loads asynchronously, and uses a publishable project key that cannot read the private inbox.`
 4. `A report can carry page and browser context plus an optional screenshot. The dashboard turns it into a small triage workflow, webhook/API/MCP routing, and public updates.`
-5. `The Free plan is meant to be genuinely usable: 2 projects, 500 feedback/month, 30 days of history, no card. Pro is $19/month when volume and history matter.`
-6. `There are two entry paths: start free immediately, or apply to the optional 12-team Founding Beta for a watched install and direct support.`
+5. `The Free plan is meant to be genuinely usable: 2 projects, 500 feedback/month, full feedback history, no card. Pro is $19/month when volume, routing, branding, or update automation matter.`
+6. `There are two entry paths: start free immediately, or join the optional 100-member Early Adopter Programme to earn up to 12 Pro months through guided onboarding and monthly product check-ins.`
 7. `I need the most useful kind of feedback: try the install and tell me the first moment that makes you pause. [tagged link]`
 
 ### Seven reusable short posts
@@ -153,7 +165,7 @@ Title: `The signup metric hid the real problem in my feedback tool: nobody had c
 > 6. show the received context in the inbox;
 > 7. only then ask about upgrades or referrals.
 >
-> I built feedbacks.dev, so this is self-promotion as well as a lesson. I’m looking for a few live SaaS founders to break the install while I watch. The product itself is open and free; the watched Founding Beta is optional.
+> I built feedbacks.dev, so this is self-promotion as well as a lesson. The product itself is open and free. I also opened an optional 100-member Early Adopter Programme where the onboarding tour unlocks the first Pro month and useful monthly check-ins can unlock up to 11 more.
 >
 > The question I’d value here: where does your current feedback flow stop-collection, context, triage, or closing the loop?
 
@@ -174,7 +186,7 @@ Title: `I made the feedback tool I wanted for small shipped products-please brea
 >
 > I deliberately kept the Free plan usable (2 projects, 500 feedback/month, no card) and kept the production widget under 20 KB gzip.
 >
-> I’m the builder, and I’m not looking for polite “looks cool” replies. If you have a live web product, I’d value one of two things: try the public Free flow and name the first confusing moment, or apply to the optional Founding Beta and let me watch the setup.
+> I’m the builder, and I’m not looking for polite “looks cool” replies. If you have a live web product, try the public Free flow and name the first confusing moment, or join the optional Early Adopter Programme and share one structured product check-in each month.
 >
 > Screenshot/demo: [attach natively]
 > Link: [include only under current rules]
@@ -203,7 +215,7 @@ Keep this link-free unless moderators explicitly approve a product/docs link.
 
 > A lesson from building a feedback product: “joined the waitlist” and “created an account” are acquisition events, not value.
 >
-> The value event is first useful feedback received. We are opening the product to everyone and using a separate, optional 12-team beta only for watched installs and close research. That prevents the application from blocking a developer who is ready now.
+> The value event is first useful feedback received. The product is open to everyone, with a separate optional 100-member Early Adopter Programme for sustained product check-ins. Enrolment and onboarding are automated, so no application can block a developer who is ready now.
 >
 > I built feedbacks.dev. If your group permits it, I can share the exact activation checklist and the numbers after the first cohort. I will not add a product link without moderator approval.
 
@@ -227,7 +239,7 @@ First maker comment:
 >
 > The goal is deliberately small: get a developer from zero to a working in-product feedback loop in under ten minutes. One async snippet opens a configurable feedback form. Reports arrive with useful page/browser context and optional screenshots. From there, a small inbox, public boards/updates, REST API, webhooks, and MCP help move the important items into the workflow you already use.
 >
-> The Free plan is not a demo: two projects, 500 feedback items per month, 30 days of history, no card. Pro is $19/month for unlimited projects, feedback, and history.
+> The Free plan is not a demo: two projects, 500 feedback items per month, full feedback history, no card. Pro is $19/month for unlimited projects and feedback, deeper routing, branding controls, and update automation.
 >
 > I would especially value feedback on three things:
 >
@@ -241,7 +253,7 @@ First maker comment:
 
 **Is it free?**
 
-> Yes. Free includes two projects, 500 feedback items per month, 30 days of history, the widget/inbox, public boards and product updates, REST API/MCP, and one webhook. No card or trial clock. Pro is $19/month.
+> Yes. Free includes two projects, 500 feedback items per month, full feedback history, the widget/inbox, public boards and product updates, REST API/MCP, and one webhook. No card or trial clock. Pro is $19/month.
 
 **Will it slow down my site?**
 
@@ -251,9 +263,9 @@ First maker comment:
 
 > No. Project keys are designed to be publishable and are rejected by private REST and MCP endpoints. Private operations use separate authenticated credentials.
 
-**Can I try it without the beta?**
+**Can I use feedbacks.dev without the Early Adopter Programme?**
 
-> Yes. The product is fully open. The Founding Beta is an optional small cohort for watched installs and direct founder support, not a waitlist.
+> Yes. The product is fully open on Free. The Early Adopter Programme is an optional, 100-member feedback-for-Pro programme, not a waitlist or access requirement.
 
 **How is this different from a generic form?**
 
@@ -275,7 +287,7 @@ First maker comment:
 >
 > feedbacks.dev is now open to everyone on a genuinely usable Free plan: two projects, 500 feedback items per month, no card.
 >
-> I’m also accepting 12 products into an optional Founding Beta, four at a time, for founders willing to let me observe the install and give direct feedback. It is not a waitlist; anyone can start now.
+> I’m also opening 100 places in an optional Early Adopter Programme. Joining is automatic while places remain. Guided onboarding activates Pro month one; each useful monthly product check-in can activate another month, up to 12 total. It is not a waitlist; anyone can start Free now.
 >
 > [tagged link]
 >
@@ -301,23 +313,23 @@ Post only after administrator approval or in a designated showcase thread:
 
 > Admin-approved founder post: I built feedbacks.dev, a lightweight in-product feedback widget for small developer-led teams. The useful lesson from our launch is that applications and signups are not activation-the first complete report is.
 >
-> I wrote up the seven-step activation checklist in this post: [include checklist natively]. The product is open on a no-card Free plan; a separate 12-team Founding Beta is optional for watched installs. If links are allowed, it is here: [tagged link]. Happy to answer implementation questions and remove the link if it is not appropriate for this group.
+> I wrote up the seven-step activation checklist in this post: [include checklist natively]. The product is open on a no-card Free plan; a separate optional 100-member Early Adopter Programme exchanges useful monthly product check-ins for up to 12 Pro months. If links are allowed, it is here: [tagged link]. Happy to answer implementation questions and remove the link if it is not appropriate for this group.
 
 ## Indie Hackers
 
-Title: `Why I kept the product open while limiting the beta to 12 teams`
+Title: `Why I paired an open Free plan with a 100-member feedback-for-Pro programme`
 
-> I was treating “beta access” as one decision. It is actually two.
+> Product access and structured product research are different jobs.
 >
 > Product access should be open: a technical founder arriving with intent can create a Free project, install the widget, and learn from real users without asking permission.
 >
-> Founder attention is scarce: I can only watch four installs at a time and respond closely for four weeks.
+> Research should be predictable for both sides. The Early Adopter Programme accepts the first 100 members automatically, teaches the product through a guided tour, and activates the first complimentary Pro month when onboarding is complete.
 >
-> So feedbacks.dev now has two lanes. Start free is the primary CTA. Apply to the Founding Beta is secondary and clearly says it is optional. The beta buys research depth, not artificial scarcity.
+> Near each renewal, members get a structured prompt: what is good, what is bad, and what should improve. Submitting it activates the next Pro month, up to 12 total. A two-month grace period handles missed deadlines; after that the programme closes automatically without deleting product data.
 >
-> I’ll report the honest funnel after the first batch: visits, projects, verified installs, first feedback, and seven-day returns. The metric I care about is first feedback received-not applications.
+> Start Free remains the primary CTA. Join the Early Adopter Programme is optional and capped only because the programme has a defined lifecycle. I’ll report the honest funnel: visits, projects, verified installs, first feedback, completed check-ins, and seven-day returns.
 >
-> Has anyone else separated open product access from limited high-touch onboarding? What broke?
+> Has anyone else tried a feedback-for-access programme with an explicit end date? What made the exchange feel fair?
 
 ## Hacker News fact checklist - not publishable copy
 
@@ -332,7 +344,7 @@ HN currently prohibits generated or AI-edited text. The founder must write the S
 - Free/Pro limits in plain language;
 - specific known limitations and the exact feedback sought.
 
-Use a plain title beginning `Show HN:`. Do not ask anyone to vote or comment. Do not link to the beta application.
+Use a plain title beginning `Show HN:`. Do not ask anyone to vote or comment. Do not link to the programme enrolment page.
 
 ## Paid creative copy
 

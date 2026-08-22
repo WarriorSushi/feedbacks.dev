@@ -4,9 +4,10 @@ Last updated: 2026-08-22
 
 ## August 22 launch-readiness refresh
 
-- General Free signup remains open to every visitor. The optional Founding Beta is a separate application lane for a small cohort that receives hands-on onboarding and direct product access.
-- The marketing homepage now states the full collect, contextualize, triage, and close-the-loop promise in the first viewport and exposes both the open signup and Founding Beta paths.
-- Founding Beta applications are validated on the server, abuse-limited, and stored in a service-only `beta_applications` table. Anonymous and authenticated database roles have no table privileges, RLS is enabled, and the explicit deny policy was verified on the live Supabase project.
+- General Free signup remains open to every visitor. The optional Early Adopter Programme automatically accepts up to 100 members without a review call or observed onboarding session.
+- Early Adopter onboarding is handled by the persisted product tour. Completing it activates the first complimentary Pro month; structured monthly feedback renews one month at a time up to 12 total months.
+- Programme feedback opens seven days before each due date, remains claimable through a two-month grace period inside a maximum 14-month programme window, and is mirrored into the private product inbox. A dashboard banner, daily lifecycle job, deduplicated service emails, and explicit completed/removed states make the programme end predictably without deleting customer data.
+- Free and Pro now both expose complete feedback history. The old 30-day Free visibility cutoff did not delete or materially reduce stored data, so it was removed from the entitlement matrix and every customer-facing surface.
 - Cron, health, and internal job bearer credentials now use constant-time comparison. Public CSP reports are byte-bounded and rate-limited before logging. The framework-identifying response header is disabled.
 - The current baseline is 217 unit tests, passing TypeScript and ESLint, no known production dependency vulnerabilities, and a passing live Supabase schema contract.
 - The release passed `pnpm ci:verify` and production deployment `dpl_4QaQWDFBm6Vnu5KwFbRCjW8eafQa` for commit `1ed713d` is Ready on all canonical aliases; post-deploy public browser smoke and error/5xx log scans are clean.

@@ -67,6 +67,10 @@ test('downgrades are reversible, preserve data, and freeze only excess projects'
   const lifecycle = read('../../src/lib/billing-lifecycle.ts')
   const billing = read('../../src/lib/billing.ts')
   const notifications = read('../../src/lib/notifications.ts')
+  const downgradeNotifications = notifications.slice(
+    notifications.indexOf('export async function notifyUserOfDowngradeGrace'),
+    notifications.indexOf('export type EarlyAdopterNoticeType'),
+  )
 
   assert.match(migration, /grace_ends_at > grace_started_at/i)
   assert.match(migration, /plan_freeze_reason = 'downgrade'/i)
@@ -83,9 +87,9 @@ test('downgrades are reversible, preserve data, and freeze only excess projects'
   assert.match(lifecycle, /billing_lifecycle_notices/)
   assert.match(lifecycle, /90 \* 24 \* 60 \* 60 \* 1000/)
   assert.match(lifecycle, /network_hash: null, device_hash: null/)
-  assert.match(notifications, /Plan change notice, day \$\{input\.day\} of 3/)
-  assert.match(notifications, /final three days|three days left|ends in three days/i)
-  assert.doesNotMatch(notifications, /grace period|grace access/i)
+  assert.match(downgradeNotifications, /Plan change notice, day \$\{input\.day\} of 3/)
+  assert.match(downgradeNotifications, /final three days|three days left|ends in three days/i)
+  assert.doesNotMatch(downgradeNotifications, /grace period|grace access/i)
   assert.match(billing, /account\.billing_status === 'cancelled'\) return 'pro'/)
 })
 
@@ -112,49 +116,42 @@ test('advertising integrations remain consent-gated and outside customer widgets
   assert.match(attributionRoute, /maxAge: 0/)
 })
 
-test('lead capture distinguishes email consent from advertising measurement', () => {
+test('Early Adopter enrolment is automatic while newsletter and advertising consent remain separate', () => {
   const page = read('../../src/app/early-access/lead-form.tsx')
   const route = read('../../src/app/api/marketing/leads/route.ts')
-  const betaMigration = read('../../../../sql/064_founding_beta_applications.sql')
+  const migration = read('../../../../sql/065_early_adopter_programme.sql')
 
+  assert.match(page, /programmeTermsAccepted/)
   assert.match(page, /newsletterConsent/)
-  assert.match(page, /Advertising measurement is controlled separately/)
-  assert.match(route, /newsletterConsent !== true/)
+  assert.match(page, /Advertising measurement remains controlled separately/)
+  assert.match(route, /programmeTermsAccepted !== true/)
+  assert.match(route, /newsletterConsent === true/)
   assert.match(route, /checkRateLimit\(request, 'marketing-lead'/)
   assert.match(route, /companyWebsite/)
   assert.match(route, /recordMarketingConversion/)
-  assert.match(route, /validateBetaApplication/)
-  assert.match(route, /from\('beta_applications'\)\.upsert/)
-  assert.match(page, /Apply for the Founding Beta/)
-  assert.match(betaMigration, /alter table public\.beta_applications enable row level security/i)
-  assert.match(betaMigration, /revoke all on table public\.beta_applications from public, anon, authenticated/i)
-  assert.match(betaMigration, /grant select, insert, update, delete on table public\.beta_applications to service_role/i)
+  assert.match(route, /joinEarlyAdopterProgramme\(email\)/)
+  assert.match(route, /activateEarlyAdopterMembership/)
+  assert.doesNotMatch(route, /from\('beta_applications'\)/)
+  assert.match(page, /Join the Early Adopter Programme/)
+  assert.match(migration, /capacity integer not null default 100/i)
 })
 
-test('Founding Beta applications require a real product use case, stage, and install window', async () => {
-  const { validateBetaApplication } = await import('../../src/lib/beta-application.ts')
+test('Early Adopter rewards are capped, atomic, service-only, and never delete product data', () => {
+  const migration = read('../../../../sql/065_early_adopter_programme.sql')
 
-  const invalid = validateBetaApplication({ useCase: 'Too short', applicationStage: 'unknown', installTimeline: '' })
-  assert.equal(invalid.ok, false)
-  if (!invalid.ok) {
-    assert.ok(invalid.fieldErrors.useCase)
-    assert.ok(invalid.fieldErrors.applicationStage)
-    assert.ok(invalid.fieldErrors.installTimeline)
+  for (const table of ['early_adopter_programmes', 'early_adopter_memberships', 'early_adopter_feedback', 'early_adopter_notices']) {
+    assert.match(migration, new RegExp(`alter table public\\.${table} enable row level security`, 'i'))
+    assert.match(migration, new RegExp(`revoke all on table public\\.${table} from public, anon, authenticated`, 'i'))
   }
-
-  const valid = validateBetaApplication({
-    useCase: 'We collect bug reports in Discord and lose the page context every time.',
-    applicationStage: 'early-live',
-    installTimeline: 'this-week',
-    currentTool: 'Discord',
-  })
-  assert.deepEqual(valid, {
-    ok: true,
-    value: {
-      useCase: 'We collect bug reports in Discord and lose the page context every time.',
-      applicationStage: 'early-live',
-      installTimeline: 'this-week',
-      currentTool: 'Discord',
-    },
-  })
+  assert.match(migration, /for update;/i)
+  assert.match(migration, /pro_months_earned between 0 and 12/i)
+  assert.match(migration, /cycle_number between 2 and 12/i)
+  assert.match(migration, /unique \(membership_id, cycle_number\)/i)
+  assert.match(migration, /feedback_opens_at = \(v_now \+ interval '1 month'\) - interval '7 days'/i)
+  assert.match(migration, /grace_ends_at = v_now \+ interval '3 months'/i)
+  assert.match(migration, /programme_expires_at = v_now \+ interval '14 months'/i)
+  assert.match(migration, /on conflict \(membership_id, cycle_number\) do nothing/i)
+  assert.match(migration, /grant execute on function public\.accept_early_adopter\(text, text\) to service_role/i)
+  assert.match(migration, /grant execute on function public\.submit_early_adopter_feedback\(uuid, text, text, text, text\) to service_role/i)
+  assert.doesNotMatch(migration, /delete from public\.(feedback|projects)/i)
 })

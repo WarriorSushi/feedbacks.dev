@@ -197,7 +197,7 @@ export async function notifyUserOfDowngradeGrace(input: {
       2: {
         subject: 'Two days left to keep every project live',
         heading: 'A quick heads-up about your workspace',
-        body: `Your paid Pro period ends ${endDate}. At that time, Free limits apply automatically, including branding, dashboard history, usage quotas, and project limits.`,
+        body: `Your paid Pro period ends ${endDate}. At that time, Free limits apply automatically, including branding, usage quotas, routing limits, and project limits. Your full feedback history remains visible.`,
         action: 'Nothing is deleted. Renewing Pro restores all paid features immediately.',
       },
       3: {
@@ -226,6 +226,110 @@ export async function notifyUserOfDowngradeGrace(input: {
     return true
   } catch (error) {
     console.error('Failed to send downgrade warning notification', error)
+    return false
+  }
+}
+
+export type EarlyAdopterNoticeType =
+  | 'feedback_window_open'
+  | 'feedback_due'
+  | 'grace_month_one'
+  | 'grace_final_week'
+  | 'programme_removed'
+  | 'programme_completed'
+
+export async function notifyEarlyAdopterWelcome(input: { email: string; seatNumber: number }) {
+  const onboardingUrl = `${env.NEXT_PUBLIC_APP_ORIGIN}/auth?redirect=${encodeURIComponent('/dashboard?tour=1')}&email=${encodeURIComponent(input.email)}`
+  try {
+    return await sendResendEmail({
+      to: input.email,
+      subject: '[feedbacks.dev] Your Early Adopter place is reserved',
+      text: `You’re in. Place ${input.seatNumber} of 100 is reserved for you.\n\nSign in with this email and complete the guided onboarding. Pro month one activates automatically when the tour is complete.\n\nStart guided onboarding: ${onboardingUrl}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#17211b;max-width:580px">
+          <h2>Your Early Adopter place is reserved</h2>
+          <p>You’re in. Place ${input.seatNumber} of 100 is reserved for you.</p>
+          <p>Sign in with this email and complete the guided onboarding. Pro month one activates automatically when the tour is complete.</p>
+          <p><a href="${escapeEmailHtml(onboardingUrl)}" style="display:inline-block;padding:11px 16px;border-radius:6px;background:#286b12;color:#f8fbf6;text-decoration:none;font-weight:700">Start guided onboarding</a></p>
+          <p style="color:#59645d">Programme reminders are service emails for the benefit you requested. Marketing emails remain a separate choice.</p>
+        </div>
+      `,
+    })
+  } catch (error) {
+    console.error('Failed to send Early Adopter Programme welcome', error)
+    return false
+  }
+}
+
+export async function notifyEarlyAdopterLifecycle(input: {
+  email: string
+  noticeType: EarlyAdopterNoticeType
+  proMonthsEarned: number
+  feedbackDueAt?: string | null
+  graceEndsAt?: string | null
+  programmeEndsAt?: string | null
+}) {
+  const programmeUrl = `${env.NEXT_PUBLIC_APP_ORIGIN}/early-adopter`
+  const date = (value?: string | null) => value
+    ? new Intl.DateTimeFormat('en', { dateStyle: 'long' }).format(new Date(value))
+    : 'the date shown in your dashboard'
+  const nextMonth = Math.min(12, input.proMonthsEarned + 1)
+  const messages: Record<EarlyAdopterNoticeType, { subject: string; heading: string; body: string; action: string }> = {
+    feedback_window_open: {
+      subject: `Your feedback check-in is open: claim Pro month ${nextMonth}`,
+      heading: 'Your monthly Early Adopter check-in is ready',
+      body: `Tell us what is good, what is bad, and what should improve by ${date(input.feedbackDueAt)}. A complete response adds Pro month ${nextMonth} automatically.`,
+      action: 'Send feedback and renew Pro',
+    },
+    feedback_due: {
+      subject: 'Your Early Adopter feedback is due',
+      heading: 'Your monthly check-in is now due',
+      body: `You can still submit during the two-month grace period, which ends ${date(input.graceEndsAt)}. Pro does not renew until the check-in is complete.`,
+      action: 'Complete the check-in',
+    },
+    grace_month_one: {
+      subject: 'One month remains in your Early Adopter grace period',
+      heading: 'There is still time to stay in the programme',
+      body: `Your check-in is one month overdue. Submit it by ${date(input.graceEndsAt)} to claim Pro month ${nextMonth} and reset the monthly schedule.`,
+      action: 'Send feedback and continue',
+    },
+    grace_final_week: {
+      subject: 'Final week to keep your Early Adopter place',
+      heading: 'Your programme grace period ends soon',
+      body: `Submit your product feedback by ${date(input.graceEndsAt)} to remain in the Early Adopter Programme. If no check-in arrives, the membership ends automatically. Your projects and feedback are never deleted by this change.`,
+      action: 'Submit before the deadline',
+    },
+    programme_removed: {
+      subject: 'Your Early Adopter Programme membership has ended',
+      heading: 'The feedback grace period has ended',
+      body: 'We did not receive the overdue monthly check-in before the two-month grace deadline, so the Early Adopter Programme benefit is now closed. Your account, projects, and feedback remain intact under the normal plan.',
+      action: 'View your account',
+    },
+    programme_completed: {
+      subject: 'You completed the feedbacks.dev Early Adopter Programme',
+      heading: 'Thank you for completing all 12 months',
+      body: `Your final programme month ended ${date(input.programmeEndsAt)}. Your feedback helped shape the product, and your account now continues on its normal Free or paid plan.`,
+      action: 'Open feedbacks.dev',
+    },
+  }
+  const message = messages[input.noticeType]
+
+  try {
+    return await sendResendEmail({
+      to: input.email,
+      subject: `[feedbacks.dev] ${message.subject}`,
+      text: `${message.heading}\n\n${message.body}\n\n${message.action}: ${programmeUrl}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.6;color:#17211b;max-width:580px">
+          <h2>${escapeEmailHtml(message.heading)}</h2>
+          <p>${escapeEmailHtml(message.body)}</p>
+          <p><a href="${escapeEmailHtml(programmeUrl)}" style="display:inline-block;padding:11px 16px;border-radius:6px;background:#286b12;color:#f8fbf6;text-decoration:none;font-weight:700">${escapeEmailHtml(message.action)}</a></p>
+          <p style="color:#59645d">These service emails explain the Pro benefit you enrolled in. Marketing emails remain a separate choice.</p>
+        </div>
+      `,
+    })
+  } catch (error) {
+    console.error('Failed to send Early Adopter Programme notification', error)
     return false
   }
 }

@@ -71,8 +71,9 @@ export default function TermsPage() {
 
           <h2>7. Pricing</h2>
           <p>
-            The Free tier includes limited projects, monthly feedback volume, 30-day visible history,
-            limited webhooks, and API / MCP access. Pro raises or removes those limits for larger teams.
+            The Free tier includes limited projects, monthly feedback volume, full feedback history,
+            limited webhooks, and API / MCP access. Pro raises or removes the project, volume, routing,
+            analytics, and branding limits for larger teams.
             Billing is handled through Dodo Payments. Plan changes take effect after verified billing
             events are processed on our server.
           </p>
@@ -91,12 +92,24 @@ export default function TermsPage() {
             self-referrals, duplicate accounts, automation, fraud, or other abuse.
           </p>
 
-          <h2>10. Changes</h2>
+          <h2>10. Early Adopter Programme</h2>
+          <p>
+            The Early Adopter Programme accepts up to 100 members while places remain. Completing guided
+            onboarding grants the first complimentary Pro month. Each complete monthly product-feedback
+            check-in may grant one additional month, up to 12 total months. Missed check-ins have a two-month
+            grace period within a programme window of no more than 14 months after onboarding. The programme
+            ends after the final earned month, when the applicable grace period expires, or at that final window.
+            Programme access is non-transferable, has no cash value, and may be closed for abuse. Lifecycle
+            service emails are part of administering the requested benefit. Programme completion or removal
+            does not delete projects or feedback.
+          </p>
+
+          <h2>11. Changes</h2>
           <p>
             We may update these terms. Continued use after changes means acceptance.
           </p>
 
-          <h2>11. Contact</h2>
+          <h2>12. Contact</h2>
           <p>
             For billing, account, privacy, or support questions, contact us at{' '}
             <a href="mailto:pashaseenainc@gmail.com" className="underline">pashaseenainc@gmail.com</a>.

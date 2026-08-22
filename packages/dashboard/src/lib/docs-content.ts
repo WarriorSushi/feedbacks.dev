@@ -318,7 +318,7 @@ FEEDBACKS_API_URL=https://app.feedbacks.dev` },
   },
   {
     slug: 'operate/limits', category: 'Operate', title: 'Limits and retention',
-    description: 'Design integrations around current payload, upload, plan, and history boundaries.',
+    description: 'Design integrations around current payload, upload, and plan boundaries.',
     blocks: [
       { type: 'heading', id: 'request-limits', title: 'Request limits' },
       { type: 'table', columns: ['Data', 'Limit'], rows: [
@@ -330,8 +330,8 @@ FEEDBACKS_API_URL=https://app.feedbacks.dev` },
         ['Rating', 'Integer 1 through 5'],
       ] },
       { type: 'heading', id: 'plan', title: 'Plan boundaries' },
-      { type: 'paragraph', text: 'Project count, monthly feedback, visible history, API access, webhook delivery history, and other entitlements depend on the current plan. Billing and the project workspace show the active limits before an action is blocked.' },
-      { type: 'callout', tone: 'note', title: 'Retention policy', body: 'Product history follows plan entitlements. Media retention policy is tracked separately and should not be assumed to be permanent.' },
+      { type: 'paragraph', text: 'Project count, monthly feedback, webhook delivery logs, update analytics, branding, and other entitlements depend on the current plan. Billing and the project workspace show the active limits before an action is blocked. Full feedback history is available on both Free and Pro.' },
+      { type: 'callout', tone: 'note', title: 'Feedback retention', body: 'Feedback history is not shortened on Free. Media and operational security records follow the separate retention policy described in Privacy.' },
     ],
   },
   {

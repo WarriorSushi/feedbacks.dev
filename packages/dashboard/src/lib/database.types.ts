@@ -267,6 +267,172 @@ export type Database = {
           },
         ]
       }
+      early_adopter_feedback: {
+        Row: {
+          anything_else: string | null
+          bad: string
+          cycle_number: number
+          good: string
+          id: string
+          improve: string
+          membership_id: string
+          submitted_at: string
+        }
+        Insert: {
+          anything_else?: string | null
+          bad: string
+          cycle_number: number
+          good: string
+          id?: string
+          improve: string
+          membership_id: string
+          submitted_at?: string
+        }
+        Update: {
+          anything_else?: string | null
+          bad?: string
+          cycle_number?: number
+          good?: string
+          id?: string
+          improve?: string
+          membership_id?: string
+          submitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_adopter_feedback_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "early_adopter_memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      early_adopter_memberships: {
+        Row: {
+          accepted_at: string
+          account_linked_at: string | null
+          completed_at: string | null
+          created_at: string
+          email: string
+          email_hash: string
+          feedback_due_at: string | null
+          feedback_opens_at: string | null
+          grace_ends_at: string | null
+          id: string
+          last_feedback_at: string | null
+          onboarding_completed_at: string | null
+          pro_months_earned: number
+          programme_ends_at: string | null
+          programme_expires_at: string | null
+          removed_at: string | null
+          seat_number: number
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string
+          account_linked_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          email: string
+          email_hash: string
+          feedback_due_at?: string | null
+          feedback_opens_at?: string | null
+          grace_ends_at?: string | null
+          id?: string
+          last_feedback_at?: string | null
+          onboarding_completed_at?: string | null
+          pro_months_earned?: number
+          programme_ends_at?: string | null
+          programme_expires_at?: string | null
+          removed_at?: string | null
+          seat_number: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string
+          account_linked_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          email?: string
+          email_hash?: string
+          feedback_due_at?: string | null
+          feedback_opens_at?: string | null
+          grace_ends_at?: string | null
+          id?: string
+          last_feedback_at?: string | null
+          onboarding_completed_at?: string | null
+          pro_months_earned?: number
+          programme_ends_at?: string | null
+          programme_expires_at?: string | null
+          removed_at?: string | null
+          seat_number?: number
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      early_adopter_notices: {
+        Row: {
+          cycle_number: number
+          id: string
+          membership_id: string
+          notice_type: string
+          sent_at: string
+        }
+        Insert: {
+          cycle_number: number
+          id?: string
+          membership_id: string
+          notice_type: string
+          sent_at?: string
+        }
+        Update: {
+          cycle_number?: number
+          id?: string
+          membership_id?: string
+          notice_type?: string
+          sent_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "early_adopter_notices_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "early_adopter_memberships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      early_adopter_programmes: {
+        Row: {
+          capacity: number
+          created_at: string
+          enrolment_open: boolean
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          enrolment_open?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          enrolment_open?: boolean
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       billing_accounts: {
         Row: {
           billing_currency: string | null
@@ -2191,6 +2357,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_early_adopter: {
+        Args: { p_email: string; p_email_hash: string }
+        Returns: Json
+      }
+      activate_early_adopter_membership: {
+        Args: { p_email: string; p_email_hash: string; p_user_id: string }
+        Returns: Json
+      }
       apply_claimed_billing_event: {
         Args: {
           p_billing_email: string
@@ -2224,6 +2398,10 @@ export type Database = {
           p_route: string
           p_window_seconds?: number
         }
+        Returns: Json
+      }
+      complete_early_adopter_onboarding: {
+        Args: { p_user_id: string }
         Returns: Json
       }
       claim_account_deletion_jobs: {
@@ -2345,6 +2523,16 @@ export type Database = {
           p_user_id: string
         }
         Returns: number
+      }
+      submit_early_adopter_feedback: {
+        Args: {
+          p_anything_else?: string
+          p_bad: string
+          p_good: string
+          p_improve: string
+          p_user_id: string
+        }
+        Returns: Json
       }
       insert_feedback_with_quota: {
         Args: {

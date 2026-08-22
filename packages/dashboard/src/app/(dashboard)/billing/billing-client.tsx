@@ -162,7 +162,7 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
           </div>
           <h2 className="mt-3 text-xl font-semibold tracking-tight">{effectivePro ? 'Your feedback operation is fully unlocked' : hasProIntent ? 'Finish upgrading to Pro' : 'Turn feedback into a shipping system'}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {effectivePro ? 'Every project, integration, history window, and branding control stays available.' : 'Pro removes the ceilings when feedback becomes part of how your product team ships.'}
+            {effectivePro ? 'Every project, integration, advanced update control, and branding option stays available.' : 'Pro removes the ceilings when feedback becomes part of how your product team ships.'}
           </p>
           {cancellationScheduled && (
             <div className="mt-4 flex items-start gap-3 border-y border-amber-500/30 bg-amber-500/10 px-3 py-3 text-sm">
@@ -212,9 +212,9 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
                   ]
                   : [
                     {
-                      label: 'History window',
-                      value: `${summary.entitlements.historyDays || 30} days`,
-                      hint: 'Older data remains stored and returns after upgrade',
+                      label: 'Feedback history',
+                      value: 'Full history',
+                      hint: 'Free accounts keep and can view every feedback item',
                     },
                   ]),
             ].map((item) => (
@@ -261,7 +261,7 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
             {[
               ['Live projects', '2', 'Unlimited'],
               ['Feedback volume', '500 / month', 'Unlimited'],
-              ['History', '30 days', 'Full history'],
+              ['Feedback history', 'Full history', 'Full history'],
               ['Branding', 'feedbacks.dev attribution', 'Your brand only'],
               ['Webhooks', '1 endpoint, 10 logs', 'Unlimited endpoints and logs'],
               ['Product updates', '3 active, 7-day analytics', 'Unlimited, scheduling, 90-day analytics'],

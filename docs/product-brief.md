@@ -121,5 +121,7 @@ The launch target is a full-surface paid release with:
 - Paid-campaign landing and signup paths are measurable only after an explicit visitor choice.
 - Google, Meta, and Reddit measurement belongs to feedbacks.dev marketing surfaces, never the customer widget.
 - Interested visitors can join a focused launch list without creating an account.
+- Up to 100 Early Adopter Programme members are accepted automatically. Guided onboarding unlocks month one of Pro, and one useful monthly product check-in unlocks each later month, up to 12 total months.
+- Members receive clear in-product and email reminders. A missed check-in has a two-month grace period inside a maximum 14-month programme window; the programme then closes without deleting projects or feedback.
 - Each user receives a five-slot invitation link; five verified new-account signups unlock one complimentary Pro month, once.
 - Growth mechanics preserve the same clear hierarchy, privacy boundaries, and abuse resistance as the core product.

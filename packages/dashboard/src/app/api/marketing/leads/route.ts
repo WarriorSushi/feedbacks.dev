@@ -1,7 +1,7 @@
 import { after, NextRequest, NextResponse } from 'next/server'
 import { readJsonBody } from '@/lib/api-request'
 import { checkRateLimit } from '@/lib/rate-limit'
-import { createAdminSupabase } from '@/lib/supabase-server'
+import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import {
   hashMarketingValue,
   MARKETING_CONSENT_VERSION,
@@ -9,7 +9,8 @@ import {
   readMarketingAttribution,
   recordMarketingConversion,
 } from '@/lib/marketing'
-import { validateBetaApplication } from '@/lib/beta-application'
+import { activateEarlyAdopterMembership, joinEarlyAdopterProgramme } from '@/lib/early-adopter'
+import { notifyEarlyAdopterWelcome } from '@/lib/notifications'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
     installTimeline?: string
     currentTool?: string
     newsletterConsent?: boolean
+    programmeTermsAccepted?: boolean
     companyWebsite?: string
   }>(request)
   if (!result.ok) return result.response
@@ -39,61 +41,69 @@ export async function POST(request: NextRequest) {
       fieldErrors: { email: ['Enter a valid email address.'] },
     }, { status: 400 })
   }
-  if (result.data.newsletterConsent !== true) {
+  if (result.data.programmeTermsAccepted !== true) {
     return NextResponse.json({
-      error: 'Confirm that you want product and launch emails.',
-      fieldErrors: { newsletterConsent: ['Consent is required to join the email list.'] },
+      error: 'Confirm the programme renewal terms.',
+      fieldErrors: { programmeTermsAccepted: ['Accept the programme terms to reserve a place.'] },
     }, { status: 400 })
   }
 
-  const application = validateBetaApplication(result.data)
-  if (!application.ok) {
-    return NextResponse.json({
-      error: 'Review the highlighted application details.',
-      fieldErrors: application.fieldErrors,
-    }, { status: 400 })
+  let membership: Awaited<ReturnType<typeof joinEarlyAdopterProgramme>>
+  try {
+    membership = await joinEarlyAdopterProgramme(email)
+  } catch {
+    return NextResponse.json({ error: 'We could not reserve your programme place. Please try again.' }, { status: 500 })
+  }
+  if (!membership.accepted) {
+    return NextResponse.json({ error: 'All 100 Early Adopter Programme places have now been reserved.', full: true }, { status: 409 })
   }
 
   const attribution = readMarketingAttribution(request)
-  const admin = await createAdminSupabase()
   const now = new Date().toISOString()
-  const { error } = await admin.from('marketing_leads').upsert({
-    email,
-    email_hash: hashMarketingValue(email),
-    use_case: application.value.useCase,
-    source: 'founding-beta',
-    consent_version: 'lead-v1',
-    consented_at: now,
-    attribution,
-    updated_at: now,
-  }, { onConflict: 'email_hash' })
-
-  if (error) return NextResponse.json({ error: 'We could not save your request. Please try again.' }, { status: 500 })
-
-  const { error: applicationError } = await admin.from('beta_applications').upsert({
-    email,
-    email_hash: hashMarketingValue(email),
-    use_case: application.value.useCase,
-    product_stage: application.value.applicationStage,
-    install_timeline: application.value.installTimeline,
-    current_tool: application.value.currentTool,
-    applied_at: now,
-    updated_at: now,
-  }, { onConflict: 'email_hash' })
-
-  if (applicationError) {
-    return NextResponse.json({ error: 'We saved your email but could not complete the beta application. Please try again.' }, { status: 500 })
+  if (result.data.newsletterConsent === true) {
+    const admin = await createAdminSupabase()
+    const useCase = typeof result.data.useCase === 'string' ? result.data.useCase.trim().slice(0, 500) : null
+    const { error } = await admin.from('marketing_leads').upsert({
+      email,
+      email_hash: hashMarketingValue(email),
+      use_case: useCase || null,
+      source: 'early-adopter-programme',
+      consent_version: 'lead-v1',
+      consented_at: now,
+      attribution,
+      updated_at: now,
+    }, { onConflict: 'email_hash' })
+    if (error) return NextResponse.json({ error: 'Your place is reserved, but we could not save your email preference. Please try again.' }, { status: 500 })
   }
 
-  const eventId = crypto.randomUUID()
-  after(() => recordMarketingConversion({
-    eventId,
-    eventName: 'Lead',
-    email,
-    sourceUrl: request.headers.get('referer'),
-    attribution,
-    request,
-  }))
+  const supabase = await createServerSupabase()
+  const { data: { user } } = await supabase.auth.getUser()
+  const accountLinked = Boolean(user?.email && user.email.toLowerCase() === email)
+  if (user && accountLinked) await activateEarlyAdopterMembership(user.id, email)
 
-  return NextResponse.json({ accepted: true, eventId, consentVersion: MARKETING_CONSENT_VERSION })
+  const eventId = crypto.randomUUID()
+  after(async () => {
+    await Promise.all([
+      recordMarketingConversion({
+        eventId,
+        eventName: 'Lead',
+        email,
+        sourceUrl: request.headers.get('referer'),
+        attribution,
+        request,
+      }),
+      membership.alreadyJoined || !membership.seatNumber
+        ? Promise.resolve(false)
+        : notifyEarlyAdopterWelcome({ email, seatNumber: membership.seatNumber }),
+    ])
+  })
+
+  return NextResponse.json({
+    accepted: true,
+    seatNumber: membership.seatNumber,
+    alreadyJoined: membership.alreadyJoined,
+    accountLinked,
+    eventId,
+    consentVersion: MARKETING_CONSENT_VERSION,
+  })
 }

@@ -4,21 +4,21 @@ Last reviewed: 22 August 2026
 
 This is the launch source of truth. It turns the broad go-to-market thesis in `docs/2026-08-02-go-to-market-plan.md` into a staged operating plan.
 
-## The decision: open product, selective partnership
+## The decision: open product, automated early-adopter programme
 
 Do **not** put the product behind a waitlist. The public landing page should always let a developer create the Free plan immediately: no application, card, or trial clock. A developer who arrives with intent should never have to ask permission to use a working product.
 
-Run the Founding Beta as a second, optional lane for people who want closer access:
+Run the Early Adopter Programme as a second, optional lane for people who want to exchange useful monthly product feedback for Pro:
 
 ```text
 Landing page
 ├── Start free -> sign in -> create project -> install -> first feedback
-└── Apply for Founding Beta -> short application -> reviewed batch
-                                      ├── invited -> onboarding session + private channel
-                                      └── not yet -> useful updates; can still start free
+└── Join Early Adopter Programme -> automatic seat reservation (up to 100)
+                                      ├── guided tour -> Pro month one
+                                      └── monthly check-in -> next Pro month, up to 12
 ```
 
-The beta is not an access gate. It is a research cohort and high-touch customer-development program. This preserves conversion while producing the five to fifteen close collaborators needed to improve activation.
+The programme is not an access gate and does not promise observed sessions or private founder access. The product handles onboarding, check-in windows, renewal, reminders, the two-month grace period, and programme completion automatically.
 
 ## Positioning
 
@@ -34,7 +34,7 @@ Proof, in order:
 2. the production widget is under 20 KB gzip and loads asynchronously;
 3. a real feedback item with page/browser context and an optional screenshot;
 4. the clean path from inbox to public product update;
-5. Free: two projects, 500 feedback items per month, 30 days of history, no card;
+5. Free: two projects, 500 feedback items per month, full feedback history, no card;
 6. Pro: $19 per month, unlimited projects and feedback.
 
 Do not lead with “all-in-one,” AI, MCP, public boards, or integrations. Those are supporting proof after the core loop is understood.
@@ -50,24 +50,23 @@ Prioritize people who can install the widget themselves and have enough traffic 
 
 Deprioritize idea-stage founders without a live surface, enterprises needing procurement, native-only mobile apps, and teams seeking a full research repository.
 
-## Founding Beta offer
+## Early Adopter Programme offer
 
-Target 12 accepted teams in three batches of four. An application is strong when the applicant has a live product, can install in seven days, expects real user traffic, and can attend one 25-minute session.
+Offer exactly 100 places. Every valid enrolment is accepted automatically while a place remains; there is no fit review or manual batch.
 
-Accepted teams receive:
+Members receive:
 
-- a 25-minute install/activation session;
-- direct founder support for four weeks;
-- a private feedback channel and prioritized bug response;
-- recognition as a founding customer only with explicit permission;
-- one complimentary Pro month after completing the research cycle, not merely for applying.
+- guided in-product onboarding;
+- one complimentary Pro month after finishing the tour;
+- one additional Pro month for each complete monthly product check-in;
+- up to 12 total Pro months;
+- in-product and email reminders with a two-month grace period.
 
 In return, ask for:
 
-- install within seven days;
-- permission to observe the setup session;
-- two short check-ins after first feedback;
-- honest permission-based use of a quote or anonymized lesson.
+- completion of the guided onboarding;
+- one honest monthly check-in covering what is good, bad, and worth improving;
+- specific examples when possible.
 
 Never promise roadmap control, lifetime pricing, or guaranteed feature delivery.
 
@@ -83,9 +82,9 @@ Before inviting a cohort:
 - security advisor has no unresolved repository-actionable high-severity findings;
 - support, privacy, and status paths work.
 
-### Stage 1 - Founding Beta, days 1–7
+### Stage 1 - Early Adopter Programme, days 1–7
 
-Recruit 12 qualified teams but onboard only four at a time. Watch at least five installs. Exit when:
+Open all 100 places and monitor the automated onboarding and first-month activation path. Exit when:
 
 - 60% of new projects verify installation;
 - 65% of verified installs receive first feedback;
@@ -94,7 +93,7 @@ Recruit 12 qualified teams but onboard only four at a time. Watch at least five 
 
 ### Stage 2 - controlled public distribution, days 8–21
 
-Publish one channel-native artifact at a time. Reddit, X, LinkedIn, Indie Hackers, and technical content should land on the open Free path; the beta CTA remains secondary. Exit when at least 20 organic accounts have reached `first_feedback_received` and seven-day activated retention can be measured.
+Publish one channel-native artifact at a time. Reddit, X, LinkedIn, Indie Hackers, and technical content should land on the open Free path; the Early Adopter Programme CTA remains secondary. Exit when at least 20 organic accounts have reached `first_feedback_received` and seven-day activated retention can be measured.
 
 ### Stage 3 - coordinated launch, days 22–30
 
@@ -106,7 +105,7 @@ Every weekday:
 
 1. answer product and community replies;
 2. review yesterday's funnel by source;
-3. watch one session or interview one activated/non-activated user;
+3. review one Early Adopter check-in or interview one activated/non-activated user;
 4. ship one meaningful friction fix or publish one useful artifact;
 5. record the lesson in the public changelog when it is safe to share.
 

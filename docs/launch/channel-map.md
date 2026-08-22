@@ -6,7 +6,7 @@ Last reviewed: 22 August 2026. Platform and community rules change; recheck the 
 
 | Priority | Channel | Job | Primary asset | Destination | Success signal |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Direct founder outreach | Learn and activate | Personal note + live install | Founding Beta, then Free | Verified install |
+| 1 | Direct founder outreach | Learn and activate | Personal note + programme invitation | Early Adopter Programme or Free | Verified install + useful check-in |
 | 2 | Reddit | Earn problem credibility | Native lesson/checklist | Useful article or open Free path | Qualified replies + activation |
 | 3 | X | Build repeated familiarity | Build thread, clips, shipped lessons | Open Free path | Profile-to-activation |
 | 4 | LinkedIn | Reach technical founders through trust | Founder narrative + carousel/video | Open Free path | Saves, DMs, activation |
@@ -19,9 +19,9 @@ Last reviewed: 22 August 2026. Platform and community rules change; recheck the 
 
 ## Direct founder outreach
 
-Start with people whose product and technical situation you understand. Build a list of 30; contact no more than ten per day. Each note must name the recipient's product, why the widget plausibly fits, and the ask: “Would you let me watch you try the install?”
+Start with people whose product and technical situation you understand. Build a list of 30; contact no more than ten per day. Each note must name the recipient's product, why the widget plausibly fits, and invite them to try the guided install and send an honest monthly product check-in.
 
-Do not scrape emails, send bulk sequences, or call the beta “exclusive” unless capacity is genuinely limited. The limit is founder onboarding capacity, not manufactured scarcity.
+Do not scrape emails or send bulk sequences. State the real 100-member capacity plainly and never imply that a person manually reviews or observes enrolment.
 
 ## Reddit
 
@@ -76,7 +76,7 @@ Sequence:
 2. publish the “why scattered feedback fails” founder post;
 3. publish a seven-slide “actionable bug report” checklist;
 4. publish the 30-second install proof;
-5. ask accepted beta founders to comment only if they genuinely used it-never script praise.
+5. ask active Early Adopter members to comment only if they genuinely used it-never script praise.
 
 Sources: [LinkedIn Page creation](https://www.linkedin.com/help/linkedin/answer/a543852/create-a-linkedin-page), [posting as a Page](https://www.linkedin.com/help/linkedin/answer/a1660869).
 
@@ -90,7 +90,7 @@ Sources: [Meta creative strategy](https://www.facebook.com/business/ads/ad-creat
 
 ## Product Hunt
 
-Product Hunt should happen after the beta produces activation proof and customer language. The product must be live; Product Hunt's March 2026 featuring criteria emphasize useful, novel, high-craft, or creative products. A personal maker account must be at least one week old, and the current flow supports a draft or scheduling within 30 days. Product Hunt recommends posting your own product; a hunter is unnecessary.
+Product Hunt should happen after the Early Adopter Programme produces activation proof and customer language. The product must be live; Product Hunt's March 2026 featuring criteria emphasize useful, novel, high-craft, or creative products. A personal maker account must be at least one week old, and the current flow supports a draft or scheduling within 30 days. Product Hunt recommends posting your own product; a hunter is unnecessary.
 
 Preparation:
 
@@ -102,7 +102,7 @@ Preparation:
 - be present for the 24-hour Pacific-time launch window;
 - ask people to try and give feedback, never condition rewards on votes.
 
-Do not launch until Free is open. A beta application-only destination conflicts with the “live and usable” requirement and depresses activation. Product Hunt relaunches generally require six months and a significant product change, so use the moment carefully.
+Do not launch until Free is open. A programme-only destination conflicts with the “live and usable” requirement and depresses activation. Product Hunt relaunches generally require six months and a significant product change, so use the moment carefully.
 
 Sources: [how to post](https://help.producthunt.com/en/articles/479557-how-to-post-a-product), [featuring guidelines](https://help.producthunt.com/en/articles/9883485-product-hunt-featuring-guidelines), [personal account requirements](https://help.producthunt.com/en/articles/771527-personal-account-vs-company-account), [relaunch policy](https://help.producthunt.com/en/articles/484934-can-i-relaunch-my-product).
 

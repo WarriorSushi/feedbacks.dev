@@ -962,10 +962,10 @@
 }
 
 .landing-try-stage-open {
-  flex: none;
-  min-height: 0;
-  margin-top: 0.85rem;
-  padding-bottom: 0.75rem;
+  flex: 1;
+  min-height: calc(100svh - 12rem);
+  margin-top: 1.5rem;
+  padding-bottom: 2.5rem;
   transform: none;
 }
 
@@ -3415,6 +3415,44 @@ html.windows98 {
 
 .windows98 input:is([type="checkbox"], [type="radio"], [type="range"]) {
   accent-color: var(--win98-title);
+}
+
+/* The Early Adopter campaign is a fixed dark art direction, independent of the
+   dashboard appearance selected by a returning visitor. */
+.windows98 .early-adopter-shell [class*="rounded-"] {
+  border-radius: revert-layer !important;
+}
+
+.windows98 .early-adopter-shell input:not([type="checkbox"], [type="radio"], [type="range"]) {
+  border: 1px solid rgb(63 63 70) !important;
+  border-radius: 0.5rem !important;
+  background: rgb(10 10 10) !important;
+  color: rgb(245 245 245) !important;
+  box-shadow: none !important;
+}
+
+.windows98 .early-adopter-shell input::placeholder {
+  color: rgb(82 82 91) !important;
+  text-shadow: none;
+}
+
+.windows98 .early-adopter-shell button {
+  border: 0 !important;
+  border-radius: 0.5rem !important;
+  background: rgb(163 230 53) !important;
+  color: rgb(10 10 10) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+.windows98 .early-adopter-shell button:disabled {
+  background: rgb(82 82 91) !important;
+  color: rgb(161 161 170) !important;
+}
+
+.windows98 .early-adopter-shell input:is([type="checkbox"], [type="radio"]) {
+  accent-color: rgb(163 230 53);
 }
 
 .windows98 [role="switch"][data-state="checked"] {

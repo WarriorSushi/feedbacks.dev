@@ -5,6 +5,8 @@ import { createServerSupabase } from '@/lib/supabase-server'
 import { Sidebar } from '@/components/sidebar'
 import { ProductTour } from '@/components/product-tour'
 import { CURRENT_PROJECT_COOKIE } from '@/lib/project-selection'
+import { EarlyAdopterBanner } from '@/components/early-adopter-banner'
+import { deriveEarlyAdopterStatus, getEarlyAdopterMembershipForUser, isEarlyAdopterProgrammeActive } from '@/lib/early-adopter'
 
 export default async function DashboardLayout({
   children,
@@ -24,6 +26,7 @@ export default async function DashboardLayout({
     { data: projects },
     { data: billingAccount },
     { data: userSettings },
+    earlyAdopterMembership,
     headersList,
     cookieStore,
   ] = await Promise.all([
@@ -42,6 +45,7 @@ export default async function DashboardLayout({
       .select('preferences')
       .eq('user_id', user.id)
       .maybeSingle(),
+    getEarlyAdopterMembershipForUser(user.id),
     headers(),
     cookies(),
   ])
@@ -75,6 +79,9 @@ export default async function DashboardLayout({
         guidedTutorialProgress?: Record<string, { stepIndex: number; completedAt?: string; dismissedAt?: string }>
         })
       : {}
+  const effectiveEarlyAdopterMembership = earlyAdopterMembership
+    ? { ...earlyAdopterMembership, status: deriveEarlyAdopterStatus(earlyAdopterMembership) }
+    : null
   return (
     <div className="dashboard-shell flex h-dvh flex-col bg-background md:flex-row">
       <Sidebar
@@ -86,12 +93,19 @@ export default async function DashboardLayout({
         currentProjectId={currentProjectId}
         boardSlugs={boardSlugs}
         billingAccount={billingAccount}
+        earlyAdopterProgrammeActive={isEarlyAdopterProgrammeActive(effectiveEarlyAdopterMembership)}
       />
       <main className="min-h-0 flex-1 overflow-y-auto bg-background pb-[env(safe-area-inset-bottom,0px)]">
+        <EarlyAdopterBanner membership={effectiveEarlyAdopterMembership} />
         <div className="workspace-route-enter mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 md:px-8 md:py-7">{children}</div>
       </main>
       <ProductTour
-        initialOpen={false}
+        initialOpen={Boolean(
+          effectiveEarlyAdopterMembership
+          && ['accepted', 'onboarding'].includes(effectiveEarlyAdopterMembership.status)
+          && !preferences.productTourCompletedAt
+          && !preferences.productTourDismissedAt
+        )}
         defaultProjectId={currentProjectId || projects?.[0]?.id}
         initialTutorialProgress={preferences.guidedTutorialProgress}
       />

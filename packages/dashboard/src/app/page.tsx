@@ -72,7 +72,7 @@ export default function LandingPage() {
             <Link href="#product"><Button variant="ghost" size="sm">Product</Button></Link>
             <Link href="#setup"><Button variant="ghost" size="sm">Install</Button></Link>
             <Link href="#pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
-            <Link href="/early-access"><Button variant="ghost" size="sm">Founding beta</Button></Link>
+            <Link href="/early-access"><Button variant="ghost" size="sm">Early adopter programme</Button></Link>
             <Link href="/docs" prefetch={false}><Button variant="ghost" size="sm">Docs</Button></Link>
           </nav>
           <div className="flex items-center gap-1 sm:gap-2">
@@ -121,7 +121,7 @@ export default function LandingPage() {
             <div className="mx-auto max-w-3xl text-center">
               <div className="landing-premium-card inline-flex items-center gap-2 rounded-full border bg-card px-3 py-2 text-xs font-semibold"><Gift className="h-4 w-4 text-primary" />A genuinely useful Free plan</div>
               <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Use the full feedback loop for free.</h2>
-              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">No trial clock and no card. Upgrade when more projects, more history, and more volume are worth paying for.</p>
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">No trial clock and no card. Upgrade when more projects, unlimited volume, and deeper routing are worth paying for.</p>
             </div>
 
             <div className="mt-12 grid gap-5 lg:grid-cols-[1.06fr_0.94fr]">
@@ -131,7 +131,7 @@ export default function LandingPage() {
                 <div className="mt-5 flex items-end gap-2"><p className="text-6xl font-semibold tracking-[-0.06em]">${freePlan.monthlyPrice}</p><span className="pb-2 text-sm text-muted-foreground">no card needed</span></div>
                 <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">For side projects, launches, and growing products collecting their first useful signals.</p>
                 <ul className="mt-8 grid gap-3 text-sm sm:grid-cols-2">
-                  {[`${freePlan.projectLimit} projects`, `${freePlan.feedbackMonthlyLimit} feedback / month`, `${freePlan.historyDays} days of history`, 'Feedback form + inbox', 'Public board + product updates', 'REST API + MCP + 1 webhook'].map((item) => <li key={item} className="landing-premium-card flex items-start gap-2 rounded-lg border p-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
+                  {[`${freePlan.projectLimit} projects`, `${freePlan.feedbackMonthlyLimit} feedback / month`, 'Full feedback history', 'Feedback form + inbox', 'Public board + product updates', 'REST API + MCP + 1 webhook'].map((item) => <li key={item} className="landing-premium-card flex items-start gap-2 rounded-lg border p-3"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
                 </ul>
                 <Link href={authHref} className="mt-auto block pt-8"><Button className="h-12 w-full gap-2 text-sm">Create a free project <ArrowRight className="h-4 w-4" /></Button></Link>
                 <p className="mt-4 text-center text-[10px] text-muted-foreground">No card. No trial clock. No tiny asterisk plotting backstage.</p>
@@ -142,9 +142,9 @@ export default function LandingPage() {
                 <div className="relative flex h-full flex-col">
                   <p className="text-sm font-semibold text-primary">Pro, when you need it</p>
                   <div className="mt-5 flex items-end gap-2"><p className="text-6xl font-semibold tracking-[-0.06em]">${proPlan.monthlyPrice}</p><span className="pb-2 text-sm text-muted-foreground">/ month</span></div>
-                  <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">For products with steady feedback, longer memory, and more destinations. Cancel without losing your work.</p>
+                  <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">For products with steady feedback, more destinations, and more automation. Cancel without losing your work.</p>
                   <ul className="mt-8 space-y-3 text-sm">
-                    {['Unlimited projects and feedback', 'Full feedback history', 'Unlimited webhook destinations', 'Scheduling and 90-day update analytics', 'Custom branding controls'].map((item) => <li key={item} className="flex items-start gap-3 border-b pb-3 last:border-0"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
+                    {['Unlimited projects and feedback', 'Unlimited webhook destinations', 'Scheduling and 90-day update analytics', 'Custom branding controls', 'No feedbacks.dev attribution'].map((item) => <li key={item} className="flex items-start gap-3 border-b pb-3 last:border-0"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
                   </ul>
                   <Link href={proAuthHref} className="mt-auto block pt-8"><Button className="h-12 w-full bg-lime-300 text-sm text-zinc-950 hover:bg-lime-200">Choose Pro</Button></Link>
                   <p className="mt-4 text-center text-[10px] text-muted-foreground">The Free plan stays available if you downgrade.</p>
@@ -193,7 +193,7 @@ export default function LandingPage() {
       <footer className="border-t px-5 py-8 sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-5 sm:flex-row">
           <BrandWordmark className="text-sm font-semibold" markClassName="h-5 w-5" />
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground"><Link href="/feedback-widget">Feedback widget</Link><Link href="/feedback-widget/nextjs">Next.js guide</Link><Link href="/docs" prefetch={false}>Docs</Link><Link href="/boards" prefetch={false}>Public boards</Link><Link href="/early-access">Founding beta</Link><Link href="/privacy">Privacy</Link><PrivacyChoicesButton /><Link href="/terms">Terms</Link></div>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground"><Link href="/feedback-widget">Feedback widget</Link><Link href="/feedback-widget/nextjs">Next.js guide</Link><Link href="/docs" prefetch={false}>Docs</Link><Link href="/boards" prefetch={false}>Public boards</Link><Link href="/early-access">Early adopter programme</Link><Link href="/privacy">Privacy</Link><PrivacyChoicesButton /><Link href="/terms">Terms</Link></div>
           <a href="https://github.com/WarriorSushi/Feedbacks.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"><Github className="h-4 w-4" /> Source available</a>
         </div>
       </footer>

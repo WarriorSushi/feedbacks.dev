@@ -3,6 +3,7 @@ import { sanitizeRedirectPath } from '@/lib/redirects'
 import { after, NextResponse } from 'next/server'
 import { recordNewUserAcquisition } from '@/lib/referrals'
 import { recordMarketingConversion, REFERRAL_COOKIE } from '@/lib/marketing'
+import { activateEarlyAdopterMembership } from '@/lib/early-adopter'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -16,7 +17,10 @@ export async function GET(request: Request) {
       let acquisition: Awaited<ReturnType<typeof recordNewUserAcquisition>> = null
       try {
         const { data: { user } } = await supabase.auth.getUser()
-        if (user) acquisition = await recordNewUserAcquisition(request, user)
+        if (user) {
+          acquisition = await recordNewUserAcquisition(request, user)
+          if (user.email) await activateEarlyAdopterMembership(user.id, user.email)
+        }
         if (user && acquisition?.marketingConsent) {
           after(() => recordMarketingConversion({
             eventId: acquisition!.eventId,
