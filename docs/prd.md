@@ -146,9 +146,9 @@ Must support:
 ### Growth and referrals
 
 - Provide a focused lead-capture page with explicit email consent and clear distinction from account creation.
-- Provide a separate, deliberately limited 100-seat Early Adopter Programme that closes enrolment atomically when the cohort fills.
-- Link programme enrolment to the account with the same verified email and automatically launch a persisted product tour.
-- Make the guided tour mandatory for programme members and activate Pro after it completes, then extend Pro by one month for each structured monthly feedback submission, up to 12 total months.
+- Provide a separate, deliberately limited 100-seat Early Adopter Programme. Email submission creates a claim-ready record but does not consume capacity or guarantee a place.
+- Link the claim to the account with the same verified email and automatically launch a persisted product tour.
+- Make the guided tour mandatory for programme claimants and atomically allocate one of the 100 places only when the tour completes and Pro activates. The same locked operation must prevent concurrent completions from overfilling the cohort. Then extend Pro by one month for each structured monthly feedback submission, up to 12 total months.
 - Open monthly feedback seven days before its due date, show an authenticated dashboard banner, send deduplicated lifecycle emails, and allow a two-month grace period inside a maximum 14-month programme window before automatic removal.
 - Keep programme feedback private, mirror it into the internal product inbox, and preserve every customer project and feedback item when the programme completes or ends.
 - Protect each member's enrolment-date Pro list price as their maximum Pro list price for at least five years from enrolment, excluding taxes and optional add-ons.

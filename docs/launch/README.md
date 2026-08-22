@@ -13,7 +13,7 @@ Run the Early Adopter Programme as a second, optional lane for people who want t
 ```text
 Landing page
 ├── Start free -> sign in -> create project -> install -> first feedback
-└── Join Early Adopter Programme -> automatic seat reservation (up to 100)
+└── Join Early Adopter Programme -> email claim -> verified account -> completed tour claims one of 100 places
                                       ├── guided tour -> Pro month one
                                       └── monthly check-in -> next Pro month, up to 12
 ```

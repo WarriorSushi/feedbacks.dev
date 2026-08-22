@@ -16,7 +16,7 @@ Subject: Could you try a 10-minute feedback install?
 
 > Hey [name] - I noticed [specific product/surface]. I’m building feedbacks.dev, a small in-product feedback widget that captures the page, browser context, and optional screenshot, then gives the team a clean inbox and update loop.
 >
-> The product is already open and free to use. I’m also opening a 100-member Early Adopter Programme: enrolment is automatic while places remain, the onboarding tour unlocks month one of Pro, and an honest monthly product check-in can unlock each following month, up to 12 total.
+> The product is already open and free to use. I’m also opening a 100-member Early Adopter Programme: submit your email, sign in with the same address, and complete the guided onboarding to claim a place and unlock Pro. An honest monthly product check-in can unlock each following month, up to 12 total.
 >
 > If that sounds useful, join with your work email and follow the guided setup. No call or application review is required.
 >
@@ -30,19 +30,19 @@ Subject: A feedback setup for [product], not a generic demo
 >
 > feedbacks.dev installs with one snippet, keeps the widget under 20 KB gzip, and sends feedback into an inbox with useful technical context. The Free plan is open-no card or application.
 >
-> The optional Early Adopter Programme has 100 places and accepts people automatically while a place remains. Complete the guided onboarding to activate the first Pro month, then submit one useful product check-in near each renewal to earn the next month, up to 12. Join here: [link]. The public Free product is here: [link].
+> The optional Early Adopter Programme has 100 places. Email submission prepares your claim; completing guided onboarding confirms a remaining place and activates Pro. Then submit one useful product check-in near each renewal to earn the next month, up to 12. Join here: [link]. The public Free product is here: [link].
 
 No automated follow-up chain. One considerate follow-up after five business days is the maximum.
 
 ## Early Adopter Programme email sequence
 
-### Place reserved
+### Place ready to claim
 
-Subject: Your Early Adopter Programme place is reserved
+Subject: Your Early Adopter Programme place is ready to claim
 
-> You’re in. Place [seat] of 100 is reserved for [email].
+> Your programme claim is ready for [email]. Email submission alone does not consume one of the 100 places.
 >
-> Sign in with that email and complete the guided onboarding. When the tour is finished, your first complimentary Pro month activates automatically.
+> Sign in with that email and complete the guided onboarding. When the tour is finished, one remaining place is confirmed and Pro activates automatically.
 >
 > [Continue onboarding]
 
@@ -114,7 +114,7 @@ Subject: Your widget is live-send the first test report
 
 > The feedbacks.dev Early Adopter Programme is open to the first 100 members.
 >
-> Joining is automatic while places remain. Finish the guided onboarding for Pro month one, then give one honest product check-in near each renewal to earn the next month, up to 12 total. A two-month grace period protects a missed check-in.
+> Submit your email while places remain, then finish the guided onboarding to claim a place and activate Pro. Give one honest product check-in near each renewal to earn the next month, up to 12 total. A two-month grace period protects a missed check-in.
 >
 > Start: [link]
 > Join the programme: [link]
@@ -287,7 +287,7 @@ First maker comment:
 >
 > feedbacks.dev is now open to everyone on a genuinely usable Free plan: two projects, 500 feedback items per month, no card.
 >
-> I’m also opening 100 places in an optional Early Adopter Programme. Joining is automatic while places remain. Guided onboarding activates Pro month one; each useful monthly product check-in can activate another month, up to 12 total. It is not a waitlist; anyone can start Free now.
+> I’m also opening 100 places in an optional Early Adopter Programme. An email starts the claim, and completing guided onboarding confirms a remaining place and activates Pro. Each useful monthly product check-in can activate another month, up to 12 total. It is not a waitlist; anyone can start Free now.
 >
 > [tagged link]
 >
@@ -323,7 +323,7 @@ Title: `Why I paired an open Free plan with a 100-member feedback-for-Pro progra
 >
 > Product access should be open: a technical founder arriving with intent can create a Free project, install the widget, and learn from real users without asking permission.
 >
-> Research should be predictable for both sides. The Early Adopter Programme accepts the first 100 members automatically, teaches the product through a guided tour, and activates the first complimentary Pro month when onboarding is complete.
+> Research should be predictable for both sides. The Early Adopter Programme confirms the first 100 completed onboarding claims, teaches the product through a guided tour, and activates Pro when onboarding is complete.
 >
 > Near each renewal, members get a structured prompt: what is good, what is bad, and what should improve. Submitting it activates the next Pro month, up to 12 total. A two-month grace period handles missed deadlines; after that the programme closes automatically without deleting product data.
 >

@@ -326,7 +326,7 @@ export type Database = {
           programme_ends_at: string | null
           programme_expires_at: string | null
           removed_at: string | null
-          seat_number: number
+          seat_number: number | null
           status: string
           updated_at: string
           user_id: string | null
@@ -348,7 +348,7 @@ export type Database = {
           programme_ends_at?: string | null
           programme_expires_at?: string | null
           removed_at?: string | null
-          seat_number: number
+          seat_number?: number | null
           status?: string
           updated_at?: string
           user_id?: string | null
@@ -370,7 +370,7 @@ export type Database = {
           programme_ends_at?: string | null
           programme_expires_at?: string | null
           removed_at?: string | null
-          seat_number?: number
+          seat_number?: number | null
           status?: string
           updated_at?: string
           user_id?: string | null

@@ -349,9 +349,9 @@ Story:
 As an early adopter, I want an automatic, clearly scheduled way to earn Pro by giving useful feedback so I never depend on a vague application review or founder call.
 
 Acceptance criteria:
-- the programme accepts no more than 100 members and closes enrolment atomically when the cohort fills
-- the account email links the reserved place to guided onboarding
-- programme members cannot skip guided onboarding, and completing it activates Pro
+- entering an email creates a claim-ready record but does not reduce the 100 available places
+- the account email links the claim to guided onboarding
+- claimants cannot skip guided onboarding; the same atomic completion that activates Pro assigns the seat, and concurrent completions cannot exceed 100 members
 - a structured feedback check-in grants one later month at a time, up to 12 total months
 - the check-in opens seven days before its due date and is reachable from a dashboard banner
 - lifecycle emails explain the due date, two-month grace period, final week, completion, and removal

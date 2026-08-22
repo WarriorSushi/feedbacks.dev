@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 }
 
 const benefits = [
-  { icon: Users, title: 'Only 100 places', body: 'The cohort is deliberately small, and enrolment closes as soon as all 100 places are reserved.' },
+  { icon: Users, title: 'Only 100 places', body: 'A place is counted only after guided onboarding is complete and Pro activates. Unverified email entries never reduce availability.' },
   { icon: GraduationCap, title: 'Guided product onboarding', body: 'A required built-in tour teaches the feedback form, inbox, installation, updates, and integrations. Pro activates when you finish.' },
   { icon: RefreshCw, title: 'Pro renews with useful feedback', body: 'Near each month’s end, tell us what is good, what is bad, and what should improve. Each complete check-in adds one Pro month.' },
   { icon: CalendarCheck2, title: 'Up to 12 Pro months', body: 'Earn 12 months in total. A missed check-in has a two-month grace period, and the complete programme concludes within 14 months.' },
@@ -58,10 +58,10 @@ export default async function EarlyAccessPage() {
         <aside className="lg:sticky lg:top-10">
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-semibold tracking-tight">Reserve your place</h2>
-              <p className="mt-1 text-base text-muted-foreground">Places close when this 100-member cohort fills.</p>
+              <h2 className="text-2xl font-semibold tracking-tight">Claim your place</h2>
+              <p className="mt-1 text-base text-muted-foreground">Sign in and finish onboarding to confirm it.</p>
             </div>
-            <p className="shrink-0 text-base font-semibold text-primary">{availability.remaining} of {availability.capacity} left</p>
+            <p className="shrink-0 text-base font-semibold text-primary">{availability.remaining} of {availability.capacity} unclaimed</p>
           </div>
           <LeadForm open={availability.open} />
         </aside>

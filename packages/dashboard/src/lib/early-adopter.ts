@@ -21,7 +21,17 @@ export type EarlyAdopterJoinResult = {
   seatNumber?: number
   status?: EarlyAdopterStatus
   alreadyJoined?: boolean
+  claimReady?: boolean
   reason?: 'capacity_full'
+}
+
+export type EarlyAdopterActivationResult = {
+  linked: boolean
+  membershipId?: string
+  seatNumber?: number
+  status?: EarlyAdopterStatus
+  claimReady?: boolean
+  reason?: 'not_enrolled' | 'already_linked' | 'removed' | 'capacity_full'
 }
 
 export type EarlyAdopterRenewalResult = {
@@ -58,7 +68,20 @@ function parseJoinResult(value: Json | null): EarlyAdopterJoinResult {
     seatNumber: asNumber(row.seatNumber),
     status: asString(row.status) as EarlyAdopterStatus | undefined,
     alreadyJoined: asBoolean(row.alreadyJoined),
+    claimReady: asBoolean(row.claimReady),
     reason: asString(row.reason) as EarlyAdopterJoinResult['reason'],
+  }
+}
+
+function parseActivationResult(value: Json | null): EarlyAdopterActivationResult {
+  const row = asObject(value)
+  return {
+    linked: asBoolean(row.linked) === true,
+    membershipId: asString(row.membershipId),
+    seatNumber: asNumber(row.seatNumber),
+    status: asString(row.status) as EarlyAdopterStatus | undefined,
+    claimReady: asBoolean(row.claimReady),
+    reason: asString(row.reason) as EarlyAdopterActivationResult['reason'],
   }
 }
 
@@ -80,7 +103,7 @@ export async function getEarlyAdopterAvailability() {
   const admin = await createAdminSupabase()
   const [{ data: programme, error: programmeError }, { count, error: countError }] = await Promise.all([
     admin.from('early_adopter_programmes').select('capacity, enrolment_open').eq('id', 1).maybeSingle(),
-    admin.from('early_adopter_memberships').select('id', { count: 'exact', head: true }),
+    admin.from('early_adopter_memberships').select('id', { count: 'exact', head: true }).not('seat_number', 'is', null),
   ])
 
   if (programmeError || countError) {
@@ -118,7 +141,7 @@ export async function activateEarlyAdopterMembership(userId: string, emailInput:
     p_email_hash: hashMarketingValue(email),
   })
   if (error) throw new Error(error.message)
-  return asObject(data)
+  return parseActivationResult(data)
 }
 
 export async function getEarlyAdopterMembershipForUser(userId: string) {
@@ -176,6 +199,7 @@ export async function completeEarlyAdopterOnboarding(userId: string) {
   return {
     granted: asBoolean(row.granted) === true,
     reason: asString(row.reason),
+    seatNumber: asNumber(row.seatNumber),
     proMonthsEarned: asNumber(row.proMonthsEarned),
     complimentaryProUntil: asString(row.complimentaryProUntil),
   }

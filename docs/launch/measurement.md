@@ -69,13 +69,15 @@ There is no application-review rubric. Every valid enrolment is accepted while o
 
 | Signal | Initial target | Action when weak |
 | --- | ---: | --- |
-| Reserved place -> linked account | 80% | Clarify same-email sign-in |
+| Email claim -> linked account | 80% | Clarify same-email sign-in |
 | Linked account -> tour complete | 65% | Fix guided onboarding |
 | Tour complete -> first feedback renewal | 55% | Improve prompt timing and questions |
 | On-time monthly renewal | 60% | Improve banner and reminder emails |
 | Grace-period recovery | Observe | Clarify deadline and benefit |
 
 Review responses for product learning, not member selection. Never use protected characteristics or inferred sensitive traits. Duplicate month grants, more than 100 seats, or access beyond the twelfth earned month are release-blocking defects.
+
+Availability counts only memberships whose guided onboarding completed and Pro activated. Email claims and linked-but-incomplete accounts must not reduce the remaining-place total.
 
 ## Weekly source scorecard
 

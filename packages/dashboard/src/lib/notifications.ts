@@ -238,18 +238,18 @@ export type EarlyAdopterNoticeType =
   | 'programme_removed'
   | 'programme_completed'
 
-export async function notifyEarlyAdopterWelcome(input: { email: string; seatNumber: number }) {
+export async function notifyEarlyAdopterWelcome(input: { email: string }) {
   const onboardingUrl = `${env.NEXT_PUBLIC_APP_ORIGIN}/auth?redirect=${encodeURIComponent('/dashboard?tour=1')}&email=${encodeURIComponent(input.email)}`
   try {
     return await sendResendEmail({
       to: input.email,
-      subject: '[feedbacks.dev] Your Early Adopter place is reserved',
-      text: `You’re in. Place ${input.seatNumber} of 100 is reserved for you.\n\nSign in with this email and complete every step of the guided onboarding. Pro activates automatically at the end.\n\nStart guided onboarding: ${onboardingUrl}`,
+      subject: '[feedbacks.dev] Your Early Adopter place is ready to claim',
+      text: `Your Early Adopter Programme claim is ready.\n\nSign in with this email and complete every step of the guided onboarding. When you finish, one of the remaining 100 places is confirmed and Pro activates automatically. Email submission alone does not consume a programme place.\n\nStart guided onboarding: ${onboardingUrl}`,
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.6;color:#17211b;max-width:580px">
-          <h2>Your Early Adopter place is reserved</h2>
-          <p>You’re in. Place ${input.seatNumber} of 100 is reserved for you.</p>
-          <p>Sign in with this email and complete every step of the guided onboarding. Pro activates automatically at the end.</p>
+          <h2>Your Early Adopter place is ready to claim</h2>
+          <p>Your programme claim is ready.</p>
+          <p>Sign in with this email and complete every step of the guided onboarding. When you finish, one of the remaining 100 places is confirmed and Pro activates automatically. Email submission alone does not consume a programme place.</p>
           <p><a href="${escapeEmailHtml(onboardingUrl)}" style="display:inline-block;padding:11px 16px;border-radius:6px;background:#286b12;color:#f8fbf6;text-decoration:none;font-weight:700">Start guided onboarding</a></p>
           <p style="color:#59645d">Programme reminders are service emails for the benefit you requested. Marketing emails remain a separate choice.</p>
         </div>

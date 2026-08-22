@@ -116,10 +116,11 @@ test('advertising integrations remain consent-gated and outside customer widgets
   assert.match(attributionRoute, /maxAge: 0/)
 })
 
-test('Early Adopter enrolment is automatic while newsletter and advertising consent remain separate', () => {
+test('Early Adopter claim setup is automatic while newsletter and advertising consent remain separate', () => {
   const page = read('../../src/app/early-access/lead-form.tsx')
   const route = read('../../src/app/api/marketing/leads/route.ts')
   const migration = read('../../../../sql/065_early_adopter_programme.sql')
+  const claimMigration = read('../../../../sql/066_claim_early_adopter_seats_on_activation.sql')
 
   assert.match(page, /programmeTermsAccepted/)
   assert.match(page, /newsletterConsent/)
@@ -132,12 +133,15 @@ test('Early Adopter enrolment is automatic while newsletter and advertising cons
   assert.match(route, /joinEarlyAdopterProgramme\(email\)/)
   assert.match(route, /activateEarlyAdopterMembership/)
   assert.doesNotMatch(route, /from\('beta_applications'\)/)
-  assert.match(page, /Join the Early Adopter Programme/)
+  assert.match(page, /Continue to claim a programme place/)
   assert.match(migration, /capacity integer not null default 100/i)
+  assert.match(claimMigration, /insert into public\.early_adopter_memberships \(email, email_hash\)/i)
+  assert.doesNotMatch(claimMigration, /insert into public\.early_adopter_memberships \(email, email_hash, seat_number\)/i)
 })
 
 test('Early Adopter rewards are capped, atomic, service-only, and never delete product data', () => {
   const migration = read('../../../../sql/065_early_adopter_programme.sql')
+  const claimMigration = read('../../../../sql/066_claim_early_adopter_seats_on_activation.sql')
 
   for (const table of ['early_adopter_programmes', 'early_adopter_memberships', 'early_adopter_feedback', 'early_adopter_notices']) {
     assert.match(migration, new RegExp(`alter table public\\.${table} enable row level security`, 'i'))
@@ -154,4 +158,8 @@ test('Early Adopter rewards are capped, atomic, service-only, and never delete p
   assert.match(migration, /grant execute on function public\.accept_early_adopter\(text, text\) to service_role/i)
   assert.match(migration, /grant execute on function public\.submit_early_adopter_feedback\(uuid, text, text, text, text\) to service_role/i)
   assert.doesNotMatch(migration, /delete from public\.(feedback|projects)/i)
+  assert.match(claimMigration, /from public\.early_adopter_programmes[\s\S]*for update;/i)
+  assert.match(claimMigration, /where seat_number is not null/i)
+  assert.match(claimMigration, /revoke execute on function public\.complete_early_adopter_onboarding\(uuid\) from public, anon, authenticated/i)
+  assert.match(claimMigration, /grant execute on function public\.complete_early_adopter_onboarding\(uuid\) to service_role/i)
 })

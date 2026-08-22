@@ -20,7 +20,7 @@ Use “Day 1” as the first day after the production release gate. Do not compr
 | 2 | Review onboarding-tour completion | Log every hesitation; ship the smallest fix | Tour-to-install baseline |
 | 3 | Send five researched outreach notes | Publish the actionable-report LinkedIn carousel | Qualified programme enrolments |
 | 4 | Review first guided installs | Publish X build thread using real data | Project-to-verify baseline |
-| 5 | Verify automatic acceptance and seat count | Join five Reddit conversations without product links | Programme lifecycle confirmed |
+| 5 | Verify email claims do not change the seat count and completed tours do | Join five Reddit conversations without product links | Programme lifecycle confirmed |
 | 6 | Publish one public changelog lesson | Edit r/SaaS draft to match actual data; verify rules | Proof, not claims |
 | 7 | Weekly review; no launch blast | Fix the largest activation drop | Gate decision documented |
 

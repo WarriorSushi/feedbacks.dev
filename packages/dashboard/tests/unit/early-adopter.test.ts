@@ -20,23 +20,24 @@ test('Early Adopter lifecycle sends one stage-appropriate reminder and transitio
   assert.match(vercel, /api\/cron\/early-adopter/)
 })
 
-test('Early Adopter service emails explain rewards, deadlines, grace, completion, and data safety', () => {
+test('Early Adopter service emails explain claiming, rewards, deadlines, grace, completion, and data safety', () => {
   const notifications = read('../../src/lib/notifications.ts')
   const joinRoute = read('../../src/app/api/marketing/leads/route.ts')
 
   assert.match(notifications, /notifyEarlyAdopterWelcome/)
-  assert.match(notifications, /Place \$\{input\.seatNumber\} of 100/)
-  assert.match(notifications, /Pro activates automatically at the end/)
+  assert.match(notifications, /place is ready to claim/i)
+  assert.match(notifications, /Email submission alone does not consume a programme place/)
+  assert.match(notifications, /Pro activates automatically/)
   assert.match(notifications, /claim Pro month \$\{nextMonth\}/)
   assert.match(notifications, /two-month grace period/i)
   assert.match(notifications, /Final week to keep your Early Adopter place/)
   assert.match(notifications, /projects and feedback are never deleted/i)
   assert.match(notifications, /complet(?:ed|ing) all 12 months/i)
-  assert.match(joinRoute, /membership\.alreadyJoined \|\| !membership\.seatNumber/)
-  assert.match(joinRoute, /notifyEarlyAdopterWelcome\(\{ email, seatNumber: membership\.seatNumber \}\)/)
+  assert.match(joinRoute, /membership\.alreadyJoined/)
+  assert.match(joinRoute, /notifyEarlyAdopterWelcome\(\{ email \}\)/)
 })
 
-test('password, magic-link, OAuth, and already signed-in enrolments all link the reserved place', () => {
+test('password, magic-link, OAuth, and already signed-in enrolments all link the programme claim', () => {
   const authPage = read('../../src/app/auth/page.tsx')
   const callback = read('../../src/app/auth/callback/route.ts')
   const activateRoute = read('../../src/app/api/early-adopter/activate/route.ts')
@@ -56,6 +57,7 @@ test('programme onboarding cannot be dismissed and activates Pro only after the 
   const celebration = read('../../src/components/pro-activation-celebration.tsx')
   const onboardingRoute = read('../../src/app/api/early-adopter/onboarding/route.ts')
   const migration = read('../../../../sql/065_early_adopter_programme.sql')
+  const claimMigration = read('../../../../sql/066_claim_early_adopter_seats_on_activation.sql')
 
   assert.match(tour, /if \(required\) return/)
   assert.match(tour, /Complete the guided tour to unlock Pro/)
@@ -72,6 +74,11 @@ test('programme onboarding cannot be dismissed and activates Pro only after the 
   assert.doesNotMatch(layout, /!preferences\.productTourDismissedAt/)
   assert.match(onboardingRoute, /Finish every tour step before activating Pro/)
   assert.match(migration, /productTourCompletedAt/)
+  assert.match(claimMigration, /alter column seat_number drop not null/i)
+  assert.match(claimMigration, /where onboarding_completed_at is null/i)
+  assert.match(claimMigration, /generate_series\(1, v_program\.capacity\)/i)
+  assert.match(claimMigration, /set seat_number = v_next_seat/i)
+  assert.match(claimMigration, /'reason', 'capacity_full'/i)
 })
 
 test('programme theme follows the visitor through enrolment and sign-in', () => {
@@ -99,6 +106,9 @@ test('programme marketing keeps places scarce and protects member pricing', () =
   assert.match(programmePage, /Only 100 places/)
   assert.match(programmePage, /Five years of price protection/)
   assert.match(programmePage, /grandfathered for at least five years/)
+  assert.match(programmePage, /place is counted only after guided onboarding/i)
+  assert.match(leadForm, /Your place is ready to claim/)
+  assert.match(leadForm, /Email submission alone does not use one of the 100 places/)
   assert.match(terms, /maximum Pro list price for at least five years/)
   assert.doesNotMatch(programmePage, /accepted automatically/i)
   assert.doesNotMatch(leadForm, /accepted automatically/i)

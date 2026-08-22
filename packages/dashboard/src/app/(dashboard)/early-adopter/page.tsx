@@ -31,7 +31,7 @@ export default async function EarlyAdopterProgrammePage() {
     <div className="mx-auto max-w-4xl space-y-8">
       <header>
         <h1 className="max-w-3xl text-3xl font-semibold tracking-[-0.035em] sm:text-5xl">Your Early Adopter Programme</h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">You have seat {membership.seat_number} of 100. Complete onboarding once, then share one useful check-in near the end of each month to earn up to 12 Pro months.</p>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">{membership.seat_number ? `You have seat ${membership.seat_number} of 100.` : 'Your place is ready to claim.'} Complete onboarding once to confirm the place and activate Pro, then share one useful check-in near the end of each month to earn up to 12 Pro months.</p>
       </header>
 
       <section className="grid overflow-hidden rounded-lg border bg-card sm:grid-cols-3">
@@ -55,7 +55,7 @@ export default async function EarlyAdopterProgrammePage() {
       {onboarding ? (
         <section className="border-y bg-primary/[0.055] px-5 py-8 sm:rounded-lg sm:border sm:px-8">
           <h2 className="text-2xl font-semibold tracking-tight">Complete guided onboarding to activate Pro.</h2>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">Every step is required. The tour shows where feedback arrives, how to configure and install the form, and where to connect the tools you already use. Pro activates automatically at the end.</p>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">Every step is required. The tour shows where feedback arrives, how to configure and install the form, and where to connect the tools you already use. Your place is counted and Pro activates together when the tour is complete.</p>
           <Button asChild size="lg" className="mt-6"><Link href="/dashboard?tour=1">Start guided onboarding</Link></Button>
         </section>
       ) : feedbackOpen ? (

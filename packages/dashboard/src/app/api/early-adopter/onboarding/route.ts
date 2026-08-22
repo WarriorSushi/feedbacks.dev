@@ -9,6 +9,12 @@ export async function POST() {
 
   try {
     const result = await completeEarlyAdopterOnboarding(user.id)
+    if (!result.granted && result.reason === 'capacity_full') {
+      return NextResponse.json({
+        error: 'All 100 programme places were claimed before onboarding finished.',
+        reason: result.reason,
+      }, { status: 409 })
+    }
     if (!result.granted && !['already_completed', 'not_enrolled'].includes(result.reason || '')) {
       return NextResponse.json({ error: 'Finish every tour step before activating Pro.', reason: result.reason }, { status: 409 })
     }

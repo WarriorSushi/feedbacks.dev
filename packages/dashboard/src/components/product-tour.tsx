@@ -382,7 +382,17 @@ export function ProductTour({
       if (tutorialId === 'navigation') {
         await savePreference('productTourCompletedAt')
         const programmeResponse = await fetch('/api/early-adopter/onboarding', { method: 'POST' })
-        const programme = await programmeResponse.json().catch(() => null) as { granted?: boolean; reason?: string; complimentaryProUntil?: string } | null
+        const programme = await programmeResponse.json().catch(() => null) as { error?: string; granted?: boolean; reason?: string; complimentaryProUntil?: string } | null
+        if (required && programme?.reason === 'capacity_full') {
+          toast({
+            title: 'All 100 programme places have been claimed',
+            description: 'Your product tour is complete, but no programme place or complimentary Pro was activated.',
+            variant: 'destructive',
+          })
+          closeTour(true, true)
+          router.refresh()
+          return
+        }
         if (required && (!programmeResponse.ok || (!programme?.granted && programme?.reason !== 'already_completed'))) {
           throw new Error('Pro could not be activated yet. Your guided onboarding will stay open so you can retry.')
         }

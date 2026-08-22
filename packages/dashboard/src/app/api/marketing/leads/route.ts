@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   if (result.data.programmeTermsAccepted !== true) {
     return NextResponse.json({
       error: 'Confirm the programme renewal terms.',
-      fieldErrors: { programmeTermsAccepted: ['Accept the programme terms to reserve a place.'] },
+      fieldErrors: { programmeTermsAccepted: ['Accept the programme terms to claim a place through onboarding.'] },
     }, { status: 400 })
   }
 
@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
   try {
     membership = await joinEarlyAdopterProgramme(email)
   } catch {
-    return NextResponse.json({ error: 'We could not reserve your programme place. Please try again.' }, { status: 500 })
+    return NextResponse.json({ error: 'We could not prepare your programme claim. Please try again.' }, { status: 500 })
   }
   if (!membership.accepted) {
-    return NextResponse.json({ error: 'All 100 Early Adopter Programme places have now been reserved.', full: true }, { status: 409 })
+    return NextResponse.json({ error: 'All 100 Early Adopter Programme places have now been claimed.', full: true }, { status: 409 })
   }
 
   const attribution = readMarketingAttribution(request)
@@ -73,13 +73,19 @@ export async function POST(request: NextRequest) {
       attribution,
       updated_at: now,
     }, { onConflict: 'email_hash' })
-    if (error) return NextResponse.json({ error: 'Your place is reserved, but we could not save your email preference. Please try again.' }, { status: 500 })
+    if (error) return NextResponse.json({ error: 'Your programme claim is ready, but we could not save your email preference. Please try again.' }, { status: 500 })
   }
 
   const supabase = await createServerSupabase()
   const { data: { user } } = await supabase.auth.getUser()
-  const accountLinked = Boolean(user?.email && user.email.toLowerCase() === email)
-  if (user && accountLinked) await activateEarlyAdopterMembership(user.id, email)
+  const matchesSignedInAccount = Boolean(user?.email && user.email.toLowerCase() === email)
+  const activation = user && matchesSignedInAccount
+    ? await activateEarlyAdopterMembership(user.id, email)
+    : null
+  if (activation?.reason === 'capacity_full') {
+    return NextResponse.json({ error: 'All 100 Early Adopter Programme places have now been claimed.', full: true }, { status: 409 })
+  }
+  const accountLinked = activation?.linked === true
 
   const eventId = crypto.randomUUID()
   after(async () => {
@@ -92,9 +98,9 @@ export async function POST(request: NextRequest) {
         attribution,
         request,
       }),
-      membership.alreadyJoined || !membership.seatNumber
+      membership.alreadyJoined
         ? Promise.resolve(false)
-        : notifyEarlyAdopterWelcome({ email, seatNumber: membership.seatNumber }),
+        : notifyEarlyAdopterWelcome({ email }),
     ])
   })
 
