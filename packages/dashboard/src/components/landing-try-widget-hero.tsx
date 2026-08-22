@@ -37,6 +37,53 @@ const confetti = [
   ['68%', '-16deg', '120ms'], ['78%', '24deg', '260ms'], ['90%', '-34deg', '200ms'],
 ] as const
 
+const easeInOutQuint = (progress: number) => progress < 0.5
+  ? 16 * progress ** 5
+  : 1 - ((-2 * progress + 2) ** 5) / 2
+
+function waitForMotion(milliseconds: number, signal: AbortSignal) {
+  return new Promise<void>((resolve) => {
+    if (signal.aborted || milliseconds === 0) return resolve()
+    const timer = window.setTimeout(resolve, milliseconds)
+    signal.addEventListener('abort', () => {
+      window.clearTimeout(timer)
+      resolve()
+    }, { once: true })
+  })
+}
+
+function animateWindowScroll(top: number, duration: number, signal: AbortSignal) {
+  return new Promise<void>((resolve) => {
+    if (signal.aborted || duration === 0) {
+      if (!signal.aborted) window.scrollTo({ top, left: 0, behavior: 'auto' })
+      return resolve()
+    }
+
+    const start = window.scrollY
+    const distance = top - start
+    const startedAt = window.performance.now()
+    let frame = 0
+
+    const tick = (now: number) => {
+      if (signal.aborted) return resolve()
+      const progress = Math.min(1, (now - startedAt) / duration)
+      window.scrollTo({ top: start + distance * easeInOutQuint(progress), left: 0, behavior: 'auto' })
+      if (progress < 1) {
+        frame = window.requestAnimationFrame(tick)
+        return
+      }
+      window.scrollTo({ top, left: 0, behavior: 'auto' })
+      resolve()
+    }
+
+    signal.addEventListener('abort', () => {
+      window.cancelAnimationFrame(frame)
+      resolve()
+    }, { once: true })
+    frame = window.requestAnimationFrame(tick)
+  })
+}
+
 type AnnotationGeometry = {
   width: number
   height: number
@@ -221,6 +268,7 @@ function HeroAnnotations({
 export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
   const [open, setOpen] = React.useState(false)
   const [submitted, setSubmitted] = React.useState(false)
+  const [completed, setCompleted] = React.useState(false)
   const [message, setMessage] = React.useState('')
   const [feedbackType, setFeedbackType] = React.useState<FeedbackType>('praise')
   const [rating, setRating] = React.useState(0)
@@ -291,9 +339,7 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
     const closeTimer = window.setTimeout(() => {
       setOpen(false)
       setSubmitted(false)
-      window.setTimeout(() => {
-        document.getElementById('product')?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' })
-      }, reduceMotion ? 0 : 480)
+      setCompleted(true)
     }, 3000)
     return () => {
       window.cancelAnimationFrame(frame)
@@ -302,7 +348,41 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
     }
   }, [reduceMotion, submitted])
 
+  React.useEffect(() => {
+    if (!completed) return
+    const controller = new AbortController()
+    const { signal } = controller
+
+    const revealAndReturn = async () => {
+      await new Promise<void>((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve())))
+      if (signal.aborted) return
+      const hero = sectionRef.current
+      const product = document.getElementById('product')
+      if (!hero || !product) return
+
+      const heroDocumentTop = hero.getBoundingClientRect().top + window.scrollY
+      const stickyHeaderHeight = document.querySelector<HTMLElement>('.landing-header')?.offsetHeight || 0
+      const heroTop = Math.max(0, heroDocumentTop - stickyHeaderHeight)
+      const productTop = product.getBoundingClientRect().top + window.scrollY
+      if (reduceMotion) {
+        window.scrollTo({ top: heroTop, left: 0, behavior: 'auto' })
+        return
+      }
+
+      const peekTop = heroTop + (productTop - heroTop) * 0.52
+      await animateWindowScroll(peekTop, 900, signal)
+      if (signal.aborted) return
+      await waitForMotion(220, signal)
+      if (signal.aborted) return
+      await animateWindowScroll(heroTop, 1_100, signal)
+    }
+
+    void revealAndReturn()
+    return () => controller.abort()
+  }, [completed, reduceMotion])
+
   const launchDemo = () => {
+    setCompleted(false)
     setOpen(true)
     setSubmitted(false)
     setMessage('')
@@ -321,14 +401,22 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
 
   return (
     <section ref={sectionRef} className="landing-try-hero relative isolate overflow-hidden border-b" aria-labelledby="try-widget-title">
-      <motion.div layout className={cn('landing-try-shell relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-[1600px] flex-col px-5 pb-8 sm:px-6', open && 'landing-try-shell-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
-        <motion.div layout="position" className={cn('landing-try-heading relative z-[2] mx-auto max-w-[920px] text-center', open && 'landing-try-heading-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
-          <h1 id="try-widget-title" className="font-semibold tracking-[-0.055em]">
-            <span className="block">We believe in “<span className="landing-try-show-accent">Show</span>, don&apos;t tell”.</span>
-            <span className="mt-1 block text-primary">Your users will press this button.</span>
-          </h1>
+      <motion.div layout className={cn('landing-try-shell relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-[1600px] flex-col px-5 pb-8 sm:px-6', open && 'landing-try-shell-open', completed && 'landing-try-shell-complete')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
+        <motion.div layout="position" className={cn('landing-try-heading relative z-[2] mx-auto max-w-[920px] text-center', open && 'landing-try-heading-open', completed && 'landing-try-heading-complete')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
+          <AnimatePresence mode="wait" initial={false}>
+            {completed ? (
+              <motion.h1 key="complete-heading" id="try-widget-title" initial={reduceMotion ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduceMotion ? 0 : 0.64, ease: [0.16, 1, 0.3, 1] }} className="font-semibold tracking-[-0.055em]">
+                The Best Addition to Your Website/App/SaaS ever
+              </motion.h1>
+            ) : (
+              <motion.h1 key="demo-heading" id="try-widget-title" initial={false} exit={{ opacity: 0, y: -14 }} transition={{ duration: reduceMotion ? 0 : 0.34 }} className="font-semibold tracking-[-0.055em]">
+                <span className="block">We believe in “<span className="landing-try-show-accent">Show</span>, don&apos;t tell”.</span>
+                <span className="mt-1 block text-primary">Your users will press this button.</span>
+              </motion.h1>
+            )}
+          </AnimatePresence>
           <AnimatePresence>
-            {!open && (
+            {!open && !completed && (
               <motion.p
                 initial={reduceMotion ? false : { opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -342,13 +430,15 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
           </AnimatePresence>
         </motion.div>
 
-        <motion.div ref={stageRef} layout="position" className={cn('landing-try-stage relative mx-auto flex min-h-[300px] w-full flex-col items-center justify-center', open && 'landing-try-stage-open')} transition={{ layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
+        <AnimatePresence initial={false}>
+        {!completed && (
+        <motion.div ref={stageRef} key="interactive-stage" layout="position" initial={false} exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -18, scale: 0.985 }} className={cn('landing-try-stage relative mx-auto flex min-h-[300px] w-full flex-col items-center justify-center', open && 'landing-try-stage-open')} transition={{ duration: reduceMotion ? 0 : 0.42, layout: { duration: reduceMotion ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
           <div className="landing-try-grid absolute inset-0" aria-hidden="true" />
-          <AnimatePresence>{!open && <HeroAnnotations reduceMotion={reduceMotion} stageRef={stageRef} buttonRef={launchButtonRef} />}</AnimatePresence>
+          <AnimatePresence>{!open && !completed && <HeroAnnotations reduceMotion={reduceMotion} stageRef={stageRef} buttonRef={launchButtonRef} />}</AnimatePresence>
 
           <div className="widget-theme-preview contents">
             <AnimatePresence mode="wait" initial={false}>
-            {!open && (
+            {!open && !completed && (
               <motion.button
                 ref={launchButtonRef}
                 key="launch"
@@ -458,21 +548,33 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
             </motion.button>
           )}
         </motion.div>
+        )}
+        </AnimatePresence>
 
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {!open && (
             <motion.div
+              key={completed ? 'complete-cta' : 'default-cta'}
               initial={reduceMotion ? false : { opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: reduceMotion ? 0 : 0.38, delay: reduceMotion ? 0 : 0.18 }}
-              className="relative z-20 mx-auto flex max-w-2xl flex-col items-center text-center"
+              className={cn('relative z-20 mx-auto flex max-w-2xl flex-col items-center text-center', completed && 'landing-try-cta-complete max-w-4xl')}
             >
               <div className="flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row">
-                <Button asChild size="lg" className="h-12 px-7"><Link href={authHref}>Start free</Link></Button>
-                <Button asChild size="lg" variant="outline" className="h-12 gap-2 px-7"><Link href="/early-access"><UsersRound className="h-4 w-4" />Join the Early Adopter Programme</Link></Button>
+                <Button asChild size="lg" className={cn('h-12 px-7', completed && 'h-auto min-h-14 px-9 py-3 text-base sm:min-h-16 sm:px-11 sm:text-lg')}><Link href={authHref}>Start free</Link></Button>
+                <Button asChild size="lg" variant="outline" className={cn('h-12 gap-2 px-7', completed && 'h-auto min-h-14 px-9 py-3 text-base sm:min-h-16 sm:px-11 sm:text-lg')}><Link href="/early-access"><UsersRound className={cn('h-4 w-4', completed && 'h-5 w-5')} />Join the Early Adopter Programme</Link></Button>
               </div>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">Free signup is open to everyone. The 100-member programme adds guided onboarding and up to 12 earned Pro months.</p>
+              {!completed ? <p className="mt-3 text-sm leading-6 text-muted-foreground">Free signup is open to everyone. The 100-member programme adds guided onboarding and up to 12 earned Pro months.</p> : null}
+              {completed ? (
+                <motion.div className="landing-post-demo-guide" initial={reduceMotion ? false : { opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduceMotion ? 0 : 0.56, delay: reduceMotion ? 0 : 0.3, ease: [0.16, 1, 0.3, 1] }}>
+                  <Image className="landing-post-demo-mascot" src="/mascots-v2/hero-bungee.png" alt="" width={1024} height={1536} sizes="144px" aria-hidden="true" />
+                  <button type="button" onClick={() => document.getElementById('product')?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' })} className="landing-scroll-cue inline-flex min-h-14 flex-col items-center justify-center gap-1 rounded-full px-8 text-base font-semibold tracking-[-0.02em] text-foreground/80 transition-colors hover:text-foreground">
+                    <span>Scroll below to learn more</span>
+                    <ChevronDown className="h-6 w-6" />
+                  </button>
+                </motion.div>
+              ) : null}
             </motion.div>
           )}
         </AnimatePresence>
