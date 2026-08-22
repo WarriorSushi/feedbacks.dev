@@ -349,7 +349,7 @@ Story:
 As an early adopter, I want an automatic, clearly scheduled way to earn Pro by giving useful feedback so I never depend on a vague application review or founder call.
 
 Acceptance criteria:
-- the programme accepts no more than 100 members and automatically accepts every enrolment while a seat remains
+- the programme accepts no more than 100 members and closes enrolment atomically when the cohort fills
 - the account email links the reserved place to guided onboarding
 - programme members cannot skip guided onboarding, and completing it activates Pro
 - a structured feedback check-in grants one later month at a time, up to 12 total months
@@ -358,6 +358,7 @@ Acceptance criteria:
 - the complete programme closes no later than 14 months after onboarding
 - duplicate or concurrent submissions cannot grant duplicate months
 - programme completion or removal never deletes projects or feedback
+- the Pro list price at enrolment remains the member's maximum Pro list price for at least five years from enrolment, excluding taxes and optional add-ons
 
 ## Epic 11: Talk with the feedbacks.dev team
 

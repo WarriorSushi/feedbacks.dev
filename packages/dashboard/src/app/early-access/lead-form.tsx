@@ -85,7 +85,7 @@ export function LeadForm({ open }: { open: boolean }) {
       <div className="rounded-xl border border-primary/35 bg-card/95 p-7 shadow-[var(--shadow-float)]">
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground"><Check className="h-6 w-6" /></span>
         <h3 className="mt-6 text-2xl font-semibold tracking-tight">You’re in. Seat {result.seatNumber} is yours.</h3>
-        <p className="mt-3 text-base leading-7 text-muted-foreground">{result.alreadyJoined ? 'Your existing place is confirmed.' : 'Your place was accepted automatically.'} Sign in with <strong className="text-foreground">{email}</strong> and complete every step of the guided onboarding. Pro activates automatically at the end.</p>
+        <p className="mt-3 text-base leading-7 text-muted-foreground">{result.alreadyJoined ? 'Your existing place is confirmed.' : 'Your place is confirmed.'} Sign in with <strong className="text-foreground">{email}</strong> and complete every step of the guided onboarding. Pro activates automatically at the end.</p>
         <Button asChild size="lg" className="mt-7 h-12 w-full"><a href={href}>{result.accountLinked ? 'Start guided onboarding' : 'Create or sign in to your account'} <ArrowRight className="ml-2 h-4 w-4" /></a></Button>
       </div>
     )

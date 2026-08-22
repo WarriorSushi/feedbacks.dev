@@ -21,7 +21,7 @@ export default function TermsPage() {
 
         <h1 className="text-3xl font-bold tracking-tight">Terms of Service</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Last updated: August 1, 2026
+          Last updated: August 22, 2026
         </p>
 
         <div className="prose prose-zinc mt-8 max-w-none dark:prose-invert">
@@ -101,7 +101,9 @@ export default function TermsPage() {
             ends after the final earned month, when the applicable grace period expires, or at that final window.
             Programme access is non-transferable, has no cash value, and may be closed for abuse. Lifecycle
             service emails are part of administering the requested benefit. Programme completion or removal
-            does not delete projects or feedback.
+            does not delete projects or feedback. The Pro list price available when a member joins is that
+            member&apos;s maximum Pro list price for at least five years from their programme enrolment date,
+            even if the public Pro list price increases. Applicable taxes and optional add-ons are excluded.
           </p>
 
           <h2>11. Changes</h2>

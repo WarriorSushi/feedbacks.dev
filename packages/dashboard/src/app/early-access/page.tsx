@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, CalendarCheck2, Check, GraduationCap, RefreshCw, Users } from 'lucide-react'
+import { ArrowLeft, BadgeDollarSign, CalendarCheck2, Check, GraduationCap, RefreshCw, Users } from 'lucide-react'
 import { BrandWordmark } from '@/components/brand-wordmark'
 import { BackgroundBeams } from '@/components/ui/background-beams'
 import { getEarlyAdopterAvailability } from '@/lib/early-adopter'
@@ -15,10 +15,11 @@ export const metadata: Metadata = {
 }
 
 const benefits = [
-  { icon: Users, title: '100 members, accepted automatically', body: 'If a place is available, it is reserved immediately. There is no review call or selection queue.' },
+  { icon: Users, title: 'Only 100 places', body: 'The cohort is deliberately small, and enrolment closes as soon as all 100 places are reserved.' },
   { icon: GraduationCap, title: 'Guided product onboarding', body: 'A required built-in tour teaches the feedback form, inbox, installation, updates, and integrations. Pro activates when you finish.' },
   { icon: RefreshCw, title: 'Pro renews with useful feedback', body: 'Near each month’s end, tell us what is good, what is bad, and what should improve. Each complete check-in adds one Pro month.' },
   { icon: CalendarCheck2, title: 'Up to 12 Pro months', body: 'Earn 12 months in total. A missed check-in has a two-month grace period, and the complete programme concludes within 14 months.' },
+  { icon: BadgeDollarSign, title: 'Five years of price protection', body: 'Your Pro price is grandfathered for at least five years from the day you join, even if the public price increases.' },
 ]
 
 export default async function EarlyAccessPage() {
@@ -58,7 +59,7 @@ export default async function EarlyAccessPage() {
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">Reserve your place</h2>
-              <p className="mt-1 text-base text-muted-foreground">Accepted immediately when submitted.</p>
+              <p className="mt-1 text-base text-muted-foreground">Places close when this 100-member cohort fills.</p>
             </div>
             <p className="shrink-0 text-base font-semibold text-primary">{availability.remaining} of {availability.capacity} left</p>
           </div>

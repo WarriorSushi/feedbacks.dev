@@ -72,7 +72,7 @@ export default function LandingPage() {
             <Link href="#product"><Button variant="ghost" size="sm">Product</Button></Link>
             <Link href="#setup"><Button variant="ghost" size="sm">Install</Button></Link>
             <Link href="#pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
-            <Link href="/early-access"><Button variant="ghost" size="sm">Early adopter programme</Button></Link>
+            <Link href="/early-access"><Button variant="outline" size="sm" className="border-primary/30 text-primary hover:border-primary/50 hover:bg-primary/5 hover:text-primary">Join the Early Adopter Programme</Button></Link>
             <Link href="/docs" prefetch={false}><Button variant="ghost" size="sm">Docs</Button></Link>
           </nav>
           <div className="flex items-center gap-1 sm:gap-2">

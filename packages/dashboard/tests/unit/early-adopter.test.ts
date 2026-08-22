@@ -86,3 +86,20 @@ test('programme theme follows the visitor through enrolment and sign-in', () => 
   assert.match(leadForm, /authParams\.set\('appearance', appearance\)/)
   assert.match(authPage, /setTheme\(requestedAppearance\)/)
 })
+
+test('programme marketing keeps places scarce and protects member pricing', () => {
+  const landing = read('../../src/app/page.tsx')
+  const mobileMenu = read('../../src/components/landing-mobile-menu.tsx')
+  const programmePage = read('../../src/app/early-access/page.tsx')
+  const leadForm = read('../../src/app/early-access/lead-form.tsx')
+  const terms = read('../../src/app/terms/page.tsx')
+
+  assert.match(landing, /Join the Early Adopter Programme/)
+  assert.match(mobileMenu, /Join the Early Adopter Programme/)
+  assert.match(programmePage, /Only 100 places/)
+  assert.match(programmePage, /Five years of price protection/)
+  assert.match(programmePage, /grandfathered for at least five years/)
+  assert.match(terms, /maximum Pro list price for at least five years/)
+  assert.doesNotMatch(programmePage, /accepted automatically/i)
+  assert.doesNotMatch(leadForm, /accepted automatically/i)
+})

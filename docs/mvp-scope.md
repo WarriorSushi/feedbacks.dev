@@ -22,7 +22,7 @@ Ship a version of `feedbacks.dev` that proves four things:
 - account-level notification and billing settings
 - consent-gated campaign measurement and a focused lead-capture page
 - a bounded five-invite, one-time complimentary Pro reward
-- a bounded 100-seat Early Adopter Programme with guided onboarding and monthly feedback renewals
+- a bounded 100-seat Early Adopter Programme with guided onboarding, monthly feedback renewals, and five-year Pro price protection
 
 ## Must-have scope
 
