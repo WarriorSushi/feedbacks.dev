@@ -687,10 +687,6 @@
   contain-intrinsic-size: auto 900px;
 }
 
-.win98-section-window {
-  position: relative;
-}
-
 .landing-use-case-row {
   transition:
     padding var(--duration-slow) var(--ease-spring),
@@ -3806,92 +3802,45 @@ html.windows98 {
   border-color: var(--win98-shadow) !important;
 }
 
-.windows98 .marketing-shell > main > .win98-section-window {
-  margin: 12px;
-  border: 0 !important;
-  box-shadow:
-    3px 3px 0 rgb(5 5 8 / 0.42),
-    var(--win98-raised) !important;
-}
-
-.windows98 .marketing-shell > main > .win98-section-window > .win98-chrome {
-  top: 3px;
-}
-
-.windows98 .landing-proof-strip {
-  padding-top: 3.75rem !important;
-}
-
 .windows98 .landing-reveal > div:not(.win98-chrome) {
   transition: none;
 }
 
 .windows98 .marketing-shell > main > section.landing-try-hero {
-  padding: 12px;
-  background: var(--win98-desktop) !important;
+  padding: 0;
+  border-bottom: 1px solid var(--win98-shadow);
+  background: var(--win98-face) !important;
 }
 
 .windows98 .landing-try-hero > .relative {
-  min-height: calc(100svh - 4rem - 24px);
+  min-height: calc(100svh - 4rem);
   max-width: none;
   padding-right: 1.5rem;
   padding-bottom: 3rem;
   padding-left: 1.5rem;
   border: 0;
-  background: var(--win98-face);
-  box-shadow:
-    3px 3px 0 rgb(5 5 8 / 0.48),
-    var(--win98-raised);
+  background: transparent;
+  box-shadow: none;
 }
 
 .windows98 .landing-try-hero > .relative::before {
-  content: "feedbacks.dev - Interactive demo";
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  left: 3px;
-  z-index: 20;
-  display: flex;
-  min-height: 22px;
-  align-items: center;
-  padding: 3px 6px;
-  background: linear-gradient(90deg, var(--win98-title), var(--win98-title-end));
-  color: var(--win98-highlight);
-  font-size: 0.75rem;
-  font-weight: 700;
+  content: none;
 }
 
 .windows98 .landing-try-hero > .relative::after {
-  content: "_  □  ×";
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  z-index: 21;
-  display: flex;
-  height: 18px;
-  min-width: 52px;
-  align-items: center;
-  justify-content: center;
-  background: var(--win98-face);
-  color: var(--win98-text);
-  box-shadow: var(--win98-raised);
-  font-family: Arial, sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  white-space: pre;
+  content: none;
 }
 
 .windows98 .landing-try-heading {
-  padding-top: clamp(8rem, 18vh, 9.75rem);
+  padding-top: clamp(6.5rem, 14vh, 8rem);
 }
 
 .windows98 .landing-try-heading-open {
-  padding-top: 2.5rem;
+  padding-top: 1rem;
 }
 
 .windows98 .landing-try-annotations {
-  top: 22px;
+  top: 0;
 }
 
 .windows98 .marketing-shell h1,
@@ -4357,10 +4306,6 @@ html.windows98 {
   }
 
   .windows98 .landing-hero > .relative {
-    margin: 6px;
-  }
-
-  .windows98 .marketing-shell > main > .win98-section-window {
     margin: 6px;
   }
 

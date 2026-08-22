@@ -14,7 +14,6 @@ import { LandingVibeInstall } from '@/components/landing-vibe-install'
 import { PrivacyChoicesButton } from '@/components/privacy-choices-button'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
-import { Win98Chrome } from '@/components/ui/win98-chrome'
 import { publicEnv } from '@/lib/public-env'
 import { SITE_ORIGIN } from '@/lib/site'
 
@@ -90,8 +89,7 @@ export default function LandingPage() {
 
         <LandingProductStories />
 
-        <section id="setup" className="landing-setup-section landing-reveal win98-section-window relative border-b py-20 sm:py-28">
-          <Win98Chrome title="feedbacks.dev - Install" />
+        <section id="setup" className="landing-setup-section landing-reveal relative border-b py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-5 sm:px-6">
             <div className="mx-auto mb-12 max-w-3xl text-center">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">From zero to a real report</p>
@@ -102,8 +100,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section className="landing-proof-strip landing-reveal win98-section-window relative border-b py-6 sm:py-8">
-          <Win98Chrome title="feedbacks.dev - Trust and performance" />
+        <section className="landing-proof-strip landing-reveal relative border-b py-6 sm:py-8">
           <div className="relative z-[2] mx-auto grid max-w-7xl gap-3 px-5 sm:px-6 md:grid-cols-3 xl:pr-36">
             {proofPoints.map(({ Icon, value, label }) => (
               <div key={value} className="landing-premium-card flex items-start gap-4 rounded-xl border bg-card p-5">
@@ -115,8 +112,7 @@ export default function LandingPage() {
           <Image className="landing-section-mascot landing-mascot-proof" src="/mascots-v2/proof-scale.png" alt="" width={1536} height={1024} sizes="160px" aria-hidden="true" />
         </section>
 
-        <section id="pricing" className="landing-pricing-section landing-reveal win98-section-window relative overflow-hidden border-b py-20 sm:py-28">
-          <Win98Chrome title="feedbacks.dev - Plans" />
+        <section id="pricing" className="landing-pricing-section landing-reveal relative overflow-hidden border-b py-20 sm:py-28">
           <div className="relative z-[2] mx-auto max-w-6xl px-5 sm:px-6">
             <div className="mx-auto max-w-3xl text-center">
               <div className="landing-premium-card inline-flex items-center gap-2 rounded-full border bg-card px-3 py-2 text-xs font-semibold"><Gift className="h-4 w-4 text-primary" />A genuinely useful Free plan</div>
@@ -155,8 +151,7 @@ export default function LandingPage() {
           <Image className="landing-section-mascot landing-mascot-pricing" src="/mascots-v2/pricing-gift.png" alt="" width={1070} height={1470} sizes="(max-width: 767px) 150px, 250px" aria-hidden="true" />
         </section>
 
-        <section className="landing-faq-section landing-reveal win98-section-window relative overflow-hidden border-b py-20 sm:py-28">
-          <Win98Chrome title="feedbacks.dev - Help" />
+        <section className="landing-faq-section landing-reveal relative overflow-hidden border-b py-20 sm:py-28">
           <div className="relative z-[2] mx-auto max-w-6xl px-5 sm:px-6">
             <div className="mx-auto max-w-2xl text-center"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Straight answers</p><h2 className="mt-4 text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">The things developers ask first.</h2></div>
             <div className="mt-12 grid gap-3 md:grid-cols-2">
@@ -173,8 +168,7 @@ export default function LandingPage() {
           <Image className="landing-section-mascot landing-mascot-faq" src="/mascots-v2/faq-peek.png" alt="" width={941} height={1672} sizes="(max-width: 767px) 110px, 190px" aria-hidden="true" />
         </section>
 
-        <section className="landing-final-cta landing-reveal win98-section-window relative overflow-hidden px-5 py-24 sm:px-6 sm:py-32">
-          <Win98Chrome title="feedbacks.dev - Get started" />
+        <section className="landing-final-cta landing-reveal relative overflow-hidden px-5 py-24 sm:px-6 sm:py-32">
           <div className="landing-final-orb absolute left-1/2 top-1/2 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
           <div className="landing-premium-card landing-final-chip landing-final-chip-left absolute left-[8%] top-[25%] hidden items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><MessageSquareText className="h-4 w-4 text-primary" />New feedback · just now</div>
           <div className="landing-premium-card landing-final-chip landing-final-chip-top-right absolute right-[9%] top-[19%] hidden items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><Gauge className="h-4 w-4 text-primary" />Reproduced · suspiciously fast</div>

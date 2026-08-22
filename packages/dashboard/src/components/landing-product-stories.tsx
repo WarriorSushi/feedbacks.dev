@@ -31,13 +31,11 @@ import {
   Webhook,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { Win98Chrome } from '@/components/ui/win98-chrome'
 
 export function LandingProductStories() {
   return (
     <>
-      <section id="product" className="landing-journey landing-reveal win98-section-window border-b py-20 sm:py-28">
-        <Win98Chrome title="feedbacks.dev - Feedback journey" />
+      <section id="product" className="landing-journey landing-reveal border-b py-20 sm:py-28">
         <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">From message to shipped fix</p>
@@ -56,8 +54,7 @@ export function LandingProductStories() {
         <Image className="landing-section-mascot landing-mascot-journey" src="/mascots-v2/journey-runner.png" alt="" width={1536} height={1024} sizes="(max-width: 767px) 190px, 360px" aria-hidden="true" />
       </section>
 
-      <section className="landing-context-section landing-reveal win98-section-window border-b py-20 sm:py-28">
-        <Win98Chrome title="feedbacks.dev - Context inspector" />
+      <section className="landing-context-section landing-reveal border-b py-20 sm:py-28">
         <div className="relative z-[2] mx-auto grid max-w-7xl gap-12 px-5 sm:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:items-center lg:gap-20">
           <div className="max-w-xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Context without interrogation</p>
@@ -72,8 +69,7 @@ export function LandingProductStories() {
         <Image className="landing-section-mascot landing-mascot-context-v2" src="/mascots-v2/context-detective.png" alt="" width={1024} height={1536} sizes="(max-width: 767px) 150px, 230px" aria-hidden="true" />
       </section>
 
-      <section className="landing-inbox-section landing-reveal win98-section-window border-b py-20 sm:py-28">
-        <Win98Chrome title="feedbacks.dev - Feedback inbox" />
+      <section className="landing-inbox-section landing-reveal border-b py-20 sm:py-28">
         <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Inside feedbacks.dev</p>
@@ -85,8 +81,7 @@ export function LandingProductStories() {
         </div>
       </section>
 
-      <section className="landing-close-loop landing-reveal win98-section-window relative overflow-hidden border-b py-20 sm:py-28">
-        <Win98Chrome title="feedbacks.dev - Customer updates" />
+      <section className="landing-close-loop landing-reveal relative overflow-hidden border-b py-20 sm:py-28">
         <div className="relative z-[2] mx-auto max-w-7xl px-5 sm:px-6">
           <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr] lg:items-end">
             <div>
