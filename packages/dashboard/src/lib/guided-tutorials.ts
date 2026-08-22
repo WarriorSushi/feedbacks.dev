@@ -218,6 +218,21 @@ export function getGuidedTutorial(id: string | null | undefined) {
   return GUIDED_TUTORIALS.find((tutorial) => tutorial.id === id) || null
 }
 
+export function isUsableTutorialProjectId(projectId?: string) {
+  return Boolean(projectId && !['new', 'undefined', 'null'].includes(projectId))
+}
+
 export function resolveTutorialHref(href: string, projectId?: string) {
-  return href.replace('{projectId}', projectId || '')
+  if (!href.includes('{projectId}')) return href
+  return isUsableTutorialProjectId(projectId)
+    ? href.replace('{projectId}', projectId!)
+    : '/projects/new'
+}
+
+export function withTutorialContext(href: string, tutorialId: GuidedTutorialId, stepIndex: number) {
+  const [pathname, query = ''] = href.split('?')
+  const search = new URLSearchParams(query)
+  search.set('guidedTour', tutorialId)
+  search.set('tourStep', String(stepIndex))
+  return `${pathname}?${search.toString()}`
 }

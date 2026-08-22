@@ -57,9 +57,15 @@ test('required product onboarding teaches the complete product loop', async () =
 })
 
 test('project tutorial routes resolve to the selected project', async () => {
-  const { resolveTutorialHref } = await loadTutorials()
+  const { resolveTutorialHref, withTutorialContext } = await loadTutorials()
   assert.equal(
     resolveTutorialHref('/projects/{projectId}/install', 'project-123'),
     '/projects/project-123/install',
+  )
+  assert.equal(resolveTutorialHref('/projects/{projectId}/feedback-form'), '/projects/new')
+  assert.equal(resolveTutorialHref('/projects/{projectId}/feedback-form', 'new'), '/projects/new')
+  assert.equal(
+    withTutorialContext('/projects/project-123/install?view=customize', 'navigation', 8),
+    '/projects/project-123/install?view=customize&guidedTour=navigation&tourStep=8',
   )
 })

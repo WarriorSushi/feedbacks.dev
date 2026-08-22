@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, Check, Lightbulb, Loader2, Sparkles, X } from 'l
 import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
-import { GUIDED_TUTORIAL_PROGRESS_KEY, getGuidedTutorial, resolveTutorialHref, type GuidedTutorialId, type GuidedTutorialProgress } from '@/lib/guided-tutorials'
+import { GUIDED_TUTORIAL_PROGRESS_KEY, getGuidedTutorial, isUsableTutorialProjectId, resolveTutorialHref, withTutorialContext, type GuidedTutorialId, type GuidedTutorialProgress } from '@/lib/guided-tutorials'
 import { getTourPanelPosition } from '@/lib/tour-position'
 import { MascotSpotlight, type MascotVariant } from '@/components/mascot-spotlight'
 
@@ -144,15 +144,45 @@ export function ProductTour({
   const maskId = React.useId().replace(/:/g, '')
   const handledStandardInitialOffer = React.useRef(false)
   const previousNavigationTourRequest = React.useRef(false)
+  const initializedRequiredTour = React.useRef(false)
+  const previousRecoveryRequest = React.useRef(false)
+  const [activeProjectId, setActiveProjectId] = React.useState(
+    isUsableTutorialProjectId(defaultProjectId) ? defaultProjectId : undefined,
+  )
 
   const tutorial = getGuidedTutorial(tutorialId) || getGuidedTutorial('navigation')!
   const steps = React.useMemo(
-    () => tutorial.steps.map((step) => ({ ...step, href: resolveTutorialHref(step.href, defaultProjectId) })),
-    [defaultProjectId, tutorial],
+    () => tutorial.steps.map((step, index) => {
+      const needsProject = step.href.includes('{projectId}')
+      const waitingForProject = needsProject && !isUsableTutorialProjectId(activeProjectId)
+      const resolvedStep = waitingForProject
+        ? {
+            ...step,
+            title: 'Create your first project to continue',
+            body: 'A project keeps one product’s feedback form, inbox, installation, updates, board, and integrations together. Give your app or website a name here; the tour will continue automatically after it is created.',
+            href: '/projects/new',
+            target: '[data-tour="project-create-form"]',
+            tip: 'Only the project name is required. You can add the domain and change every setting later.',
+          }
+        : { ...step, href: resolveTutorialHref(step.href, activeProjectId) }
+      return {
+        ...resolvedStep,
+        href: withTutorialContext(resolvedStep.href, tutorial.id, index),
+        waitingForProject,
+      }
+    }),
+    [activeProjectId, tutorial],
   )
   const activeStep = steps[Math.min(stepIndex, steps.length - 1)]
-  const requestedTutorialId = searchParams.get('tutorial')
+  const requestedTutorialId = searchParams.get('tutorial') || searchParams.get('guidedTour')
   const navigationTourRequested = searchParams.get('tour') === '1'
+
+  const getResumeStep = React.useCallback((id: GuidedTutorialId, stepCount: number) => {
+    const requestedStep = Number.parseInt(searchParams.get('tourStep') || '', 10)
+    if (Number.isInteger(requestedStep)) return clamp(requestedStep, 0, stepCount - 1)
+    const saved = readTutorialProgress(id) || initialTutorialProgress[id]
+    return saved?.completedAt ? 0 : clamp(saved?.stepIndex || 0, 0, stepCount - 1)
+  }, [initialTutorialProgress, searchParams])
 
   React.useEffect(() => {
     const updateViewport = () => {
@@ -164,12 +194,42 @@ export function ProductTour({
   }, [])
 
   React.useEffect(() => {
-    if (!required) return
+    if (!required) {
+      initializedRequiredTour.current = false
+      return
+    }
+    if (initializedRequiredTour.current) return
+    initializedRequiredTour.current = true
     setTutorialId('navigation')
-    setStepIndex(0)
-    setOpen(false)
-    setWelcomeOpen(true)
-  }, [required])
+    setStepIndex(getResumeStep('navigation', getGuidedTutorial('navigation')!.steps.length))
+    const recovering = searchParams.get('tourRecovered') === 'missing-project'
+    setOpen(recovering)
+    setWelcomeOpen(!recovering)
+  }, [getResumeStep, required, searchParams])
+
+  React.useEffect(() => {
+    const recovering = required && searchParams.get('tourRecovered') === 'missing-project'
+    const newRecoveryRequest = recovering && !previousRecoveryRequest.current
+    previousRecoveryRequest.current = recovering
+    if (!newRecoveryRequest) return
+    setTutorialId('navigation')
+    setStepIndex(getResumeStep('navigation', getGuidedTutorial('navigation')!.steps.length))
+    setWelcomeOpen(false)
+    setOpen(true)
+  }, [getResumeStep, required, searchParams])
+
+  React.useEffect(() => {
+    if (isUsableTutorialProjectId(defaultProjectId)) setActiveProjectId(defaultProjectId)
+  }, [defaultProjectId])
+
+  React.useEffect(() => {
+    const projectCreated = (event: Event) => {
+      const id = (event as CustomEvent<{ project?: { id?: string } }>).detail?.project?.id
+      if (isUsableTutorialProjectId(id)) setActiveProjectId(id)
+    }
+    window.addEventListener('feedbacks:project-created', projectCreated)
+    return () => window.removeEventListener('feedbacks:project-created', projectCreated)
+  }, [])
 
   React.useEffect(() => {
     if (required) return
@@ -179,23 +239,22 @@ export function ProductTour({
     const requestedTutorial = getGuidedTutorial(requestedTutorialId)
     if (requestedTutorial) {
       handledStandardInitialOffer.current = true
-      const saved = readTutorialProgress(requestedTutorial.id) || initialTutorialProgress[requestedTutorial.id]
       setTutorialId(requestedTutorial.id)
-      setStepIndex(saved?.completedAt ? 0 : Math.min(saved?.stepIndex || 0, requestedTutorial.steps.length - 1))
+      setStepIndex(getResumeStep(requestedTutorial.id, requestedTutorial.steps.length))
       setOpen(true)
     } else if (newNavigationTourRequest || (initialOpen && !handledStandardInitialOffer.current)) {
       handledStandardInitialOffer.current = true
       setTutorialId('navigation')
-      setStepIndex(0)
+      setStepIndex(getResumeStep('navigation', getGuidedTutorial('navigation')!.steps.length))
       setOpen(false)
       setWelcomeOpen(true)
     }
-  }, [initialOpen, initialTutorialProgress, navigationTourRequested, requestedTutorialId, required])
+  }, [getResumeStep, initialOpen, initialTutorialProgress, navigationTourRequested, requestedTutorialId, required])
 
   React.useEffect(() => {
     const startTour = () => {
       setTutorialId('navigation')
-      setStepIndex(0)
+      setStepIndex(getResumeStep('navigation', getGuidedTutorial('navigation')!.steps.length))
       if (required) setWelcomeOpen(true)
       else {
         setOpen(false)
@@ -204,7 +263,7 @@ export function ProductTour({
     }
     window.addEventListener('feedbacks:start-product-tour', startTour)
     return () => window.removeEventListener('feedbacks:start-product-tour', startTour)
-  }, [required])
+  }, [getResumeStep, required])
 
   React.useEffect(() => {
     if (!open) return
@@ -356,9 +415,8 @@ export function ProductTour({
     if (!isCurrentHref(pathname, searchParams, pendingStep.href)) return
 
     setStepIndex(pendingStepIndex)
-    if (tutorialId !== 'navigation') saveTutorialProgress(tutorialId, { stepIndex: pendingStepIndex })
     setPendingStepIndex(null)
-  }, [pathname, pendingStepIndex, saveTutorialProgress, searchParams, steps, tutorialId])
+  }, [pathname, pendingStepIndex, searchParams, steps])
 
   const closeTour = React.useCallback((returnToDashboard = false, completionConfirmed = false) => {
     if (required && !completionConfirmed) return
@@ -376,13 +434,13 @@ export function ProductTour({
   const goToStep = (nextIndex: number) => {
     const safeIndex = clamp(nextIndex, 0, steps.length - 1)
     const nextStep = steps[safeIndex]
+    saveTutorialProgress(tutorialId, { stepIndex: safeIndex })
     if (!isCurrentHref(pathname, searchParams, nextStep.href)) {
       setPendingStepIndex(safeIndex)
       router.push(nextStep.href)
       return
     }
     setStepIndex(safeIndex)
-    if (tutorialId !== 'navigation') saveTutorialProgress(tutorialId, { stepIndex: safeIndex })
   }
 
   const skipTour = async () => {
@@ -406,6 +464,7 @@ export function ProductTour({
     try {
       if (tutorialId === 'navigation') {
         await savePreference('productTourCompletedAt')
+        saveTutorialProgress(tutorialId, { stepIndex: steps.length - 1, completedAt: new Date().toISOString() })
         const programmeResponse = required
           ? await fetch('/api/early-adopter/onboarding', { method: 'POST' })
           : null
@@ -486,12 +545,11 @@ export function ProductTour({
                 onClick={() => {
                   setWelcomeOpen(false)
                   setTutorialId('navigation')
-                  setStepIndex(0)
                   setOpen(true)
                 }}
                 autoFocus
               >
-                {required ? 'Begin guided tour' : 'Start product tour'} <ArrowRight className="h-4 w-4" />
+                {stepIndex > 0 ? 'Continue guided tour' : required ? 'Begin guided tour' : 'Start product tour'} <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -511,6 +569,7 @@ export function ProductTour({
   })
   const finalStep = stepIndex === steps.length - 1
   const tourMascotVariant = getTourMascotVariant(activeStep.target)
+  const waitingForProject = activeStep.waitingForProject
 
   return (
     <div className="fixed inset-0 z-[90] pointer-events-none">
@@ -599,7 +658,7 @@ export function ProductTour({
         ) : null}
         {!spotlight && (
           <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            Opening the right section now. If the highlight does not appear, use Next to continue.
+            Opening the right section now. You can always use Back to return to the previous working step.
           </p>
         )}
         <div className="mt-4 flex items-center justify-between gap-2">
@@ -626,7 +685,7 @@ export function ProductTour({
                 if (finalStep) void finishTour()
                 else goToStep(stepIndex + 1)
               }}
-              disabled={saving || pendingStepIndex !== null}
+              disabled={saving || pendingStepIndex !== null || waitingForProject}
             >
               {saving ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -635,7 +694,7 @@ export function ProductTour({
               ) : (
                 <ArrowRight className="h-3.5 w-3.5" />
               )}
-              {finalStep ? (required ? 'Finish and activate Pro' : 'Finish') : 'Next'}
+              {waitingForProject ? 'Create project to continue' : finalStep ? (required ? 'Finish and activate Pro' : 'Finish') : 'Next'}
             </Button>
           </div>
         </div>

@@ -12,6 +12,7 @@ import { DEFAULT_PROJECT_ICON, PROJECT_ICONS } from '@/lib/project-icons'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
 import { readErrorMessage, readFieldErrors, type FieldErrors } from '@/lib/form-errors'
+import { getGuidedTutorial, withTutorialContext } from '@/lib/guided-tutorials'
 
 export default function NewProjectPage() {
   const [name, setName] = React.useState('')
@@ -69,7 +70,16 @@ export default function NewProjectPage() {
       window.dispatchEvent(new CustomEvent('feedbacks:project-created', {
         detail: { project: { id: payload.id, name: name.trim(), settings: { icon } } },
       }))
-      router.push(`/projects/${payload.id}/install?created=1`)
+      const currentSearch = new URLSearchParams(window.location.search)
+      const guidedTutorial = getGuidedTutorial(currentSearch.get('guidedTour'))
+      const requestedStep = Number.parseInt(currentSearch.get('tourStep') || '', 10)
+      router.push(guidedTutorial
+        ? withTutorialContext(
+            `/projects/${payload.id}/feedback-form`,
+            guidedTutorial.id,
+            Number.isInteger(requestedStep) ? requestedStep : 0,
+          )
+        : `/projects/${payload.id}/install?created=1`)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'The project could not be created. Check your connection and try again.')
     } finally {

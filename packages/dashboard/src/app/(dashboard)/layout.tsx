@@ -63,8 +63,10 @@ export default async function DashboardLayout({
   // Extract current project ID from URL path
   const pathname = headersList.get('x-pathname') || headersList.get('x-invoke-path') || ''
   const projectMatch = pathname.match(/\/projects\/([^/]+)/)
+  const pathProjectId = projectMatch?.[1]
   const storedProjectId = cookieStore.get(CURRENT_PROJECT_COOKIE)?.value
-  const currentProjectId = projectMatch?.[1] || projects?.find((project) => project.id === storedProjectId)?.id
+  const currentProjectId = projects?.find((project) => project.id === pathProjectId)?.id
+    || projects?.find((project) => project.id === storedProjectId)?.id
 
   // Build project → board slug map
   const boardSlugs: Record<string, string> = {}

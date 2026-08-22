@@ -171,6 +171,24 @@ test('mascot moments stay contextual across marketing, docs, account, rewards, a
   assert.match(css, /windows98 \.mascot-spotlight-image/)
 })
 
+test('guided onboarding cannot strand an account on a missing project route', () => {
+  const layout = read('../../src/app/(dashboard)/layout.tsx')
+  const tour = read('../../src/components/product-tour.tsx')
+  const projectSection = read('../../src/app/(dashboard)/projects/[id]/[section]/page.tsx')
+  const projectCreation = read('../../src/app/(dashboard)/projects/new/page.tsx')
+
+  assert.match(layout, /projects\?\.find\(\(project\) => project\.id === pathProjectId\)\?\.id/)
+  assert.doesNotMatch(layout, /const currentProjectId = projectMatch\?\.\[1\]/)
+  assert.match(tour, /Create your first project to continue/)
+  assert.match(tour, /saveTutorialProgress\(tutorialId, \{ stepIndex: safeIndex \}\)/)
+  assert.match(tour, /Continue guided tour/)
+  assert.match(tour, /tourRecovered/)
+  assert.match(projectSection, /if \(id === 'new'\) recoverTour\(\)/)
+  assert.match(projectSection, /guidedTour=\$\{tutorialId\}&tourStep=\$\{safeStep\}&tourRecovered=missing-project/)
+  assert.match(projectCreation, /withTutorialContext/)
+  assert.match(projectCreation, /feedbacks:project-created/)
+})
+
 test('marketing routes expose a crawlable acquisition foundation without indexing private workspaces', () => {
   const layout = read('../../src/app/layout.tsx')
   const landing = read('../../src/app/page.tsx')
