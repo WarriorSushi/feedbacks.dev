@@ -559,7 +559,10 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: reduceMotion ? 0 : 0.38, delay: reduceMotion ? 0 : 0.18 }}
-              className={cn('relative z-20 mx-auto flex max-w-2xl flex-col items-center text-center', completed && 'landing-try-cta-complete max-w-4xl')}
+              className={cn(
+                'relative z-20 mx-auto flex max-w-2xl flex-col items-center text-center',
+                completed ? 'landing-try-cta-complete max-w-4xl' : 'landing-try-cta-default',
+              )}
             >
               <div className="flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row">
                 <Button asChild size="lg" className={cn('h-12 px-7', completed && 'h-auto min-h-14 px-9 py-3 text-base sm:min-h-16 sm:px-11 sm:text-lg')}><Link href={authHref}>Start free</Link></Button>

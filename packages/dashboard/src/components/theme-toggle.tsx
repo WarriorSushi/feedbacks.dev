@@ -123,7 +123,7 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
         role="radiogroup"
         aria-label="Landing page appearance"
         className={cn(
-          'landing-theme-toggle inline-flex shrink-0 items-center gap-0.5 rounded-lg border border-border/80 bg-background/70 p-1 shadow-sm',
+          'landing-theme-toggle inline-flex shrink-0 items-center gap-0.5 rounded-lg border border-border/80 bg-background/70 p-0.5 shadow-sm sm:p-1',
           className,
         )}
       >
@@ -140,7 +140,7 @@ export function ThemeToggle({ collapsed = false, className, landing = false }: T
               title={option.label}
               onClick={(event) => void changeTheme(option.value, event.currentTarget)}
               className={cn(
-                'landing-theme-option relative flex h-10 min-w-10 items-center justify-center gap-1.5 overflow-hidden rounded-md px-2 text-[11px] font-semibold text-muted-foreground transition-colors lg:h-8 lg:min-w-8',
+                'landing-theme-option relative flex h-8 min-w-8 items-center justify-center gap-1 overflow-hidden rounded-md px-1 text-[11px] font-semibold text-muted-foreground transition-colors sm:h-10 sm:min-w-10 sm:gap-1.5 sm:px-2 lg:h-8 lg:min-w-8',
                 selected ? 'bg-card text-foreground shadow-sm' : 'hover:bg-accent hover:text-accent-foreground',
                 option.value === 'windows98' && 'landing-theme-option-98',
               )}

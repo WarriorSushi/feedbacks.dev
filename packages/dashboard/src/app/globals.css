@@ -1109,6 +1109,43 @@
 }
 
 @media (max-width: 639px) {
+  .landing-try-shell:not(.landing-try-shell-open):not(.landing-try-shell-complete) {
+    min-height: calc(100svh - 4rem);
+    padding-bottom: 0.75rem;
+  }
+
+  .landing-try-heading:not(.landing-try-heading-open):not(.landing-try-heading-complete) {
+    padding-top: clamp(1.5rem, 4.5svh, 2.25rem);
+  }
+
+  .landing-try-heading:not(.landing-try-heading-open):not(.landing-try-heading-complete) h1 {
+    font-size: clamp(1.85rem, 9vw, 2.35rem);
+    line-height: 0.98;
+  }
+
+  .landing-try-heading:not(.landing-try-heading-open):not(.landing-try-heading-complete) > p {
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+  }
+
+  .landing-try-stage:not(.landing-try-stage-open) {
+    flex: 0 0 auto;
+    min-height: clamp(11.5rem, 31svh, 14rem);
+    margin-top: 0.35rem;
+  }
+
+  .landing-try-stage:not(.landing-try-stage-open) .landing-try-launch {
+    min-height: 3.5rem;
+    padding-inline: 1.5rem;
+    font-size: 0.9375rem;
+  }
+
+  .landing-try-cta-default {
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+
   .landing-try-shell-open {
     min-height: calc(100svh - 4rem);
     padding-inline: 1rem;
@@ -1249,6 +1286,26 @@
   .landing-scroll-cue svg {
     width: 1.25rem;
     height: 1.25rem;
+  }
+}
+
+@media (max-width: 639px) and (max-height: 700px) {
+  .landing-try-heading:not(.landing-try-heading-open):not(.landing-try-heading-complete) {
+    padding-top: 1rem;
+  }
+
+  .landing-try-heading:not(.landing-try-heading-open):not(.landing-try-heading-complete) h1 {
+    font-size: clamp(1.7rem, 8.5vw, 2rem);
+  }
+
+  .landing-try-stage:not(.landing-try-stage-open) {
+    min-height: 10.5rem;
+  }
+
+  .landing-try-cta-default > p {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1.1rem;
   }
 }
 
