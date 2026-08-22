@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
 import { GUIDED_TUTORIAL_PROGRESS_KEY, getGuidedTutorial, resolveTutorialHref, type GuidedTutorialId, type GuidedTutorialProgress } from '@/lib/guided-tutorials'
 import { getTourPanelPosition } from '@/lib/tour-position'
-import { announceProActivation } from '@/lib/pro-activation'
 
 interface SpotlightRect {
   top: number
@@ -419,9 +418,6 @@ export function ProductTour({
         }
         if (required && (!programmeResponse?.ok || (!programme?.granted && programme?.reason !== 'already_completed'))) {
           throw new Error('Pro could not be activated yet. Your guided onboarding will stay open so you can retry.')
-        }
-        if (programme?.granted) {
-          announceProActivation(programme.complimentaryProUntil)
         }
         if (required || programme?.granted) router.refresh()
         toast({ title: required || programme?.granted ? 'Onboarding complete. Pro is active.' : 'Product tour complete' })

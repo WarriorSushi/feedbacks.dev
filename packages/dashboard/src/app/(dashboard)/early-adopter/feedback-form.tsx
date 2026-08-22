@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useRouter } from 'next/navigation'
-import { announceProActivation } from '@/lib/pro-activation'
 
 export function EarlyAdopterFeedbackForm({ nextMonth }: { nextMonth: number }) {
   const router = useRouter()
@@ -31,7 +30,6 @@ export function EarlyAdopterFeedbackForm({ nextMonth }: { nextMonth: number }) {
       const payload = await response.json() as { renewed?: boolean; error?: string; complimentaryProUntil?: string }
       if (!response.ok || !payload.renewed) throw new Error(payload.error || 'Your check-in could not be renewed.')
       setComplete(true)
-      announceProActivation(payload.complimentaryProUntil)
       router.refresh()
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : 'Your check-in could not be renewed.')

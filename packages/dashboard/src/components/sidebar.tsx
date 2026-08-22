@@ -43,9 +43,7 @@ import { getProjectDestination } from '@/lib/project-navigation'
 import { getProjectRoute, getProjectRouteSection } from '@/lib/project-routes'
 import {
   hasActivePro,
-  PRO_ACTIVATED_EVENT,
   PRO_CELEBRATION_COMPLETE_EVENT,
-  PRO_CELEBRATION_STARTED_EVENT,
 } from '@/lib/pro-activation'
 
 type SidebarProject = Pick<Project, 'id' | 'name'> & { settings?: Project['settings'] | null }
@@ -166,7 +164,6 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [collapsed, setCollapsed] = React.useState(false)
   const [proActivatedInSession, setProActivatedInSession] = React.useState(false)
-  const [proBrandSuppressed, setProBrandSuppressed] = React.useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
   const mobileDrawerRef = React.useRef<HTMLElement>(null)
   const mobileMenuButtonRef = React.useRef<HTMLButtonElement>(null)
@@ -211,21 +208,12 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   }, [])
 
   const currentProject = visibleProjects.find((p) => p.id === resolvedCurrentProjectId) || visibleProjects[0]
-  const showProBrand = (hasActivePro(billingAccount) || proActivatedInSession) && !proBrandSuppressed
+  const showProBrand = hasActivePro(billingAccount) || proActivatedInSession
 
   React.useEffect(() => {
-    const showPro = () => setProActivatedInSession(true)
-    const hideDuringFlight = () => setProBrandSuppressed(true)
-    const landProBrand = () => {
-      setProActivatedInSession(true)
-      setProBrandSuppressed(false)
-    }
-    window.addEventListener(PRO_ACTIVATED_EVENT, showPro)
-    window.addEventListener(PRO_CELEBRATION_STARTED_EVENT, hideDuringFlight)
+    const landProBrand = () => setProActivatedInSession(true)
     window.addEventListener(PRO_CELEBRATION_COMPLETE_EVENT, landProBrand)
     return () => {
-      window.removeEventListener(PRO_ACTIVATED_EVENT, showPro)
-      window.removeEventListener(PRO_CELEBRATION_STARTED_EVENT, hideDuringFlight)
       window.removeEventListener(PRO_CELEBRATION_COMPLETE_EVENT, landProBrand)
     }
   }, [])

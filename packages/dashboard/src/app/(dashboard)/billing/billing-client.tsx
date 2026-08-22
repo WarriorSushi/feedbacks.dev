@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
 import type { BillingSummary } from '@/lib/types'
 import { ArrowUpRight, Check, Loader2, ShieldCheck } from 'lucide-react'
-import { announceProActivation, getProActivationKey } from '@/lib/pro-activation'
 
 interface BillingClientProps {
   initialSummary: BillingSummary
@@ -48,7 +47,6 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
   const [syncing, setSyncing] = React.useState(false)
   const searchParams = useSearchParams()
   const router = useRouter()
-  const proActiveRef = React.useRef(initialSummary.entitlements.planTier === 'pro')
   const hasProIntent = searchParams.get('intent') === 'pro'
 
   const refreshSummary = React.useCallback(async () => {
@@ -60,11 +58,6 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
       }
       const next = await response.json()
       setSummary(next)
-      const nextProActive = next.entitlements.planTier === 'pro'
-      if (nextProActive && !proActiveRef.current) {
-        announceProActivation(getProActivationKey(next.account))
-      }
-      proActiveRef.current = nextProActive
       router.refresh()
     } catch (error) {
       toast({
