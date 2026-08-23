@@ -5,7 +5,7 @@ import { getProjectPublishableKey } from '@/lib/project-api-keys'
 import type { Project } from '@/lib/types'
 import { ProjectVerifyClient } from '../project-verify-client'
 
-export const metadata = { title: 'Verify Widget Install' }
+export const metadata = { title: 'Test Widget Installation' }
 
 export default async function ProjectVerifyPage({
   params,
@@ -28,6 +28,7 @@ export default async function ProjectVerifyPage({
       projectId={project.id}
       projectKey={getProjectPublishableKey(project.id)}
       projectName={project.name}
+      projectDomain={project.domain}
       savedConfig={(project as Project).settings?.widget_config || {}}
     />
   )

@@ -5,7 +5,7 @@ import { createProjectViaApi, projectVerifyPath } from './helpers/project'
 const env = skipE2EIfNeeded()
 test.skip(!env.ready, env.skipReason)
 
-test('renders the live widget and accepts a test submission', async ({ page }) => {
+test('verifies a real product submission and keeps the hosted form as troubleshooting', async ({ page }) => {
   await signInWithTestSession(page)
   const project = await createProjectViaApi(page, { name: `Playwright Verify ${Date.now().toString(36)}` })
 
@@ -13,19 +13,35 @@ test('renders the live widget and accepts a test submission', async ({ page }) =
   const widgetRuntimeResponse = await page.request.fetch('/widget/latest.js')
 
   await expect(page.getByRole('navigation', { name: 'Setup steps' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Verify one test' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Three quick checks' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Send one test message.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Test it in your product' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Send feedback from where your users will.' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Customize feedback form' })).toBeVisible()
   expect(widgetRuntimeResponse.ok()).toBeTruthy()
-  await expect(page.getByText(/Ready/i)).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByText('Waiting for a new feedback item…')).toBeVisible()
   const launcher = page.locator('.fb-launcher')
+  await expect(launcher).toHaveCount(0)
+
+  const message = `Install verification for ${project.name}`
+  const realSubmission = await page.request.post('/api/feedback', {
+    data: {
+      apiKey: project.apiKey,
+      message,
+      url: 'https://example.test/account/settings',
+      userAgent: 'Playwright real product verification',
+    },
+  })
+  expect(realSubmission.ok(), await realSubmission.text()).toBeTruthy()
+  await expect(page.getByText('Test feedback arrived from your product')).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByRole('link', { name: 'Open inbox item' })).toBeVisible()
+
+  await page.getByText('Troubleshooting: test the saved form here').click()
   await expect(launcher).toBeVisible()
 
   await launcher.click()
   await expect(page.getByRole('dialog', { name: 'Send Feedback' })).toBeVisible()
 
-  const message = `Install verification for ${project.name}`
-  await page.getByLabel(/Your feedback/).fill(message)
+  const controlMessage = `Hosted control for ${project.name}`
+  await page.getByLabel(/Your feedback/).fill(controlMessage)
   await page.getByLabel('Email (optional)').fill('tester@example.com')
   const feedbackResponse = page.waitForResponse((response) => {
     return response.url().includes('/api/feedback')
@@ -34,8 +50,8 @@ test('renders the live widget and accepts a test submission', async ({ page }) =
   })
   await page.getByRole('button', { name: 'Send Feedback' }).click()
   await feedbackResponse
-  await expect(page.getByText('Verification reached the inbox')).toBeVisible()
-  await page.getByRole('link', { name: 'Open verified item' }).click()
+  await expect(page.getByText('Hosted form reached the inbox. Your saved form works.')).toBeVisible()
+  await page.getByRole('link', { name: 'Open control item' }).click()
   await expect(page).toHaveURL(/\/feedback\/[^/]+/, { timeout: 30_000 })
-  await expect(page.getByText(message)).toBeVisible()
+  await expect(page.getByText(controlMessage)).toBeVisible()
 })

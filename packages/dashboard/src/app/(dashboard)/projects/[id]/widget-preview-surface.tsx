@@ -4,6 +4,7 @@ import * as React from 'react'
 import {
   buildRuntimeWidgetConfig,
   buildWidgetScriptUrl,
+  getWidgetLauncherPositionLabel,
   type SavedWidgetConfig,
   type WidgetConfig,
 } from '@feedbacks/shared'
@@ -164,7 +165,7 @@ export function WidgetPreviewSurface({
       ? 'The form should appear below.'
       : runtimeConfig.embedMode === 'trigger'
         ? 'Click the test button below to open the form.'
-        : `Click the "${runtimeConfig.buttonText || 'Feedback'}" button on this page to open the form.`
+        : `Click the "${runtimeConfig.buttonText || 'Feedback'}" button fixed to the ${getWidgetLauncherPositionLabel(runtimeConfig.position)} of this page.`
     const content = document.createElement('div')
     content.className = 'max-w-lg space-y-2'
     content.innerHTML = `

@@ -121,6 +121,7 @@ function ProjectTabsInner({ project, billingSummary, initialTab, updatesView, up
   return (
     <div className="space-y-6" data-project-tabs-ready={isInteractive ? 'true' : 'false'}>
       {activeTab === 'install' && <SetupProgress projectId={project.id} activeStep="install" />}
+      {activeTab === 'customize' && <SetupProgress projectId={project.id} activeStep="customize" />}
 
       {activeTab === 'home' && <ProjectHome project={project} />}
 

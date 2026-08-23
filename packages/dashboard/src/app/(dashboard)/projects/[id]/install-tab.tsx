@@ -407,7 +407,7 @@ export function FeedbacksWidgetScript() {
           </div>
           <Button asChild className="min-h-11 shrink-0 gap-2">
             <Link href={`/projects/${project.id}/verify`}>
-              {hasCopiedSnippet ? 'Verify installation' : 'Continue to verification'}
+              {hasCopiedSnippet ? 'Test in your product' : 'Continue to product test'}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>

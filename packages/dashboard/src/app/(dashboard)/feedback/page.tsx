@@ -6,6 +6,7 @@ import { CURRENT_PROJECT_COOKIE } from '@/lib/project-selection'
 import { createServerSupabase } from '@/lib/supabase-server'
 import { PageHeader } from '@/components/ui/workspace-shell'
 import { FeedbackInboxClient } from './feedback-inbox-client'
+import { SetupProgress } from '../projects/[id]/project-flow-nav'
 import {
   getEarlyFeedbackProjectCandidate,
   getFeedbackHistoryCutoff,
@@ -89,16 +90,21 @@ async function FeedbackInboxData({
     : await queryFeedbackInbox(supabase, filters, projectId, historyCutoff)
 
   return (
-    <FeedbackInboxClient
-      initialFeedbacks={initialFeedback.feedbacks}
-      initialTotal={initialFeedback.total}
-      initialProjects={projects}
-      initialDefaultProjectId={defaultProjectId}
-      initialHistoryDays={billingSummary?.entitlements.historyDays ?? null}
-      initialHistoryCutoff={historyCutoff}
-      initialQueryKey={getFeedbackInboxQueryKey(filters, projectId, historyCutoff)}
-      initialLoadFailed={Boolean(projectsResult.error || initialFeedback.error)}
-    />
+    <div className="space-y-5">
+      {filters.requestedProjectId && filters.requestedProjectId !== 'all' ? (
+        <SetupProgress projectId={filters.requestedProjectId} activeStep="inbox" />
+      ) : null}
+      <FeedbackInboxClient
+        initialFeedbacks={initialFeedback.feedbacks}
+        initialTotal={initialFeedback.total}
+        initialProjects={projects}
+        initialDefaultProjectId={defaultProjectId}
+        initialHistoryDays={billingSummary?.entitlements.historyDays ?? null}
+        initialHistoryCutoff={historyCutoff}
+        initialQueryKey={getFeedbackInboxQueryKey(filters, projectId, historyCutoff)}
+        initialLoadFailed={Boolean(projectsResult.error || initialFeedback.error)}
+      />
+    </div>
   )
 }
 

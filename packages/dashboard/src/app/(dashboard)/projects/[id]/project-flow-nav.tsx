@@ -1,6 +1,6 @@
 import { CompactSteps } from '@/components/ui/workspace-shell'
 
-export type SetupStep = 'install' | 'verify' | 'inbox'
+export type SetupStep = 'install' | 'verify' | 'inbox' | 'customize'
 
 export function SetupProgress({
   projectId,
@@ -11,8 +11,9 @@ export function SetupProgress({
 }) {
   const steps: Array<{ id: SetupStep; label: string; href: string }> = [
     { id: 'install', label: 'Install', href: `/projects/${projectId}/install` },
-    { id: 'verify', label: 'Verify', href: `/projects/${projectId}/verify` },
+    { id: 'verify', label: 'Test', href: `/projects/${projectId}/verify` },
     { id: 'inbox', label: 'Inbox', href: `/feedback?projectId=${projectId}` },
+    { id: 'customize', label: 'Customize', href: `/projects/${projectId}/feedback-form` },
   ]
   const activeIndex = Math.max(steps.findIndex((step) => step.id === activeStep), 0)
 
