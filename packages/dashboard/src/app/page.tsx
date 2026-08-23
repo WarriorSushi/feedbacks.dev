@@ -77,9 +77,8 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-1 sm:gap-2">
             <ThemeToggle landing />
-            <LandingMobileMenu authHref={authHref} />
-            <Link href={authHref} className="hidden lg:block"><Button variant="ghost" size="sm">Sign in</Button></Link>
-            <Link href={authHref}><Button size="sm" className="h-10 gap-1 px-3 lg:h-9">Start <span className="hidden min-[360px]:inline">free</span><ArrowRight className="hidden h-3.5 w-3.5 sm:block" /></Button></Link>
+            <LandingMobileMenu />
+            <Link href={authHref}><Button size="sm" className="h-10 gap-1 px-3 lg:h-9">Get started <ArrowRight className="hidden h-3.5 w-3.5 sm:block" /></Button></Link>
           </div>
         </div>
       </LandingScrollHeader>
