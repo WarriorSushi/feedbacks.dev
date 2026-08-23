@@ -172,6 +172,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   const [projectOpen, setProjectOpen] = React.useState(false)
   const [mobileOpen, setMobileOpen] = React.useState(false)
   const [collapsed, setCollapsed] = React.useState(false)
+  const [collapsedNavGroups, setCollapsedNavGroups] = React.useState<Set<string>>(() => new Set())
   const [proActivatedInSession, setProActivatedInSession] = React.useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
   const mobileDrawerRef = React.useRef<HTMLElement>(null)
@@ -390,16 +391,24 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
 
   const projectIcon = (project?: SidebarProject) => project?.settings?.icon || DEFAULT_PROJECT_ICON
   const programmeSummary = earlyAdopterProgramme ? getProgrammeSummary(earlyAdopterProgramme) : null
+  const toggleNavGroup = React.useCallback((label: string) => {
+    setCollapsedNavGroups((current) => {
+      const next = new Set(current)
+      if (next.has(label)) next.delete(label)
+      else next.add(label)
+      return next
+    })
+  }, [])
 
   /* ── Shared sidebar content (used in both mobile drawer & desktop aside) ── */
   const sidebarContent = (
     <>
       {/* Logo row */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-border/80 px-3">
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/80 px-2.5">
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground md:hidden"
+          className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground md:hidden"
           onClick={() => setMobileOpen(false)}
           aria-label="Close navigation menu"
         >
@@ -443,13 +452,13 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
 
       {/* Project switcher */}
       {visibleProjects.length > 0 && !collapsed && (
-        <div data-tour="project-switcher" className="shrink-0 border-b border-border/80 p-2.5" ref={dropdownRef}>
+        <div data-tour="project-switcher" className="shrink-0 border-b border-border/80 p-2" ref={dropdownRef}>
           <button
             onClick={() => setProjectOpen(!projectOpen)}
             aria-expanded={projectOpen}
             aria-label="Switch project"
             className={cn(
-              'group flex min-h-12 w-full items-center justify-between rounded-lg border px-2.5 py-2 text-left text-[13px]',
+              'group flex min-h-11 w-full items-center justify-between rounded-lg border px-2.5 py-1.5 text-left text-[13px]',
               'border-border bg-card shadow-sm shadow-black/[0.025]',
               'transition-[background-color,border-color,box-shadow,transform] duration-150 hover:border-primary/25 hover:bg-surface-overlay',
               'active:scale-[0.99]',
@@ -457,7 +466,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
             )}
           >
             <span className="flex min-w-0 items-center gap-2">
-              <span aria-hidden="true" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-sm leading-none ring-1 ring-primary/10">
+              <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-[13px] leading-none ring-1 ring-primary/10">
                 {projectIcon(currentProject)}
               </span>
               <span className="min-w-0">
@@ -542,13 +551,13 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
       )}
 
       {visibleProjects.length === 0 && !collapsed && (
-        <div className="shrink-0 border-b border-border/80 p-2.5">
+        <div className="shrink-0 border-b border-border/80 p-2">
           <Link
             href="/projects/new"
             onClick={() => beginNavigation('/projects/new')}
             onMouseEnter={() => router.prefetch('/projects/new')}
             onFocus={() => router.prefetch('/projects/new')}
-            className="flex min-h-11 items-center gap-2 rounded-lg border border-primary/25 bg-primary/[0.06] px-3 py-2 text-[13px] font-medium text-primary transition-[background-color,transform] hover:bg-primary/[0.1] active:scale-[0.98] active:bg-primary/[0.14]"
+            className="flex min-h-10 items-center gap-2 rounded-lg border border-primary/25 bg-primary/[0.06] px-3 py-1.5 text-[13px] font-medium text-primary transition-[background-color,transform] hover:bg-primary/[0.1] active:scale-[0.98] active:bg-primary/[0.14]"
           >
             {pendingHref === '/projects/new' ? (
               <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
@@ -561,16 +570,34 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
       )}
 
       {/* Nav scrolls when it overflows and pushes the footer down when it does not. */}
-      <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto p-2.5">
-        <div className="space-y-3.5">
-          {primaryNavGroups.map((group, groupIndex) => (
-            <div key={group.label || 'home'} className="space-y-0.5">
+      <nav className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 py-1.5">
+        <div className="space-y-2">
+          {primaryNavGroups.map((group, groupIndex) => {
+            const groupLabel = group.label
+            const groupCollapsed = Boolean(groupLabel && collapsedNavGroups.has(groupLabel))
+            const groupCanCollapse = Boolean(groupLabel && group.items.length > 1)
+
+            return (
+            <div key={groupLabel || 'home'} className="space-y-px">
               {!collapsed && group.label && (
-                <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/65">
-                  {group.label}
-                </p>
+                <div className="mb-0.5 flex h-5 items-center gap-1 px-2.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/65">
+                    {group.label}
+                  </p>
+                  {groupCanCollapse ? (
+                    <button
+                      type="button"
+                      onClick={() => toggleNavGroup(group.label!)}
+                      className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground/70 transition-colors hover:bg-surface-raised hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70"
+                      aria-expanded={!groupCollapsed}
+                      aria-label={`${groupCollapsed ? 'Expand' : 'Collapse'} ${group.label}`}
+                    >
+                      <ChevronDown className={cn('h-3 w-3 transition-transform duration-150', groupCollapsed && '-rotate-90')} />
+                    </button>
+                  ) : null}
+                </div>
               )}
-              {group.items.map((item) => {
+              {collapsed || !groupCollapsed ? group.items.map((item) => {
                 const projectTab = item.projectTab
                 const itemUnreadCount = item.tourId === 'nav-feedback' ? unreadCount : 0
                 const scopedHref = projectTab && currentProject
@@ -606,13 +633,13 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                     onMouseEnter={() => { if (!item.external) router.prefetch(scopedHref) }}
                     onFocus={() => { if (!item.external) router.prefetch(scopedHref) }}
                     className={cn(
-                      'group relative flex min-h-11 items-center gap-3 rounded-lg py-2 text-[13px] font-medium md:min-h-0',
+                      'group relative flex min-h-10 items-center gap-2.5 rounded-md py-1.5 text-[13px] font-medium md:min-h-8',
                       'transition-[background-color,color,transform] duration-150 active:scale-[0.98]',
                       collapsed ? 'justify-center px-2' : 'px-3',
                       isActive
                         ? 'bg-surface-selected text-primary'
                         : 'text-muted-foreground hover:bg-surface-raised hover:text-foreground',
-                      collapsed && groupIndex > 0 && group.items[0] === item && 'mt-3',
+                      collapsed && groupIndex > 0 && group.items[0] === item && 'mt-2',
                     )}
                   >
                     {pendingHref === scopedHref ? (
@@ -638,9 +665,10 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                     {!collapsed && item.external ? <ExternalLink className="ml-auto h-3 w-3 shrink-0 opacity-60" /> : null}
                   </Link>
                 )
-              })}
+              }) : null}
             </div>
-          ))}
+            )
+          })}
 
           {/* The preview link follows the selected project instead of listing every project. */}
           {(() => {
@@ -651,7 +679,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                 href={`/p/${slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group ml-7 flex items-center gap-2 rounded-md px-3 py-1.5 text-[12px] text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
+                className="group ml-7 flex items-center gap-2 rounded-md px-3 py-1 text-[12px] text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
               >
                 <span className="truncate">View live board</span>
                 <ExternalLink className="ml-auto h-3 w-3 opacity-60" />
@@ -662,7 +690,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
 
       </nav>
 
-      <div className="mt-auto shrink-0 border-t p-1.5">
+      <div className="mt-auto shrink-0 border-t p-1">
         <div className="space-y-0.5">
           {earlyAdopterProgramme && programmeSummary ? (
             <Link
@@ -716,7 +744,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
       </div>
 
       {/* Footer stays visible at the bottom. */}
-      <div className={cn('shrink-0 p-2', collapsed ? 'space-y-1' : 'flex items-center gap-1.5')}>
+      <div className={cn('shrink-0 p-1.5', collapsed ? 'space-y-1' : 'flex items-center gap-1.5')}>
         <div data-tour="theme-switcher" className={cn(!collapsed && 'min-w-0 flex-1')}>
           <ThemeToggle collapsed={collapsed} className={cn(!collapsed && 'w-full')} />
         </div>
