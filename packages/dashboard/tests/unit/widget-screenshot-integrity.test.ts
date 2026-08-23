@@ -24,8 +24,23 @@ test('capture renderer supports modern CSS and captures only the visible viewpor
   assert.match(source, /SCREENSHOT_CAPTURE_TIMEOUT_MS = 12_000/)
   assert.match(source, /Choose image/)
   assert.match(source, /feedbacks:screenshot-error/)
+  assert.match(source, /screenshotCaptureErrorCode/)
+  assert.match(source, /this\.screenshotDiagnostic = detail/)
   assert.match(source, /dataUrlToBlob/)
   assert.match(source, /width \* height > 40_000_000/)
+})
+
+test('capture failures are safely recorded and mutable widget assets are always revalidated', async () => {
+  const routeUrl = new URL('../../src/app/api/feedback/route.ts', import.meta.url)
+  const route = await readFile(routeUrl, 'utf8')
+  const nextConfigUrl = new URL('../../next.config.js', import.meta.url)
+  const nextConfig = await readFile(nextConfigUrl, 'utf8')
+
+  assert.match(route, /SCREENSHOT_CAPTURE_ERROR_CODES/)
+  assert.match(route, /screenshot_capture: screenshotCaptureDiagnostic/)
+  assert.match(route, /slice\(0, 240\)/)
+  assert.match(nextConfig, /public, max-age=0, s-maxage=0, must-revalidate/)
+  assert.doesNotMatch(nextConfig, /stale-while-revalidate=86400/)
 })
 
 test('required screenshots are enforced before feedback submission', async () => {

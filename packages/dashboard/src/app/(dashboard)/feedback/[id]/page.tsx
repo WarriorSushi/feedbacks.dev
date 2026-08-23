@@ -41,6 +41,7 @@ import {
   type FeedbackActivity,
 } from './feedback-live-state'
 import { sanitizeRedirectPath } from '@/lib/redirects'
+import { summarizeUserAgent } from '@/lib/user-agent'
 
 export const metadata = { title: 'Feedback Details' }
 
@@ -63,6 +64,26 @@ function formatFeedbackUrl(value: string) {
     return `${url.host}${url.pathname === '/' ? '' : url.pathname}`
   } catch {
     return value
+  }
+}
+
+type ScreenshotCaptureDiagnostic = {
+  code: string
+  message?: string
+  renderer?: string
+}
+
+function readScreenshotCaptureDiagnostic(metadata: Record<string, unknown> | null): ScreenshotCaptureDiagnostic | null {
+  const value = metadata?.screenshot_capture
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+
+  const diagnostic = value as Record<string, unknown>
+  if (typeof diagnostic.code !== 'string') return null
+
+  return {
+    code: diagnostic.code,
+    message: typeof diagnostic.message === 'string' ? diagnostic.message : undefined,
+    renderer: typeof diagnostic.renderer === 'string' ? diagnostic.renderer : undefined,
   }
 }
 
@@ -98,6 +119,8 @@ export default async function FeedbackDetailPage({
   if (!feedback) notFound()
 
   const fb = feedback as Feedback
+  const browserSummary = fb.user_agent ? summarizeUserAgent(fb.user_agent) : null
+  const screenshotCaptureDiagnostic = readScreenshotCaptureDiagnostic(fb.metadata)
   const [{ data: notes }, { data: activity }, { data: recentProjectFeedback }] = await Promise.all([
     supabase
       .from('feedback_notes')
@@ -144,6 +167,7 @@ export default async function FeedbackDetailPage({
       fb.rating ||
       fb.url ||
       fb.user_agent ||
+      screenshotCaptureDiagnostic ||
       (fb.tags && fb.tags.length > 0),
   )
 
@@ -376,15 +400,38 @@ export default async function FeedbackDetailPage({
                 )}
                 {fb.user_agent && (
                   <div className="py-3">
-                    <details className="group">
-                      <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground">
-                        <Monitor className="h-3.5 w-3.5" />
-                        Technical browser details
+                    <span className="mb-1.5 flex items-center gap-2 text-xs text-muted-foreground">
+                      <Monitor className="h-3.5 w-3.5" />
+                      Browser
+                    </span>
+                    <p className="text-sm font-medium">{browserSummary?.label}</p>
+                    {browserSummary?.architecture && (
+                      <p className="mt-0.5 text-xs text-muted-foreground">{browserSummary.architecture}</p>
+                    )}
+                    <details className="group mt-2">
+                      <summary className="cursor-pointer list-none text-xs font-medium text-primary hover:underline">
+                        View technical details
                       </summary>
-                      <p className="mt-2 break-words rounded-md bg-surface-raised p-3 text-[11px] leading-5 text-muted-foreground">
+                      <code className="mt-2 block break-words rounded-md bg-surface-raised p-3 text-[11px] leading-5 text-muted-foreground">
                         {fb.user_agent}
-                      </p>
+                      </code>
                     </details>
+                  </div>
+                )}
+                {screenshotCaptureDiagnostic && (
+                  <div className="py-3">
+                    <span className="mb-1.5 flex items-center gap-2 text-xs text-muted-foreground">
+                      <ImageIcon className="h-3.5 w-3.5" />
+                      Screenshot capture
+                    </span>
+                    <p className="text-sm font-medium text-destructive">Automatic capture failed</p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      {screenshotCaptureDiagnostic.message || 'The user submitted without an automatic screenshot.'}
+                    </p>
+                    <code className="mt-2 inline-block text-[11px] text-muted-foreground">
+                      {screenshotCaptureDiagnostic.code}
+                      {screenshotCaptureDiagnostic.renderer ? ` · ${screenshotCaptureDiagnostic.renderer}` : ''}
+                    </code>
                   </div>
                 )}
               </div>

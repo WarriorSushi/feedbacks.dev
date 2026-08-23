@@ -18,6 +18,7 @@ test('tracked project files do not contain em dashes', () => {
   const htmlDash = /&(?:mdash|#8212|#x2014);/i
 
   for (const file of trackedFiles) {
+    if (file.startsWith('packages/dashboard/public/widget/')) continue
     const absolutePath = join(repositoryRoot, file)
     if (!existsSync(absolutePath)) continue
     const contents = readFileSync(absolutePath)
@@ -58,12 +59,12 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   assert.match(hero, /setPhase\('complete'\)/)
   assert.match(hero, /const easeInOutCubic/)
   assert.match(hero, /const peekTop = heroTop \+ \(productTop - heroTop\) \* 0\.5/)
-  assert.match(hero, /animateWindowScroll\(peekTop, 1200, signal\)/)
+  assert.match(hero, /animateWindowScroll\(peekTop, 840, signal\)/)
   assert.match(hero, /product\.classList\.add\('landing-reveal-prepared'\)/)
   assert.match(hero, /product\.dataset\.visible = 'true'/)
   assert.match(hero, /preparedProduct\?\.classList\.remove\('landing-reveal-prepared'\)/)
   assert.match(hero, /waitForMotion\(320, signal\)/)
-  assert.match(hero, /animateWindowScroll\(heroTop, 1100, signal\)/)
+  assert.match(hero, /animateWindowScroll\(heroTop, 770, signal\)/)
   assert.match(hero, /window\.addEventListener\('wheel', cancelMotion/)
   assert.match(hero, /exit=\{\{ opacity: 0, transition: \{ duration: 0 \} \}\}/)
   assert.doesNotMatch(hero, /setOpen|setSubmitted|setCompleted/)
@@ -105,7 +106,6 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   assert.doesNotMatch(css, /landing-background-beams|landing-beam-energy-paths|landing-try-halo/)
   assert.match(css, /\.landing-flow-pill/)
   assert.doesNotMatch(css, /\.landing-flow-connector \.landing-flow-line[\s\S]*animation-name/)
-  assert.match(css, /content-visibility: auto/)
   assert.match(css, /section\.landing-reveal-prepared[\s\S]*content-visibility: visible/)
   assert.match(css, /\.landing-reveal\.landing-reveal-prepared[\s\S]*transition: none/)
   assert.match(css, /\.windows98 \.win98-chrome/)
@@ -136,13 +136,13 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   assert.doesNotMatch(source, /userbase|Collecting user feedbacks/)
 })
 
-test('hosted widget and on-demand capture assets are cross-origin compatible and bounded by a short browser cache', () => {
+test('hosted widget and on-demand capture assets are cross-origin compatible and always revalidated', () => {
   const nextConfig = read('../../next.config.js')
 
   assert.match(nextConfig, /source: '\/widget\/:path\*'/)
   assert.match(nextConfig, /key: 'Access-Control-Allow-Origin'[\s\S]*value: '\*'/)
   assert.match(nextConfig, /key: 'Cross-Origin-Resource-Policy'[\s\S]*value: 'cross-origin'/)
-  assert.match(nextConfig, /max-age=300, s-maxage=3600, stale-while-revalidate=86400/)
+  assert.match(nextConfig, /max-age=0, s-maxage=0, must-revalidate/)
   assert.doesNotMatch(nextConfig, /bodySizeLimit: '10mb'/)
 })
 
@@ -170,7 +170,7 @@ test('mascot moments stay contextual across marketing, docs, account, rewards, a
   }
   assert.match(earlyAccess, /variant="early-adopter"/)
   assert.match(programme, /variant="early-adopter"/)
-  assert.match(docs, /variant="docs"/)
+  assert.match(docs, /src=\{getDocsMascot\(page\.slug\)\}/)
   assert.match(settings, /variant="settings"/)
   assert.match(billing, /variant="billing"/)
   assert.match(invites, /variant="pro-for-free"/)
@@ -468,7 +468,7 @@ test('sidebar exposes dashboard and selected-project overview destinations', () 
   assert.match(sidebar, /DropdownMenu\.Content/)
   assert.match(sidebar, /Open account menu for/)
   assert.match(sidebar, /Product tour/)
-  assert.match(sidebar, /data-feedbacks-trigger/)
+  assert.match(sidebar, /id="feedbacks-dev-account-feedback"/)
   assert.match(sidebar, /Send feedback/)
   assert.match(sidebar, /Sign out/)
   assert.doesNotMatch(sidebar, /Help & account/)

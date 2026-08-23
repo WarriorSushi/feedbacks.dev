@@ -39,6 +39,16 @@ const MAX_REQUEST_BODY_SIZE = 10 * 1024 * 1024
 const ALLOWED_ATTACHMENT_TYPES = ['image/png', 'image/jpeg']
 const ALLOWED_SCREENSHOT_TYPES = ['image/png', 'image/jpeg']
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const SCREENSHOT_CAPTURE_ERROR_CODES = new Set([
+  'RENDERER_LOAD_FAILED',
+  'CAPTURE_TIMEOUT',
+  'CAPTURE_FAILED',
+  'ENCODE_FAILED',
+  'IMAGE_TYPE_UNSUPPORTED',
+  'IMAGE_TOO_LARGE',
+  'IMAGE_DIMENSIONS_TOO_LARGE',
+  'IMAGE_DECODE_FAILED',
+])
 
 function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status, headers: CORS_HEADERS })
@@ -202,6 +212,17 @@ export async function POST(request: NextRequest) {
     }
 
     const userAgent = fields.userAgent?.trim() || request.headers.get('user-agent') || ''
+    const screenshotCaptureErrorCode = fields.screenshotCaptureErrorCode?.trim() || null
+    const screenshotCaptureDiagnostic = screenshotCaptureErrorCode
+      && SCREENSHOT_CAPTURE_ERROR_CODES.has(screenshotCaptureErrorCode)
+      ? {
+          code: screenshotCaptureErrorCode,
+          renderer: fields.screenshotCaptureRenderer?.trim() === 'snapdom' ? 'snapdom' : 'unknown',
+          ...(fields.screenshotCaptureErrorMessage?.trim()
+            ? { message: fields.screenshotCaptureErrorMessage.trim().replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, 240) }
+            : {}),
+        }
+      : null
 
     // Captcha verification
     const widgetConfig = (project as Project).settings?.widget_config
@@ -406,6 +427,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         source: 'widget',
         ...(submissionContext ? { submission_context: submissionContext } : {}),
+        ...(screenshotCaptureDiagnostic ? { screenshot_capture: screenshotCaptureDiagnostic } : {}),
       },
       is_public: false,
       is_archived: false,

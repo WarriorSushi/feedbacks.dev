@@ -23,6 +23,9 @@ export interface FeedbackSubmission {
   hcaptchaToken?: string
   submissionId?: string
   submissionContext?: WidgetSubmissionContext
+  screenshotCaptureErrorCode?: string
+  screenshotCaptureErrorMessage?: string
+  screenshotCaptureRenderer?: string
 }
 
 export type FeedbackData = FeedbackSubmission

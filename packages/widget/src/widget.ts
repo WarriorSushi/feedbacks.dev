@@ -86,6 +86,12 @@ type CaptureRendererModule = {
   captureVisibleViewport(root: Element): Promise<HTMLCanvasElement>;
 };
 
+type ScreenshotCaptureDiagnostic = {
+  code: ScreenshotErrorCode;
+  message: string;
+  renderer: 'snapdom';
+};
+
 class ScreenshotError extends Error {
   constructor(
     readonly code: ScreenshotErrorCode,
@@ -110,6 +116,7 @@ class FeedbacksWidget {
   private styleEl: HTMLStyleElement | null = null;
   private lastFocus: HTMLElement | null = null;
   private screenshotData: string | null = null;
+  private screenshotDiagnostic: ScreenshotCaptureDiagnostic | null = null;
   private selectedCategory: CategoryType | '' = 'idea';
   private selectedRating = 0;
   private hoverRating = 0;
@@ -172,7 +179,10 @@ class FeedbacksWidget {
     if (hadFeedbackPresentation && !preserveActiveDraft) this.teardownFeedbackPresentation();
 
     this.cfg = { ...this.cfg, ...nextConfig, projectKey: this.cfg.projectKey };
-    if (!nextConfig.enableScreenshot) this.screenshotData = null;
+    if (!nextConfig.enableScreenshot) {
+      this.screenshotData = null;
+      this.screenshotDiagnostic = null;
+    }
     this.applyTheme();
     this.feedbackEnabled = feedbackEnabled;
 
@@ -757,6 +767,7 @@ class FeedbacksWidget {
         setScreenshotStatus('Preparing capture...', 'muted');
         try {
           this.screenshotData = await this.captureScreenshot();
+          this.screenshotDiagnostic = null;
           setScreenshotStatus('Screenshot ready', 'success');
         } catch (error) {
           const diagnostic = this.reportScreenshotFailure(error);
@@ -852,6 +863,11 @@ class FeedbacksWidget {
           if (this.selectedCategory) fd.append('type', this.selectedCategory);
           if (this.selectedRating) fd.append('rating', String(this.selectedRating));
           if (this.screenshotData) fd.append('screenshot', this.dataUrlToBlob(this.screenshotData), 'screenshot.jpg');
+          if (this.screenshotDiagnostic) {
+            fd.append('screenshotCaptureErrorCode', this.screenshotDiagnostic.code);
+            fd.append('screenshotCaptureErrorMessage', this.screenshotDiagnostic.message);
+            fd.append('screenshotCaptureRenderer', this.screenshotDiagnostic.renderer);
+          }
           if (captchaToken) fd.append(this.cfg.captchaProvider === 'hcaptcha' ? 'hcaptchaToken' : 'turnstileToken', captchaToken);
           if (file) fd.append('attachment', file);
           response = await this.submitData(fd);
@@ -867,6 +883,9 @@ class FeedbacksWidget {
             type: this.selectedCategory || undefined,
             rating: this.selectedRating || undefined,
             screenshot: this.screenshotData || undefined,
+            screenshotCaptureErrorCode: this.screenshotDiagnostic?.code,
+            screenshotCaptureErrorMessage: this.screenshotDiagnostic?.message,
+            screenshotCaptureRenderer: this.screenshotDiagnostic?.renderer,
             turnstileToken: this.cfg.captchaProvider === 'turnstile' ? captchaToken || undefined : undefined,
             hcaptchaToken: this.cfg.captchaProvider === 'hcaptcha' ? captchaToken || undefined : undefined,
           };
@@ -878,6 +897,7 @@ class FeedbacksWidget {
         }));
         draftStorage?.removeItem(draftKey);
         this.screenshotData = null;
+        this.screenshotDiagnostic = null;
         this.showSuccess(container, isModal);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to send feedback. Please try again.';
@@ -1035,11 +1055,16 @@ class FeedbacksWidget {
     return new Blob([bytes], { type: mime });
   }
 
-  private reportScreenshotFailure(error: unknown): { code: ScreenshotErrorCode; message: string } {
+  private reportScreenshotFailure(error: unknown): ScreenshotCaptureDiagnostic {
     const diagnostic = error instanceof ScreenshotError
       ? error
       : new ScreenshotError('CAPTURE_FAILED', this.errorMessage(error, 'The page could not be captured.'), error);
-    const detail = { code: diagnostic.code, message: diagnostic.message, renderer: 'snapdom' as const };
+    const detail = {
+      code: diagnostic.code,
+      message: diagnostic.message.slice(0, 240),
+      renderer: 'snapdom' as const,
+    };
+    this.screenshotDiagnostic = detail;
     console.warn('[feedbacks.dev] Screenshot capture failed', detail);
     window.dispatchEvent(new CustomEvent('feedbacks:screenshot-error', { detail }));
     return detail;

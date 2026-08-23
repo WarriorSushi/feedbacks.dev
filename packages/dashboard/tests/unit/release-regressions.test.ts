@@ -10,7 +10,7 @@ test('private ingestion paths opt out of public boards while board submissions o
   const boardRoute = read('../../src/app/api/boards/[slug]/submit/route.ts')
   const migration = read('../../../../sql/055_private_feedback_by_default.sql')
 
-  assert.match(widgetRoute, /metadata: \{ source: 'widget' \}[\s\S]*is_public: false/)
+  assert.match(widgetRoute, /metadata: \{[\s\S]*source: 'widget'[\s\S]*is_public: false/)
   assert.match(apiRoute, /metadata: \{ \.\.\.metadata, source: 'api' \}[\s\S]*is_public: false/)
   assert.match(boardRoute, /metadata: \{ source: 'public_board' \}[\s\S]*is_public: true/)
   assert.match(migration, /alter column is_public set default false/i)
