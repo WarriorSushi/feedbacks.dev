@@ -47,6 +47,13 @@ type VerifiedFeedback = {
   url: string | null
 }
 
+const EMBED_RETRY_INTERVAL_MS = 15_000
+const EMBED_AUTO_STOP_MS = 5 * 60_000
+const VERIFICATION_FAST_WINDOW_MS = 45_000
+const VERIFICATION_FAST_INTERVAL_MS = 4_000
+const VERIFICATION_IDLE_INTERVAL_MS = 30_000
+const VERIFICATION_AUTO_STOP_MS = 10 * 60_000
+
 export function ProjectVerifyClient({
   appOrigin,
   projectId,
@@ -61,6 +68,7 @@ export function ProjectVerifyClient({
   const [hostedFeedbackId, setHostedFeedbackId] = React.useState<string | null>(null)
   const [verifiedFeedback, setVerifiedFeedback] = React.useState<VerifiedFeedback | null>(null)
   const [verificationStartedAt, setVerificationStartedAt] = React.useState<string | null>(null)
+  const [verificationAutoCheckExpired, setVerificationAutoCheckExpired] = React.useState(false)
   const [checkingFeedback, setCheckingFeedback] = React.useState(false)
   const [feedbackCheckError, setFeedbackCheckError] = React.useState(false)
   const [embedStatus, setEmbedStatus] = React.useState<EmbedStatus>({
@@ -70,6 +78,8 @@ export function ProjectVerifyClient({
   })
   const [diagnosticCopyState, setDiagnosticCopyState] = React.useState<'idle' | 'copied' | 'error'>('idle')
   const activatedFeedbackIds = React.useRef(new Set<string>())
+  const embedCheckInFlight = React.useRef(false)
+  const feedbackCheckInFlight = React.useRef(false)
 
   const runtimeConfig = React.useMemo(
     () => buildRuntimeWidgetConfig(projectKey, savedConfig, { appOrigin }),
@@ -78,6 +88,7 @@ export function ProjectVerifyClient({
   const modeLabel = getWidgetModeLabel(runtimeConfig)
   const projectUrl = projectDomain ? `https://${projectDomain}` : null
   const launcherPosition = getWidgetLauncherPositionLabel(runtimeConfig.position)
+  const embedConnected = embedStatus.state === 'connected'
   const realSiteInstruction = runtimeConfig.embedMode === 'inline'
     ? 'Open the page where you installed the form, fill it out, and send one test.'
     : runtimeConfig.embedMode === 'trigger'
@@ -90,6 +101,8 @@ export function ProjectVerifyClient({
       : `Click the "${runtimeConfig.buttonText || 'Feedback'}" button fixed to the ${launcherPosition} of this page.`
 
   const checkEmbed = React.useCallback(async () => {
+    if (embedCheckInFlight.current) return
+    embedCheckInFlight.current = true
     try {
       const response = await fetch(`/api/projects/${projectId}/embed-status`, { cache: 'no-store' })
       const payload = await response.json()
@@ -101,6 +114,8 @@ export function ProjectVerifyClient({
       })
     } catch {
       setEmbedStatus((current) => ({ ...current, state: 'error' }))
+    } finally {
+      embedCheckInFlight.current = false
     }
   }, [projectId])
 
@@ -116,7 +131,8 @@ export function ProjectVerifyClient({
   }, [projectId])
 
   const checkForProductFeedback = React.useCallback(async () => {
-    if (!verificationStartedAt || verifiedFeedback) return
+    if (!verificationStartedAt || verifiedFeedback || feedbackCheckInFlight.current) return
+    feedbackCheckInFlight.current = true
     setCheckingFeedback(true)
     try {
       const response = await fetch(
@@ -133,25 +149,109 @@ export function ProjectVerifyClient({
     } catch {
       setFeedbackCheckError(true)
     } finally {
+      feedbackCheckInFlight.current = false
       setCheckingFeedback(false)
     }
   }, [markProductVerification, projectId, verificationStartedAt, verifiedFeedback])
 
   React.useEffect(() => {
     setVerificationStartedAt(new Date().toISOString())
+    setVerificationAutoCheckExpired(false)
   }, [projectId])
 
   React.useEffect(() => {
-    void checkEmbed()
-    const interval = window.setInterval(() => void checkEmbed(), 5000)
-    return () => window.clearInterval(interval)
-  }, [checkEmbed])
+    if (embedConnected) return
+
+    let cancelled = false
+    let timeout: number | undefined
+    let running = false
+    const pollingStartedAt = Date.now()
+
+    const schedule = () => {
+      if (cancelled || document.visibilityState !== 'visible') return
+      if (Date.now() - pollingStartedAt >= EMBED_AUTO_STOP_MS) return
+      timeout = window.setTimeout(() => void run(), EMBED_RETRY_INTERVAL_MS)
+    }
+
+    const run = async () => {
+      if (cancelled || running || document.visibilityState !== 'visible') return
+      running = true
+      await checkEmbed()
+      running = false
+      schedule()
+    }
+
+    const resumeWhenVisible = () => {
+      if (document.visibilityState !== 'visible') {
+        if (timeout !== undefined) window.clearTimeout(timeout)
+        timeout = undefined
+        return
+      }
+      if (timeout !== undefined) window.clearTimeout(timeout)
+      timeout = undefined
+      void run()
+    }
+
+    void run()
+    document.addEventListener('visibilitychange', resumeWhenVisible)
+    window.addEventListener('focus', resumeWhenVisible)
+    return () => {
+      cancelled = true
+      if (timeout !== undefined) window.clearTimeout(timeout)
+      document.removeEventListener('visibilitychange', resumeWhenVisible)
+      window.removeEventListener('focus', resumeWhenVisible)
+    }
+  }, [checkEmbed, embedConnected])
 
   React.useEffect(() => {
     if (!verificationStartedAt || verifiedFeedback) return
-    void checkForProductFeedback()
-    const interval = window.setInterval(() => void checkForProductFeedback(), 4000)
-    return () => window.clearInterval(interval)
+
+    let cancelled = false
+    let timeout: number | undefined
+    let running = false
+    const startedAt = new Date(verificationStartedAt).getTime()
+
+    const schedule = () => {
+      if (cancelled || document.visibilityState !== 'visible') return
+      const elapsed = Date.now() - startedAt
+      if (elapsed >= VERIFICATION_AUTO_STOP_MS) {
+        setVerificationAutoCheckExpired(true)
+        return
+      }
+      const delay = elapsed < VERIFICATION_FAST_WINDOW_MS
+        ? VERIFICATION_FAST_INTERVAL_MS
+        : VERIFICATION_IDLE_INTERVAL_MS
+      timeout = window.setTimeout(() => void run(), delay)
+    }
+
+    const run = async () => {
+      if (cancelled || running || document.visibilityState !== 'visible') return
+      running = true
+      await checkForProductFeedback()
+      running = false
+      schedule()
+    }
+
+    const resumeWhenVisible = () => {
+      if (document.visibilityState !== 'visible') {
+        if (timeout !== undefined) window.clearTimeout(timeout)
+        timeout = undefined
+        return
+      }
+      if (timeout !== undefined) window.clearTimeout(timeout)
+      timeout = undefined
+      void run()
+    }
+
+    void run()
+    document.addEventListener('visibilitychange', resumeWhenVisible)
+    window.addEventListener('focus', resumeWhenVisible)
+    return () => {
+      cancelled = true
+      if (timeout !== undefined) window.clearTimeout(timeout)
+      document.removeEventListener('visibilitychange', resumeWhenVisible)
+      window.removeEventListener('focus', resumeWhenVisible)
+    }
   }, [checkForProductFeedback, verificationStartedAt, verifiedFeedback])
 
   React.useEffect(() => {
@@ -305,8 +405,12 @@ export function ProjectVerifyClient({
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Waiting for a new feedback item…
+                  {verificationAutoCheckExpired
+                    ? <RefreshCw className="h-4 w-4" />
+                    : <Loader2 className="h-4 w-4 animate-spin" />}
+                  {verificationAutoCheckExpired
+                    ? 'Automatic checks paused. Check the inbox when you are ready.'
+                    : 'Waiting for a new feedback item…'}
                 </div>
               )}
               {feedbackCheckError ? (

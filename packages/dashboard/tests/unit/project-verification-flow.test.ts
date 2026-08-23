@@ -4,7 +4,7 @@ import test from 'node:test'
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8')
 
-test('real product verification polls only authenticated project feedback after the session starts', () => {
+test('real product verification uses a bounded, visibility-aware polling window', () => {
   const route = read('../../src/app/api/projects/[id]/verification-status/route.ts')
   const client = read('../../src/app/(dashboard)/projects/[id]/project-verify-client.tsx')
 
@@ -17,8 +17,25 @@ test('real product verification polls only authenticated project feedback after 
   assert.doesNotMatch(route, /\.not\('url', 'ilike'/)
   assert.doesNotMatch(route, /message/)
   assert.match(client, /verification-status\?since=/)
-  assert.match(client, /setInterval\(\(\) => void checkForProductFeedback\(\), 4000\)/)
+  assert.match(client, /VERIFICATION_FAST_WINDOW_MS = 45_000/)
+  assert.match(client, /VERIFICATION_FAST_INTERVAL_MS = 4_000/)
+  assert.match(client, /VERIFICATION_IDLE_INTERVAL_MS = 30_000/)
+  assert.match(client, /VERIFICATION_AUTO_STOP_MS = 10 \* 60_000/)
+  assert.match(client, /Automatic checks paused/)
+  assert.match(client, /document\.visibilityState !== 'visible'/)
+  assert.match(client, /document\.addEventListener\('visibilitychange', resumeWhenVisible\)/)
+  assert.doesNotMatch(client, /setInterval\(\(\) => void checkForProductFeedback/)
   assert.match(client, /Test feedback arrived from your product/)
+})
+
+test('embed detection stops polling after a connection is confirmed', () => {
+  const client = read('../../src/app/(dashboard)/projects/[id]/project-verify-client.tsx')
+
+  assert.match(client, /EMBED_RETRY_INTERVAL_MS = 15_000/)
+  assert.match(client, /EMBED_AUTO_STOP_MS = 5 \* 60_000/)
+  assert.match(client, /if \(embedConnected\) return/)
+  assert.match(client, /embedCheckInFlight/)
+  assert.doesNotMatch(client, /setInterval\(\(\) => void checkEmbed/)
 })
 
 test('first connection guides users from installation through customization', () => {
@@ -48,7 +65,7 @@ test('hosted control submissions are tagged without excluding real feedbacks.dev
   assert.doesNotMatch(verify, /feedback\.url\?\.includes/)
 })
 
-test('sidebar polls an authenticated project unread count and renders a compact badge', () => {
+test('sidebar refreshes unread count on signals with a slow visible-tab fallback', () => {
   const sidebar = read('../../src/components/sidebar.tsx')
   const route = read('../../src/app/api/projects/[id]/unread-count/route.ts')
 
@@ -58,7 +75,8 @@ test('sidebar polls an authenticated project unread count and renders a compact 
   assert.match(route, /\.eq\('is_archived', false\)/)
   assert.match(route, /\.is\('read_at', null\)/)
   assert.match(sidebar, /\/unread-count/)
-  assert.match(sidebar, /setInterval\(refreshWhenVisible, 5000\)/)
+  assert.match(sidebar, /setInterval\(refreshWhenVisible, 60_000\)/)
+  assert.match(sidebar, /document\.addEventListener\('visibilitychange', refreshWhenVisible\)/)
   assert.match(sidebar, /feedbacks:submitted/)
   assert.match(sidebar, /99\+/)
   assert.match(sidebar, /bg-foreground/)

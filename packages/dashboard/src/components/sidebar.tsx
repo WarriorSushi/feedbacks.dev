@@ -243,16 +243,20 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
     }
 
     void refreshUnreadCount()
-    const interval = window.setInterval(refreshWhenVisible, 5000)
+    // Submission events and focus/navigation handle the common cases. This slow
+    // fallback keeps counts fresh without turning every dashboard tab into a poller.
+    const interval = window.setInterval(refreshWhenVisible, 60_000)
     window.addEventListener('focus', refreshWhenVisible)
+    document.addEventListener('visibilitychange', refreshWhenVisible)
     window.addEventListener('feedbacks:submitted', refreshWhenVisible)
     return () => {
       cancelled = true
       window.clearInterval(interval)
       window.removeEventListener('focus', refreshWhenVisible)
+      document.removeEventListener('visibilitychange', refreshWhenVisible)
       window.removeEventListener('feedbacks:submitted', refreshWhenVisible)
     }
-  }, [currentUnreadProjectId])
+  }, [currentUnreadProjectId, pathname])
 
   React.useEffect(() => {
     const landProBrand = () => setProActivatedInSession(true)
