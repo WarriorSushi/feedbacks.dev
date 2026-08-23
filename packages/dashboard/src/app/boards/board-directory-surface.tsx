@@ -37,9 +37,9 @@ export async function BoardDirectorySurface({
       data-tour={dashboard ? 'boards-directory' : undefined}
       className={dashboard ? 'space-y-6' : 'mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-12'}
     >
-      <section className="relative border-b border-border/80">
+      <section className="board-directory-hero relative border-b border-border/80">
         <div className={cn(
-          'relative grid gap-4 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end',
+          'board-directory-hero-inner relative grid gap-4 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-end',
           dashboard ? 'py-7' : 'py-8 sm:py-12',
         )}>
           <div>

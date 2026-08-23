@@ -4084,6 +4084,18 @@ html.windows98 {
   box-shadow: var(--win98-raised) !important;
 }
 
+.windows98 .board-directory-hero-inner {
+  padding-right: 18px !important;
+  padding-left: 18px !important;
+}
+
+@media (max-width: 639px) {
+  .windows98 .board-directory-hero-inner {
+    padding-right: 12px !important;
+    padding-left: 12px !important;
+  }
+}
+
 .windows98 [class*="backdrop-blur"] {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
@@ -5064,7 +5076,7 @@ html.windows98 {
 }
 
 /* Dashboard dark mode uses a neutral graphite hierarchy inspired by the landing page. */
-.dark:not(.windows98) .dashboard-shell {
+.dark:not(.windows98) :is(.dashboard-shell, .board-directory-shell, .public-board-shell) {
   --background: 0.19 0.007 258;
   --foreground: 0.945 0.006 252;
   --surface-sidebar: 0.155 0.006 258;
@@ -5085,6 +5097,35 @@ html.windows98 {
   --accent-foreground: 0.95 0.006 252;
   --border: 0.385 0.009 255;
   --input: 0.41 0.01 255;
+}
+
+.dark:not(.windows98) .board-directory-shell {
+  background:
+    radial-gradient(ellipse 76rem 44rem at 52% -16%, oklch(0.38 0.012 255 / 0.22), transparent 70%),
+    linear-gradient(180deg, oklch(var(--background)), oklch(var(--surface-soft))) !important;
+}
+
+.dark:not(.windows98) .public-board-shell {
+  background:
+    radial-gradient(ellipse 62rem 36rem at 50% -12%, oklch(0.38 0.012 255 / 0.2), transparent 72%),
+    linear-gradient(180deg, oklch(var(--background)), oklch(var(--surface-soft))) !important;
+}
+
+.dark:not(.windows98) .board-directory-shell > header,
+.dark:not(.windows98) .public-board-shell > .sticky {
+  border-color: oklch(var(--border) / 0.82) !important;
+  background: oklch(var(--surface-sidebar) / 0.94) !important;
+}
+
+.dark:not(.windows98) .board-directory-shell :where(a[class~="bg-card"], [class~="bg-card"][class*="border"]),
+.dark:not(.windows98) .public-board-shell :where([class~="bg-card"][class*="border"], [class*="bg-card/"][class*="border"]) {
+  box-shadow:
+    inset 0 1px 0 oklch(0.96 0.004 250 / 0.07),
+    0 18px 42px -34px rgb(0 0 0 / 0.88);
+}
+
+.dark:not(.windows98) :is(.board-directory-shell, .public-board-shell) :where(input, select, textarea) {
+  background-color: oklch(var(--surface-inset));
 }
 
 .dark:not(.windows98) .dashboard-shell > main {
