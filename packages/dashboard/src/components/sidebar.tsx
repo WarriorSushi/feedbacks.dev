@@ -80,7 +80,7 @@ const primaryNavGroups: NavGroup[] = [
     label: 'Share with users',
     items: [
       { href: '/release-notes', label: 'Updates for users', icon: Megaphone, tourId: 'nav-updates', projectTab: 'release-notes' },
-      { href: '/board', label: 'Public feedback board', icon: Globe, tourId: 'nav-boards', projectTab: 'board' },
+      { href: '/board', label: 'My public page', icon: Globe, tourId: 'nav-boards', projectTab: 'board' },
     ],
   },
   {
@@ -586,7 +586,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
 
       </nav>
 
-      <div className="shrink-0 border-t p-2">
+      <div className="mt-auto shrink-0 border-t p-1.5">
         <div className="space-y-0.5">
           {earlyAdopterProgramme && programmeSummary ? (
             <Link
@@ -625,7 +625,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                   rel={item.external ? 'noopener noreferrer' : undefined}
                   onClick={() => { if (!item.external) beginNavigation(item.href) }}
                   className={cn(
-                    'group flex min-h-10 items-center gap-3 rounded-lg py-2 text-[13px] font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98]',
+                    'group flex min-h-8 items-center gap-3 rounded-md py-1.5 text-[13px] font-medium transition-[background-color,color,transform] duration-150 active:scale-[0.98]',
                     collapsed ? 'justify-center px-2' : 'px-3',
                     isActive ? 'bg-surface-selected text-primary' : 'text-muted-foreground hover:bg-surface-raised hover:text-foreground',
                   )}

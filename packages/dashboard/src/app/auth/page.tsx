@@ -10,12 +10,12 @@ import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, Github, KeyRound, Loader2, Mail } from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { sanitizeRedirectPath } from '@/lib/redirects'
 import { AuthCaptcha } from '@/components/auth-captcha'
 import { AuthUseCaseCarousel } from '@/components/auth-use-case-carousel'
 import { SITE_ORIGIN } from '@/lib/site'
 import { useTheme } from 'next-themes'
 import { normalizeAppearanceTheme, persistSharedAppearance } from '@/lib/appearance'
+import { resolveAuthRedirect } from '@/lib/auth-destination'
 
 type OAuthProvider = 'google' | 'github'
 
@@ -47,7 +47,7 @@ function AuthPageInner() {
   const [captchaToken, setCaptchaToken] = React.useState<string | null>(null)
   const [captchaResetKey, setCaptchaResetKey] = React.useState(0)
   const searchParams = useSearchParams()
-  const redirect = sanitizeRedirectPath(searchParams.get('redirect'), '/projects/new')
+  const redirect = resolveAuthRedirect(searchParams.get('redirect'))
   const encodedRedirect = encodeURIComponent(redirect)
   const supabase = React.useMemo(() => createClient(), [])
   const callbackError = searchParams.get('error')

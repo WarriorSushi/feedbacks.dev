@@ -5063,6 +5063,56 @@ html.windows98 {
   }
 }
 
+/* Dashboard dark mode uses a neutral graphite hierarchy inspired by the landing page. */
+.dark:not(.windows98) .dashboard-shell {
+  --background: 0.19 0.007 258;
+  --foreground: 0.945 0.006 252;
+  --surface-sidebar: 0.155 0.006 258;
+  --surface-raised: 0.285 0.008 255;
+  --surface-soft: 0.235 0.007 258;
+  --surface-inset: 0.17 0.006 260;
+  --surface-overlay: 0.315 0.009 255;
+  --surface-selected: 0.265 0.04 132;
+  --card: 0.245 0.007 258;
+  --card-foreground: 0.945 0.006 252;
+  --popover: 0.305 0.009 255;
+  --popover-foreground: 0.945 0.006 252;
+  --secondary: 0.275 0.008 258;
+  --secondary-foreground: 0.92 0.006 252;
+  --muted: 0.255 0.007 258;
+  --muted-foreground: 0.75 0.008 252;
+  --accent: 0.3 0.015 130;
+  --accent-foreground: 0.95 0.006 252;
+  --border: 0.385 0.009 255;
+  --input: 0.41 0.01 255;
+}
+
+.dark:not(.windows98) .dashboard-shell > main {
+  background:
+    radial-gradient(ellipse 72rem 42rem at 52% -18%, oklch(0.38 0.012 255 / 0.2), transparent 70%),
+    oklch(var(--background));
+}
+
+.dark:not(.windows98) .dashboard-shell .workspace-panel,
+.dark:not(.windows98) .dashboard-shell :where(.rounded-lg.border.bg-card, .rounded-xl.border.bg-card) {
+  box-shadow:
+    inset 0 1px 0 oklch(0.96 0.004 250 / 0.07),
+    0 18px 42px -34px rgb(0 0 0 / 0.88);
+}
+
+/* Keep the light final CTA luminous at its focal point instead of blue-gray. */
+html:not(.dark):not(.windows98) .marketing-shell .landing-atmosphere-section.landing-tone-final {
+  background:
+    radial-gradient(circle at 50% 46%, oklch(0.995 0.004 248 / 0.98) 0%, oklch(0.975 0.008 248 / 0.84) 18%, transparent 43%),
+    radial-gradient(ellipse 66% 86% at -8% 94%, oklch(0.84 0.065 311 / 0.18), transparent 72%),
+    radial-gradient(ellipse 64% 84% at 108% 4%, oklch(0.86 0.055 217 / 0.16), transparent 72%),
+    linear-gradient(180deg, oklch(0.982 0.006 260), oklch(0.962 0.012 252) 54%, oklch(0.98 0.007 270)) !important;
+}
+
+html:not(.dark):not(.windows98) .marketing-shell .landing-final-orb {
+  background: radial-gradient(circle, oklch(1 0 0 / 0.78), oklch(0.94 0.035 250 / 0.24) 44%, transparent 72%) !important;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   html {

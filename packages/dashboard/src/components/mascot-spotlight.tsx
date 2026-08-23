@@ -20,22 +20,24 @@ const mascotAssets: Record<MascotVariant, { src: string; width: number; height: 
 
 export function MascotSpotlight({
   variant,
+  src,
   className,
   sizes = '128px',
   priority = false,
 }: {
-  variant: MascotVariant
+  variant?: MascotVariant
+  src?: string
   className?: string
   sizes?: string
   priority?: boolean
 }) {
-  const asset = mascotAssets[variant]
+  const asset = mascotAssets[variant || 'docs']
 
   return (
     <span className={cn('mascot-spotlight relative isolate block shrink-0', className)} aria-hidden="true">
       <span className="mascot-spotlight-glow pointer-events-none absolute inset-[24%] -z-10 rounded-full bg-primary/20 blur-2xl" />
       <Image
-        src={asset.src}
+        src={src || asset.src}
         alt=""
         width={asset.width}
         height={asset.height}

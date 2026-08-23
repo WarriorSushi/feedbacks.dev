@@ -8,7 +8,7 @@ import { CopyButton } from '@/components/copy-button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ExternalLink, Loader2, Rocket } from 'lucide-react'
+import { ExternalLink, Loader2, PanelsTopLeft, Rocket } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { BoardIdentitySection } from './BoardIdentitySection'
@@ -385,6 +385,12 @@ export function BoardSettingsTabs({ project }: BoardSettingsTabsProps) {
         }
         action={
           <div className="flex flex-wrap gap-2">
+              <Button variant="outline" asChild>
+                <a href="/boards" target="_blank" rel="noopener noreferrer">
+                  <PanelsTopLeft className="mr-2 h-4 w-4" />
+                  Browse public boards
+                </a>
+              </Button>
               {!canOpenBoard && (
                 <Button onClick={() => void handleEnableAndSave()} disabled={saving}>
                   {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Rocket className="mr-2 h-4 w-4" />}

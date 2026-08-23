@@ -168,7 +168,7 @@ export default function LandingPage() {
           <Image className="landing-section-mascot landing-mascot-faq" src="/mascots-v2/faq-peek.png" alt="" width={941} height={1672} sizes="(max-width: 767px) 110px, 190px" aria-hidden="true" />
         </section>
 
-        <section className="landing-final-cta landing-atmosphere-section landing-tone-final landing-reveal relative overflow-hidden px-5 py-24 sm:px-6 sm:py-32">
+        <section id="get-started" className="landing-final-cta landing-atmosphere-section landing-tone-final landing-reveal relative overflow-hidden px-5 py-24 sm:px-6 sm:py-32">
           <div className="landing-final-orb absolute left-1/2 top-1/2 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-3xl" aria-hidden="true" />
           <div className="landing-premium-card landing-final-chip landing-final-chip-left absolute left-[8%] top-[25%] hidden items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><MessageSquareText className="h-4 w-4 text-primary" />New feedback · just now</div>
           <div className="landing-premium-card landing-final-chip landing-final-chip-top-right absolute right-[9%] top-[19%] hidden items-center gap-2 rounded-xl border bg-card px-4 py-3 text-xs shadow-lg lg:flex"><Gauge className="h-4 w-4 text-primary" />Reproduced · suspiciously fast</div>

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { DOCS_CATEGORIES, DOCS_PAGES, DOCS_REVISION, getDocsPage, type DocsBlock } from '@/lib/docs-content'
 import { publicEnv } from '@/lib/public-env'
+import { getDocsMascot } from '@/lib/docs-mascots'
 import { DocsCodeBlock, DocsSearch } from '../docs-client'
 
 export function generateStaticParams() {
@@ -131,7 +132,7 @@ export default async function DocsPage({ params }: { params: Promise<{ slug?: st
 
           <main className="docs-content min-w-0 py-8 lg:px-8 xl:px-0 xl:py-12">
             <div className="relative min-h-28 pr-0 sm:pr-36">
-              <MascotSpotlight variant="docs" className="absolute -right-2 -top-8 hidden h-36 w-36 sm:block" sizes="144px" />
+              <MascotSpotlight src={getDocsMascot(page.slug)} className="absolute -right-2 -top-8 hidden h-36 w-36 sm:block" sizes="144px" />
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">{page.category}</p>
               <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{page.title}</h1>
               <p className="mt-4 max-w-[68ch] text-base leading-7 text-muted-foreground">{page.description}</p>
