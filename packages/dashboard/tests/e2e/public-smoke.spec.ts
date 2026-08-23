@@ -74,5 +74,26 @@ test('widget stays usable when bootstrap is unavailable', async ({ page }) => {
   const launcher = page.locator('.fb-launcher')
   await expect(launcher).toBeVisible({ timeout: 1_000 })
   await launcher.click()
-  await expect(page.getByRole('dialog', { name: 'Send Feedback' })).toBeVisible()
+  const dialog = page.getByRole('dialog', { name: 'Send Feedback' })
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByRole('radio', { name: 'Idea' })).toHaveAttribute('aria-checked', 'true')
+
+  await dialog.getByRole('button', { name: 'Close' }).click()
+  await page.evaluate(() => {
+    const host = document.createElement('div')
+    host.dataset.feedbacksHost = 'browser-smoke-project'
+    document.body.appendChild(host)
+    window.dispatchEvent(new CustomEvent('feedbacks:config-update', {
+      detail: {
+        projectKey: 'browser-smoke-project',
+        config: { embedMode: 'inline', primaryColor: '#3e6b00' },
+      },
+    }))
+  })
+
+  await expect(launcher).toHaveCount(0)
+  const inlineForm = page.locator('[data-feedbacks-host="browser-smoke-project"] .fb-inline')
+  await expect(inlineForm).toBeVisible()
+  await expect(inlineForm.getByRole('radio', { name: 'Idea' })).toHaveAttribute('aria-checked', 'true')
+  await expect(inlineForm.getByRole('button', { name: 'Send Feedback' })).toHaveCSS('background-color', 'rgb(62, 107, 0)')
 })

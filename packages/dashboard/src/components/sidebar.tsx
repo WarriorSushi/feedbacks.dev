@@ -39,7 +39,13 @@ import {
 import type { Project } from '@/lib/types'
 import { createClient } from '@/lib/supabase-browser'
 import { ThemeToggle } from '@/components/theme-toggle'
-import type { BillingStatus, PlanTier } from '@feedbacks/shared'
+import {
+  FEEDBACKS_CONFIGURATION_EVENT,
+  type BillingStatus,
+  type FeedbacksConfigurationEventDetail,
+  type PlanTier,
+} from '@feedbacks/shared'
+import { FEEDBACKS_DEV_PROJECT_KEY } from '@/lib/dogfood-widget'
 import { CURRENT_PROJECT_COOKIE } from '@/lib/project-selection'
 import { DEFAULT_PROJECT_ICON } from '@/lib/project-icons'
 import { getProjectDestination } from '@/lib/project-navigation'
@@ -174,10 +180,22 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   const [collapsed, setCollapsed] = React.useState(false)
   const [collapsedNavGroups, setCollapsedNavGroups] = React.useState<Set<string>>(() => new Set())
   const [proActivatedInSession, setProActivatedInSession] = React.useState(false)
+  const [showFeedbackMenuItem, setShowFeedbackMenuItem] = React.useState(false)
   const dropdownRef = React.useRef<HTMLDivElement>(null)
   const mobileDrawerRef = React.useRef<HTMLElement>(null)
   const mobileMenuButtonRef = React.useRef<HTMLButtonElement>(null)
   const supabase = React.useMemo(() => createClient(), [])
+
+  React.useEffect(() => {
+    const syncFeedbackPlacement = (event: Event) => {
+      const detail = (event as CustomEvent<FeedbacksConfigurationEventDetail>).detail
+      if (detail?.projectKey !== FEEDBACKS_DEV_PROJECT_KEY) return
+      setShowFeedbackMenuItem(detail.feedbackEnabled && detail.embedMode !== 'inline')
+    }
+
+    window.addEventListener(FEEDBACKS_CONFIGURATION_EVENT, syncFeedbackPlacement)
+    return () => window.removeEventListener(FEEDBACKS_CONFIGURATION_EVENT, syncFeedbackPlacement)
+  }, [])
 
   React.useEffect(() => {
     setVisibleProjects(projects)
@@ -806,19 +824,21 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                   Product tour
                 </Link>
               </DropdownMenu.Item>
-              <DropdownMenu.Item asChild>
-                <button
-                  type="button"
-                  data-feedbacks-trigger
-                  onClick={() => window.dispatchEvent(new CustomEvent('feedbacks:open', {
-                    detail: { projectKey: 'fb_pub_eca05612446143cb95127d91753e2a48' },
-                  }))}
-                  className="flex min-h-9 w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] font-medium outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
-                >
-                  <MessageSquareText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  Send feedback
-                </button>
-              </DropdownMenu.Item>
+              {showFeedbackMenuItem ? (
+                <DropdownMenu.Item asChild>
+                  <button
+                    type="button"
+                    data-feedbacks-trigger
+                    onClick={() => window.dispatchEvent(new CustomEvent('feedbacks:open', {
+                      detail: { projectKey: FEEDBACKS_DEV_PROJECT_KEY },
+                    }))}
+                    className="flex min-h-9 w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] font-medium outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                  >
+                    <MessageSquareText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    Send feedback
+                  </button>
+                </DropdownMenu.Item>
+              ) : null}
               <DropdownMenu.Separator className="my-1 h-px bg-border" />
               <DropdownMenu.Item asChild>
                 <button

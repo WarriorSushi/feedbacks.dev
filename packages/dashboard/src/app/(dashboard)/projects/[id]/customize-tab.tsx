@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { buildRuntimeWidgetConfig, buildWidgetEditorConfig, getDefaultWidgetTarget, getWidgetModeLabel, type EmbedMode } from '@feedbacks/shared'
+import { FEEDBACKS_CONFIG_UPDATE_EVENT, buildRuntimeWidgetConfig, buildWidgetEditorConfig, getDefaultWidgetTarget, getWidgetModeLabel, type EmbedMode } from '@feedbacks/shared'
 import type { Project, WidgetConfig } from '@/lib/types'
 import { publicEnv } from '@/lib/public-env'
 import { Button } from '@/components/ui/button'
@@ -73,6 +73,12 @@ export function CustomizeTab({
   const [savedConfig, setSavedConfig] = React.useState<WidgetConfig>(serverSavedConfig)
   const [config, setConfig] = React.useState<WidgetConfig>(serverSavedConfig)
   const [projectVersion, setProjectVersion] = React.useState(project.updated_at)
+
+  const notifyInstalledWidget = React.useCallback((nextConfig: WidgetConfig) => {
+    window.dispatchEvent(new CustomEvent(FEEDBACKS_CONFIG_UPDATE_EVENT, {
+      detail: { projectKey: previewProjectKey, config: nextConfig },
+    }))
+  }, [previewProjectKey])
 
   React.useEffect(() => {
     setSavedConfig(serverSavedConfig)
@@ -325,6 +331,7 @@ export function CustomizeTab({
             setDraftRestored(false)
             if (typeof window !== 'undefined') {
               window.sessionStorage.removeItem(storageKey)
+              notifyInstalledWidget(latestConfig)
             }
             toast({
               title: 'Feedback form already saved',
@@ -358,6 +365,7 @@ export function CustomizeTab({
 
       if (typeof window !== 'undefined') {
         window.sessionStorage.removeItem(storageKey)
+        notifyInstalledWidget(nextSavedConfig)
       }
       setDraftRestored(false)
       toast({

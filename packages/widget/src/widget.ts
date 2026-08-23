@@ -2,12 +2,17 @@ import styles from './styles.css';
 import type { WidgetConfig, FeedbackData, FeedbackResponse, CategoryType } from './types';
 import { sanitizeFeedbackPageUrl } from './privacy';
 import {
+  FEEDBACKS_CONFIGURATION_EVENT,
+  FEEDBACKS_CONFIG_UPDATE_EVENT,
   isWidgetBootstrapResponse,
   readCachedFeedbackEnabled,
   readCachedRemoteWidgetConfig,
   writeCachedFeedbackEnabled,
   writeCachedRemoteWidgetConfig,
   type WidgetBootstrapResponse,
+  type FeedbacksConfigurationEventDetail,
+  type FeedbacksConfigUpdateEventDetail,
+  type SavedWidgetConfig,
 } from '@feedbacks/shared';
 import { ProductUpdatesController } from './product-updates';
 import { acquireOverlay, releaseOverlay } from './overlay-coordinator';
@@ -79,7 +84,7 @@ class FeedbacksWidget {
   private styleEl: HTMLStyleElement | null = null;
   private lastFocus: HTMLElement | null = null;
   private screenshotData: string | null = null;
-  private selectedCategory: CategoryType | '' = '';
+  private selectedCategory: CategoryType | '' = 'idea';
   private selectedRating = 0;
   private hoverRating = 0;
   private maxRetries = 3;
@@ -119,6 +124,7 @@ class FeedbacksWidget {
     if (this.destroyed) return;
     this.injectStyles();
     window.addEventListener('feedbacks:open', this.handleProgrammaticOpen);
+    window.addEventListener(FEEDBACKS_CONFIG_UPDATE_EVENT, this.handleConfigUpdate);
     void this.initializeModules();
   }
 
@@ -127,6 +133,48 @@ class FeedbacksWidget {
     if (detail?.projectKey && detail.projectKey !== this.cfg.projectKey) return;
     this.open();
   };
+
+  private handleConfigUpdate = (event: Event): void => {
+    const detail = (event as CustomEvent<FeedbacksConfigUpdateEventDetail>).detail;
+    if (!detail?.config || detail.projectKey !== this.cfg.projectKey) return;
+    this.applyFeedbackConfiguration(detail.config, this.feedbackEnabled);
+  };
+
+  private dispatchConfiguration(): void {
+    window.dispatchEvent(new CustomEvent<FeedbacksConfigurationEventDetail>(
+      FEEDBACKS_CONFIGURATION_EVENT,
+      {
+        detail: {
+          projectKey: this.cfg.projectKey,
+          embedMode: this.cfg.embedMode || 'modal',
+          feedbackEnabled: this.feedbackEnabled,
+        },
+      },
+    ));
+  }
+
+  private applyFeedbackConfiguration(nextConfig: SavedWidgetConfig, feedbackEnabled: boolean): void {
+    const hadFeedbackPresentation = this.feedbackEnabled;
+    const placementChanged = this.cfg.embedMode !== nextConfig.embedMode || this.cfg.target !== nextConfig.target;
+    const preserveActiveDraft = feedbackEnabled && !placementChanged && this.hasActiveFeedbackDraft();
+    if (hadFeedbackPresentation && !preserveActiveDraft) this.teardownFeedbackPresentation();
+
+    this.cfg = { ...this.cfg, ...nextConfig, projectKey: this.cfg.projectKey };
+    this.applyTheme();
+    this.feedbackEnabled = feedbackEnabled;
+
+    if (this.feedbackEnabled) {
+      if (!hadFeedbackPresentation || !preserveActiveDraft) {
+        this.setupFeedbackPresentation();
+      } else {
+        [this.launcher, this.inlineContainer, this.overlayEl]
+          .filter((element): element is HTMLElement => Boolean(element))
+          .forEach((element) => this.applyThemeToElement(element));
+      }
+    }
+
+    this.dispatchConfiguration();
+  }
 
   private async initializeModules(): Promise<void> {
     const storage = this.getLocalStorage();
@@ -143,6 +191,7 @@ class FeedbacksWidget {
     // never hide the launcher for the full request timeout.
     this.feedbackEnabled = cachedFeedbackEnabled ?? this.cfg.feedbackEnabled ?? true;
     if (this.feedbackEnabled) this.setupFeedbackPresentation();
+    this.dispatchConfiguration();
     this.log('Widget initialized');
 
     const bootstrap = await this.loadBootstrap();
@@ -152,25 +201,7 @@ class FeedbacksWidget {
       writeCachedRemoteWidgetConfig(storage, this.cfg.projectKey, bootstrap.feedbackConfig);
       writeCachedFeedbackEnabled(storage, this.cfg.projectKey, bootstrap.modules.feedback);
 
-      const hadFeedbackPresentation = this.feedbackEnabled;
-      const preserveActiveDraft = bootstrap.modules.feedback && this.hasActiveFeedbackDraft();
-      if (hadFeedbackPresentation && !preserveActiveDraft) this.teardownFeedbackPresentation();
-
-      this.cfg = { ...this.cfg, ...bootstrap.feedbackConfig, projectKey: this.cfg.projectKey };
-      this.applyTheme();
-      this.feedbackEnabled = bootstrap.modules.feedback;
-
-      if (this.feedbackEnabled) {
-        if (!hadFeedbackPresentation || !preserveActiveDraft) {
-          this.setupFeedbackPresentation();
-        } else {
-          // Preserve text the user has already entered while applying the new
-          // configuration to any presentation opened after this one.
-          [this.launcher, this.inlineContainer, this.overlayEl]
-            .filter((element): element is HTMLElement => Boolean(element))
-            .forEach((element) => this.applyThemeToElement(element));
-        }
-      }
+      this.applyFeedbackConfiguration(bootstrap.feedbackConfig, bootstrap.modules.feedback);
 
       if (bootstrap.modules.updates) {
         this.updatesController = new ProductUpdatesController(this.cfg, () => this.isOpen, bootstrap.updates);
@@ -221,7 +252,7 @@ class FeedbacksWidget {
   };
 
   private setupFeedbackPresentation(): void {
-    if (this.manualPresentation) return;
+    if (this.manualPresentation && this.cfg.embedMode !== 'inline') return;
 
     if (this.cfg.embedMode === 'inline') {
       this.renderInline();
@@ -433,6 +464,7 @@ class FeedbacksWidget {
 
   open(): void {
     if (!this.feedbackEnabled) return;
+    if (this.cfg.embedMode === 'inline') return;
     if (this.updatesController?.isOpen()) this.updatesController.closeUpdates();
     if (this.isOpen) return;
     acquireOverlay(this, 'feedback', () => this.close());
@@ -651,7 +683,7 @@ class FeedbacksWidget {
     const validCategories: CategoryType[] = ['bug', 'idea', 'praise', 'question'];
     this.selectedCategory = validCategories.some((category) => category === restoredDraft.category)
       ? restoredDraft.category as CategoryType
-      : '';
+      : 'idea';
     container.querySelectorAll<HTMLElement>('.fb-cat-btn').forEach(btn => {
       const active = btn.dataset.cat === this.selectedCategory;
       btn.classList.toggle('fb-active', active);
@@ -1041,6 +1073,7 @@ class FeedbacksWidget {
   destroy(): void {
     this.destroyed = true;
     window.removeEventListener('feedbacks:open', this.handleProgrammaticOpen);
+    window.removeEventListener(FEEDBACKS_CONFIG_UPDATE_EVENT, this.handleConfigUpdate);
     this.bootstrapController?.abort();
     this.bootstrapController = null;
     this.teardownFeedbackPresentation();

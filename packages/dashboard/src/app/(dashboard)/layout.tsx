@@ -119,7 +119,10 @@ export default async function DashboardLayout({
         } : null}
       />
       <main className="min-h-0 flex-1 overflow-y-auto bg-background pb-[env(safe-area-inset-bottom,0px)]">
-        <div className="workspace-route-enter mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 md:px-8 md:py-7">{children}</div>
+        <div className="workspace-route-enter mx-auto w-full max-w-[1320px] px-4 py-5 sm:px-6 md:px-8 md:py-7">
+          {children}
+          <FeedbacksWidgetScript />
+        </div>
       </main>
       <ProductTour
         initialOpen={requiredEarlyAdopterOnboarding || shouldOfferStandardOnboarding}
@@ -132,7 +135,6 @@ export default async function DashboardLayout({
         active={hasActivePro(billingAccount)}
         activationKey={getProActivationKey(billingAccount)}
       />
-      <FeedbacksWidgetScript />
     </div>
   )
 }

@@ -1,0 +1,1 @@
+export const FEEDBACKS_DEV_PROJECT_KEY = 'fb_pub_eca05612446143cb95127d91753e2a48'

@@ -31,5 +31,22 @@ test('widget renders cached feedback before waiting for remote bootstrap', async
   assert.ok(initializer.indexOf('readCachedRemoteWidgetConfig') < initializer.indexOf('await this.loadBootstrap()'))
   assert.ok(initializer.indexOf('this.setupFeedbackPresentation()') < initializer.indexOf('await this.loadBootstrap()'))
   assert.match(initializer, /writeCachedRemoteWidgetConfig/)
-  assert.match(initializer, /teardownFeedbackPresentation/)
+  assert.match(initializer, /applyFeedbackConfiguration/)
+})
+
+test('widget applies saved configuration updates without polling', async () => {
+  const source = await readFile(new URL('../../../widget/src/widget.ts', import.meta.url), 'utf8')
+
+  assert.match(source, /window\.addEventListener\(FEEDBACKS_CONFIG_UPDATE_EVENT, this\.handleConfigUpdate\)/)
+  assert.match(source, /this\.applyFeedbackConfiguration\(detail\.config, this\.feedbackEnabled\)/)
+  assert.match(source, /window\.dispatchEvent\(new CustomEvent<FeedbacksConfigurationEventDetail>/)
+  assert.match(source, /this\.manualPresentation && this\.cfg\.embedMode !== 'inline'/)
+  assert.match(source, /if \(this\.cfg\.embedMode === 'inline'\) return/)
+})
+
+test('widget defaults every new category picker to Idea', async () => {
+  const source = await readFile(new URL('../../../widget/src/widget.ts', import.meta.url), 'utf8')
+
+  assert.match(source, /private selectedCategory: CategoryType \| '' = 'idea'/)
+  assert.match(source, /restoredDraft\.category\)[\s\S]*\? restoredDraft\.category as CategoryType[\s\S]*: 'idea'/)
 })
