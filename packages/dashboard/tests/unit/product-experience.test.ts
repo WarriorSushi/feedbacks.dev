@@ -447,6 +447,7 @@ test('sidebar exposes a stable Home destination and groups project work by user 
   assert.match(sidebar, /project-required\?feature=/)
   assert.match(sidebar, /label: 'Docs', icon: Library/)
   assert.match(sidebar, /label: 'Pro for free', icon: Gift/)
+  assert.match(sidebar, /<FolderCog[^>]+\/> Manage projects/)
   assert.doesNotMatch(sidebar, /label: 'Invite friends'/)
   assert.equal(sidebar.match(/label: 'Docs'/g)?.length, 1)
   assert.equal(sidebar.match(/label: 'Pro for free'/g)?.length, 1)
@@ -456,6 +457,16 @@ test('sidebar exposes a stable Home destination and groups project work by user 
   assert.match(sidebar, /Sign out/)
   assert.doesNotMatch(sidebar, /Help & account/)
   assert.ok(sidebar.indexOf('aria-controls="mobile-navigation-drawer"') < sidebar.indexOf('<BrandWordmark', sidebar.indexOf('Mobile top bar')))
+})
+
+test('project management exposes project settings and the confirmed delete flow', () => {
+  const projects = read('../../src/app/(dashboard)/projects/page.tsx')
+  const projectSettings = read('../../src/app/(dashboard)/projects/[id]/project-tabs.tsx')
+
+  assert.match(projects, /settings#delete-project/)
+  assert.match(projects, /<Trash2[^>]+\/>\s*Delete/)
+  assert.match(projectSettings, /id="delete-project"/)
+  assert.match(projectSettings, /deleteInput !== project\.name/)
 })
 
 test('sign-in stays concise while showing the rotating use-case carousel', () => {

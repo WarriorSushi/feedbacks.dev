@@ -308,7 +308,7 @@ function SettingsTab({ project }: { project: Project }) {
         </CardContent>
       </Card>
 
-      <Card className="border-destructive/50">
+      <Card id="delete-project" className="scroll-mt-6 border-destructive/50">
         <CardHeader>
           <CardTitle className="text-lg text-destructive">Delete project</CardTitle>
           <CardDescription>

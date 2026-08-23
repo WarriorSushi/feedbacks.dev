@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
 import type { Project } from '@/lib/types'
 import Link from 'next/link'
-import { AlertTriangle, ArrowRight, CheckCircle2, Code2, FolderOpen, Inbox, LockKeyhole, Plus } from 'lucide-react'
+import { AlertTriangle, ArrowRight, CheckCircle2, Code2, FolderOpen, Inbox, LockKeyhole, Plus, Settings, Trash2 } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { CURRENT_PROJECT_COOKIE, getSelectedProject } from '@/lib/project-selection'
 import { PageHeader } from '@/components/ui/workspace-shell'
@@ -127,12 +127,14 @@ export default async function ProjectsPage() {
             const health = healthMap.get(project.id)
             const next = nextProjectAction(project, health)
             return (
-            <Link
+            <div
               key={project.id}
-              href={next.href}
-              className="group grid gap-3 border-b px-4 py-4 transition-colors last:border-b-0 hover:bg-accent/40 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
+              className="grid gap-3 border-b px-4 py-4 transition-colors last:border-b-0 hover:bg-accent/40 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
             >
-              <div className="min-w-0">
+              <Link
+                href={next.href}
+                className="group min-w-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <div className="flex min-w-0 items-center gap-2">
                   <FolderOpen className="h-4 w-4 shrink-0 text-primary" />
                   <h2 className="truncate text-base font-semibold">{project.name}</h2>
@@ -155,22 +157,43 @@ export default async function ProjectsPage() {
                   {health?.updates_enabled && <span>Updates active</span>}
                   {project.plan_frozen_at && <span>Data preserved, public collection paused</span>}
                 </div>
-              </div>
+              </Link>
 
               <div className="flex flex-wrap items-center gap-2 md:justify-end">
                 <Badge variant="secondary">
                   <Inbox className="mr-1 h-3 w-3" />
                   {health?.feedback_count || 0} feedback
                 </Badge>
-                <Badge
-                  variant={next.tone === 'danger' ? 'destructive' : next.tone === 'primary' ? 'secondary' : 'outline'}
+                <Button
+                  variant={next.tone === 'danger' ? 'destructive' : 'outline'}
+                  size="sm"
+                  asChild
                 >
-                  {next.tone === 'danger' && <AlertTriangle className="mr-1 h-3 w-3" />}
-                  {next.label}
-                </Badge>
-                <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+                  <Link href={next.href}>
+                    {next.tone === 'danger' && <AlertTriangle className="mr-1.5 h-3.5 w-3.5" />}
+                    {next.label}
+                    <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href={`/projects/${project.id}/settings`}>
+                    <Settings className="mr-1.5 h-3.5 w-3.5" />
+                    Settings
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  asChild
+                >
+                  <Link href={`/projects/${project.id}/settings#delete-project`}>
+                    <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                    Delete
+                  </Link>
+                </Button>
               </div>
-            </Link>
+            </div>
           )})}
         </div>
       )}

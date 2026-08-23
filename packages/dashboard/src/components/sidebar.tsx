@@ -32,6 +32,7 @@ import {
   Megaphone,
   Gift,
   Sparkles,
+  FolderCog,
 } from 'lucide-react'
 import type { Project } from '@/lib/types'
 import { createClient } from '@/lib/supabase-browser'
@@ -472,7 +473,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                     onClick={() => beginNavigation('/projects')}
                     className="flex min-h-9 items-center rounded-md px-2 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
                   >
-                    Manage projects
+                    <FolderCog className="mr-2 h-3.5 w-3.5" /> Manage projects
                   </Link>
                   <Link
                     href="/projects/new"
