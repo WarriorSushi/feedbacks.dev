@@ -15,7 +15,6 @@ import {
   Sparkles,
   Star,
   UsersRound,
-  X,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -277,7 +276,6 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
   const sectionRef = React.useRef<HTMLElement>(null)
   const stageRef = React.useRef<HTMLDivElement>(null)
   const launchButtonRef = React.useRef<HTMLButtonElement>(null)
-  const closeButtonRef = React.useRef<HTMLButtonElement>(null)
   const userEdited = React.useRef(false)
   const userRated = React.useRef(false)
   const open = phase === 'open' || phase === 'submitted'
@@ -291,7 +289,6 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
     })
     const settle = window.setTimeout(() => {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
-      closeButtonRef.current?.focus({ preventScroll: true })
     }, reduceMotion ? 0 : 640)
     return () => {
       window.cancelAnimationFrame(frame)
@@ -377,10 +374,10 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
       if (signal.aborted) return
 
       const peekTop = heroTop + (productTop - heroTop) * 0.5
-      await animateWindowScroll(peekTop, 1200, signal)
+      await animateWindowScroll(peekTop, 840, signal)
       await waitForMotion(320, signal)
       if (signal.aborted) return
-      await animateWindowScroll(heroTop, 1100, signal)
+      await animateWindowScroll(heroTop, 770, signal)
       preparedProduct.classList.remove('landing-reveal-prepared')
       preparedProduct = null
     }
@@ -410,10 +407,6 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
     setCloseCountdown(3)
     userEdited.current = false
     userRated.current = false
-  }
-
-  const closeDemo = () => {
-    setPhase('idle')
   }
 
   return (
@@ -485,9 +478,8 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
               transition={{ duration: reduceMotion ? 0 : 0.48, ease: [0.16, 1, 0.3, 1] }}
               className="landing-app-window landing-demo-form relative z-20 w-full max-w-[470px] overflow-hidden rounded-xl border bg-card text-card-foreground shadow-[0_32px_90px_-38px_rgb(0_0_0/0.62)]"
             >
-              <div className="landing-window-titlebar flex items-center justify-between gap-5 border-b px-4 py-3">
+              <div className="landing-window-titlebar flex items-center border-b px-4 py-3">
                 <p className="text-sm font-semibold">Send feedback</p>
-                <button ref={closeButtonRef} type="button" onClick={closeDemo} className="inline-flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:h-8 sm:w-8" aria-label="Close demo feedback form"><X className="h-4 w-4" /></button>
               </div>
 
               <div className="landing-demo-form-body space-y-3.5 p-4">

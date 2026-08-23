@@ -1190,11 +1190,6 @@
     padding: 0.45rem 0.75rem;
   }
 
-  .landing-demo-form .landing-window-titlebar button {
-    width: 2rem;
-    height: 2rem;
-  }
-
   .landing-demo-form-body {
     padding: 0.7rem 0.75rem 0.75rem;
   }
@@ -1356,12 +1351,13 @@
 .landing-try-launch {
   isolation: isolate;
   overflow: visible;
-  background: oklch(0.17 0.012 108);
+  background: linear-gradient(180deg, oklch(0.215 0.018 112), oklch(0.145 0.012 108));
   color: oklch(0.965 0.007 105);
   box-shadow:
-    inset 0 1px 0 oklch(0.99 0.004 105 / 0.1),
-    0 22px 46px -28px rgb(20 28 20 / 0.72),
-    0 8px 18px -14px rgb(20 28 20 / 0.48);
+    inset 0 1px 0 oklch(0.99 0.004 105 / 0.17),
+    inset 0 -1px 0 rgb(0 0 0 / 0.34),
+    0 26px 54px -30px oklch(0.28 0.055 252 / 0.56),
+    0 9px 20px -14px rgb(20 28 20 / 0.44);
 }
 
 .landing-try-launch:hover {
@@ -1372,10 +1368,12 @@
 }
 
 .dark .landing-try-launch {
+  background: linear-gradient(180deg, oklch(0.235 0.025 255), oklch(0.135 0.016 264));
   box-shadow:
-    inset 0 1px 0 oklch(0.99 0.004 105 / 0.11),
-    0 24px 52px -30px rgb(0 0 0 / 0.92),
-    0 9px 20px -15px rgb(0 0 0 / 0.82);
+    inset 0 1px 0 oklch(0.96 0.012 248 / 0.16),
+    inset 0 -1px 0 rgb(0 0 0 / 0.5),
+    0 30px 68px -32px oklch(0.42 0.13 257 / 0.36),
+    0 11px 24px -16px rgb(0 0 0 / 0.88);
 }
 
 .dark .landing-try-launch:hover {
@@ -3262,19 +3260,31 @@ html:not(.dark):not(.windows98) .auth-form-pane {
 
 /* Shared landing surfaces: cool slate keeps cards distinct in both color themes. */
 .marketing-shell {
-  --landing-slate-surface: linear-gradient(145deg, oklch(0.992 0.005 250), oklch(0.973 0.011 250) 54%, oklch(0.95 0.018 250));
-  --landing-slate-surface-raised: linear-gradient(155deg, oklch(0.997 0.003 250), oklch(0.98 0.009 250) 58%, oklch(0.955 0.016 250));
-  --landing-slate-titlebar: linear-gradient(180deg, oklch(0.995 0.004 250), oklch(0.96 0.014 250));
-  --landing-slate-border: oklch(0.62 0.035 250 / 0.58);
-  --landing-slate-shadow: 0 30px 76px -40px oklch(0.3 0.04 250 / 0.5), inset 0 1px 0 oklch(0.998 0.002 250 / 0.9);
+  --landing-slate-surface:
+    radial-gradient(circle at 82% 4%, oklch(0.998 0.004 242 / 0.94), transparent 38%),
+    linear-gradient(145deg, oklch(0.992 0.006 262), oklch(0.974 0.012 252) 54%, oklch(0.952 0.02 248));
+  --landing-slate-surface-raised: linear-gradient(155deg, oklch(0.997 0.004 258), oklch(0.982 0.009 250) 58%, oklch(0.958 0.017 248));
+  --landing-slate-titlebar: linear-gradient(180deg, oklch(0.998 0.003 256), oklch(0.965 0.013 250));
+  --landing-slate-border: oklch(0.59 0.028 253 / 0.46);
+  --landing-slate-shadow:
+    0 34px 82px -46px oklch(0.3 0.055 256 / 0.48),
+    0 12px 30px -24px oklch(0.45 0.08 246 / 0.25),
+    inset 0 1px 0 oklch(0.998 0.002 250 / 0.94),
+    inset 0 -1px 0 oklch(0.48 0.025 250 / 0.08);
 }
 
 .dark .marketing-shell {
-  --landing-slate-surface: linear-gradient(145deg, oklch(0.33 0.025 250), oklch(0.275 0.022 250) 52%, oklch(0.23 0.02 250));
-  --landing-slate-surface-raised: linear-gradient(150deg, oklch(0.37 0.028 250), oklch(0.3 0.024 250) 56%, oklch(0.25 0.021 250));
-  --landing-slate-titlebar: linear-gradient(180deg, oklch(0.37 0.027 250), oklch(0.285 0.022 250));
-  --landing-slate-border: oklch(0.65 0.04 250 / 0.5);
-  --landing-slate-shadow: 0 30px 82px -38px rgb(0 0 0 / 0.72), inset 0 1px 0 rgb(255 255 255 / 0.09);
+  --landing-slate-surface:
+    radial-gradient(circle at 84% 2%, oklch(0.39 0.05 252 / 0.3), transparent 40%),
+    linear-gradient(145deg, oklch(0.295 0.028 258), oklch(0.225 0.024 254) 54%, oklch(0.18 0.021 262));
+  --landing-slate-surface-raised: linear-gradient(150deg, oklch(0.325 0.032 255), oklch(0.25 0.026 252) 56%, oklch(0.195 0.022 260));
+  --landing-slate-titlebar: linear-gradient(180deg, oklch(0.32 0.03 254), oklch(0.225 0.023 258));
+  --landing-slate-border: oklch(0.74 0.035 250 / 0.3);
+  --landing-slate-shadow:
+    0 38px 94px -42px rgb(0 0 0 / 0.86),
+    0 14px 34px -26px oklch(0.46 0.11 258 / 0.2),
+    inset 0 1px 0 oklch(0.94 0.015 248 / 0.12),
+    inset 0 -1px 0 rgb(0 0 0 / 0.34);
 }
 
 .marketing-shell :is(
@@ -4156,26 +4166,8 @@ html.windows98 {
   color: var(--win98-highlight) !important;
 }
 
-.windows98 .landing-demo-form .landing-window-titlebar {
-  padding-right: 4px !important;
-}
-
 .windows98 .landing-demo-form .landing-window-titlebar::after {
   display: none;
-}
-
-.windows98 .landing-demo-form .landing-window-titlebar button {
-  width: 20px !important;
-  height: 18px !important;
-  min-height: 0 !important;
-  background: var(--win98-face) !important;
-  color: var(--win98-text) !important;
-}
-
-.windows98 .landing-demo-form .landing-window-titlebar button svg {
-  width: 12px;
-  height: 12px;
-  color: var(--win98-text) !important;
 }
 
 .windows98 .landing-demo-success .landing-window-chrome {
@@ -4471,7 +4463,7 @@ html.windows98 {
   z-index: 1;
   background-size: 180px 180px;
   mix-blend-mode: soft-light;
-  opacity: 0.055;
+  opacity: 0.035;
 }
 
 .landing-atmosphere-section {
@@ -4562,17 +4554,18 @@ html.windows98 {
   background-image:
     linear-gradient(oklch(0.36 0.045 230 / 0.075) 1px, transparent 1px),
     linear-gradient(90deg, oklch(0.36 0.045 230 / 0.075) 1px, transparent 1px) !important;
-  background-size: 44px 44px !important;
-  opacity: 0.72 !important;
+  background-size: 56px 56px !important;
+  opacity: 0.42 !important;
   -webkit-mask-image: radial-gradient(ellipse 72% 64% at 50% 48%, black, transparent 78%);
   mask-image: radial-gradient(ellipse 72% 64% at 50% 48%, black, transparent 78%);
   mix-blend-mode: multiply !important;
 }
 
 .landing-header {
-  background: color-mix(in oklch, var(--landing-canvas, oklch(var(--background))) 72%, transparent);
-  -webkit-backdrop-filter: saturate(160%) blur(20px);
-  backdrop-filter: saturate(160%) blur(20px);
+  background: color-mix(in oklch, var(--landing-canvas, oklch(var(--background))) 76%, transparent);
+  box-shadow: inset 0 -1px 0 oklch(0.45 0.025 255 / 0.08);
+  -webkit-backdrop-filter: saturate(145%) blur(24px);
+  backdrop-filter: saturate(145%) blur(24px);
 }
 
 .landing-header-scrolled {
@@ -4679,7 +4672,7 @@ html.windows98 {
 }
 
 .dark .landing-tone-hero::before {
-  opacity: 0.48 !important;
+  opacity: 0.3 !important;
   mix-blend-mode: screen !important;
 }
 
@@ -4699,78 +4692,91 @@ html.windows98 {
 
 /* Refined landing art direction: one calm product canvas with restrained light. */
 .marketing-shell {
-  --landing-canvas: oklch(0.972 0.007 238);
-  --landing-canvas-raised: oklch(0.989 0.005 228);
-  --landing-atmosphere-line: oklch(0.48 0.026 238 / 0.16);
-  --landing-atmosphere-highlight: rgb(255 255 255 / 0.78);
+  --landing-canvas: oklch(0.974 0.008 263);
+  --landing-canvas-raised: oklch(0.992 0.006 252);
+  --landing-atmosphere-line: oklch(0.46 0.025 257 / 0.15);
+  --landing-atmosphere-highlight: oklch(0.998 0.003 248 / 0.82);
 }
 
 .marketing-shell main {
   background:
-    radial-gradient(ellipse 72rem 132rem at 4% 30%, oklch(0.91 0.035 154 / 0.15), transparent 70%),
-    radial-gradient(ellipse 76rem 146rem at 100% 70%, oklch(0.89 0.036 246 / 0.14), transparent 72%),
-    var(--landing-canvas);
+    radial-gradient(ellipse 72rem 54rem at 50% -8%, oklch(0.998 0.004 248 / 0.64), transparent 66%),
+    radial-gradient(ellipse 90rem 154rem at 108% 12%, oklch(0.82 0.105 250 / 0.18), transparent 68%),
+    radial-gradient(ellipse 86rem 148rem at -10% 86%, oklch(0.85 0.09 307 / 0.13), transparent 70%),
+    linear-gradient(180deg, oklch(0.982 0.01 262), oklch(0.958 0.012 266) 52%, oklch(0.978 0.011 250));
 }
 
 .marketing-shell .landing-atmosphere-section.landing-tone-hero {
   background:
-    radial-gradient(ellipse 62% 70% at 12% 4%, oklch(0.93 0.05 92 / 0.58), transparent 72%),
-    radial-gradient(ellipse 58% 74% at 96% 12%, oklch(0.9 0.055 157 / 0.42), transparent 74%),
-    linear-gradient(145deg, oklch(0.991 0.008 90), oklch(0.958 0.016 145) 52%, oklch(0.946 0.018 232)) !important;
+    radial-gradient(ellipse 72% 54% at 50% -12%, oklch(0.998 0.004 250 / 0.76), transparent 65%),
+    radial-gradient(ellipse 76% 88% at 108% -8%, oklch(0.79 0.13 249 / 0.42), transparent 67%),
+    radial-gradient(ellipse 66% 82% at -8% 102%, oklch(0.83 0.115 307 / 0.3), transparent 69%),
+    radial-gradient(ellipse 46% 58% at 52% 112%, oklch(0.85 0.09 216 / 0.2), transparent 72%),
+    radial-gradient(ellipse 42% 50% at 8% -12%, oklch(0.9 0.075 18 / 0.2), transparent 70%),
+    radial-gradient(ellipse 110% 120% at 50% 44%, transparent 54%, oklch(0.61 0.045 268 / 0.08) 100%),
+    linear-gradient(142deg, oklch(0.985 0.012 276), oklch(0.95 0.027 246) 50%, oklch(0.958 0.022 284)) !important;
 }
 
 .marketing-shell .landing-atmosphere-section.landing-tone-cool {
   background:
-    radial-gradient(ellipse 62% 78% at 100% 28%, oklch(0.88 0.04 238 / 0.32), transparent 74%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.925 0.016 239) 50%, var(--landing-canvas)) !important;
+    radial-gradient(ellipse 72% 88% at 106% 18%, oklch(0.8 0.11 247 / 0.32), transparent 69%),
+    radial-gradient(ellipse 62% 80% at -8% 86%, oklch(0.84 0.09 294 / 0.2), transparent 72%),
+    linear-gradient(180deg, oklch(0.975 0.01 264), oklch(0.938 0.025 252) 50%, oklch(0.972 0.011 266)) !important;
 }
 
 .marketing-shell .landing-atmosphere-section.landing-tone-warm {
   background:
-    radial-gradient(ellipse 64% 82% at 8% 76%, oklch(0.94 0.036 91 / 0.3), transparent 74%),
-    radial-gradient(ellipse 58% 76% at 96% 20%, oklch(0.9 0.04 155 / 0.3), transparent 74%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.943 0.015 128) 52%, var(--landing-canvas)) !important;
+    radial-gradient(ellipse 66% 84% at -6% 82%, oklch(0.88 0.09 38 / 0.28), transparent 70%),
+    radial-gradient(ellipse 64% 80% at 106% 16%, oklch(0.83 0.105 306 / 0.25), transparent 70%),
+    linear-gradient(180deg, oklch(0.974 0.01 268), oklch(0.947 0.023 320) 50%, oklch(0.972 0.011 264)) !important;
 }
 
 .marketing-shell .landing-atmosphere-section.landing-tone-focus {
   background:
-    radial-gradient(ellipse 62% 76% at 88% 20%, oklch(0.84 0.042 229 / 0.3), transparent 74%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.895 0.019 235) 48%, oklch(0.91 0.016 232)) !important;
+    radial-gradient(ellipse 72% 78% at 86% 20%, oklch(0.79 0.125 254 / 0.36), transparent 68%),
+    radial-gradient(ellipse 58% 72% at -6% 82%, oklch(0.82 0.09 216 / 0.2), transparent 72%),
+    linear-gradient(180deg, oklch(0.974 0.01 268), oklch(0.93 0.03 255) 52%, oklch(0.968 0.011 266)) !important;
 }
 
 .marketing-shell .landing-atmosphere-section.landing-tone-aurora {
   background:
-    radial-gradient(ellipse 62% 78% at 6% 22%, oklch(0.93 0.035 92 / 0.28), transparent 74%),
-    radial-gradient(ellipse 64% 82% at 98% 78%, oklch(0.87 0.043 220 / 0.28), transparent 76%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.92 0.018 164) 50%, var(--landing-canvas)) !important;
+    radial-gradient(ellipse 68% 82% at -8% 16%, oklch(0.82 0.12 310 / 0.3), transparent 70%),
+    radial-gradient(ellipse 66% 80% at 108% 20%, oklch(0.78 0.13 250 / 0.34), transparent 70%),
+    radial-gradient(ellipse 60% 72% at 52% 108%, oklch(0.83 0.095 213 / 0.22), transparent 70%),
+    linear-gradient(180deg, oklch(0.975 0.011 271), oklch(0.932 0.033 278) 50%, oklch(0.97 0.012 257)) !important;
 }
 
 .marketing-shell .landing-atmosphere-section.landing-tone-code {
   background:
-    radial-gradient(ellipse 58% 72% at 94% 24%, oklch(0.86 0.04 230 / 0.26), transparent 74%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.9 0.018 232) 50%, var(--landing-canvas)) !important;
+    radial-gradient(ellipse 64% 78% at 94% 18%, oklch(0.8 0.105 240 / 0.3), transparent 70%),
+    radial-gradient(ellipse 60% 74% at 4% 86%, oklch(0.84 0.085 291 / 0.18), transparent 72%),
+    linear-gradient(180deg, oklch(0.974 0.009 264), oklch(0.94 0.022 247) 52%, oklch(0.97 0.01 266)) !important;
 }
 
 .marketing-shell .landing-atmosphere-section.landing-tone-quiet {
   background:
-    radial-gradient(ellipse 62% 86% at 96% 52%, oklch(0.9 0.028 238 / 0.24), transparent 76%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.944 0.011 232) 50%, var(--landing-canvas)) !important;
+    radial-gradient(ellipse 66% 88% at 106% 48%, oklch(0.84 0.075 252 / 0.19), transparent 72%),
+    radial-gradient(ellipse 60% 84% at -8% 54%, oklch(0.87 0.065 302 / 0.14), transparent 74%),
+    linear-gradient(180deg, oklch(0.975 0.009 264), oklch(0.955 0.015 260) 50%, oklch(0.975 0.009 264)) !important;
 }
 
 .marketing-shell .landing-atmosphere-section.landing-tone-pricing {
   background:
-    radial-gradient(ellipse 58% 76% at 10% 20%, oklch(0.91 0.038 148 / 0.28), transparent 74%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.925 0.016 165) 50%, var(--landing-canvas)) !important;
+    radial-gradient(ellipse 70% 84% at -6% 12%, oklch(0.81 0.1 220 / 0.27), transparent 69%),
+    radial-gradient(ellipse 62% 78% at 106% 84%, oklch(0.82 0.11 308 / 0.24), transparent 72%),
+    linear-gradient(180deg, oklch(0.975 0.01 264), oklch(0.94 0.025 244) 50%, oklch(0.97 0.011 270)) !important;
 }
 
 .marketing-shell .landing-atmosphere-section.landing-tone-final {
   background:
-    radial-gradient(circle at 50% 50%, oklch(0.88 0.07 146 / 0.3), transparent 38%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.9 0.022 183) 56%, oklch(0.91 0.018 226)) !important;
+    radial-gradient(circle at 50% 46%, oklch(0.79 0.14 252 / 0.36), transparent 38%),
+    radial-gradient(ellipse 66% 86% at -8% 94%, oklch(0.82 0.11 311 / 0.25), transparent 72%),
+    radial-gradient(ellipse 64% 84% at 108% 4%, oklch(0.82 0.095 217 / 0.22), transparent 72%),
+    linear-gradient(180deg, oklch(0.974 0.01 266), oklch(0.93 0.031 254) 54%, oklch(0.965 0.014 274)) !important;
 }
 
 .landing-final-orb {
-  background: radial-gradient(circle, oklch(0.84 0.1 140 / 0.34), oklch(0.76 0.07 190 / 0.12) 44%, transparent 72%) !important;
+  background: radial-gradient(circle, oklch(0.75 0.16 252 / 0.34), oklch(0.79 0.1 303 / 0.14) 44%, transparent 72%) !important;
 }
 
 .landing-mascot-context-v2 {
@@ -4786,56 +4792,116 @@ html.windows98 {
 
 .landing-footer {
   border-color: var(--landing-atmosphere-line) !important;
-  background: linear-gradient(90deg, oklch(0.956 0.009 244), oklch(0.943 0.012 226)) !important;
+  background: linear-gradient(90deg, oklch(0.957 0.012 271), oklch(0.94 0.02 247)) !important;
   box-shadow: inset 0 1px 0 var(--landing-atmosphere-highlight);
 }
 
 .dark .marketing-shell {
-  --landing-canvas: oklch(0.115 0.012 238);
-  --landing-canvas-raised: oklch(0.15 0.014 230);
-  --landing-atmosphere-line: oklch(0.76 0.025 232 / 0.12);
+  --landing-canvas: oklch(0.205 0.018 263);
+  --landing-canvas-raised: oklch(0.255 0.021 259);
+  --landing-atmosphere-line: oklch(0.82 0.025 252 / 0.17);
+  --landing-atmosphere-highlight: oklch(0.96 0.012 248 / 0.1);
 }
 
 .dark .marketing-shell main {
   background:
-    radial-gradient(ellipse 72rem 132rem at 4% 30%, oklch(0.28 0.045 154 / 0.11), transparent 70%),
-    radial-gradient(ellipse 76rem 146rem at 100% 70%, oklch(0.25 0.04 246 / 0.1), transparent 72%),
-    var(--landing-canvas);
+    radial-gradient(ellipse 76rem 58rem at 50% -10%, oklch(0.53 0.11 252 / 0.14), transparent 66%),
+    radial-gradient(ellipse 92rem 160rem at 110% 12%, oklch(0.5 0.16 257 / 0.15), transparent 66%),
+    radial-gradient(ellipse 88rem 150rem at -12% 84%, oklch(0.49 0.14 310 / 0.12), transparent 69%),
+    linear-gradient(180deg, oklch(0.215 0.022 260), oklch(0.185 0.02 265) 52%, oklch(0.215 0.024 250));
 }
 
 .dark .marketing-shell .landing-atmosphere-section.landing-tone-hero {
   background:
-    radial-gradient(ellipse 62% 70% at 12% 4%, oklch(0.31 0.07 92 / 0.18), transparent 72%),
-    radial-gradient(ellipse 58% 74% at 96% 12%, oklch(0.29 0.065 157 / 0.18), transparent 74%),
-    linear-gradient(145deg, oklch(0.15 0.016 90), oklch(0.12 0.017 145) 52%, oklch(0.125 0.019 232)) !important;
+    radial-gradient(ellipse 72% 54% at 50% -12%, oklch(0.57 0.12 250 / 0.15), transparent 65%),
+    radial-gradient(ellipse 76% 88% at 108% -8%, oklch(0.57 0.18 254 / 0.31), transparent 67%),
+    radial-gradient(ellipse 66% 82% at -8% 102%, oklch(0.51 0.16 310 / 0.22), transparent 69%),
+    radial-gradient(ellipse 46% 58% at 52% 112%, oklch(0.54 0.12 219 / 0.14), transparent 72%),
+    radial-gradient(ellipse 42% 50% at 8% -12%, oklch(0.58 0.12 18 / 0.1), transparent 70%),
+    radial-gradient(ellipse 110% 120% at 50% 44%, transparent 52%, oklch(0.08 0.018 275 / 0.27) 100%),
+    linear-gradient(142deg, oklch(0.235 0.03 273), oklch(0.215 0.038 246) 50%, oklch(0.2 0.03 276)) !important;
 }
 
-.dark .marketing-shell .landing-atmosphere-section.landing-tone-cool,
-.dark .marketing-shell .landing-atmosphere-section.landing-tone-focus,
-.dark .marketing-shell .landing-atmosphere-section.landing-tone-code,
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-cool {
+  background:
+    radial-gradient(ellipse 72% 88% at 106% 18%, oklch(0.55 0.16 248 / 0.25), transparent 69%),
+    radial-gradient(ellipse 62% 80% at -8% 86%, oklch(0.48 0.14 292 / 0.16), transparent 72%),
+    linear-gradient(180deg, oklch(0.205 0.024 263), oklch(0.235 0.035 253) 50%, oklch(0.2 0.023 266)) !important;
+}
+
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-warm {
+  background:
+    radial-gradient(ellipse 66% 84% at -6% 82%, oklch(0.57 0.14 42 / 0.2), transparent 70%),
+    radial-gradient(ellipse 64% 80% at 106% 16%, oklch(0.51 0.14 305 / 0.18), transparent 70%),
+    linear-gradient(180deg, oklch(0.2 0.023 266), oklch(0.235 0.034 316) 50%, oklch(0.205 0.024 264)) !important;
+}
+
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-focus {
+  background:
+    radial-gradient(ellipse 72% 78% at 86% 20%, oklch(0.55 0.18 258 / 0.28), transparent 68%),
+    radial-gradient(ellipse 58% 72% at -6% 82%, oklch(0.5 0.13 219 / 0.15), transparent 72%),
+    linear-gradient(180deg, oklch(0.2 0.024 268), oklch(0.23 0.039 257) 52%, oklch(0.195 0.023 266)) !important;
+}
+
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-aurora {
+  background:
+    radial-gradient(ellipse 68% 82% at -8% 16%, oklch(0.54 0.18 309 / 0.22), transparent 70%),
+    radial-gradient(ellipse 66% 80% at 108% 20%, oklch(0.55 0.18 252 / 0.26), transparent 70%),
+    radial-gradient(ellipse 60% 72% at 52% 108%, oklch(0.53 0.14 215 / 0.18), transparent 70%),
+    linear-gradient(180deg, oklch(0.205 0.025 270), oklch(0.24 0.043 279) 50%, oklch(0.205 0.026 257)) !important;
+}
+
+.dark .marketing-shell .landing-atmosphere-section.landing-tone-code {
+  background:
+    radial-gradient(ellipse 64% 78% at 94% 18%, oklch(0.52 0.15 241 / 0.22), transparent 70%),
+    radial-gradient(ellipse 60% 74% at 4% 86%, oklch(0.48 0.13 289 / 0.15), transparent 72%),
+    linear-gradient(180deg, oklch(0.2 0.022 264), oklch(0.225 0.032 248) 52%, oklch(0.195 0.021 266)) !important;
+}
+
 .dark .marketing-shell .landing-atmosphere-section.landing-tone-quiet {
   background:
-    radial-gradient(ellipse 64% 82% at 96% 28%, oklch(0.25 0.045 235 / 0.16), transparent 76%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.105 0.014 236) 52%, var(--landing-canvas)) !important;
+    radial-gradient(ellipse 66% 88% at 106% 48%, oklch(0.47 0.11 253 / 0.14), transparent 72%),
+    radial-gradient(ellipse 60% 84% at -8% 54%, oklch(0.46 0.1 302 / 0.11), transparent 74%),
+    linear-gradient(180deg, oklch(0.2 0.021 264), oklch(0.22 0.027 259) 50%, oklch(0.2 0.021 264)) !important;
 }
 
-.dark .marketing-shell .landing-atmosphere-section.landing-tone-warm,
-.dark .marketing-shell .landing-atmosphere-section.landing-tone-aurora,
 .dark .marketing-shell .landing-atmosphere-section.landing-tone-pricing {
   background:
-    radial-gradient(ellipse 64% 82% at 8% 76%, oklch(0.28 0.05 148 / 0.14), transparent 76%),
-    radial-gradient(ellipse 58% 78% at 96% 22%, oklch(0.24 0.045 225 / 0.13), transparent 76%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.115 0.015 176) 52%, var(--landing-canvas)) !important;
+    radial-gradient(ellipse 70% 84% at -6% 12%, oklch(0.5 0.14 222 / 0.2), transparent 69%),
+    radial-gradient(ellipse 62% 78% at 106% 84%, oklch(0.54 0.15 307 / 0.18), transparent 72%),
+    linear-gradient(180deg, oklch(0.2 0.022 264), oklch(0.235 0.034 245) 50%, oklch(0.205 0.024 270)) !important;
 }
 
 .dark .marketing-shell .landing-atmosphere-section.landing-tone-final {
   background:
-    radial-gradient(circle at 50% 50%, oklch(0.3 0.07 146 / 0.2), transparent 40%),
-    linear-gradient(180deg, var(--landing-canvas), oklch(0.105 0.016 192) 56%, oklch(0.11 0.014 226)) !important;
+    radial-gradient(circle at 50% 46%, oklch(0.58 0.19 258 / 0.3), transparent 38%),
+    radial-gradient(ellipse 66% 86% at -8% 94%, oklch(0.5 0.16 312 / 0.2), transparent 72%),
+    radial-gradient(ellipse 64% 84% at 108% 4%, oklch(0.52 0.14 220 / 0.17), transparent 72%),
+    linear-gradient(180deg, oklch(0.205 0.025 266), oklch(0.24 0.043 258) 54%, oklch(0.21 0.026 274)) !important;
+}
+
+.dark .landing-page-grain {
+  opacity: 0.045;
 }
 
 .dark .landing-footer {
-  background: linear-gradient(90deg, oklch(0.105 0.012 244), oklch(0.095 0.014 226)) !important;
+  background: linear-gradient(90deg, oklch(0.195 0.023 270), oklch(0.225 0.031 248)) !important;
+}
+
+/* The live widget demo stays light and readable even when the marketing page is dark. */
+.dark .marketing-shell .landing-try-stage :is(.landing-demo-form, .landing-demo-success) {
+  border-color: oklch(0.72 0.025 112 / 0.72) !important;
+  background: oklch(0.975 0.008 105) !important;
+  color: oklch(0.185 0.014 108) !important;
+  box-shadow:
+    0 34px 100px -38px rgb(0 0 0 / 0.76),
+    inset 0 1px 0 oklch(0.998 0.003 105 / 0.92) !important;
+}
+
+.dark .marketing-shell .landing-demo-form .landing-window-titlebar {
+  border-color: oklch(0.78 0.02 108 / 0.82) !important;
+  background: oklch(0.947 0.013 105) !important;
+  color: oklch(0.185 0.014 108) !important;
 }
 
 .windows98 .marketing-shell .landing-atmosphere-section {

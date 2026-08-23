@@ -63,7 +63,7 @@ export default async function EarlyAccessPage() {
               <h2 className="text-2xl font-semibold tracking-tight">Claim your place</h2>
               <p className="mt-1 text-sm text-foreground/75 sm:text-base">Sign in and finish onboarding to confirm it.</p>
             </div>
-            <p className="mt-2 text-sm font-semibold text-primary sm:text-base">{availability.remaining} of {availability.capacity} unclaimed</p>
+            <p className="mt-2 text-sm font-semibold text-primary sm:text-base">{availability.remaining} places left</p>
           </div>
           <LeadForm open={availability.open} />
         </aside>
