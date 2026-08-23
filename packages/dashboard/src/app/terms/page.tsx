@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 export const metadata: Metadata = {
   title: 'Terms of Service',
   description: 'The terms that apply when using feedbacks.dev.',
+  alternates: { canonical: '/terms' },
 }
 
 export default function TermsPage() {

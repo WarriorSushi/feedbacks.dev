@@ -24,9 +24,18 @@ test('auth surfaces redirect from apex host to app host', async () => {
 test('marketing surfaces redirect from app host to www host', async () => {
   const { getCanonicalHostRedirect } = await loadDomainRouting()
 
-  const redirect = getCanonicalHostRedirect(new URL('https://app.feedbacks.dev/boards?sort=recent'))
+  const cases = [
+    ['/boards?sort=recent', '/boards?sort=recent'],
+    ['/feedback-widget', '/feedback-widget'],
+    ['/feedback-widget/nextjs', '/feedback-widget/nextjs'],
+    ['/canny-alternative', '/canny-alternative'],
+    ['/p/customer-board', '/p/customer-board'],
+  ]
 
-  assert.equal(redirect?.toString(), 'https://www.feedbacks.dev/boards?sort=recent')
+  for (const [input, expected] of cases) {
+    const redirect = getCanonicalHostRedirect(new URL(`https://app.feedbacks.dev${input}`))
+    assert.equal(redirect?.toString(), `https://www.feedbacks.dev${expected}`)
+  }
 })
 
 test('lead and invite links stay on the marketing host', async () => {

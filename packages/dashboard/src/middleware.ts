@@ -74,12 +74,12 @@ export async function middleware(request: NextRequest) {
 
   const earlyCanonicalRedirect = getCanonicalHostRedirect(request.nextUrl)
   if (earlyCanonicalRedirect && !(request.nextUrl.hostname === new URL(getAppOrigin()).hostname && request.nextUrl.pathname === '/')) {
-    return NextResponse.redirect(earlyCanonicalRedirect)
+    return NextResponse.redirect(earlyCanonicalRedirect, 308)
   }
 
   const legacyProjectTabRedirect = getLegacyProjectTabRedirect(request.nextUrl)
   if (legacyProjectTabRedirect) {
-    return NextResponse.redirect(new URL(legacyProjectTabRedirect, request.url))
+    return NextResponse.redirect(new URL(legacyProjectTabRedirect, request.url), 308)
   }
 
   const requestHeaders = new Headers(request.headers)
@@ -132,7 +132,9 @@ export async function middleware(request: NextRequest) {
 
   const canonicalRedirect = getCanonicalHostRedirect(request.nextUrl, Boolean(user))
   if (canonicalRedirect) {
-    return NextResponse.redirect(canonicalRedirect)
+    const isSessionDependentAppRoot = request.nextUrl.hostname === new URL(getAppOrigin()).hostname
+      && request.nextUrl.pathname === '/'
+    return NextResponse.redirect(canonicalRedirect, isSessionDependentAppRoot ? 307 : 308)
   }
 
   if (isProtectedAppPath(request.nextUrl.pathname) && !user) {

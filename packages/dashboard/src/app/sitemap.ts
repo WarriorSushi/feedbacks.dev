@@ -14,19 +14,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const acquisitionPages: MetadataRoute.Sitemap = [
     {
       url: `${SITE_ORIGIN}/feedback-widget`,
-      lastModified: '2026-08-20',
+      lastModified: '2026-08-23',
       changeFrequency: 'monthly',
       priority: 0.9,
     },
     {
       url: `${SITE_ORIGIN}/feedback-widget/nextjs`,
-      lastModified: '2026-08-20',
+      lastModified: '2026-08-23',
       changeFrequency: 'monthly',
       priority: 0.85,
     },
     {
       url: `${SITE_ORIGIN}/canny-alternative`,
-      lastModified: '2026-08-20',
+      lastModified: '2026-08-23',
       changeFrequency: 'monthly',
       priority: 0.8,
     },
@@ -79,11 +79,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...docs,
     {
       url: `${SITE_ORIGIN}/privacy`,
+      lastModified: '2026-08-22',
       changeFrequency: 'yearly',
       priority: 0.2,
     },
     {
       url: `${SITE_ORIGIN}/terms`,
+      lastModified: '2026-08-22',
       changeFrequency: 'yearly',
       priority: 0.2,
     },

@@ -7,6 +7,7 @@ import { PrivacyChoicesButton } from '@/components/privacy-choices-button'
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'How feedbacks.dev collects, uses, stores, and protects personal information.',
+  alternates: { canonical: '/privacy' },
 }
 
 export default function PrivacyPage() {
