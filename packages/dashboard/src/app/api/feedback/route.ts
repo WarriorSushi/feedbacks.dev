@@ -18,6 +18,7 @@ import {
 } from '@/lib/feedback-media-validation'
 import { insertFeedbackWithAtomicQuota } from '@/lib/atomic-quota-writes'
 import { verifyCaptchaToken } from '@/lib/captcha'
+import { HOSTED_VERIFICATION_SUBMISSION_CONTEXT } from '@feedbacks/shared'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -227,6 +228,9 @@ export async function POST(request: NextRequest) {
       return jsonError('Invalid submission identifier', 400)
     }
     const feedbackId = submittedId || crypto.randomUUID()
+    const submissionContext = fields.submissionContext?.trim() === HOSTED_VERIFICATION_SUBMISSION_CONTEXT
+      ? HOSTED_VERIFICATION_SUBMISSION_CONTEXT
+      : null
     const uploadedObjects: Array<{ bucket: string; path: string }> = []
     const mediaRows: Array<Record<string, unknown>> = []
     const cleanupUploadedObjects = () => Promise.all(
@@ -399,7 +403,10 @@ export async function POST(request: NextRequest) {
       screenshot_url: null,
       screenshot_path: screenshotPath,
       attachments,
-      metadata: { source: 'widget' },
+      metadata: {
+        source: 'widget',
+        ...(submissionContext ? { submission_context: submissionContext } : {}),
+      },
       is_public: false,
       is_archived: false,
       read_at: null,

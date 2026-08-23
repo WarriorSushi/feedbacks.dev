@@ -6,6 +6,7 @@ import {
   buildRuntimeWidgetConfig,
   getWidgetLauncherPositionLabel,
   getWidgetModeLabel,
+  HOSTED_VERIFICATION_SUBMISSION_CONTEXT,
   type SavedWidgetConfig,
 } from '@feedbacks/shared'
 import { Button } from '@/components/ui/button'
@@ -126,7 +127,7 @@ export function ProjectVerifyClient({
       if (!response.ok) throw new Error('Verification status unavailable')
       setFeedbackCheckError(false)
       const feedback = payload.feedback as VerifiedFeedback | null
-      if (feedback?.id && !feedback.url?.includes(`/projects/${projectId}/verify`)) {
+      if (feedback?.id) {
         markProductVerification(feedback)
       }
     } catch {
@@ -155,8 +156,10 @@ export function ProjectVerifyClient({
 
   React.useEffect(() => {
     const handleHostedSubmission = (event: Event) => {
-      const feedbackId = (event as CustomEvent<{ id?: string }>).detail?.id
-      if (feedbackId) setHostedFeedbackId(feedbackId)
+      const detail = (event as CustomEvent<{ id?: string; submissionContext?: string }>).detail
+      if (detail?.id && detail.submissionContext === HOSTED_VERIFICATION_SUBMISSION_CONTEXT) {
+        setHostedFeedbackId(detail.id)
+      }
     }
 
     window.addEventListener('feedbacks:submitted', handleHostedSubmission)

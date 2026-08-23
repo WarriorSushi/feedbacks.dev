@@ -5,6 +5,7 @@ import {
   buildRuntimeWidgetConfig,
   buildWidgetScriptUrl,
   getWidgetLauncherPositionLabel,
+  HOSTED_VERIFICATION_SUBMISSION_CONTEXT,
   type SavedWidgetConfig,
   type WidgetConfig,
 } from '@feedbacks/shared'
@@ -144,7 +145,10 @@ export function WidgetPreviewSurface({
   const hostRef = React.useRef<HTMLDivElement>(null)
   const statusChangeRef = React.useRef(onStatusChange)
   const runtimeConfig = React.useMemo(
-    () => buildRuntimeWidgetConfig(projectKey, config, { appOrigin }),
+    () => ({
+      ...buildRuntimeWidgetConfig(projectKey, config, { appOrigin }),
+      submissionContext: HOSTED_VERIFICATION_SUBMISSION_CONTEXT,
+    }),
     [appOrigin, config, projectKey],
   )
 

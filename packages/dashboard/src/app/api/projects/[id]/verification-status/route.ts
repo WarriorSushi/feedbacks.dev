@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthedUserAndProject } from '@/lib/api-auth'
+import { HOSTED_VERIFICATION_SUBMISSION_CONTEXT } from '@feedbacks/shared'
 
 const MAX_VERIFICATION_WINDOW_MS = 2 * 60 * 60 * 1000
 
@@ -23,14 +24,12 @@ export async function GET(
   const boundedSince = new Date(Math.max(sinceTime, Date.now() - MAX_VERIFICATION_WINDOW_MS)).toISOString()
   const { data, error } = await auth.admin
     .from('feedback')
-    .select('id, created_at, url')
+    .select('id, created_at, url, metadata')
     .eq('project_id', id)
     .gte('created_at', boundedSince)
     .not('url', 'is', null)
-    .not('url', 'ilike', `%/projects/${id}/verify%`)
     .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+    .limit(10)
 
   if (error) {
     return NextResponse.json(
@@ -39,10 +38,17 @@ export async function GET(
     )
   }
 
+  const productFeedback = data?.find((feedback) => {
+    const metadata = feedback.metadata && typeof feedback.metadata === 'object'
+      ? feedback.metadata as Record<string, unknown>
+      : null
+    return metadata?.submission_context !== HOSTED_VERIFICATION_SUBMISSION_CONTEXT
+  })
+
   return NextResponse.json(
     {
-      feedback: data
-        ? { id: data.id, createdAt: data.created_at, url: data.url }
+      feedback: productFeedback
+        ? { id: productFeedback.id, createdAt: productFeedback.created_at, url: productFeedback.url }
         : null,
     },
     { headers: { 'Cache-Control': 'no-store' } },

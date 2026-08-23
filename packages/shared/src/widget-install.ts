@@ -2,6 +2,8 @@ export type EmbedMode = 'modal' | 'inline' | 'trigger'
 export type WidgetPosition = 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
 export type CaptchaProvider = 'turnstile' | 'hcaptcha'
 export const WIDGET_CONFIG_VERSION = 1
+export const HOSTED_VERIFICATION_SUBMISSION_CONTEXT = 'hosted-verification' as const
+export type WidgetSubmissionContext = typeof HOSTED_VERIFICATION_SUBMISSION_CONTEXT
 
 export interface SavedWidgetConfig {
   configVersion?: number
@@ -49,6 +51,8 @@ export interface SavedWidgetConfig {
 
 export interface WidgetConfig extends SavedWidgetConfig {
   projectKey: string
+  /** Runtime-only marker for feedback sent from the hosted verification control. */
+  submissionContext?: WidgetSubmissionContext
 }
 
 /**
@@ -56,7 +60,7 @@ export interface WidgetConfig extends SavedWidgetConfig {
  * bootstrap endpoint. Module switches stay server-controlled and the project
  * key is already supplied by the embed, so neither belongs in this payload.
  */
-export type PublicWidgetConfig = Omit<WidgetConfig, 'projectKey' | 'feedbackEnabled' | 'enableUpdates'>
+export type PublicWidgetConfig = Omit<WidgetConfig, 'projectKey' | 'feedbackEnabled' | 'enableUpdates' | 'submissionContext'>
 
 export interface WidgetScriptAttribute {
   name: string

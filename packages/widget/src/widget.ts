@@ -768,6 +768,7 @@ class FeedbacksWidget {
           const fd = new FormData();
           fd.append('apiKey', this.cfg.projectKey);
           if (submissionId) fd.append('submissionId', submissionId);
+          if (this.cfg.submissionContext) fd.append('submissionContext', this.cfg.submissionContext);
           fd.append('message', message);
           if (email) fd.append('email', email);
           fd.append('url', sanitizeFeedbackPageUrl(window.location.href));
@@ -782,6 +783,7 @@ class FeedbacksWidget {
           const data: FeedbackData = {
             apiKey: this.cfg.projectKey,
             submissionId,
+            submissionContext: this.cfg.submissionContext,
             message,
             email: email || undefined,
             url: sanitizeFeedbackPageUrl(window.location.href),
@@ -796,7 +798,7 @@ class FeedbacksWidget {
         }
 
         window.dispatchEvent(new CustomEvent('feedbacks:submitted', {
-          detail: { id: response.id },
+          detail: { id: response.id, submissionContext: this.cfg.submissionContext },
         }));
         draftStorage?.removeItem(draftKey);
         this.showSuccess(container, isModal);

@@ -1,3 +1,5 @@
+import type { WidgetSubmissionContext } from './widget-install'
+
 export * from './widget-install'
 export * from './plans'
 export * from './product-updates'
@@ -20,6 +22,7 @@ export interface FeedbackSubmission {
   turnstileToken?: string
   hcaptchaToken?: string
   submissionId?: string
+  submissionContext?: WidgetSubmissionContext
 }
 
 export type FeedbackData = FeedbackSubmission

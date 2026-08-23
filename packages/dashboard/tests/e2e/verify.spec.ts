@@ -26,13 +26,14 @@ test('verifies a real product submission and keeps the hosted form as troublesho
     data: {
       apiKey: project.apiKey,
       message,
-      url: 'https://example.test/account/settings',
-      userAgent: 'Playwright real product verification',
+      url: page.url(),
+      userAgent: 'Playwright account-menu product verification',
     },
   })
   expect(realSubmission.ok(), await realSubmission.text()).toBeTruthy()
   await expect(page.getByText('Test feedback arrived from your product')).toBeVisible({ timeout: 30_000 })
   await expect(page.getByRole('link', { name: 'Open inbox item' })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Feedback inbox/ }).getByText('1', { exact: true })).toBeVisible()
 
   await page.getByText('Troubleshooting: test the saved form here').click()
   await expect(launcher).toBeVisible()
@@ -51,6 +52,7 @@ test('verifies a real product submission and keeps the hosted form as troublesho
   await page.getByRole('button', { name: 'Send Feedback' }).click()
   await feedbackResponse
   await expect(page.getByText('Hosted form reached the inbox. Your saved form works.')).toBeVisible()
+  await expect(page.getByRole('link', { name: /Feedback inbox/ }).getByText('2', { exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Open control item' }).click()
   await expect(page).toHaveURL(/\/feedback\/[^/]+/, { timeout: 30_000 })
   await expect(page.getByText(controlMessage)).toBeVisible()

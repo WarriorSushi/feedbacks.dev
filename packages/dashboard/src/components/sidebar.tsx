@@ -212,7 +212,47 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
   }, [])
 
   const currentProject = visibleProjects.find((p) => p.id === resolvedCurrentProjectId) || visibleProjects[0]
+  const currentUnreadProjectId = currentProject?.id
+  const [unreadCount, setUnreadCount] = React.useState(0)
   const showProBrand = hasActivePro(billingAccount) || proActivatedInSession
+
+  React.useEffect(() => {
+    if (!currentUnreadProjectId) {
+      setUnreadCount(0)
+      return
+    }
+
+    let cancelled = false
+    setUnreadCount(0)
+
+    const refreshUnreadCount = async () => {
+      try {
+        const response = await fetch(`/api/projects/${currentUnreadProjectId}/unread-count`, { cache: 'no-store' })
+        if (!response.ok) return
+        const payload = await response.json() as { count?: unknown }
+        if (!cancelled && typeof payload.count === 'number' && Number.isFinite(payload.count)) {
+          setUnreadCount(Math.max(0, Math.floor(payload.count)))
+        }
+      } catch {
+        // Preserve the last confirmed count during a temporary connection failure.
+      }
+    }
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === 'visible') void refreshUnreadCount()
+    }
+
+    void refreshUnreadCount()
+    const interval = window.setInterval(refreshWhenVisible, 5000)
+    window.addEventListener('focus', refreshWhenVisible)
+    window.addEventListener('feedbacks:submitted', refreshWhenVisible)
+    return () => {
+      cancelled = true
+      window.clearInterval(interval)
+      window.removeEventListener('focus', refreshWhenVisible)
+      window.removeEventListener('feedbacks:submitted', refreshWhenVisible)
+    }
+  }, [currentUnreadProjectId])
 
   React.useEffect(() => {
     const landProBrand = () => setProActivatedInSession(true)
@@ -523,6 +563,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
               )}
               {group.items.map((item) => {
                 const projectTab = item.projectTab
+                const itemUnreadCount = item.tourId === 'nav-feedback' ? unreadCount : 0
                 const scopedHref = projectTab && currentProject
                   ? projectTab === 'home'
                     ? `/projects/${encodeURIComponent(currentProject.id)}`
@@ -544,7 +585,11 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                     href={scopedHref}
                     data-tour={item.tourId}
                     title={collapsed ? item.label : undefined}
-                    aria-label={collapsed ? item.label : undefined}
+                    aria-label={collapsed
+                      ? itemUnreadCount > 0
+                        ? `${item.label}, ${itemUnreadCount} unread`
+                        : item.label
+                      : undefined}
                     aria-current={isActive ? 'page' : undefined}
                     target={item.external ? '_blank' : undefined}
                     rel={item.external ? 'noopener noreferrer' : undefined}
@@ -567,6 +612,20 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                       <item.icon className={cn('h-[17px] w-[17px] shrink-0 transition-colors duration-150', isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
                     )}
                     {!collapsed && <span className="truncate">{item.label}</span>}
+                    {itemUnreadCount > 0 ? (
+                      <>
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            'flex h-5 min-w-5 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-semibold tabular-nums text-background',
+                            collapsed ? 'absolute right-0.5 top-0.5 h-4 min-w-4 px-0.5 text-[9px]' : 'ml-auto',
+                          )}
+                        >
+                          {itemUnreadCount > 99 ? '99+' : itemUnreadCount}
+                        </span>
+                        {!collapsed ? <span className="sr-only">{itemUnreadCount} unread feedback items</span> : null}
+                      </>
+                    ) : null}
                     {!collapsed && item.external ? <ExternalLink className="ml-auto h-3 w-3 shrink-0 opacity-60" /> : null}
                   </Link>
                 )
