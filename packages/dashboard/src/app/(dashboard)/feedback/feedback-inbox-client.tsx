@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
@@ -126,6 +127,7 @@ export function FeedbackInboxClient({
   const [tagInput, setTagInput] = React.useState(tag)
   const [bulkTagInput, setBulkTagInput] = React.useState('')
   const [confirmingDelete, setConfirmingDelete] = React.useState(false)
+  const [bulkPortalReady, setBulkPortalReady] = React.useState(false)
   const [showMoreFilters, setShowMoreFilters] = React.useState(
     Boolean(type || tag || agent || publicOnly || priority || (status && status !== 'new' && status !== 'planned')),
   )
@@ -136,6 +138,10 @@ export function FeedbackInboxClient({
     setSearchInput(search)
     setTagInput(tag)
   }, [search, tag])
+
+  React.useEffect(() => {
+    setBulkPortalReady(true)
+  }, [])
 
   React.useEffect(() => {
     if (!initialLoadFailed || initialErrorShownRef.current) return
@@ -627,7 +633,7 @@ export function FeedbackInboxClient({
       )}
 
       {/* ─── Floating Bulk Action Bar ────────────────────── */}
-      {selected.size > 0 && <div
+      {selected.size > 0 && bulkPortalReady && createPortal(<div
         role="region"
         aria-label="Bulk feedback actions"
         className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 w-[calc(100vw-1.5rem)] max-w-5xl -translate-x-1/2 md:bottom-6"
@@ -756,7 +762,7 @@ export function FeedbackInboxClient({
           </>
           )}
         </div>
-      </div>}
+      </div>, document.body)}
     </div>
   )
 }
