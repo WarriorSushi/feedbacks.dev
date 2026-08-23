@@ -10,7 +10,6 @@ export function FeedbacksWidgetScript() {
       <Script
         src="https://app.feedbacks.dev/widget/latest.js"
         data-project={FEEDBACKS_DEV_PROJECT_KEY}
-        data-feedbacks-manual-trigger
         strategy="afterInteractive"
       />
     </>

@@ -2,7 +2,6 @@ import styles from './styles.css';
 import type { WidgetConfig, FeedbackData, FeedbackResponse, CategoryType } from './types';
 import { sanitizeFeedbackPageUrl } from './privacy';
 import {
-  FEEDBACKS_CONFIGURATION_EVENT,
   FEEDBACKS_CONFIG_UPDATE_EVENT,
   isWidgetBootstrapResponse,
   readCachedFeedbackEnabled,
@@ -10,7 +9,6 @@ import {
   writeCachedFeedbackEnabled,
   writeCachedRemoteWidgetConfig,
   type WidgetBootstrapResponse,
-  type FeedbacksConfigurationEventDetail,
   type FeedbacksConfigUpdateEventDetail,
   type SavedWidgetConfig,
 } from '@feedbacks/shared';
@@ -95,8 +93,7 @@ class FeedbacksWidget {
   private feedbackEnabled = false;
   private inlineContainer: HTMLElement | null = null;
   private managedHost: HTMLElement | null = null;
-  private generatedTrigger: HTMLButtonElement | null = null;
-  private triggerElements: Element[] = [];
+  private triggerSelector: string | null = null;
   private bootstrapController: AbortController | null = null;
   private autoOpenTimer: number | null = null;
   private destroyed = false;
@@ -140,19 +137,6 @@ class FeedbacksWidget {
     this.applyFeedbackConfiguration(detail.config, this.feedbackEnabled);
   };
 
-  private dispatchConfiguration(): void {
-    window.dispatchEvent(new CustomEvent<FeedbacksConfigurationEventDetail>(
-      FEEDBACKS_CONFIGURATION_EVENT,
-      {
-        detail: {
-          projectKey: this.cfg.projectKey,
-          embedMode: this.cfg.embedMode || 'modal',
-          feedbackEnabled: this.feedbackEnabled,
-        },
-      },
-    ));
-  }
-
   private applyFeedbackConfiguration(nextConfig: SavedWidgetConfig, feedbackEnabled: boolean): void {
     const hadFeedbackPresentation = this.feedbackEnabled;
     const placementChanged = this.cfg.embedMode !== nextConfig.embedMode || this.cfg.target !== nextConfig.target;
@@ -172,8 +156,6 @@ class FeedbacksWidget {
           .forEach((element) => this.applyThemeToElement(element));
       }
     }
-
-    this.dispatchConfiguration();
   }
 
   private async initializeModules(): Promise<void> {
@@ -191,7 +173,6 @@ class FeedbacksWidget {
     // never hide the launcher for the full request timeout.
     this.feedbackEnabled = cachedFeedbackEnabled ?? this.cfg.feedbackEnabled ?? true;
     if (this.feedbackEnabled) this.setupFeedbackPresentation();
-    this.dispatchConfiguration();
     this.log('Widget initialized');
 
     const bootstrap = await this.loadBootstrap();
@@ -231,12 +212,8 @@ class FeedbacksWidget {
     this.close();
     this.launcher?.remove();
     this.launcher = null;
-    for (const element of this.triggerElements) {
-      element.removeEventListener('click', this.handleTriggerClick);
-    }
-    this.triggerElements = [];
-    this.generatedTrigger?.remove();
-    this.generatedTrigger = null;
+    document.removeEventListener('click', this.handleDelegatedTriggerClick);
+    this.triggerSelector = null;
     this.inlineContainer?.remove();
     this.inlineContainer = null;
     if (this.boundKeydownHandler) {
@@ -249,6 +226,12 @@ class FeedbacksWidget {
     if (!this.feedbackEnabled) return;
     event.preventDefault();
     this.open();
+  };
+
+  private handleDelegatedTriggerClick = (event: Event): void => {
+    if (!this.triggerSelector || !(event.target instanceof Element)) return;
+    if (!event.target.closest(this.triggerSelector)) return;
+    this.handleTriggerClick(event);
   };
 
   private setupFeedbackPresentation(): void {
@@ -413,29 +396,16 @@ class FeedbacksWidget {
 
   private attachTriggers(): void {
     const sel = this.cfg.target || '[data-feedbacks-trigger]';
-    let els: Element[] = [];
+    let currentMatchCount = 0;
     try {
-      els = Array.from(document.querySelectorAll(sel));
+      currentMatchCount = document.querySelectorAll(sel).length;
     } catch {
       this.log('Invalid trigger selector');
+      return;
     }
-    if (els.length === 0) {
-      const host = this.findManagedHost();
-      if (host) {
-        host.innerHTML = '';
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'fb-btn-submit fb-managed-trigger';
-        button.textContent = this.cfg.buttonText || 'Feedback';
-        this.applyThemeToElement(button);
-        host.appendChild(button);
-        this.generatedTrigger = button;
-        els = [button];
-      }
-    }
-    this.triggerElements = els;
-    els.forEach((element) => element.addEventListener('click', this.handleTriggerClick));
-    this.log(`Attached to ${els.length} trigger(s)`);
+    this.triggerSelector = sel;
+    document.addEventListener('click', this.handleDelegatedTriggerClick);
+    this.log(`Watching for custom trigger ${sel} (${currentMatchCount} currently mounted)`);
   }
 
   // ---- Inline Mode ----
@@ -464,7 +434,6 @@ class FeedbacksWidget {
 
   open(): void {
     if (!this.feedbackEnabled) return;
-    if (this.cfg.embedMode === 'inline') return;
     if (this.updatesController?.isOpen()) this.updatesController.closeUpdates();
     if (this.isOpen) return;
     acquireOverlay(this, 'feedback', () => this.close());

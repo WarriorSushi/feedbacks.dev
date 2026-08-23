@@ -4,7 +4,6 @@ export type CaptchaProvider = 'turnstile' | 'hcaptcha'
 export const WIDGET_CONFIG_VERSION = 1
 export const HOSTED_VERIFICATION_SUBMISSION_CONTEXT = 'hosted-verification' as const
 export type WidgetSubmissionContext = typeof HOSTED_VERIFICATION_SUBMISSION_CONTEXT
-export const FEEDBACKS_CONFIGURATION_EVENT = 'feedbacks:configuration' as const
 export const FEEDBACKS_CONFIG_UPDATE_EVENT = 'feedbacks:config-update' as const
 
 export interface SavedWidgetConfig {
@@ -55,12 +54,6 @@ export interface WidgetConfig extends SavedWidgetConfig {
   projectKey: string
   /** Runtime-only marker for feedback sent from the hosted verification control. */
   submissionContext?: WidgetSubmissionContext
-}
-
-export interface FeedbacksConfigurationEventDetail {
-  projectKey: string
-  embedMode: EmbedMode
-  feedbackEnabled: boolean
 }
 
 export interface FeedbacksConfigUpdateEventDetail {

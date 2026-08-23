@@ -39,9 +39,8 @@ test('widget applies saved configuration updates without polling', async () => {
 
   assert.match(source, /window\.addEventListener\(FEEDBACKS_CONFIG_UPDATE_EVENT, this\.handleConfigUpdate\)/)
   assert.match(source, /this\.applyFeedbackConfiguration\(detail\.config, this\.feedbackEnabled\)/)
-  assert.match(source, /window\.dispatchEvent\(new CustomEvent<FeedbacksConfigurationEventDetail>/)
   assert.match(source, /this\.manualPresentation && this\.cfg\.embedMode !== 'inline'/)
-  assert.match(source, /if \(this\.cfg\.embedMode === 'inline'\) return/)
+  assert.doesNotMatch(source, /if \(this\.cfg\.embedMode === 'inline'\) return/)
 })
 
 test('widget defaults every new category picker to Idea', async () => {
@@ -49,4 +48,13 @@ test('widget defaults every new category picker to Idea', async () => {
 
   assert.match(source, /private selectedCategory: CategoryType \| '' = 'idea'/)
   assert.match(source, /restoredDraft\.category\)[\s\S]*\? restoredDraft\.category as CategoryType[\s\S]*: 'idea'/)
+})
+
+test('custom triggers work when framework menus mount after widget initialization', async () => {
+  const source = await readFile(new URL('../../../widget/src/widget.ts', import.meta.url), 'utf8')
+
+  assert.match(source, /this\.triggerSelector = sel/)
+  assert.match(source, /document\.addEventListener\('click', this\.handleDelegatedTriggerClick\)/)
+  assert.match(source, /event\.target\.closest\(this\.triggerSelector\)/)
+  assert.match(source, /document\.removeEventListener\('click', this\.handleDelegatedTriggerClick\)/)
 })

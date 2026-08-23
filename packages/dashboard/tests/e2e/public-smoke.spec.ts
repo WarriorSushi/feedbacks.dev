@@ -79,6 +79,7 @@ test('widget stays usable when bootstrap is unavailable', async ({ page }) => {
   await expect(dialog.getByRole('radio', { name: 'Idea' })).toHaveAttribute('aria-checked', 'true')
 
   await dialog.getByRole('button', { name: 'Close' }).click()
+  await expect(dialog).toHaveCount(0)
   await page.evaluate(() => {
     const host = document.createElement('div')
     host.dataset.feedbacksHost = 'browser-smoke-project'
@@ -96,4 +97,23 @@ test('widget stays usable when bootstrap is unavailable', async ({ page }) => {
   await expect(inlineForm).toBeVisible()
   await expect(inlineForm.getByRole('radio', { name: 'Idea' })).toHaveAttribute('aria-checked', 'true')
   await expect(inlineForm.getByRole('button', { name: 'Send Feedback' })).toHaveCSS('background-color', 'rgb(62, 107, 0)')
+
+  await page.evaluate(() => {
+    window.dispatchEvent(new CustomEvent('feedbacks:config-update', {
+      detail: {
+        projectKey: 'browser-smoke-project',
+        config: { embedMode: 'trigger', target: '#late-feedback-trigger' },
+      },
+    }))
+    const trigger = document.createElement('button')
+    trigger.id = 'late-feedback-trigger'
+    trigger.textContent = 'Open dynamic feedback'
+    document.body.appendChild(trigger)
+  })
+  await expect(inlineForm).toHaveCount(0)
+  await page.getByRole('button', { name: 'Open dynamic feedback' }).click()
+  const customTriggerDialog = page.getByRole('dialog', { name: 'Send Feedback' })
+  await expect(customTriggerDialog).toBeVisible()
+  await expect(customTriggerDialog.getByRole('radio', { name: 'Idea' })).toHaveAttribute('aria-checked', 'true')
+  await expect(customTriggerDialog.getByRole('button', { name: 'Send Feedback' })).toHaveCSS('background-color', 'rgb(62, 107, 0)')
 })
