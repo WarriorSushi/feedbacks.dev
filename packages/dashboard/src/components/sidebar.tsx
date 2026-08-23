@@ -255,12 +255,14 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
     window.addEventListener('focus', refreshWhenVisible)
     document.addEventListener('visibilitychange', refreshWhenVisible)
     window.addEventListener('feedbacks:submitted', refreshWhenVisible)
+    window.addEventListener('feedbacks:unread-count-changed', refreshWhenVisible)
     return () => {
       cancelled = true
       window.clearInterval(interval)
       window.removeEventListener('focus', refreshWhenVisible)
       document.removeEventListener('visibilitychange', refreshWhenVisible)
       window.removeEventListener('feedbacks:submitted', refreshWhenVisible)
+      window.removeEventListener('feedbacks:unread-count-changed', refreshWhenVisible)
     }
   }, [currentUnreadProjectId, pathname])
 

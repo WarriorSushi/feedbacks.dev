@@ -26,6 +26,8 @@ import {
   Smile,
   CircleHelp,
   MessageSquare,
+  ArrowLeft,
+  ExternalLink,
 } from 'lucide-react'
 import { FeedbackActions } from './feedback-actions'
 import { FeedbackScreenshot } from './feedback-screenshot'
@@ -53,6 +55,15 @@ const typeIcons = {
 function TypeIcon({ type, className }: { type?: string | null; className?: string }) {
   const Icon = typeIcons[(type || 'other') as keyof typeof typeIcons] || MessageSquare
   return <Icon className={cn('h-4 w-4', className)} />
+}
+
+function formatFeedbackUrl(value: string) {
+  try {
+    const url = new URL(value)
+    return `${url.host}${url.pathname === '/' ? '' : url.pathname}`
+  } catch {
+    return value
+  }
 }
 
 export default async function FeedbackDetailPage({
@@ -149,11 +160,11 @@ export default async function FeedbackDetailPage({
     <div className="space-y-6">
       <PageHeader
         eyebrow="Inbox"
-        title="Feedback detail"
-        description={fb.projects ? `From ${fb.projects.name} · ${formatDate(fb.created_at)}` : formatDate(fb.created_at)}
+        title="Review feedback"
+        description={fb.projects ? `Submitted to ${fb.projects.name} on ${formatDate(fb.created_at)}` : `Submitted on ${formatDate(fb.created_at)}`}
         action={
-          <Button asChild variant="outline" size="sm">
-            <Link href={inboxHref}>Back to inbox</Link>
+          <Button asChild variant="secondary" size="sm" className="w-full gap-2 border shadow-sm sm:w-auto">
+            <Link href={inboxHref}><ArrowLeft className="h-4 w-4" />Back to inbox</Link>
           </Button>
         }
       />
@@ -162,20 +173,31 @@ export default async function FeedbackDetailPage({
         {/* Main content */}
         <div className="space-y-6 lg:col-span-2">
           {/* Feedback message */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <TypeIcon type={fb.type} className="h-5 w-5 text-muted-foreground" />
-                {fb.type && (
-                  <Badge variant="secondary" className={getTypeColor(fb.type)}>
-                    {fb.type}
-                  </Badge>
+          <Card className="overflow-hidden border-l-4 border-l-primary shadow-[var(--shadow-card)]">
+            <CardHeader className="border-b bg-surface-raised/60 pb-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">User message</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <TypeIcon type={fb.type} className="h-5 w-5 text-muted-foreground" />
+                    {fb.type && (
+                      <Badge variant="secondary" className={getTypeColor(fb.type)}>
+                        {fb.type}
+                      </Badge>
+                    )}
+                    <FeedbackHeadlineState />
+                  </div>
+                </div>
+                {fb.rating !== null && (
+                  <div className="flex items-center gap-1 rounded-md border bg-background px-3 py-2" aria-label={`Rating ${fb.rating} out of 5`}>
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <span className="text-sm font-semibold tabular-nums">{fb.rating}/5</span>
+                  </div>
                 )}
-                <FeedbackHeadlineState />
               </div>
             </CardHeader>
-            <CardContent>
-              <p className="max-w-[72ch] whitespace-pre-wrap text-base leading-7 text-foreground">
+            <CardContent className="pt-6">
+              <p className="max-w-[72ch] whitespace-pre-wrap text-lg font-medium leading-8 text-foreground">
                 {fb.message}
               </p>
               <div className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -257,17 +279,15 @@ export default async function FeedbackDetailPage({
             </Card>
           )}
 
-          {/* Notes */}
+          {/* Triage and notes */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
                 <StickyNote className="h-4 w-4 text-muted-foreground" />
-                Internal Notes
+                Triage and internal notes
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <FeedbackNotesList />
-              <Separator className="my-4" />
+            <CardContent className="space-y-5">
               <FeedbackActions
                 feedbackId={fb.id}
                 projectId={fb.project_id}
@@ -276,7 +296,13 @@ export default async function FeedbackDetailPage({
                 currentTags={fb.tags}
                 suggestedTags={suggestedTags}
                 currentVersion={fb.updated_at}
+                inboxHref={inboxHref}
               />
+              <Separator />
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold">Internal notes</h3>
+                <FeedbackNotesList />
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -292,30 +318,30 @@ export default async function FeedbackDetailPage({
               {hasDetails ? (
               <div className="divide-y">
                 {fb.projects && (
-                  <div className="flex items-center justify-between py-3">
+                  <div className="grid gap-1 py-3 sm:grid-cols-[7rem_minmax(0,1fr)] lg:grid-cols-1 xl:grid-cols-[7rem_minmax(0,1fr)]">
                     <span className="flex items-center gap-2 text-xs text-muted-foreground">
                       <FolderOpen className="h-3.5 w-3.5" />
                       Project
                     </span>
                     <Link
                       href={`/feedback?projectId=${fb.projects.id}`}
-                      className="text-sm font-medium hover:underline"
+                      className="min-w-0 truncate text-sm font-medium hover:underline"
                     >
-                      {fb.projects.name} inbox
+                      {fb.projects.name}
                     </Link>
                   </div>
                 )}
                 {fb.email && (
-                  <div className="flex items-center justify-between py-3">
+                  <div className="grid gap-1 py-3 sm:grid-cols-[7rem_minmax(0,1fr)] lg:grid-cols-1 xl:grid-cols-[7rem_minmax(0,1fr)]">
                     <span className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Mail className="h-3.5 w-3.5" />
                       Email
                     </span>
-                    <span className="text-sm">{fb.email}</span>
+                    <a href={`mailto:${fb.email}`} className="min-w-0 truncate text-sm font-medium hover:underline">{fb.email}</a>
                   </div>
                 )}
                 {fb.rating !== null && (
-                  <div className="flex items-center justify-between py-3">
+                  <div className="grid gap-2 py-3 sm:grid-cols-[7rem_minmax(0,1fr)] lg:grid-cols-1 xl:grid-cols-[7rem_minmax(0,1fr)]">
                     <span className="flex items-center gap-2 text-xs text-muted-foreground">
                       <Star className="h-3.5 w-3.5" />
                       Rating
@@ -337,18 +363,28 @@ export default async function FeedbackDetailPage({
                       <Globe className="h-3.5 w-3.5" />
                       Page URL
                     </span>
-                    <span className="block break-all text-xs">{fb.url}</span>
+                    <a
+                      href={fb.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex min-w-0 items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                    >
+                      <span className="truncate">{formatFeedbackUrl(fb.url)}</span>
+                      <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                    </a>
                   </div>
                 )}
                 {fb.user_agent && (
                   <div className="py-3">
-                    <span className="mb-1.5 flex items-center gap-2 text-xs text-muted-foreground">
-                      <Monitor className="h-3.5 w-3.5" />
-                      Browser
-                    </span>
-                    <span className="block break-all text-[11px] text-muted-foreground">
-                      {fb.user_agent}
-                    </span>
+                    <details className="group">
+                      <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground">
+                        <Monitor className="h-3.5 w-3.5" />
+                        Technical browser details
+                      </summary>
+                      <p className="mt-2 break-words rounded-md bg-surface-raised p-3 text-[11px] leading-5 text-muted-foreground">
+                        {fb.user_agent}
+                      </p>
+                    </details>
                   </div>
                 )}
               </div>

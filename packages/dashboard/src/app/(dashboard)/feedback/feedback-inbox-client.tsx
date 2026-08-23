@@ -34,7 +34,9 @@ import {
   MessageSquare,
   Bot,
   ClipboardList,
+  Eye,
   EyeOff,
+  Trash2,
   SlidersHorizontal,
   ArrowUpDown,
 } from 'lucide-react'
@@ -62,6 +64,13 @@ interface FeedbackInboxClientProps {
   initialHistoryCutoff: string | null
   initialQueryKey: string
   initialLoadFailed: boolean
+}
+
+type BulkFeedbackUpdate = Pick<Feedback, 'id' | 'project_id' | 'status' | 'tags' | 'read_at' | 'updated_at'>
+
+type BulkFeedbackResponse = {
+  error?: string
+  feedback?: BulkFeedbackUpdate[]
 }
 
 export function FeedbackInboxClient({
@@ -116,6 +125,7 @@ export function FeedbackInboxClient({
   const [searchInput, setSearchInput] = React.useState(search)
   const [tagInput, setTagInput] = React.useState(tag)
   const [bulkTagInput, setBulkTagInput] = React.useState('')
+  const [confirmingDelete, setConfirmingDelete] = React.useState(false)
   const [showMoreFilters, setShowMoreFilters] = React.useState(
     Boolean(type || tag || agent || publicOnly || priority || (status && status !== 'new' && status !== 'planned')),
   )
@@ -251,16 +261,18 @@ export function FeedbackInboxClient({
   const bulkUpdateStatus = async (newStatus: FeedbackStatus) => {
     if (selected.size === 0) return
     setBulkLoading(true)
-    const { error } = await supabase
-      .from('feedback')
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
-      .in('id', Array.from(selected))
+    const response = await fetch('/api/feedback/bulk', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: Array.from(selected), status: newStatus }),
+    })
+    const payload = await response.json().catch(() => null) as BulkFeedbackResponse | null
     setBulkLoading(false)
-    if (error) {
-      toast({ title: 'Failed to update', description: error.message, variant: 'destructive' })
+    if (!response.ok) {
+      toast({ title: 'Status was not changed', description: payload?.error || 'Try again.', variant: 'destructive' })
       return
     }
-    toast({ title: `${selected.size} item${selected.size > 1 ? 's' : ''} updated` })
+    toast({ title: `${selected.size} item${selected.size > 1 ? 's' : ''} set to ${statusMeta[newStatus].label}` })
     if (newStatus !== 'new') {
       const projectIds = Array.from(new Set(
         feedbacks.filter((feedback) => selected.has(feedback.id)).map((feedback) => feedback.project_id),
@@ -274,9 +286,10 @@ export function FeedbackInboxClient({
       })
     }
     const selectedIds = new Set(selected)
+    const changedById = new Map((payload?.feedback || []).map((feedback) => [feedback.id, feedback]))
     setFeedbacks((current) => current
-      .map((feedback) => selectedIds.has(feedback.id)
-        ? { ...feedback, status: newStatus, updated_at: new Date().toISOString() }
+      .map((feedback) => changedById.has(feedback.id)
+        ? { ...feedback, ...changedById.get(feedback.id)! }
         : feedback)
       .filter((feedback) => !status || feedback.status === status))
     if (status && status !== newStatus) setTotal((current) => Math.max(0, current - selectedIds.size))
@@ -289,29 +302,15 @@ export function FeedbackInboxClient({
     if (!nextTag || selected.size === 0) return
 
     setBulkLoading(true)
-    const selectedFeedback = feedbacks.filter((feedback) => selected.has(feedback.id))
-    const results = await Promise.all(
-      selectedFeedback.map((feedback) => {
-        const currentTags = Array.from(new Set((feedback.tags || []).map(normalizeTag)))
-        const nextTags =
-          action === 'add'
-            ? Array.from(new Set([...currentTags, nextTag])).slice(0, 10)
-            : currentTags.filter((tagValue) => tagValue !== nextTag)
-
-        return supabase
-          .from('feedback')
-          .update({
-            tags: nextTags,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', feedback.id)
-      }),
-    )
+    const response = await fetch('/api/feedback/bulk', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: Array.from(selected), tag: { action, value: nextTag } }),
+    })
+    const payload = await response.json().catch(() => null) as BulkFeedbackResponse | null
     setBulkLoading(false)
-
-    const firstError = results.find((result) => result.error)?.error
-    if (firstError) {
-      toast({ title: 'Failed to update tags', description: firstError.message, variant: 'destructive' })
+    if (!response.ok) {
+      toast({ title: 'Tags were not changed', description: payload?.error || 'Try again.', variant: 'destructive' })
       return
     }
 
@@ -320,18 +319,11 @@ export function FeedbackInboxClient({
     })
     setBulkTagInput('')
     const selectedIds = new Set(selected)
+    const changedById = new Map((payload?.feedback || []).map((feedback) => [feedback.id, feedback]))
     setFeedbacks((current) => current
-      .map((feedback) => {
-        if (!selectedIds.has(feedback.id)) return feedback
-        const currentTags = Array.from(new Set((feedback.tags || []).map(normalizeTag)))
-        return {
-          ...feedback,
-          tags: action === 'add'
-            ? Array.from(new Set([...currentTags, nextTag])).slice(0, 10)
-            : currentTags.filter((tagValue) => tagValue !== nextTag),
-          updated_at: new Date().toISOString(),
-        }
-      })
+      .map((feedback) => changedById.has(feedback.id)
+        ? { ...feedback, ...changedById.get(feedback.id)! }
+        : feedback)
       .filter((feedback) => !tag || feedback.tags?.includes(tag)))
     if (tag && action === 'remove' && tag === nextTag) {
       setTotal((current) => Math.max(0, current - selectedIds.size))
@@ -340,28 +332,66 @@ export function FeedbackInboxClient({
     void fetchFeedback()
   }
 
-  const bulkMarkUnread = async () => {
+  const bulkUpdateReadState = async (readState: 'read' | 'unread') => {
     if (selected.size === 0) return
     setBulkLoading(true)
-    const { error } = await supabase
-      .from('feedback')
-      .update({ read_at: null })
-      .in('id', Array.from(selected))
+    const response = await fetch('/api/feedback/bulk', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: Array.from(selected), readState }),
+    })
+    const payload = await response.json().catch(() => null) as BulkFeedbackResponse | null
     setBulkLoading(false)
-    if (error) {
-      toast({ title: 'Failed to mark unread', description: error.message, variant: 'destructive' })
+    if (!response.ok) {
+      toast({ title: `Could not mark ${readState}`, description: payload?.error || 'Try again.', variant: 'destructive' })
       return
     }
-    toast({ title: `${selected.size} item${selected.size > 1 ? 's' : ''} marked unread` })
+    toast({ title: `${selected.size} item${selected.size > 1 ? 's' : ''} marked ${readState}` })
     const selectedIds = new Set(selected)
-    setFeedbacks((current) => current.map((feedback) =>
-      selectedIds.has(feedback.id) ? { ...feedback, read_at: null } : feedback,
-    ))
+    const changedById = new Map((payload?.feedback || []).map((feedback) => [feedback.id, feedback]))
+    setFeedbacks((current) => current
+      .map((feedback) => changedById.has(feedback.id)
+        ? { ...feedback, ...changedById.get(feedback.id)! }
+        : feedback)
+      .filter((feedback) => read !== 'unread' || feedback.read_at === null))
+    if (read === 'unread' && readState === 'read') {
+      setTotal((current) => Math.max(0, current - selectedIds.size))
+    }
     setSelected(new Set())
+    window.dispatchEvent(new CustomEvent('feedbacks:unread-count-changed'))
     void fetchFeedback()
   }
 
-  const clearBulkSelection = () => setSelected(new Set())
+  const bulkDelete = async () => {
+    if (selected.size === 0) return
+    setBulkLoading(true)
+    const selectedIds = new Set(selected)
+    const response = await fetch('/api/feedback/bulk', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: Array.from(selectedIds) }),
+    })
+    const payload = await response.json().catch(() => null)
+    setBulkLoading(false)
+    if (!response.ok) {
+      toast({ title: 'Feedback was not deleted', description: payload?.error || 'Try again.', variant: 'destructive' })
+      return
+    }
+    setFeedbacks((current) => current.filter((feedback) => !selectedIds.has(feedback.id)))
+    setTotal((current) => Math.max(0, current - selectedIds.size))
+    setSelected(new Set())
+    setConfirmingDelete(false)
+    window.dispatchEvent(new CustomEvent('feedbacks:unread-count-changed'))
+    toast({ title: `${selectedIds.size} feedback item${selectedIds.size > 1 ? 's' : ''} deleted` })
+    void fetchFeedback()
+  }
+
+  const clearBulkSelection = () => {
+    setSelected(new Set())
+    setConfirmingDelete(false)
+  }
+
+  const selectedHasUnread = feedbacks.some((feedback) => selected.has(feedback.id) && feedback.read_at === null)
 
   const hasFilters = status || type || search || agent || publicOnly || priority || tag || read === 'unread'
   return (
@@ -600,13 +630,40 @@ export function FeedbackInboxClient({
       {selected.size > 0 && <div
         role="region"
         aria-label="Bulk feedback actions"
-        className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 w-[calc(100vw-1.5rem)] max-w-3xl -translate-x-1/2 md:bottom-6 md:w-auto"
+        className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 w-[calc(100vw-1.5rem)] max-w-5xl -translate-x-1/2 md:bottom-6"
       >
-        <div className="flex items-center gap-1.5 overflow-x-auto rounded-lg border bg-background px-3 py-2 shadow-xl ring-1 ring-black/5 scrollbar-thin dark:ring-white/5 md:rounded-full">
+        <div className="flex flex-wrap items-center gap-1.5 rounded-xl border bg-background px-3 py-2 shadow-xl ring-1 ring-black/5 dark:ring-white/5">
           <span className="shrink-0 pl-1 pr-2 text-xs font-semibold">
             {selected.size} selected
           </span>
           <div className="h-4 w-px bg-border" />
+          {confirmingDelete ? (
+            <>
+              <span role="alert" className="px-2 text-xs text-destructive">
+                Permanently delete the selected feedback, notes, and media? This cannot be undone.
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8"
+                disabled={bulkLoading}
+                onClick={() => setConfirmingDelete(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="h-8 gap-1.5"
+                disabled={bulkLoading}
+                onClick={() => void bulkDelete()}
+              >
+                {bulkLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                Delete permanently
+              </Button>
+            </>
+          ) : (
+          <>
           <Button
             variant="ghost"
             size="sm"
@@ -635,17 +692,19 @@ export function FeedbackInboxClient({
             onClick={() => bulkUpdateStatus('closed')}
           >
             <XCircle className="h-3.5 w-3.5" />
-            Close
+            Set closed
           </Button>
           <Button
             variant="ghost"
             size="sm"
             className="h-8 shrink-0 gap-1.5 rounded-full px-3 text-[11px] font-medium"
             disabled={bulkLoading}
-            onClick={() => void bulkMarkUnread()}
+            onClick={() => void bulkUpdateReadState(selectedHasUnread ? 'read' : 'unread')}
           >
-            <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
-            Mark unread
+            {selectedHasUnread
+              ? <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+              : <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />}
+            Mark {selectedHasUnread ? 'read' : 'unread'}
           </Button>
           <div className="h-4 w-px bg-border" />
           <Input
@@ -673,6 +732,16 @@ export function FeedbackInboxClient({
           >
             Remove tag
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 shrink-0 gap-1.5 rounded-full px-3 text-[11px] font-medium text-destructive hover:text-destructive"
+            disabled={bulkLoading}
+            onClick={() => setConfirmingDelete(true)}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete
+          </Button>
           <div className="h-4 w-px bg-border" />
           <button
             onClick={clearBulkSelection}
@@ -683,6 +752,8 @@ export function FeedbackInboxClient({
           </button>
           {bulkLoading && (
             <Loader2 className="ml-1 h-3.5 w-3.5 animate-spin text-muted-foreground" />
+          )}
+          </>
           )}
         </div>
       </div>}

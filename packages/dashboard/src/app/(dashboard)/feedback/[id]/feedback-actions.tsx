@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import type { FeedbackPriority, FeedbackStatus } from '@/lib/types'
 import { useRouter } from 'next/navigation'
-import { AlertCircle, Archive, CheckCircle2, Loader2, RotateCcw, X } from 'lucide-react'
+import { AlertCircle, Archive, CheckCircle2, Loader2, RotateCcw, Trash2, X } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import { mutationVersionHeaders } from '@/lib/optimistic-concurrency'
 import { useFeedbackLiveActions, type FeedbackActivity } from './feedback-live-state'
@@ -24,6 +24,7 @@ interface FeedbackActionsProps {
   currentTags: string[] | null
   suggestedTags: string[]
   currentVersion: string
+  inboxHref: string
 }
 
 function normalizeTag(value: string): string {
@@ -48,6 +49,7 @@ export function FeedbackActions({
   currentTags,
   suggestedTags,
   currentVersion,
+  inboxHref,
 }: FeedbackActionsProps) {
   const [status, setStatus] = React.useState(currentStatus)
   const [priority, setPriority] = React.useState<FeedbackPriority>(currentPriority || 'low')
@@ -58,6 +60,8 @@ export function FeedbackActions({
   const [tagSaving, setTagSaving] = React.useState(false)
   const [archiving, setArchiving] = React.useState(false)
   const [archived, setArchived] = React.useState(false)
+  const [confirmingDelete, setConfirmingDelete] = React.useState(false)
+  const [deleting, setDeleting] = React.useState(false)
   const [saveState, setSaveState] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [saveError, setSaveError] = React.useState('')
   const [lastRetry, setLastRetry] = React.useState<null | (() => Promise<void>)>(null)
@@ -293,9 +297,33 @@ export function FeedbackActions({
     setTagInput('')
   }
 
+  const handleDelete = async () => {
+    if (deleting) return
+    setDeleting(true)
+    const response = await fetch('/api/feedback/bulk', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: [feedbackId] }),
+    })
+    const payload = await response.json().catch(() => null)
+    if (!response.ok) {
+      setDeleting(false)
+      toast({
+        title: 'Feedback was not deleted',
+        description: payload?.error || 'Try again.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    window.dispatchEvent(new CustomEvent('feedbacks:unread-count-changed'))
+    toast({ title: 'Feedback deleted' })
+    router.push(inboxHref)
+  }
+
   return (
     <div className="space-y-4">
-      <div
+      {saveState !== 'idle' && <div
         role="status"
         aria-live="polite"
         className="flex min-h-8 items-center justify-between gap-3 rounded-md bg-surface-raised px-3 py-2 text-xs"
@@ -317,7 +345,7 @@ export function FeedbackActions({
             Retry
           </Button>
         )}
-      </div>
+      </div>}
 
       {/* Status changer */}
       <div className="grid gap-3 sm:grid-cols-2">
@@ -434,8 +462,9 @@ export function FeedbackActions({
         </Button>
       </form>
 
-      {/* Archive */}
-      <div className="border-t pt-4">
+      {/* Lifecycle actions */}
+      <div className="space-y-3 border-t pt-4">
+        <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">Lifecycle</p>
         {archived ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-surface-raised p-3">
             <p className="text-sm">Feedback archived.</p>
@@ -472,7 +501,7 @@ export function FeedbackActions({
                 <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
                 Undo
               </Button>
-              <Button size="sm" onClick={() => router.push('/feedback')}>Back to inbox</Button>
+              <Button size="sm" onClick={() => router.push(inboxHref)}>Back to inbox</Button>
             </div>
           </div>
         ) : (
@@ -508,6 +537,35 @@ export function FeedbackActions({
           >
             {archiving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
             Archive
+          </Button>
+        )}
+
+        {confirmingDelete ? (
+          <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 p-3">
+            <div>
+              <p className="text-sm font-medium text-destructive">Delete this feedback permanently?</p>
+              <p className="mt-1 text-xs text-muted-foreground">Its notes, activity, screenshot, and attachments will also be deleted. This cannot be undone.</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled={deleting} onClick={() => setConfirmingDelete(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" size="sm" disabled={deleting} onClick={() => void handleDelete()}>
+                {deleting ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Trash2 className="mr-1.5 h-3.5 w-3.5" />}
+                Delete feedback
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 px-2 text-destructive hover:text-destructive"
+            disabled={deleting || saveState === 'saving'}
+            onClick={() => setConfirmingDelete(true)}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete permanently
           </Button>
         )}
       </div>

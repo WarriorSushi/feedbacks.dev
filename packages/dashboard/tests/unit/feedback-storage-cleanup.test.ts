@@ -70,3 +70,58 @@ test('collectFeedbackStoragePaths dedupes screenshots and attachment paths', asy
     },
   )
 })
+
+test('cleanupFeedbackStorageForFeedbackIds removes public and private media for only the selected feedback', async () => {
+  const { cleanupFeedbackStorageForFeedbackIds } = await loadStorageCleanup()
+  const removed: Array<{ bucket: string; paths: string[] }> = []
+  const base = 'https://example.supabase.co'
+  const admin = {
+    from(table: string) {
+      if (table === 'feedback') {
+        return {
+          select() { return this },
+          in() {
+            return Promise.resolve({
+              data: [{
+                screenshot_url: `${base}/storage/v1/object/public/feedback_screenshots/project/screen.png`,
+                attachments: [{ url: `${base}/storage/v1/object/public/feedback_attachments/project/file.pdf` }],
+              }],
+              error: null,
+            })
+          },
+        }
+      }
+      return {
+        select() { return this },
+        in() { return this },
+        is() {
+          return Promise.resolve({
+            data: [
+              { bucket: 'feedback_screenshots', storage_path: 'project/private-screen.png' },
+              { bucket: 'feedback_attachments', storage_path: 'project/private-file.pdf' },
+            ],
+            error: null,
+          })
+        },
+      }
+    },
+    storage: {
+      from(bucket: string) {
+        return {
+          remove(paths: string[]) {
+            removed.push({ bucket, paths })
+            return Promise.resolve({ error: null })
+          },
+        }
+      },
+    },
+  }
+
+  const result = await cleanupFeedbackStorageForFeedbackIds(admin as never, ['feedback-1'])
+
+  assert.deepEqual(result, { screenshots: 2, attachments: 2 })
+  assert.deepEqual(removed, [
+    { bucket: 'feedback_screenshots', paths: ['project/screen.png', 'project/private-screen.png'] },
+    { bucket: 'feedback_attachments', paths: ['project/file.pdf', 'project/private-file.pdf'] },
+  ])
+})

@@ -123,6 +123,49 @@ export async function cleanupFeedbackStorageForProjectIds(admin: SupabaseClient,
   }
 }
 
+export async function cleanupFeedbackStorageForFeedbackIds(admin: SupabaseClient, feedbackIds: string[]) {
+  const ids = unique(feedbackIds)
+  if (ids.length === 0) return { screenshots: 0, attachments: 0 }
+
+  const { data, error } = await admin
+    .from('feedback')
+    .select('screenshot_url, attachments')
+    .in('id', ids)
+
+  if (error) throw error
+
+  const paths = collectFeedbackStoragePaths((data ?? []) as FeedbackStorageRow[])
+  const { data: mediaRows, error: mediaError } = await admin
+    .from('feedback_media')
+    .select('bucket, storage_path')
+    .in('feedback_id', ids)
+    .is('deleted_at', null)
+  if (mediaError && !mediaError.message.includes("Could not find the table 'public.feedback_media'")) {
+    throw mediaError
+  }
+
+  const screenshotPaths = unique([
+    ...paths.screenshots,
+    ...(mediaRows ?? [])
+      .filter((row) => row.bucket === SCREENSHOT_BUCKET)
+      .map((row) => row.storage_path),
+  ])
+  const attachmentPaths = unique([
+    ...paths.attachments,
+    ...(mediaRows ?? [])
+      .filter((row) => row.bucket === ATTACHMENT_BUCKET)
+      .map((row) => row.storage_path),
+  ])
+
+  await removeBucketObjects(admin, SCREENSHOT_BUCKET, screenshotPaths)
+  await removeBucketObjects(admin, ATTACHMENT_BUCKET, attachmentPaths)
+
+  return {
+    screenshots: screenshotPaths.length,
+    attachments: attachmentPaths.length,
+  }
+}
+
 export async function cleanupFeedbackStorageForUserProjects(admin: SupabaseClient, userId: string) {
   const { data, error } = await admin
     .from('projects')
