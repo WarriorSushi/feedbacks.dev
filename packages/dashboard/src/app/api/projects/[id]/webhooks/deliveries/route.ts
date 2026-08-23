@@ -5,6 +5,7 @@ import { hasE2EBypass } from '@/lib/e2e'
 import { listWebhookEndpointStates, normalizeWebhookConfig } from '@/lib/webhook-config'
 import { getWebhookDeliveryLogQueryLimit } from '@/lib/webhook-delivery-limits'
 import { redactWebhookDestination, toSafeWebhookConfig } from '@/lib/integration-secrets'
+import { hashEmailRecipient } from '@/lib/resend-webhooks'
 
 type RouteParams = { params: Promise<{ id: string }> }
 
@@ -29,9 +30,9 @@ async function getAuthedProject(projectId: string, request: NextRequest) {
         error: NextResponse.json({ error: feature.message, code: feature.code }, { status: 403 }),
       }
     }
-    return { project, admin, summary: feature.summary }
+    return { project, admin, summary: feature.summary, user }
   }
-  return { project, admin, summary: null }
+  return { project, admin, summary: null, user }
 }
 
 export async function GET(_request: NextRequest, { params }: RouteParams) {
@@ -40,21 +41,31 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const result = await getAuthedProject(id, _request)
     if ('error' in result && !('admin' in result)) return result.error
 
-    const { project, admin, summary } = result as Exclude<typeof result, { error: NextResponse }>
+    const { project, admin, summary, user } = result as Exclude<typeof result, { error: NextResponse }>
     const normalized = toSafeWebhookConfig(normalizeWebhookConfig(project.webhooks))
     const logLimit = getWebhookDeliveryLogQueryLimit(summary?.entitlements)
-    const { data: deliveries, error } = await admin
-      .from('webhook_deliveries')
-      .select('id, endpoint_id, event, kind, url, status, status_code, response_body, attempt, created_at')
-      .eq('project_id', id)
-      .order('created_at', { ascending: false })
-      .limit(logLimit)
+    const [webhookResult, emailResult] = await Promise.all([
+      admin
+        .from('webhook_deliveries')
+        .select('id, endpoint_id, event, kind, url, status, status_code, response_body, attempt, created_at')
+        .eq('project_id', id)
+        .order('created_at', { ascending: false })
+        .limit(logLimit),
+      user.email
+        ? admin
+            .from('email_delivery_events')
+            .select('id, event_type, provider_email_id, reason, occurred_at')
+            .contains('recipient_hashes', [hashEmailRecipient(user.email)])
+            .order('occurred_at', { ascending: false })
+            .limit(logLimit)
+        : Promise.resolve({ data: [], error: null }),
+    ])
 
-    if (error) {
+    if (webhookResult.error || emailResult.error) {
       return NextResponse.json({ code: 'delivery_history_failed', error: 'Delivery history could not be loaded.' }, { status: 500 })
     }
 
-    const recentDeliveries = (deliveries || []).map((delivery) => ({
+    const recentDeliveries = (webhookResult.data || []).map((delivery) => ({
       ...delivery,
       url: redactWebhookDestination(delivery.url),
       payload: null,
@@ -63,6 +74,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({
       deliveries: recentDeliveries,
+      emailDeliveries: emailResult.data || [],
       health,
     })
   } catch {

@@ -1,9 +1,14 @@
 "use client";
 
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2, Mail, RefreshCw, Webhook as WebhookIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  getEmailDeliveryPresentation,
+  mergeDeliveryHistory,
+  type EmailDeliveryLog,
+} from "@/lib/delivery-history";
 import type {
   FeedbackType,
   GitHubEndpoint,
@@ -163,84 +168,119 @@ export function IntegrationEndpointRulesEditor({
   );
 }
 
-export function IntegrationDeliveryLog({
+export function IntegrationDeliveryHistory({
   deliveries,
+  emailDeliveries,
   resendingId,
   onResend,
 }: {
   deliveries: WebhookDeliveryLog[];
+  emailDeliveries: EmailDeliveryLog[];
   resendingId: string | null;
   onResend: (deliveryId: string) => void;
 }) {
-  if (deliveries.length === 0) {
+  const history = mergeDeliveryHistory(deliveries, emailDeliveries);
+
+  if (history.length === 0) {
     return (
       <div className="rounded-lg border border-dashed bg-muted/10 p-4 text-sm text-muted-foreground">
-        Deliveries will appear here after a live feedback event or a manual
-        test send.
+        Email activity for your account and webhook deliveries for this project
+        will appear here.
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {deliveries.map((delivery) => (
-        <div
-          key={delivery.id}
-          data-delivery-id={delivery.id}
-          data-delivery-kind={delivery.kind}
-          className="rounded-lg border p-4"
-        >
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge
-                  variant={
-                    delivery.status === "success" ? "secondary" : "destructive"
-                  }
-                >
-                  {delivery.status === "success" ? "Delivered" : "Failed"}
-                </Badge>
-                <Badge variant="outline" className="uppercase">
-                  {delivery.kind}
-                </Badge>
-                <span className="text-xs text-muted-foreground">
-                  {delivery.event}
-                </span>
+    <div className="divide-y border-y">
+      {history.map((item) => {
+        if (item.channel === "email") {
+          const presentation = getEmailDeliveryPresentation(item.email.event_type);
+          const badgeVariant = presentation.tone === "danger"
+            ? "destructive"
+            : presentation.tone === "success"
+              ? "secondary"
+              : "outline";
+
+          return (
+            <div key={item.id} data-delivery-channel="email" className="px-4 py-4">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={badgeVariant}>{presentation.label}</Badge>
+                  <Badge variant="outline" className="gap-1.5 uppercase">
+                    <Mail className="h-3 w-3" aria-hidden="true" />
+                    Email
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">{item.email.event_type}</span>
+                </div>
+                <p className="text-sm font-medium">Email notification to your account</p>
+                <p className="break-all text-xs text-muted-foreground">
+                  {formatTimestamp(item.email.occurred_at)}
+                  {item.email.provider_email_id ? ` · Provider ID ${item.email.provider_email_id}` : ""}
+                </p>
+                {item.email.reason && (
+                  <p className="bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+                    {item.email.reason}
+                  </p>
+                )}
               </div>
-              <p className="break-all text-sm font-medium">{delivery.url}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatTimestamp(delivery.created_at)}
-                {delivery.status_code
-                  ? ` · HTTP ${delivery.status_code}`
-                  : ""}
-                {delivery.attempt
-                  ? ` · ${delivery.attempt} attempt${delivery.attempt === 1 ? "" : "s"}`
-                  : ""}
-              </p>
+            </div>
+          );
+        }
+
+        const delivery = item.webhook;
+        return (
+          <div
+            key={item.id}
+            data-delivery-id={delivery.id}
+            data-delivery-channel="webhook"
+            data-delivery-kind={delivery.kind}
+            className="px-4 py-4"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={delivery.status === "success" ? "secondary" : "destructive"}>
+                    {delivery.status === "success" ? "Delivered" : "Failed"}
+                  </Badge>
+                  <Badge variant="outline" className="gap-1.5 uppercase">
+                    <WebhookIcon className="h-3 w-3" aria-hidden="true" />
+                    {delivery.kind}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">{delivery.event}</span>
+                </div>
+                <p className="break-all text-sm font-medium">{delivery.url}</p>
+                <p className="text-xs text-muted-foreground">
+                  {formatTimestamp(delivery.created_at)}
+                  {delivery.status_code ? ` · HTTP ${delivery.status_code}` : ""}
+                  {delivery.attempt
+                    ? ` · ${delivery.attempt} attempt${delivery.attempt === 1 ? "" : "s"}`
+                    : ""}
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onResend(delivery.id)}
+                disabled={resendingId === delivery.id}
+              >
+                {resendingId === delivery.id ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                )}
+                Resend
+              </Button>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onResend(delivery.id)}
-              disabled={resendingId === delivery.id}
-            >
-              {resendingId === delivery.id ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <RefreshCw className="mr-2 h-4 w-4" />
-              )}
-              Resend
-            </Button>
+            {delivery.response_body && (
+              <div className="mt-3 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+                {delivery.response_body.slice(0, 240)}
+              </div>
+            )}
           </div>
-
-          {delivery.response_body && (
-            <div className="mt-3 rounded-md bg-muted/20 p-3 text-xs text-muted-foreground">
-              {delivery.response_body.slice(0, 240)}
-            </div>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

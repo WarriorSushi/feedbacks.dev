@@ -144,6 +144,7 @@ Must support:
 - Basic outbound notifications for new feedback.
 - Initial targets include webhook routing and opt-in owner email alerts.
 - Owner email alerts, daily feedback digests, integration-health email alerts, and public-board activity email alerts require an active Pro entitlement. Free accounts continue collecting feedback into the inbox without email fanout.
+- Delivery history distinguishes account email events from project webhook deliveries without exposing plaintext recipient addresses.
 - Billing, authentication, security, and explicitly enrolled programme emails are service communications, not plan-gated alert features.
 - Integration setup should be secondary to the core install flow.
 

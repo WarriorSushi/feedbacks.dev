@@ -58,6 +58,7 @@ Recommended high-level shape:
 - paid-plan truth must be server-driven and webhook-authoritative
 - optional email-alert fanout must be enforced from server-side plan truth; disabling controls in the browser is not sufficient
 - all application-generated Resend email must pass through one email-client-safe branded shell
+- delivery-history APIs may read service-only email audits only after project ownership checks, must scope them by the authenticated recipient hash, and must never return recipient hashes or plaintext addresses
 - billing provider integration must remain isolated from browser code except for hosted redirects
 - advertising scripts must remain isolated from customer widgets and load only after explicit consent
 - server conversion payloads must use allowlisted events, hashed normalized match data, bounded attribution fields, and browser/server deduplication identifiers

@@ -273,6 +273,8 @@ Acceptance criteria:
 - Free accounts show alert controls as unavailable and do not receive alert fanout
 - entitlement enforcement happens on the server, regardless of stored or client-modified preferences
 - every application email uses the shared feedbacks.dev brand shell and remains readable in common email clients
+- delivery history shows authenticated account email events alongside project webhook deliveries with clear channel and status labels
+- email history never exposes plaintext recipient addresses or another account's events
 - billing, authentication, security, and programme service emails remain separate from optional Pro alerts
 
 ## Epic 8: Operate across multiple projects

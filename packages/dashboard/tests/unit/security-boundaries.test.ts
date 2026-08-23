@@ -110,3 +110,12 @@ test('public CSP reports are bounded and rate limited before logging', () => {
   assert.match(route, /checkRateLimit\(request, 'csp-report', 30, 10\)/)
   assert.match(route, /if \(!rate\.allowed\) return new NextResponse\(null, \{ status: 204 \}\)/)
 })
+
+test('delivery history exposes only email events for the authenticated recipient hash', () => {
+  const route = read('../../src/app/api/projects/[id]/webhooks/deliveries/route.ts')
+
+  assert.match(route, /hashEmailRecipient\(user\.email\)/)
+  assert.match(route, /\.contains\('recipient_hashes', \[hashEmailRecipient\(user\.email\)\]\)/)
+  assert.match(route, /\.select\('id, event_type, provider_email_id, reason, occurred_at'\)/)
+  assert.doesNotMatch(route, /\.select\([^\n]*recipient_hashes/)
+})

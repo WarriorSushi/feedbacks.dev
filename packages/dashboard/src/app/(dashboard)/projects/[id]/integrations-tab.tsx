@@ -21,6 +21,7 @@ import {
   type WebhookEndpointState,
   type WebhookKind,
 } from '@/lib/webhook-config'
+import type { EmailDeliveryLog } from '@/lib/delivery-history'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -39,10 +40,7 @@ import {
   Trash2,
   Webhook,
 } from 'lucide-react'
-import {
-  IntegrationDeliveryLog,
-  IntegrationEndpointRulesEditor,
-} from './integration-operations-ui'
+import { IntegrationDeliveryHistory, IntegrationEndpointRulesEditor } from './integration-operations-ui'
 
 interface IntegrationsTabProps {
   project: Project
@@ -149,6 +147,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
   const [config, setConfig] = React.useState<WebhookConfig>(initialConfig)
   const [savedConfig, setSavedConfig] = React.useState<WebhookConfig>(initialConfig)
   const [deliveries, setDeliveries] = React.useState<WebhookDeliveryLog[]>([])
+  const [emailDeliveries, setEmailDeliveries] = React.useState<EmailDeliveryLog[]>([])
   const [health, setHealth] = React.useState<WebhookEndpointState[]>(() =>
     listWebhookEndpointStates(normalizeWebhookConfig(project.webhooks)),
   )
@@ -206,6 +205,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
         const locked = await handleLockedResponse(response, 'Failed to load delivery history')
         if (locked.locked) {
           setDeliveries([])
+          setEmailDeliveries([])
           setHealth([])
           return
         }
@@ -213,6 +213,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
       const data = await response.json()
       setFeatureLocked(false)
       setDeliveries(data.deliveries || [])
+      setEmailDeliveries(data.emailDeliveries || [])
       setHealth(data.health || [])
     } catch (error) {
       toast({
@@ -232,6 +233,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
       setFeatureLocked(true)
       setLockReason(webhooksLockReason(billingSummary))
       setDeliveries([])
+      setEmailDeliveries([])
       setHealth([])
       setLoadingOps(false)
       return
@@ -680,7 +682,7 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
               <div>
                 <CardTitle className="text-base">Recent delivery history</CardTitle>
                 <CardDescription>
-                  Recent test and live deliveries, including failed attempts you can replay.
+                  Email activity for your account and webhook deliveries for this project. Failed webhooks can be replayed.
                 </CardDescription>
               </div>
               <Button variant="outline" size="sm" onClick={() => void loadOperations()} disabled={loadingOps}>
@@ -689,7 +691,12 @@ export function IntegrationsTab({ project, initialBillingSummary }: Integrations
               </Button>
             </CardHeader>
             <CardContent className="pt-6">
-              <IntegrationDeliveryLog deliveries={deliveries} resendingId={resendingId} onResend={handleResend} />
+              <IntegrationDeliveryHistory
+                deliveries={deliveries}
+                emailDeliveries={emailDeliveries}
+                resendingId={resendingId}
+                onResend={handleResend}
+              />
             </CardContent>
           </Card>
 
