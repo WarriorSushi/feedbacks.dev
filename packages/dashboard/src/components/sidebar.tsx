@@ -33,6 +33,7 @@ import {
   Gift,
   Sparkles,
   FolderCog,
+  MessageSquareText,
 } from 'lucide-react'
 import type { Project } from '@/lib/types'
 import { createClient } from '@/lib/supabase-browser'
@@ -702,6 +703,19 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                   <CircleHelp className="h-4 w-4 shrink-0 text-muted-foreground" />
                   Product tour
                 </Link>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item asChild>
+                <button
+                  type="button"
+                  data-feedbacks-trigger
+                  onClick={() => window.dispatchEvent(new CustomEvent('feedbacks:open', {
+                    detail: { projectKey: 'fb_pub_eca05612446143cb95127d91753e2a48' },
+                  }))}
+                  className="flex min-h-9 w-full cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-left text-[13px] font-medium outline-none transition-colors focus:bg-accent focus:text-accent-foreground"
+                >
+                  <MessageSquareText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  Send feedback
+                </button>
               </DropdownMenu.Item>
               <DropdownMenu.Separator className="my-1 h-px bg-border" />
               <DropdownMenu.Item asChild>

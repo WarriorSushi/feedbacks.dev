@@ -454,9 +454,29 @@ test('sidebar exposes a stable Home destination and groups project work by user 
   assert.match(sidebar, /DropdownMenu\.Content/)
   assert.match(sidebar, /Open account menu for/)
   assert.match(sidebar, /Product tour/)
+  assert.match(sidebar, /data-feedbacks-trigger/)
+  assert.match(sidebar, /Send feedback/)
   assert.match(sidebar, /Sign out/)
   assert.doesNotMatch(sidebar, /Help & account/)
   assert.ok(sidebar.indexOf('aria-controls="mobile-navigation-drawer"') < sidebar.indexOf('<BrandWordmark', sidebar.indexOf('Mobile top bar')))
+})
+
+test('authenticated dashboard dogfoods the feedback widget through the account menu', () => {
+  const dashboardLayout = read('../../src/app/(dashboard)/layout.tsx')
+  const embed = read('../../src/components/feedbacks-widget-script.tsx')
+  const sidebar = read('../../src/components/sidebar.tsx')
+  const widget = read('../../../widget/src/widget.ts')
+  const widgetEntry = read('../../../widget/src/index.ts')
+
+  assert.match(dashboardLayout, /<FeedbacksWidgetScript \/>/)
+  assert.match(embed, /fb_pub_eca05612446143cb95127d91753e2a48/)
+  assert.match(embed, /https:\/\/app\.feedbacks\.dev\/widget\/latest\.js/)
+  assert.match(embed, /data-feedbacks-manual-trigger/)
+  assert.match(embed, /strategy="afterInteractive"/)
+  assert.match(sidebar, /new CustomEvent\('feedbacks:open'/)
+  assert.match(widget, /window\.addEventListener\('feedbacks:open'/)
+  assert.match(widget, /if \(this\.manualPresentation\) return/)
+  assert.match(widgetEntry, /data-feedbacks-manual-trigger/)
 })
 
 test('project management exposes project settings and the confirmed delete flow', () => {

@@ -8,6 +8,7 @@ import { CURRENT_PROJECT_COOKIE } from '@/lib/project-selection'
 import { deriveEarlyAdopterStatus, getEarlyAdopterMembershipForUser, isEarlyAdopterFeedbackOpen, isEarlyAdopterProgrammeActive } from '@/lib/early-adopter'
 import { ProActivationCelebration } from '@/components/pro-activation-celebration'
 import { getProActivationKey, hasActivePro } from '@/lib/pro-activation'
+import { FeedbacksWidgetScript } from '@/components/feedbacks-widget-script'
 
 export default async function DashboardLayout({
   children,
@@ -131,6 +132,7 @@ export default async function DashboardLayout({
         active={hasActivePro(billingAccount)}
         activationKey={getProActivationKey(billingAccount)}
       />
+      <FeedbacksWidgetScript />
     </div>
   )
 }

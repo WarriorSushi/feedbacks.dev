@@ -61,6 +61,14 @@ const CATEGORY_META: Record<CategoryType, { icon: string; label: string }> = {
 
 const STAR_LABELS = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
 
+type WidgetRuntimeOptions = {
+  manualPresentation?: boolean;
+};
+
+type OpenFeedbackEventDetail = {
+  projectKey?: string;
+};
+
 // ---- Widget Class ----
 
 class FeedbacksWidget {
@@ -87,9 +95,11 @@ class FeedbacksWidget {
   private bootstrapController: AbortController | null = null;
   private autoOpenTimer: number | null = null;
   private destroyed = false;
+  private manualPresentation: boolean;
 
-  constructor(config: WidgetConfig) {
+  constructor(config: WidgetConfig, options: WidgetRuntimeOptions = {}) {
     this.cfg = { position: 'bottom-right', embedMode: 'modal', ...config };
+    this.manualPresentation = options.manualPresentation === true;
     this.boot();
   }
 
@@ -108,8 +118,15 @@ class FeedbacksWidget {
   private setup(): void {
     if (this.destroyed) return;
     this.injectStyles();
+    window.addEventListener('feedbacks:open', this.handleProgrammaticOpen);
     void this.initializeModules();
   }
+
+  private handleProgrammaticOpen = (event: Event): void => {
+    const detail = (event as CustomEvent<OpenFeedbackEventDetail>).detail;
+    if (detail?.projectKey && detail.projectKey !== this.cfg.projectKey) return;
+    this.open();
+  };
 
   private async initializeModules(): Promise<void> {
     const storage = this.getLocalStorage();
@@ -204,6 +221,8 @@ class FeedbacksWidget {
   };
 
   private setupFeedbackPresentation(): void {
+    if (this.manualPresentation) return;
+
     if (this.cfg.embedMode === 'inline') {
       this.renderInline();
     } else if (this.cfg.embedMode === 'trigger') {
@@ -1019,6 +1038,7 @@ class FeedbacksWidget {
 
   destroy(): void {
     this.destroyed = true;
+    window.removeEventListener('feedbacks:open', this.handleProgrammaticOpen);
     this.bootstrapController?.abort();
     this.bootstrapController = null;
     this.teardownFeedbackPresentation();

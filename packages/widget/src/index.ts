@@ -73,7 +73,9 @@ function autoInit(): void {
     );
     if (!config) return;
 
-    new FeedbacksWidget(config);
+    new FeedbacksWidget(config, {
+      manualPresentation: script.hasAttribute('data-feedbacks-manual-trigger'),
+    });
   });
 }
 
