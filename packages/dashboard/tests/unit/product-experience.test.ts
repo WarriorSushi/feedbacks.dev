@@ -467,6 +467,7 @@ test('project management exposes project settings and the confirmed delete flow'
   assert.match(projects, /<Trash2[^>]+\/>\s*Delete/)
   assert.match(projectSettings, /id="delete-project"/)
   assert.match(projectSettings, /deleteInput !== project\.name/)
+  assert.match(projectSettings, /window\.location\.replace\('\/projects'\)/)
 })
 
 test('sign-in stays concise while showing the rotating use-case carousel', () => {

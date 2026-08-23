@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { getProjectPublishableKey } from '@/lib/project-api-keys'
 import type { BillingSummary, Project } from '@/lib/types'
@@ -154,7 +154,6 @@ function ProjectTabsInner({ project, billingSummary, initialTab, updatesView, up
 }
 
 function SettingsTab({ project }: { project: Project }) {
-  const router = useRouter()
   const [name, setName] = React.useState(project.name)
   const [domain, setDomain] = React.useState(project.domain || '')
   const [restrictOrigins, setRestrictOrigins] = React.useState(
@@ -234,7 +233,7 @@ function SettingsTab({ project }: { project: Project }) {
       window.dispatchEvent(
         new CustomEvent('feedbacks:project-deleted', { detail: { projectId: project.id } }),
       )
-      router.replace('/projects')
+      window.location.replace('/projects')
     } catch {
       setDeleteError('The project could not be deleted. Check your connection and try again.')
     } finally {
