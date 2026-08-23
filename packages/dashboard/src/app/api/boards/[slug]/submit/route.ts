@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { assertCanReceiveFeedback } from '@/lib/billing'
 import { hasE2EBypass } from '@/lib/e2e'
@@ -178,7 +178,7 @@ export async function POST(
   }
 
   if (projectOwner?.owner_user_id) {
-    void notifyProjectOwnerOfNewFeedback(
+    after(() => notifyProjectOwnerOfNewFeedback(
       { id: board.project_id, name: board.title || board.display_name || slug, owner_user_id: projectOwner.owner_user_id },
       {
         message: message.trim(),
@@ -188,7 +188,7 @@ export async function POST(
         rating: null,
         created_at: new Date().toISOString(),
       },
-    )
+    ))
   }
 
   return NextResponse.json({ id: feedbackId, success: true, suggestions })

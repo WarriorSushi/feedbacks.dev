@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase } from '@/lib/supabase-server'
 import { authenticateApiKey } from '@/lib/api-auth'
 import { assertCanReceiveFeedback, assertFeatureAccess, getBillingSummaryForUser, getHistoryCutoff } from '@/lib/billing'
@@ -279,7 +279,7 @@ export async function POST(request: NextRequest) {
         .catch(() => {})
     }
 
-    void notifyProjectOwnerOfNewFeedback(
+    after(() => notifyProjectOwnerOfNewFeedback(
       { id: project.id, name: project.name, owner_user_id: project.owner_user_id },
       {
         message: feedbackRow.message,
@@ -289,7 +289,7 @@ export async function POST(request: NextRequest) {
         rating: feedbackRow.rating,
         created_at: feedbackRow.created_at,
       },
-    )
+    ))
 
     const responseBody = { success: true, id: feedbackId }
     if (idempotencyKeyHash) {

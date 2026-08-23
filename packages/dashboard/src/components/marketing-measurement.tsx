@@ -215,8 +215,8 @@ export function MarketingMeasurement({ showBanner, config }: MarketingMeasuremen
     }
   }
 
-  if (!hasProvider || (!showBanner && !preferencesOpen)) return null
-  if (choice !== 'unknown' && !preferencesOpen) return null
+  const shouldShowBanner = showBanner && hasProvider && choice === 'unknown'
+  if (!preferencesOpen && !shouldShowBanner) return null
 
   return (
     <div data-toast-clearance className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-2xl rounded-xl border bg-background/95 p-4 shadow-[var(--shadow-float)] backdrop-blur sm:p-5" role="dialog" aria-label="Cookie and advertising measurement choices">
@@ -233,6 +233,11 @@ export function MarketingMeasurement({ showBanner, config }: MarketingMeasuremen
             Necessary cookies keep sign-in and security working. Optional Google, Meta, and Reddit measurement stays off unless you allow it, and is never loaded in customer widgets.{' '}
             <Link href="/privacy#advertising-measurement" className="font-medium text-foreground underline underline-offset-2">Learn more</Link>
           </p>
+          {!hasProvider && (
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              No optional advertising providers are configured on this deployment. You can still save your preference for later; measurement remains off unless providers are added and you choose Allow.
+            </p>
+          )}
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <Button variant="outline" size="sm" onClick={() => void choose('denied')}>Reject optional</Button>
             <Button variant="outline" size="sm" onClick={() => void choose('granted')}>Allow optional</Button>

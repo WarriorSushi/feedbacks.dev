@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
 import { readJsonBody } from '@/lib/api-request'
 import { checkRateLimit } from '@/lib/rate-limit'
@@ -107,10 +107,10 @@ export async function POST(request: NextRequest) {
     const { error } = await admin.from('feedback').insert(feedback)
     if (error) throw error
 
-    void notifyProjectOwnerOfNewFeedback(
+    after(() => notifyProjectOwnerOfNewFeedback(
       project,
       { message, type, email: user.email || null, url: feedback.url, rating: null, created_at: now },
-    )
+    ))
 
     return NextResponse.json({ success: true, id: feedback.id }, { status: 201 })
   } catch {

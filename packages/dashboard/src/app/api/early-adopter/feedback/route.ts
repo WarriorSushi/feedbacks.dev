@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { after, NextRequest, NextResponse } from 'next/server'
 import { readJsonBody } from '@/lib/api-request'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { createAdminSupabase, createServerSupabase } from '@/lib/supabase-server'
@@ -64,10 +64,10 @@ async function copyToProductInbox(input: {
     }
     const { error } = await admin.from('feedback').insert(feedback)
     if (error) return
-    void notifyProjectOwnerOfNewFeedback(
+    after(() => notifyProjectOwnerOfNewFeedback(
       project,
       { message, type: 'idea', email: input.email || null, url: feedback.url, rating: null, created_at: now },
-    )
+    ))
   } catch {
     // The programme record is authoritative. Inbox mirroring must not undo a renewal.
   }

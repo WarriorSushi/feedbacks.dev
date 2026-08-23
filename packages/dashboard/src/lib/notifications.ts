@@ -4,6 +4,7 @@ export { escapeEmailHtml } from './notification-html'
 import { escapeEmailHtml } from './notification-html'
 import type { Feedback, NotificationSettings, Project } from '@/lib/types'
 import { hashEmailRecipient } from './resend-webhooks'
+import { classifyResendFailure } from './email-delivery-capability'
 import {
   buildPublicBoardReplyEmail,
   buildPublicBoardStatusEmail,
@@ -47,10 +48,37 @@ async function sendResendEmail(payload: EmailPayload) {
     }),
   })
 
+  const responseBody = await response.text()
+  const occurredAt = new Date().toISOString()
+  const recipientHashes = [hashEmailRecipient(payload.to)]
   if (!response.ok) {
-    const body = await response.text()
-    throw new Error(body || `Resend failed with ${response.status}`)
+    const reason = classifyResendFailure(response.status, responseBody)
+    const { error: auditError } = await admin.from('email_delivery_events').insert({
+      provider_event_id: `send:${crypto.randomUUID()}`,
+      event_type: 'email.failed',
+      occurred_at: occurredAt,
+      recipient_hashes: recipientHashes,
+      reason,
+    })
+    if (auditError) console.warn('Could not record failed email attempt', auditError.message)
+    throw new Error(responseBody || `Resend failed with ${response.status}`)
   }
+
+  let providerEmailId: string | null = null
+  try {
+    const parsed = JSON.parse(responseBody) as { id?: unknown }
+    if (typeof parsed.id === 'string') providerEmailId = parsed.id
+  } catch {
+    // A successful response can still be treated as sent if its optional body is malformed.
+  }
+  const { error: auditError } = await admin.from('email_delivery_events').insert({
+    provider_event_id: `send:${providerEmailId || crypto.randomUUID()}`,
+    provider_email_id: providerEmailId,
+    event_type: 'email.sent',
+    occurred_at: occurredAt,
+    recipient_hashes: recipientHashes,
+  })
+  if (auditError) console.warn('Could not record successful email attempt', auditError.message)
 
   return true
 }

@@ -17,6 +17,14 @@ import { persistSharedAppearance } from '@/lib/appearance'
 import { PrivacyChoicesButton } from '@/components/privacy-choices-button'
 import { MascotSpotlight } from '@/components/mascot-spotlight'
 
+type EmailDeliveryStatus = 'ready' | 'configured' | 'unconfigured' | 'domain_unverified' | 'provider_unavailable'
+
+interface AccountCapabilities {
+  emailDeliveryAvailable?: boolean
+  emailDeliveryStatus?: EmailDeliveryStatus
+  emailSenderDomain?: string | null
+}
+
 export default function SettingsPage() {
   const supabase = React.useMemo(() => createClient(), [])
   const { theme, setTheme } = useTheme()
@@ -29,6 +37,9 @@ export default function SettingsPage() {
   const [dailyDigest, setDailyDigest] = React.useState(false)
   const [webhookFailureEmails, setWebhookFailureEmails] = React.useState(true)
   const [billingFailureEmails, setBillingFailureEmails] = React.useState(true)
+  const [emailDeliveryAvailable, setEmailDeliveryAvailable] = React.useState(false)
+  const [emailDeliveryStatus, setEmailDeliveryStatus] = React.useState<EmailDeliveryStatus>('unconfigured')
+  const [emailSenderDomain, setEmailSenderDomain] = React.useState<string | null>(null)
   const [deleting, setDeleting] = React.useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = React.useState('')
   const [saveState, setSaveState] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -48,6 +59,11 @@ export default function SettingsPage() {
 
   React.useEffect(() => {
     const load = async () => {
+      const capabilitiesPromise = fetch('/api/account/capabilities', { cache: 'no-store' })
+        .then(async (response) => response.ok
+          ? await response.json() as AccountCapabilities
+          : null)
+        .catch(() => null)
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -78,6 +94,10 @@ export default function SettingsPage() {
           billingFailureEmails: notificationSettings?.billingFailures !== false,
         })
       }
+      const capabilities = await capabilitiesPromise
+      setEmailDeliveryAvailable(capabilities?.emailDeliveryAvailable === true)
+      setEmailDeliveryStatus(capabilities?.emailDeliveryStatus ?? 'provider_unavailable')
+      setEmailSenderDomain(capabilities?.emailSenderDomain ?? null)
       setLoading(false)
     }
     load()
@@ -248,6 +268,23 @@ export default function SettingsPage() {
             <p className="mt-1 text-sm text-muted-foreground">Choose which account alerts reach your email.</p>
           </div>
           <div className="space-y-3">
+            {!emailDeliveryAvailable && (
+              <div className="flex items-start gap-3 border-y border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm" role="status">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <p>
+                  {emailDeliveryStatus === 'domain_unverified' ? (
+                    <><strong>Email delivery is paused.</strong> The {emailSenderDomain || 'sending'} domain is not verified in Resend. Your choices are saved. This is unrelated to your plan.</>
+                  ) : emailDeliveryStatus === 'provider_unavailable' ? (
+                    <><strong>Email delivery could not be validated.</strong> Check the Resend API key and service availability. Your choices are saved. This is unrelated to your plan.</>
+                  ) : (
+                    <><strong>Email delivery needs configuration.</strong> Your choices are saved, but this deployment cannot send email yet. This is unrelated to your plan.</>
+                  )}
+                </p>
+              </div>
+            )}
+            <p className="text-sm text-muted-foreground">
+              New-feedback alerts and daily digests are included on Free and Pro. Emails go to {email}.
+            </p>
             <div className="divide-y border-y bg-surface-raised/60">
               <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
                 <input
