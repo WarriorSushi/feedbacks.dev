@@ -19,7 +19,7 @@ Ship a version of `feedbacks.dev` that proves four things:
 - billing and entitlement enforcement
 - webhook-backed paid-plan truth
 - AI / MCP access on Pro
-- account-level notification and billing settings
+- account-level notification and billing settings, with email alerts and daily digests reserved for Pro
 - consent-gated campaign measurement and a focused lead-capture page
 - a bounded five-invite, one-time complimentary Pro reward
 - a bounded 100-seat Early Adopter Programme with guided onboarding, monthly feedback renewals, and five-year Pro price protection
@@ -39,7 +39,7 @@ Ship a version of `feedbacks.dev` that proves four things:
 - inbox view
 - status workflow
 - detail view
-- basic notifications or webhook integration
+- basic webhook integration, plus Pro-only owner email alerts and daily digests
 
 ## Deliberately excluded from the original first release
 

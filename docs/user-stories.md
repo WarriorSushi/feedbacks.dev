@@ -263,6 +263,18 @@ Acceptance criteria:
 - webhook or issue-routing path exists in MVP or shortly after
 - routing high-signal feedback is easier than copy-pasting manually
 
+### US-7.3
+
+Story:
+As a Pro owner, I want polished email alerts for new feedback and operational events so I can respond without keeping the inbox open.
+
+Acceptance criteria:
+- email alerts and daily digests require an active Pro entitlement
+- Free accounts show alert controls as unavailable and do not receive alert fanout
+- entitlement enforcement happens on the server, regardless of stored or client-modified preferences
+- every application email uses the shared feedbacks.dev brand shell and remains readable in common email clients
+- billing, authentication, security, and programme service emails remain separate from optional Pro alerts
+
 ## Epic 8: Operate across multiple projects
 
 ### US-8.1

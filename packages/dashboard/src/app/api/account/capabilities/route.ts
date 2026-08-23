@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getEmailDeliveryCapability } from '@/lib/email-delivery-capability'
+import { canUserReceiveEmailAlerts } from '@/lib/billing'
 import { createServerSupabase } from '@/lib/supabase-server'
 
 export async function GET() {
@@ -7,13 +8,17 @@ export async function GET() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const emailDelivery = await getEmailDeliveryCapability()
+  const [emailDelivery, emailAlertsAvailable] = await Promise.all([
+    getEmailDeliveryCapability(),
+    canUserReceiveEmailAlerts(user.id, user.email),
+  ])
 
   return NextResponse.json(
     {
       emailDeliveryAvailable: emailDelivery.available,
       emailDeliveryStatus: emailDelivery.status,
       emailSenderDomain: emailDelivery.senderDomain,
+      emailAlertsAvailable,
     },
     { headers: { 'Cache-Control': 'private, no-store' } },
   )

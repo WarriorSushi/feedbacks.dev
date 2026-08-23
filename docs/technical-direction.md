@@ -56,6 +56,8 @@ Recommended high-level shape:
 - security matters on all public submission paths
 - docs and implementation must stay synchronized
 - paid-plan truth must be server-driven and webhook-authoritative
+- optional email-alert fanout must be enforced from server-side plan truth; disabling controls in the browser is not sufficient
+- all application-generated Resend email must pass through one email-client-safe branded shell
 - billing provider integration must remain isolated from browser code except for hosted redirects
 - advertising scripts must remain isolated from customer widgets and load only after explicit consent
 - server conversion payloads must use allowlisted events, hashed normalized match data, bounded attribution fields, and browser/server deduplication identifiers

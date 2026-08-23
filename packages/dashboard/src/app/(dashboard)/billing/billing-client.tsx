@@ -264,6 +264,7 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
               ['Live projects', '2', 'Unlimited'],
               ['Feedback volume', '500 / month', 'Unlimited'],
               ['Feedback history', 'Full history', 'Full history'],
+              ['Email alerts and daily digests', 'Not included', 'Included'],
               ['Branding', 'feedbacks.dev attribution', 'Your brand only'],
               ['Webhooks', '1 endpoint, 10 logs', 'Unlimited endpoints and logs'],
               ['Product updates', '3 active, 7-day analytics', 'Unlimited, scheduling, 90-day analytics'],

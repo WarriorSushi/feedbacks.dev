@@ -140,7 +140,7 @@ export default function LandingPage() {
                   <div className="mt-5 flex items-end gap-2"><p className="text-6xl font-semibold tracking-[-0.06em]">${proPlan.monthlyPrice}</p><span className="pb-2 text-sm text-muted-foreground">/ month</span></div>
                   <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">For products with steady feedback, more destinations, and more automation. Cancel without losing your work.</p>
                   <ul className="mt-8 space-y-3 text-sm">
-                    {['Unlimited projects and feedback', 'Unlimited webhook destinations', 'Scheduling and 90-day update analytics', 'Custom branding controls', 'No feedbacks.dev attribution'].map((item) => <li key={item} className="flex items-start gap-3 border-b pb-3 last:border-0"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
+                    {['Unlimited projects and feedback', 'Instant email alerts and daily digests', 'Unlimited webhook destinations', 'Scheduling and 90-day update analytics', 'Custom branding controls', 'No feedbacks.dev attribution'].map((item) => <li key={item} className="flex items-start gap-3 border-b pb-3 last:border-0"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}
                   </ul>
                   <Link href={proAuthHref} className="mt-auto block pt-8"><Button className="h-12 w-full bg-lime-300 text-sm text-zinc-950 hover:bg-lime-200">Choose Pro</Button></Link>
                   <p className="mt-4 text-center text-[10px] text-muted-foreground">The Free plan stays available if you downgrade.</p>

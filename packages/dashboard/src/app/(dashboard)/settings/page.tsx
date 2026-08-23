@@ -23,6 +23,7 @@ interface AccountCapabilities {
   emailDeliveryAvailable?: boolean
   emailDeliveryStatus?: EmailDeliveryStatus
   emailSenderDomain?: string | null
+  emailAlertsAvailable?: boolean
 }
 
 export default function SettingsPage() {
@@ -40,6 +41,7 @@ export default function SettingsPage() {
   const [emailDeliveryAvailable, setEmailDeliveryAvailable] = React.useState(false)
   const [emailDeliveryStatus, setEmailDeliveryStatus] = React.useState<EmailDeliveryStatus>('unconfigured')
   const [emailSenderDomain, setEmailSenderDomain] = React.useState<string | null>(null)
+  const [emailAlertsAvailable, setEmailAlertsAvailable] = React.useState(false)
   const [deleting, setDeleting] = React.useState(false)
   const [deleteConfirmation, setDeleteConfirmation] = React.useState('')
   const [saveState, setSaveState] = React.useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -98,6 +100,21 @@ export default function SettingsPage() {
       setEmailDeliveryAvailable(capabilities?.emailDeliveryAvailable === true)
       setEmailDeliveryStatus(capabilities?.emailDeliveryStatus ?? 'provider_unavailable')
       setEmailSenderDomain(capabilities?.emailSenderDomain ?? null)
+      const alertsAvailable = capabilities?.emailAlertsAvailable === true
+      setEmailAlertsAvailable(alertsAvailable)
+      if (!alertsAvailable) {
+        setEmailNotifications(false)
+        setDailyDigest(false)
+        setWebhookFailureEmails(false)
+        if (savedValues.current) {
+          savedValues.current = JSON.stringify({
+            ...JSON.parse(savedValues.current),
+            emailNotifications: false,
+            dailyDigest: false,
+            webhookFailureEmails: false,
+          })
+        }
+      }
       setLoading(false)
     }
     load()
@@ -268,7 +285,16 @@ export default function SettingsPage() {
             <p className="mt-1 text-sm text-muted-foreground">Choose which account alerts reach your email.</p>
           </div>
           <div className="space-y-3">
-            {!emailDeliveryAvailable && (
+            {!emailAlertsAvailable && (
+              <div className="flex items-start justify-between gap-4 border-y bg-surface-raised px-4 py-4 text-sm" role="status">
+                <div>
+                  <p className="font-semibold text-foreground">Email alerts are a Pro feature.</p>
+                  <p className="mt-1 text-muted-foreground">Upgrade to enable instant feedback alerts, daily digests, and integration health emails.</p>
+                </div>
+                <Button asChild size="sm" className="shrink-0"><Link href="/billing">View Pro</Link></Button>
+              </div>
+            )}
+            {emailAlertsAvailable && !emailDeliveryAvailable && (
               <div className="flex items-start gap-3 border-y border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm" role="status">
                 <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                 <p>
@@ -283,15 +309,18 @@ export default function SettingsPage() {
               </div>
             )}
             <p className="text-sm text-muted-foreground">
-              New-feedback alerts and daily digests are included on Free and Pro. Emails go to {email}.
+              {emailAlertsAvailable
+                ? `Pro alerts are active for ${email}.`
+                : 'Free accounts collect feedback normally in the inbox, without email alerts.'}
             </p>
             <div className="divide-y border-y bg-surface-raised/60">
-              <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
+              <label className={`flex min-h-14 items-start gap-3 px-4 py-3 text-sm ${emailAlertsAvailable ? '' : 'opacity-60'}`}>
                 <input
                   type="checkbox"
                   className="mt-0.5 h-4 w-4 rounded border accent-primary"
                   checked={emailNotifications}
                   onChange={(event) => { setEmailNotifications(event.target.checked); setSaveState('idle') }}
+                  disabled={!emailAlertsAvailable}
                 />
                 <span>
                   <span className="block font-medium text-foreground">Email me when new feedback arrives</span>
@@ -300,12 +329,13 @@ export default function SettingsPage() {
                   </span>
                 </span>
               </label>
-              <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
+              <label className={`flex min-h-14 items-start gap-3 px-4 py-3 text-sm ${emailAlertsAvailable ? '' : 'opacity-60'}`}>
                 <input
                   type="checkbox"
                   className="mt-0.5 h-4 w-4 rounded border accent-primary"
                   checked={dailyDigest}
                   onChange={(event) => { setDailyDigest(event.target.checked); setSaveState('idle') }}
+                  disabled={!emailAlertsAvailable}
                 />
                 <span>
                   <span className="block font-medium text-foreground">Send a daily feedback digest</span>
@@ -314,13 +344,13 @@ export default function SettingsPage() {
                   </span>
                 </span>
               </label>
-              <label className="flex min-h-14 items-start gap-3 px-4 py-3 text-sm">
+              <label className={`flex min-h-14 items-start gap-3 px-4 py-3 text-sm ${emailAlertsAvailable ? '' : 'opacity-60'}`}>
                 <input
                   type="checkbox"
                   className="mt-0.5 h-4 w-4 rounded border accent-primary"
                   checked={webhookFailureEmails}
                   onChange={(event) => { setWebhookFailureEmails(event.target.checked); setSaveState('idle') }}
-                  disabled={!emailNotifications}
+                  disabled={!emailAlertsAvailable || !emailNotifications}
                 />
                 <span>
                   <span className="block font-medium text-foreground">Email me when an integration is auto-disabled</span>
@@ -339,7 +369,7 @@ export default function SettingsPage() {
                 <span>
                   <span className="block font-medium text-foreground">Email me when billing needs attention</span>
                   <span className="text-muted-foreground">
-                    Sends a direct alert when Dodo reports a failed recurring payment.
+                    Essential account notice when a paid subscription needs attention. This is separate from optional Pro alerts.
                   </span>
                 </span>
               </label>

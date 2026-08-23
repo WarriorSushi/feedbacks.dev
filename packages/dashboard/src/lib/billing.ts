@@ -201,6 +201,11 @@ export async function getCurrentUserBillingSummary() {
   return getBillingSummaryForUser(user.id, user.email)
 }
 
+export async function canUserReceiveEmailAlerts(userId: string, email?: string | null) {
+  const account = await getOrCreateBillingAccount(userId, email)
+  return getEntitlementsForPlan(resolvePlanTier(account)).emailAlerts
+}
+
 export async function incrementFeedbackUsage(userId: string) {
   const admin = await createAdminSupabase()
   const periodStart = startOfCurrentMonth()
@@ -309,7 +314,7 @@ export async function assertCanReceiveFeedback(userId: string, email?: string | 
 
 export async function assertFeatureAccess(
   userId: string,
-  feature: 'apiAccess' | 'publicBoards' | 'webhooks' | 'mcp' | 'customBranding',
+  feature: 'apiAccess' | 'publicBoards' | 'webhooks' | 'mcp' | 'emailAlerts' | 'customBranding',
   email?: string | null,
 ) {
   const summary = await getBillingSummaryForUser(userId, email)

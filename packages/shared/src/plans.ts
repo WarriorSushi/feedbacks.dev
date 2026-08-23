@@ -29,6 +29,7 @@ export interface EntitlementSet {
   webhookEndpointLimit: number | null
   webhookDeliveryLogLimit: number | null
   mcp: boolean
+  emailAlerts: boolean
   customBranding: boolean
   productUpdates: boolean
   productUpdateActiveLimit: number | null
@@ -57,6 +58,7 @@ export const PLAN_MATRIX: Record<PlanTier, EntitlementSet> = {
     webhookEndpointLimit: 1,
     webhookDeliveryLogLimit: 10,
     mcp: true,
+    emailAlerts: false,
     customBranding: false,
     productUpdates: true,
     productUpdateActiveLimit: 3,
@@ -76,6 +78,7 @@ export const PLAN_MATRIX: Record<PlanTier, EntitlementSet> = {
     webhookEndpointLimit: null,
     webhookDeliveryLogLimit: null,
     mcp: true,
+    emailAlerts: true,
     customBranding: true,
     productUpdates: true,
     productUpdateActiveLimit: null,
@@ -90,7 +93,7 @@ export function getEntitlementsForPlan(planTier: PlanTier): EntitlementSet {
 
 export function isFeatureEnabled(
   entitlements: EntitlementSet,
-  feature: 'apiAccess' | 'publicBoards' | 'webhooks' | 'mcp' | 'customBranding' | 'productUpdates',
+  feature: 'apiAccess' | 'publicBoards' | 'webhooks' | 'mcp' | 'emailAlerts' | 'customBranding' | 'productUpdates',
 ): boolean {
   return entitlements[feature]
 }

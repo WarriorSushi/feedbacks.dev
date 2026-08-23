@@ -1,10 +1,11 @@
 import { env, isEmailEnabled } from '@/lib/env'
 import { createAdminSupabase } from '@/lib/supabase-server'
 export { escapeEmailHtml } from './notification-html'
-import { escapeEmailHtml } from './notification-html'
+import { escapeEmailHtml, renderBrandedEmail } from './notification-html'
 import type { Feedback, NotificationSettings, Project } from '@/lib/types'
 import { hashEmailRecipient } from './resend-webhooks'
 import { classifyResendFailure } from './email-delivery-capability'
+import { canUserReceiveEmailAlerts } from './billing'
 import {
   buildPublicBoardReplyEmail,
   buildPublicBoardStatusEmail,
@@ -43,7 +44,11 @@ async function sendResendEmail(payload: EmailPayload) {
       from: env.RESEND_FROM_EMAIL,
       to: [payload.to],
       subject: payload.subject,
-      html: payload.html,
+      html: renderBrandedEmail({
+        subject: payload.subject,
+        contentHtml: payload.html,
+        appOrigin: env.NEXT_PUBLIC_APP_ORIGIN,
+      }),
       text: payload.text,
     }),
   })
@@ -108,11 +113,11 @@ export async function notifyProjectOwnerOfNewFeedback(
   feedback: Pick<Feedback, 'message' | 'type' | 'email' | 'url' | 'rating' | 'created_at'>,
 ) {
   try {
+    if (!await canUserReceiveEmailAlerts(project.owner_user_id)) return
     const { notificationSettings, emailAddress } = await getUserNotificationSettings(project.owner_user_id)
     if (!notificationSettings.email || !emailAddress) return
 
     const subject = `[feedbacks.dev] New ${feedback.type || 'feedback'} on ${project.name}`
-    const safeSubject = escapeEmailHtml(subject)
     const safeProjectName = escapeEmailHtml(project.name)
     const safeType = escapeEmailHtml(feedback.type || 'feedback')
     const safeMessage = escapeEmailHtml(feedback.message)
@@ -133,15 +138,19 @@ export async function notifyProjectOwnerOfNewFeedback(
       subject,
       text: lines.join('\n'),
       html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-          <h2>${safeSubject}</h2>
-          <p><strong>Project:</strong> ${safeProjectName}</p>
-          <p><strong>Type:</strong> ${safeType}</p>
-          <p><strong>Message:</strong><br/>${safeMessage}</p>
-          ${safeReporterEmail ? `<p><strong>Reporter email:</strong> ${safeReporterEmail}</p>` : ''}
-          ${safeUrl ? `<p><strong>URL:</strong> ${safeUrl}</p>` : ''}
-          ${feedback.rating ? `<p><strong>Rating:</strong> ${feedback.rating}/5</p>` : ''}
+        <h2 style="margin:0 0 12px;color:#18221c;font-size:28px;line-height:1.18;">New feedback, ready to triage</h2>
+        <p style="margin:0 0 24px;color:#5a695f;font-size:15px;line-height:1.6;">A new ${safeType} arrived on <strong style="color:#18221c;">${safeProjectName}</strong>.</p>
+        <div style="margin:0 0 24px;padding:20px;background:#edf3e9;border:1px solid #c9d7c5;border-radius:10px;">
+          <p style="margin:0 0 8px;color:#4a6a50;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;">Feedback</p>
+          <p style="margin:0;color:#18221c;font-size:17px;line-height:1.6;">${safeMessage}</p>
         </div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 26px;border-top:1px solid #d8dfd6;">
+          <tr><td style="padding:12px 0;border-bottom:1px solid #d8dfd6;color:#68756c;font-size:12px;">Type</td><td align="right" style="padding:12px 0;border-bottom:1px solid #d8dfd6;color:#18221c;font-size:13px;font-weight:700;">${safeType}</td></tr>
+          ${feedback.rating ? `<tr><td style="padding:12px 0;border-bottom:1px solid #d8dfd6;color:#68756c;font-size:12px;">Rating</td><td align="right" style="padding:12px 0;border-bottom:1px solid #d8dfd6;color:#18221c;font-size:13px;font-weight:700;">${feedback.rating}/5</td></tr>` : ''}
+          ${safeReporterEmail ? `<tr><td style="padding:12px 0;border-bottom:1px solid #d8dfd6;color:#68756c;font-size:12px;">Reporter</td><td align="right" style="padding:12px 0;border-bottom:1px solid #d8dfd6;color:#18221c;font-size:13px;font-weight:700;">${safeReporterEmail}</td></tr>` : ''}
+          ${safeUrl ? `<tr><td style="padding:12px 0;border-bottom:1px solid #d8dfd6;color:#68756c;font-size:12px;">Page</td><td align="right" style="max-width:340px;padding:12px 0;border-bottom:1px solid #d8dfd6;color:#18221c;font-size:12px;word-break:break-all;">${safeUrl}</td></tr>` : ''}
+        </table>
+        <p style="margin:0;"><a href="${escapeEmailHtml(`${env.NEXT_PUBLIC_APP_ORIGIN}/feedback`)}" style="display:inline-block;padding:12px 18px;border-radius:7px;background:#286b12;color:#f3f7ef;text-decoration:none;font-size:14px;font-weight:700;">Open feedback inbox</a></p>
       `,
     })
   } catch (error) {
@@ -151,6 +160,7 @@ export async function notifyProjectOwnerOfNewFeedback(
 
 export async function notifyUserOfWebhookFailure(userId: string, projectName: string, endpointUrl: string) {
   try {
+    if (!await canUserReceiveEmailAlerts(userId)) return
     const { notificationSettings, emailAddress } = await getUserNotificationSettings(userId)
     if (!notificationSettings.email || !notificationSettings.webhookFailures || !emailAddress) return
 
@@ -381,6 +391,7 @@ async function getPublicBoardRecipientEmails(input: {
 
   const emailResults = await Promise.all(
     userIds.map(async (userId) => {
+      if (!await canUserReceiveEmailAlerts(userId)) return null
       const { data: settingsRow } = await admin
         .from('user_settings')
         .select('notification_settings')
@@ -481,6 +492,9 @@ interface DigestProjectRow {
 
 export async function sendDailyFeedbackDigest(userId: string, windowStart: string, windowEnd: string) {
   try {
+    if (!await canUserReceiveEmailAlerts(userId)) {
+      return { sent: false as const, count: 0 }
+    }
     const { notificationSettings, emailAddress } = await getUserNotificationSettings(userId)
     if (!notificationSettings.dailyDigest || !emailAddress) {
       return { sent: false as const, count: 0 }

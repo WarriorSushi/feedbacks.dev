@@ -25,6 +25,50 @@ test('email HTML escaping handles nullish values', async () => {
   assert.equal(escapeEmailHtml(undefined), '')
 })
 
+test('branded email shell provides a consistent client-safe frame', async () => {
+  const { renderBrandedEmail } = await loadNotifications()
+  const html = renderBrandedEmail({
+    subject: '[feedbacks.dev] New feedback <script>',
+    contentHtml: '<h2>New feedback</h2><p>Useful signal.</p>',
+    appOrigin: 'https://app.feedbacks.dev',
+  })
+
+  assert.match(html, /^<!doctype html>/)
+  assert.match(html, /new_logo_feedbacks\.dev\.png/)
+  assert.match(html, /Product signal, without the clutter\./)
+  assert.match(html, /Manage notification settings/)
+  assert.match(html, /<h2>New feedback<\/h2>/)
+  assert.doesNotMatch(html, /<title>.*<script>/)
+  assert.match(html, /&lt;script&gt;/)
+})
+
+test('every Resend email is wrapped by the shared brand renderer', async () => {
+  const fs = await import('node:fs/promises')
+  const source = await fs.readFile(
+    new URL('../../src/lib/notifications.ts', import.meta.url),
+    'utf8',
+  )
+
+  assert.match(source, /html: renderBrandedEmail\(/)
+  assert.equal((source.match(/api\.resend\.com\/emails/g) || []).length, 1)
+})
+
+test('optional email alert paths enforce the Pro entitlement on the server', async () => {
+  const fs = await import('node:fs/promises')
+  const source = await fs.readFile(
+    new URL('../../src/lib/notifications.ts', import.meta.url),
+    'utf8',
+  )
+
+  assert.match(source, /canUserReceiveEmailAlerts\(project\.owner_user_id\)/)
+  assert.match(source, /canUserReceiveEmailAlerts\(userId\)/)
+  assert.match(source, /if \(!await canUserReceiveEmailAlerts\(userId\)\) return null/)
+  assert.ok(
+    (source.match(/canUserReceiveEmailAlerts\(/g) || []).length >= 4,
+    'expected every optional alert fanout to check the Pro entitlement',
+  )
+})
+
 test('public board notification recipients are deduped and exclude the actor', async () => {
   const { mergePublicBoardSubscriberIds } = await loadPublicBoardNotifications()
 
