@@ -16,7 +16,7 @@ export function ProjectHome({ project }: { project: Project }) {
         action={
           <Button asChild>
             <Link href={`/projects/${project.id}/install`}>
-              Install or verify
+              Install or test
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -54,7 +54,7 @@ export function ProjectHome({ project }: { project: Project }) {
           </div>
         </div>
         <ol className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">
-          {['Copy embed', 'Verify test', 'Manage remotely'].map((label) => (
+          {['Copy embed', 'Test in product', 'Manage remotely'].map((label) => (
             <li key={label} className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" />{label}</li>
           ))}
         </ol>

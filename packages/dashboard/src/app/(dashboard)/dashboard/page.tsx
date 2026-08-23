@@ -246,7 +246,7 @@ export default async function DashboardPage({
               {[
                 ['1', 'Name project'],
                 ['2', 'Copy snippet'],
-                ['3', 'Verify test'],
+                ['3', 'Test in product'],
               ].map(([step, label], index) => (
                 <li key={step} className="flex items-center gap-3 px-5 py-4">
                   <span className={cn(

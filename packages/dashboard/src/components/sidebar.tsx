@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { BrandWordmark } from '@/components/brand-wordmark'
 import {
   House,
+  LayoutDashboard,
   ClipboardPenLine,
   Inbox,
   CreditCard,
@@ -68,7 +69,8 @@ type NavGroup = {
 const primaryNavGroups: NavGroup[] = [
   {
     items: [
-      { href: '/dashboard', label: 'Home', icon: House, exact: true, tourId: 'nav-dashboard' },
+      { href: '/dashboard', label: 'Dashboard', icon: House, exact: true, tourId: 'nav-dashboard' },
+      { href: '/project-overview', label: 'Project overview', icon: LayoutDashboard, tourId: 'nav-project-overview', projectTab: 'home' },
     ],
   },
   {
@@ -88,7 +90,7 @@ const primaryNavGroups: NavGroup[] = [
   {
     label: 'Connect',
     items: [
-      { href: '/install', label: 'Install & verify', icon: Code2, tourId: 'nav-install', projectTab: 'install' },
+      { href: '/install', label: 'Install & test', icon: Code2, tourId: 'nav-install', projectTab: 'install' },
       { href: '/integrations', label: 'Integrations', icon: Webhook, tourId: 'nav-integrations', projectTab: 'integrations' },
       { href: '/api', label: 'API & MCP', icon: Code2, tourId: 'nav-api', projectTab: 'api' },
     ],
@@ -522,13 +524,17 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
               {group.items.map((item) => {
                 const projectTab = item.projectTab
                 const scopedHref = projectTab && currentProject
-                  ? getProjectRoute(currentProject.id, projectTab as Parameters<typeof getProjectRoute>[1])
+                  ? projectTab === 'home'
+                    ? `/projects/${encodeURIComponent(currentProject.id)}`
+                    : getProjectRoute(currentProject.id, projectTab as Parameters<typeof getProjectRoute>[1])
                   : projectTab
                     ? `/project-required?feature=${encodeURIComponent(item.label)}`
                   : item.href
                 const activeProjectSection = getProjectRouteSection(pathname)
                 const isActive = projectTab
-                  ? activeProjectSection === projectTab
+                  ? projectTab === 'home'
+                    ? Boolean(currentProject && pathname === `/projects/${encodeURIComponent(currentProject.id)}` && !searchParams.get('tab'))
+                    : activeProjectSection === projectTab
                   : item.exact
                     ? pathname === item.href
                     : pathname === item.href || pathname.startsWith(item.href + '/')

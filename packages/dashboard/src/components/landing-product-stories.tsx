@@ -18,6 +18,7 @@ import {
   Globe2,
   House,
   Inbox,
+  LayoutDashboard,
   Lightbulb,
   Megaphone,
   MessageSquareText,
@@ -301,10 +302,10 @@ function TriageDashboardScene() {
     },
   ]
   const navGroups: { label?: string; items: { label: string; Icon: LucideIcon; active?: boolean }[] }[] = [
-    { items: [{ label: 'Home', Icon: House }] },
+    { items: [{ label: 'Dashboard', Icon: House }, { label: 'Project overview', Icon: LayoutDashboard }] },
     { label: 'Collect', items: [{ label: 'Feedback form', Icon: ClipboardPenLine }, { label: 'Feedback inbox', Icon: Inbox, active: true }] },
     { label: 'Share with users', items: [{ label: 'Updates for users', Icon: Megaphone }, { label: 'Public feedback board', Icon: Globe2 }] },
-    { label: 'Connect', items: [{ label: 'Install & verify', Icon: Code2 }, { label: 'Integrations', Icon: Webhook }] },
+    { label: 'Connect', items: [{ label: 'Install & test', Icon: Code2 }, { label: 'Integrations', Icon: Webhook }] },
   ]
 
   return (

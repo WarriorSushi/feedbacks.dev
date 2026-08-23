@@ -16,7 +16,12 @@ const FEATURE_COPY: Record<string, { eyebrow: string; title: string; description
     title: 'Create a project before opening a public board',
     description: 'Each public board is tied to one project, its feedback, and its visibility settings.',
   },
-  'Install & verify': {
+  'Project overview': {
+    eyebrow: 'Project overview',
+    title: 'Create a project before opening its overview',
+    description: 'A project overview brings its feedback form, product updates, and installed connection together.',
+  },
+  'Install & test': {
     eyebrow: 'Install',
     title: 'Create a project before installing feedbacks.dev',
     description: 'Your project creates the exact copy-paste snippet and a safe place to verify the connection.',

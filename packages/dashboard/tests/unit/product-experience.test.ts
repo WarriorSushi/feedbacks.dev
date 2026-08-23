@@ -432,18 +432,20 @@ test('dense dashboard forms use clear tonal sections instead of one flat canvas'
   assert.match(inbox, /rounded-lg border bg-card/)
 })
 
-test('sidebar exposes a stable Home destination and groups project work by user intent', () => {
+test('sidebar exposes dashboard and selected-project overview destinations', () => {
   const sidebar = read('../../src/components/sidebar.tsx')
 
-  assert.match(sidebar, /label: 'Home'/)
+  assert.match(sidebar, /label: 'Dashboard'/)
+  assert.match(sidebar, /label: 'Project overview', icon: LayoutDashboard/)
+  assert.match(sidebar, /projectTab: 'home'/)
+  assert.match(sidebar, /projectTab === 'home'/)
   assert.match(sidebar, /label: 'Collect'/)
   assert.match(sidebar, /label: 'Share with users'/)
   assert.match(sidebar, /label: 'Connect'/)
-  assert.match(sidebar, /Public feedback board/)
+  assert.match(sidebar, /label: 'My public page'/)
   assert.match(sidebar, /label: 'Feedback form', icon: ClipboardPenLine/)
   assert.match(sidebar, /label: 'Feedback inbox', icon: Inbox/)
-  assert.doesNotMatch(sidebar, /label: 'Overview'/)
-  assert.doesNotMatch(sidebar, /projectTab: 'home'/)
+  assert.match(sidebar, /label: 'Install & test', icon: Code2/)
   assert.match(sidebar, /project-required\?feature=/)
   assert.match(sidebar, /label: 'Docs', icon: Library/)
   assert.match(sidebar, /label: 'Pro for free', icon: Gift/)

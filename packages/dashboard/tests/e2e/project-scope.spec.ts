@@ -22,4 +22,10 @@ test('project switcher keeps dashboard and inbox scope explicit', async ({ page 
   await page.getByTestId('dashboard-all-projects-scope').click()
   await expect(page).toHaveURL(/\/dashboard\?scope=all/)
   await expect(page.getByTestId('dashboard-all-projects-scope')).toHaveAttribute('aria-current', 'page')
+
+  const projectOverview = page.getByRole('link', { name: 'Project overview' })
+  await expect(projectOverview).toHaveAttribute('href', `/projects/${second.id}`)
+  await projectOverview.click()
+  await expect(page).toHaveURL(new RegExp(`/projects/${second.id}$`))
+  await expect(page.getByRole('heading', { name: 'Project overview' })).toBeVisible()
 })
