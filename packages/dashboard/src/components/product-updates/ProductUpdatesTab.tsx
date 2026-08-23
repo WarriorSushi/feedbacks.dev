@@ -1646,6 +1646,7 @@ export function ProductUpdatesTab({
       {settingsPanel}
       {editorConflict && selected ? (
         <section
+          data-toast-clearance
           className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] left-1/2 z-40 flex w-[calc(100vw-1.5rem)] max-w-3xl -translate-x-1/2 flex-col gap-3 rounded-lg border border-destructive/50 bg-popover p-3 shadow-[var(--shadow-float)] sm:flex-row sm:items-center sm:justify-between md:bottom-6 md:w-[calc(100vw-17rem)]"
           aria-label="Saved version recovery"
         >

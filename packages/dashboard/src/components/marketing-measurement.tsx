@@ -139,7 +139,7 @@ function captureAttribution() {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(attribution),
-  })
+  }).catch(() => undefined)
 }
 
 type MarketingMeasurementProps = {
@@ -219,7 +219,7 @@ export function MarketingMeasurement({ showBanner, config }: MarketingMeasuremen
   if (choice !== 'unknown' && !preferencesOpen) return null
 
   return (
-    <div className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-2xl rounded-xl border bg-background/95 p-4 shadow-[var(--shadow-float)] backdrop-blur sm:p-5" role="dialog" aria-label="Cookie and advertising measurement choices">
+    <div data-toast-clearance className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-2xl rounded-xl border bg-background/95 p-4 shadow-[var(--shadow-float)] backdrop-blur sm:p-5" role="dialog" aria-label="Cookie and advertising measurement choices">
       <div className="flex items-start gap-3">
         <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <div className="min-w-0 flex-1">

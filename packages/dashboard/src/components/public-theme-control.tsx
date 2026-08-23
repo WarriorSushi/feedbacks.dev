@@ -36,7 +36,7 @@ export function PublicThemeControl() {
   }
 
   return (
-    <div className="public-theme-control fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[70] w-11 rounded-lg border bg-popover p-1 shadow-[var(--shadow-float)]">
+    <div data-toast-clearance className="public-theme-control fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[70] w-11 rounded-lg border bg-popover p-1 shadow-[var(--shadow-float)]">
       <ThemeToggle collapsed />
     </div>
   )

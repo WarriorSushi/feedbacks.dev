@@ -130,7 +130,7 @@ export function ProjectVerifyClient({
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ event: 'verification_completed' }),
-    })
+    }).catch(() => undefined)
   }, [projectId])
 
   const checkForProductFeedback = React.useCallback(async () => {

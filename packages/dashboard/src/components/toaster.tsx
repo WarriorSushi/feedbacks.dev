@@ -1,14 +1,69 @@
 'use client'
 
+import * as React from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function Toaster() {
   const { toasts, dismiss } = useToast()
+  const [bottomClearance, setBottomClearance] = React.useState(16)
+
+  React.useEffect(() => {
+    let frame = 0
+    let resizeObserver: ResizeObserver | null = null
+
+    const measure = () => {
+      frame = 0
+      const viewportHeight = window.innerHeight
+      let nextClearance = 16
+      document.querySelectorAll<HTMLElement>('[data-toast-clearance]').forEach((element) => {
+        const rect = element.getBoundingClientRect()
+        if (rect.width === 0 || rect.height === 0 || rect.bottom <= 0 || rect.top >= viewportHeight) return
+        nextClearance = Math.max(nextClearance, viewportHeight - rect.top + 12)
+      })
+      setBottomClearance((current) => current === nextClearance ? current : nextClearance)
+    }
+
+    const observeClearanceElements = () => {
+      resizeObserver?.disconnect()
+      resizeObserver = new ResizeObserver(() => {
+        cancelAnimationFrame(frame)
+        frame = requestAnimationFrame(measure)
+      })
+      document.querySelectorAll<HTMLElement>('[data-toast-clearance]').forEach((element) => {
+        resizeObserver?.observe(element)
+      })
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(measure)
+    }
+
+    const mutationObserver = new MutationObserver(observeClearanceElements)
+    mutationObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['data-toast-clearance'],
+      childList: true,
+      subtree: true,
+    })
+    window.addEventListener('resize', observeClearanceElements)
+    observeClearanceElements()
+
+    return () => {
+      cancelAnimationFrame(frame)
+      resizeObserver?.disconnect()
+      mutationObserver.disconnect()
+      window.removeEventListener('resize', observeClearanceElements)
+    }
+  }, [])
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-50 flex flex-col items-end gap-2 sm:left-auto sm:right-4 sm:max-w-sm" aria-live="polite" aria-atomic="true">
+    <div
+      data-toast-viewport
+      className="fixed inset-x-4 z-[60] flex flex-col items-end gap-2 transition-[bottom] duration-200 sm:left-auto sm:right-4 sm:max-w-sm"
+      style={{ bottom: `max(${bottomClearance}px, env(safe-area-inset-bottom, 0px))` }}
+      aria-live="polite"
+      aria-atomic="true"
+    >
       {toasts.map((t) => (
         <div
           key={t.id}

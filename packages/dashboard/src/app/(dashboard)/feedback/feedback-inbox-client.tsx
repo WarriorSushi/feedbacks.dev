@@ -72,6 +72,26 @@ type BulkFeedbackUpdate = Pick<Feedback, 'id' | 'project_id' | 'status' | 'tags'
 type BulkFeedbackResponse = {
   error?: string
   feedback?: BulkFeedbackUpdate[]
+  deletedIds?: string[]
+  skippedCount?: number
+}
+
+function reconcileBulkFeedback(
+  current: Feedback[],
+  selectedIds: Set<string>,
+  changedById: Map<string, BulkFeedbackUpdate>,
+) {
+  return current.flatMap((feedback) => {
+    if (!selectedIds.has(feedback.id)) return [feedback]
+    const changed = changedById.get(feedback.id)
+    return changed ? [{ ...feedback, ...changed }] : []
+  })
+}
+
+function staleSelectionDescription(skippedCount: number) {
+  return skippedCount > 0
+    ? `${skippedCount} selected item${skippedCount === 1 ? ' was' : 's were'} already gone and ${skippedCount === 1 ? 'has' : 'have'} been removed from this inbox.`
+    : undefined
 }
 
 export function FeedbackInboxClient({
@@ -98,9 +118,12 @@ export function FeedbackInboxClient({
   const [total, setTotal] = React.useState(initialTotal)
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [bulkLoading, setBulkLoading] = React.useState(false)
+  const bulkRequestInFlightRef = React.useRef(false)
   const [activeRowId, setActiveRowId] = React.useState<string | null>(null)
   const hasLoadedRef = React.useRef(true)
   const lastLoadedQueryKeyRef = React.useRef(initialQueryKey)
+  const latestFetchRef = React.useRef(0)
+  const lastSyncedAtRef = React.useRef(Date.now())
   const initialErrorShownRef = React.useRef(false)
   const filters = React.useMemo(() => parseFeedbackInboxFilters(searchParams), [searchParams])
   const {
@@ -142,6 +165,19 @@ export function FeedbackInboxClient({
   React.useEffect(() => {
     setBulkPortalReady(true)
   }, [])
+
+  React.useEffect(() => {
+    if (initialQueryKey !== queryKey) return
+    latestFetchRef.current += 1
+    setFeedbacks(initialFeedbacks)
+    setTotal(initialTotal)
+    setSelected(new Set())
+    setConfirmingDelete(false)
+    setActiveRowId((current) => initialFeedbacks.some((feedback) => feedback.id === current) ? current : null)
+    hasLoadedRef.current = true
+    lastLoadedQueryKeyRef.current = initialQueryKey
+    lastSyncedAtRef.current = Date.now()
+  }, [initialFeedbacks, initialQueryKey, initialTotal, queryKey])
 
   React.useEffect(() => {
     if (!initialLoadFailed || initialErrorShownRef.current) return
@@ -190,34 +226,43 @@ export function FeedbackInboxClient({
   }, [activeRowId, feedbacks, returnTo, router])
 
   const fetchFeedback = React.useCallback(async (signal?: AbortSignal) => {
+    const requestId = ++latestFetchRef.current
     const showInitialLoading = !hasLoadedRef.current
     if (showInitialLoading) setLoading(true)
     else setRefreshing(true)
-    const result = await queryFeedbackInbox(
-      supabase,
-      filters,
-      projectId,
-      historyCutoff,
-      signal,
-    )
-    if (signal?.aborted) return
-    if (result.error) {
-      if (showInitialLoading) setLoading(false)
-      else setRefreshing(false)
+    try {
+      const result = await queryFeedbackInbox(
+        supabase,
+        filters,
+        projectId,
+        historyCutoff,
+        signal,
+      )
+      if (signal?.aborted || requestId !== latestFetchRef.current) return false
+      if (result.error) throw result.error
+      setFeedbacks(result.feedbacks)
+      setTotal(result.total)
+      setSelected(new Set())
+      setConfirmingDelete(false)
+      setActiveRowId((current) => result.feedbacks.some((feedback) => feedback.id === current) ? current : null)
+      hasLoadedRef.current = true
+      lastLoadedQueryKeyRef.current = queryKey
+      lastSyncedAtRef.current = Date.now()
+      return true
+    } catch {
+      if (signal?.aborted || requestId !== latestFetchRef.current) return false
       toast({
         title: 'Could not load feedback',
         description: 'The list may be out of date. Check your connection and retry.',
         variant: 'destructive',
       })
-      return
+      return false
+    } finally {
+      if (requestId === latestFetchRef.current) {
+        if (showInitialLoading) setLoading(false)
+        else setRefreshing(false)
+      }
     }
-    setFeedbacks(result.feedbacks)
-    setTotal(result.total)
-    setSelected(new Set())
-    hasLoadedRef.current = true
-    lastLoadedQueryKeyRef.current = queryKey
-    if (showInitialLoading) setLoading(false)
-    else setRefreshing(false)
   }, [filters, historyCutoff, projectId, queryKey, supabase])
 
   React.useEffect(() => {
@@ -226,6 +271,16 @@ export function FeedbackInboxClient({
     void fetchFeedback(controller.signal)
     return () => controller.abort()
   }, [fetchFeedback, queryKey])
+
+  React.useEffect(() => {
+    const refreshAfterReturning = () => {
+      if (document.visibilityState !== 'visible' || Date.now() - lastSyncedAtRef.current < 15_000) return
+      lastSyncedAtRef.current = Date.now()
+      void fetchFeedback()
+    }
+    window.addEventListener('focus', refreshAfterReturning)
+    return () => window.removeEventListener('focus', refreshAfterReturning)
+  }, [fetchFeedback])
 
   const updateParams = (updates: Record<string, string>) => {
     const params = new URLSearchParams(currentQuery)
@@ -264,41 +319,85 @@ export function FeedbackInboxClient({
     }
   }
 
+  const requestBulkChange = async (
+    method: 'PATCH' | 'DELETE',
+    body: Record<string, unknown>,
+    failureTitle: string,
+  ): Promise<BulkFeedbackResponse | null> => {
+    if (bulkRequestInFlightRef.current) return null
+    bulkRequestInFlightRef.current = true
+    setBulkLoading(true)
+    try {
+      const response = await fetch('/api/feedback/bulk', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      const payload = await response.json().catch(() => null) as BulkFeedbackResponse | null
+      if (!response.ok) {
+        toast({ title: failureTitle, description: payload?.error || 'Refresh the inbox and try again.', variant: 'destructive' })
+        void fetchFeedback()
+        return null
+      }
+      if (!payload) {
+        toast({
+          title: failureTitle,
+          description: 'The server returned an incomplete response. The inbox has been refreshed.',
+          variant: 'destructive',
+        })
+        void fetchFeedback()
+        return null
+      }
+      return payload
+    } catch {
+      toast({
+        title: failureTitle,
+        description: 'The request did not reach the server. Check your connection and try again.',
+        variant: 'destructive',
+      })
+      void fetchFeedback()
+      return null
+    } finally {
+      bulkRequestInFlightRef.current = false
+      setBulkLoading(false)
+    }
+  }
+
   const bulkUpdateStatus = async (newStatus: FeedbackStatus) => {
     if (selected.size === 0) return
-    setBulkLoading(true)
-    const response = await fetch('/api/feedback/bulk', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: Array.from(selected), status: newStatus }),
+    const selectedIds = new Set(selected)
+    const payload = await requestBulkChange(
+      'PATCH',
+      { ids: Array.from(selectedIds), status: newStatus },
+      'Status was not changed',
+    )
+    if (!payload) return
+    const changedCount = payload.feedback?.length || 0
+    const skippedCount = payload.skippedCount || 0
+    toast({
+      title: changedCount > 0
+        ? `${changedCount} item${changedCount === 1 ? '' : 's'} set to ${statusMeta[newStatus].label}`
+        : 'Inbox was already up to date',
+      description: staleSelectionDescription(skippedCount),
     })
-    const payload = await response.json().catch(() => null) as BulkFeedbackResponse | null
-    setBulkLoading(false)
-    if (!response.ok) {
-      toast({ title: 'Status was not changed', description: payload?.error || 'Try again.', variant: 'destructive' })
-      return
-    }
-    toast({ title: `${selected.size} item${selected.size > 1 ? 's' : ''} set to ${statusMeta[newStatus].label}` })
     if (newStatus !== 'new') {
+      const changedIds = new Set((payload.feedback || []).map((feedback) => feedback.id))
       const projectIds = Array.from(new Set(
-        feedbacks.filter((feedback) => selected.has(feedback.id)).map((feedback) => feedback.project_id),
+        feedbacks.filter((feedback) => changedIds.has(feedback.id)).map((feedback) => feedback.project_id),
       ))
       projectIds.forEach((selectedProjectId) => {
         void fetch(`/api/projects/${selectedProjectId}/activation`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ event: 'first_feedback_triaged' }),
-        })
+        }).catch(() => undefined)
       })
     }
-    const selectedIds = new Set(selected)
     const changedById = new Map((payload?.feedback || []).map((feedback) => [feedback.id, feedback]))
-    setFeedbacks((current) => current
-      .map((feedback) => changedById.has(feedback.id)
-        ? { ...feedback, ...changedById.get(feedback.id)! }
-        : feedback)
+    setFeedbacks((current) => reconcileBulkFeedback(current, selectedIds, changedById)
       .filter((feedback) => !status || feedback.status === status))
-    if (status && status !== newStatus) setTotal((current) => Math.max(0, current - selectedIds.size))
+    if (status && status !== newStatus) setTotal((current) => Math.max(0, current - changedCount - skippedCount))
+    else if (skippedCount > 0) setTotal((current) => Math.max(0, current - skippedCount))
     setSelected(new Set())
     void fetchFeedback()
   }
@@ -307,62 +406,56 @@ export function FeedbackInboxClient({
     const nextTag = normalizeTag(bulkTagInput)
     if (!nextTag || selected.size === 0) return
 
-    setBulkLoading(true)
-    const response = await fetch('/api/feedback/bulk', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: Array.from(selected), tag: { action, value: nextTag } }),
-    })
-    const payload = await response.json().catch(() => null) as BulkFeedbackResponse | null
-    setBulkLoading(false)
-    if (!response.ok) {
-      toast({ title: 'Tags were not changed', description: payload?.error || 'Try again.', variant: 'destructive' })
-      return
-    }
+    const selectedIds = new Set(selected)
+    const payload = await requestBulkChange(
+      'PATCH',
+      { ids: Array.from(selectedIds), tag: { action, value: nextTag } },
+      'Tags were not changed',
+    )
+    if (!payload) return
+    const changedCount = payload.feedback?.length || 0
+    const skippedCount = payload.skippedCount || 0
 
     toast({
-      title: action === 'add' ? 'Tag added to selected items' : 'Tag removed from selected items',
+      title: changedCount > 0
+        ? action === 'add' ? 'Tag added to selected items' : 'Tag removed from selected items'
+        : 'Inbox was already up to date',
+      description: staleSelectionDescription(skippedCount),
     })
     setBulkTagInput('')
-    const selectedIds = new Set(selected)
     const changedById = new Map((payload?.feedback || []).map((feedback) => [feedback.id, feedback]))
-    setFeedbacks((current) => current
-      .map((feedback) => changedById.has(feedback.id)
-        ? { ...feedback, ...changedById.get(feedback.id)! }
-        : feedback)
+    setFeedbacks((current) => reconcileBulkFeedback(current, selectedIds, changedById)
       .filter((feedback) => !tag || feedback.tags?.includes(tag)))
     if (tag && action === 'remove' && tag === nextTag) {
-      setTotal((current) => Math.max(0, current - selectedIds.size))
-    }
+      setTotal((current) => Math.max(0, current - changedCount - skippedCount))
+    } else if (skippedCount > 0) setTotal((current) => Math.max(0, current - skippedCount))
     setSelected(new Set())
     void fetchFeedback()
   }
 
   const bulkUpdateReadState = async (readState: 'read' | 'unread') => {
     if (selected.size === 0) return
-    setBulkLoading(true)
-    const response = await fetch('/api/feedback/bulk', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: Array.from(selected), readState }),
-    })
-    const payload = await response.json().catch(() => null) as BulkFeedbackResponse | null
-    setBulkLoading(false)
-    if (!response.ok) {
-      toast({ title: `Could not mark ${readState}`, description: payload?.error || 'Try again.', variant: 'destructive' })
-      return
-    }
-    toast({ title: `${selected.size} item${selected.size > 1 ? 's' : ''} marked ${readState}` })
     const selectedIds = new Set(selected)
+    const payload = await requestBulkChange(
+      'PATCH',
+      { ids: Array.from(selectedIds), readState },
+      `Could not mark ${readState}`,
+    )
+    if (!payload) return
+    const changedCount = payload.feedback?.length || 0
+    const skippedCount = payload.skippedCount || 0
+    toast({
+      title: changedCount > 0
+        ? `${changedCount} item${changedCount === 1 ? '' : 's'} marked ${readState}`
+        : 'Inbox was already up to date',
+      description: staleSelectionDescription(skippedCount),
+    })
     const changedById = new Map((payload?.feedback || []).map((feedback) => [feedback.id, feedback]))
-    setFeedbacks((current) => current
-      .map((feedback) => changedById.has(feedback.id)
-        ? { ...feedback, ...changedById.get(feedback.id)! }
-        : feedback)
+    setFeedbacks((current) => reconcileBulkFeedback(current, selectedIds, changedById)
       .filter((feedback) => read !== 'unread' || feedback.read_at === null))
     if (read === 'unread' && readState === 'read') {
-      setTotal((current) => Math.max(0, current - selectedIds.size))
-    }
+      setTotal((current) => Math.max(0, current - changedCount - skippedCount))
+    } else if (skippedCount > 0) setTotal((current) => Math.max(0, current - skippedCount))
     setSelected(new Set())
     window.dispatchEvent(new CustomEvent('feedbacks:unread-count-changed'))
     void fetchFeedback()
@@ -370,25 +463,26 @@ export function FeedbackInboxClient({
 
   const bulkDelete = async () => {
     if (selected.size === 0) return
-    setBulkLoading(true)
     const selectedIds = new Set(selected)
-    const response = await fetch('/api/feedback/bulk', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: Array.from(selectedIds) }),
-    })
-    const payload = await response.json().catch(() => null)
-    setBulkLoading(false)
-    if (!response.ok) {
-      toast({ title: 'Feedback was not deleted', description: payload?.error || 'Try again.', variant: 'destructive' })
-      return
-    }
+    const payload = await requestBulkChange(
+      'DELETE',
+      { ids: Array.from(selectedIds) },
+      'Feedback was not deleted',
+    )
+    if (!payload) return
+    const deletedCount = payload.deletedIds?.length || 0
+    const skippedCount = payload.skippedCount || 0
     setFeedbacks((current) => current.filter((feedback) => !selectedIds.has(feedback.id)))
     setTotal((current) => Math.max(0, current - selectedIds.size))
     setSelected(new Set())
     setConfirmingDelete(false)
     window.dispatchEvent(new CustomEvent('feedbacks:unread-count-changed'))
-    toast({ title: `${selectedIds.size} feedback item${selectedIds.size > 1 ? 's' : ''} deleted` })
+    toast({
+      title: deletedCount > 0
+        ? `${deletedCount} feedback item${deletedCount === 1 ? '' : 's'} deleted`
+        : 'Inbox was already up to date',
+      description: staleSelectionDescription(skippedCount),
+    })
     void fetchFeedback()
   }
 
@@ -634,6 +728,7 @@ export function FeedbackInboxClient({
 
       {/* ─── Floating Bulk Action Bar ────────────────────── */}
       {selected.size > 0 && bulkPortalReady && createPortal(<div
+        data-toast-clearance
         role="region"
         aria-label="Bulk feedback actions"
         className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] left-1/2 z-50 w-[calc(100vw-1.5rem)] max-w-5xl -translate-x-1/2 md:bottom-6"

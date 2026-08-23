@@ -52,11 +52,12 @@ async function getOwnedFeedback(ids: string[]) {
   if (error) {
     return { response: NextResponse.json({ error: 'Unable to load the selected feedback.' }, { status: 500 }) }
   }
-  if (!data || data.length !== ids.length) {
-    return { response: NextResponse.json({ error: 'One or more feedback items were not found.' }, { status: 404 }) }
+  const feedback = (data || []) as OwnedFeedback[]
+  return {
+    supabase,
+    feedback,
+    skippedCount: Math.max(0, ids.length - feedback.length),
   }
-
-  return { supabase, feedback: data as OwnedFeedback[] }
 }
 
 export async function PATCH(request: NextRequest) {
@@ -82,11 +83,15 @@ export async function PATCH(request: NextRequest) {
   const owned = await getOwnedFeedback(ids)
   if ('response' in owned) return owned.response
   const { supabase, feedback } = owned
+  const targetIds = feedback.map((item) => item.id)
   const now = new Date().toISOString()
 
   if (body.status !== undefined) {
     if (!STATUSES.includes(body.status)) {
       return NextResponse.json({ error: 'Choose a valid feedback status.' }, { status: 400 })
+    }
+    if (targetIds.length === 0) {
+      return NextResponse.json({ feedback: [], skippedCount: ids.length })
     }
     const { data, error } = await supabase
       .from('feedback')
@@ -95,35 +100,43 @@ export async function PATCH(request: NextRequest) {
         resolved_at: body.status === 'closed' ? now : null,
         updated_at: now,
       })
-      .in('id', ids)
+      .in('id', targetIds)
       .select('id, project_id, status, tags, read_at, updated_at')
 
-    if (error || !data || data.length !== ids.length) {
-      return NextResponse.json({ error: 'The selected statuses were not fully updated.' }, { status: 500 })
+    if (error) {
+      return NextResponse.json({ error: 'The selected statuses could not be updated.' }, { status: 500 })
     }
-    return NextResponse.json({ feedback: data })
+    const changed = data || []
+    return NextResponse.json({ feedback: changed, skippedCount: Math.max(0, ids.length - changed.length) })
   }
 
   if (body.readState !== undefined) {
     if (body.readState !== 'read' && body.readState !== 'unread') {
       return NextResponse.json({ error: 'Choose read or unread.' }, { status: 400 })
     }
+    if (targetIds.length === 0) {
+      return NextResponse.json({ feedback: [], skippedCount: ids.length })
+    }
     const { data, error } = await supabase
       .from('feedback')
       .update({ read_at: body.readState === 'read' ? now : null })
-      .in('id', ids)
+      .in('id', targetIds)
       .select('id, project_id, status, tags, read_at, updated_at')
 
-    if (error || !data || data.length !== ids.length) {
-      return NextResponse.json({ error: 'The selected read state was not fully updated.' }, { status: 500 })
+    if (error) {
+      return NextResponse.json({ error: 'The selected read state could not be updated.' }, { status: 500 })
     }
-    return NextResponse.json({ feedback: data })
+    const changed = data || []
+    return NextResponse.json({ feedback: changed, skippedCount: Math.max(0, ids.length - changed.length) })
   }
 
   const tagAction = body.tag?.action
   const tagValue = body.tag?.value?.trim().toLowerCase()
   if ((tagAction !== 'add' && tagAction !== 'remove') || !tagValue || !TAG_PATTERN.test(tagValue)) {
     return NextResponse.json({ error: 'Use a valid lowercase tag up to 32 characters.' }, { status: 400 })
+  }
+  if (feedback.length === 0) {
+    return NextResponse.json({ feedback: [], skippedCount: ids.length })
   }
 
   const updates = await Promise.all(feedback.map(async (item) => {
@@ -138,12 +151,13 @@ export async function PATCH(request: NextRequest) {
       .select('id, project_id, status, tags, read_at, updated_at')
       .single()
   }))
-  const failedUpdate = updates.find((result) => result.error || !result.data)
+  const failedUpdate = updates.find((result) => result.error && result.error.code !== 'PGRST116')
   if (failedUpdate) {
-    return NextResponse.json({ error: 'The tag change was not applied to every selected item.' }, { status: 500 })
+    return NextResponse.json({ error: 'The tag change could not be applied.' }, { status: 500 })
   }
 
-  return NextResponse.json({ feedback: updates.map((result) => result.data) })
+  const changed = updates.flatMap((result) => result.data ? [result.data] : [])
+  return NextResponse.json({ feedback: changed, skippedCount: Math.max(0, ids.length - changed.length) })
 }
 
 export async function DELETE(request: NextRequest) {
@@ -159,10 +173,18 @@ export async function DELETE(request: NextRequest) {
 
   const owned = await getOwnedFeedback(ids)
   if ('response' in owned) return owned.response
+  const targetIds = owned.feedback.map((item) => item.id)
+
+  // Deletion is intentionally idempotent. A cached inbox, another tab, or a
+  // teammate may have removed part of the selection already. Those rows are
+  // stale UI, not a reason to reject the remaining valid deletion.
+  if (targetIds.length === 0) {
+    return NextResponse.json({ deletedIds: [], skippedCount: ids.length })
+  }
 
   const admin = await createAdminSupabase()
   try {
-    await cleanupFeedbackStorageForFeedbackIds(admin, ids)
+    await cleanupFeedbackStorageForFeedbackIds(admin, targetIds)
   } catch {
     return NextResponse.json({ error: 'Feedback media could not be removed. Nothing was deleted.' }, { status: 500 })
   }
@@ -170,12 +192,16 @@ export async function DELETE(request: NextRequest) {
   const { data, error } = await admin
     .from('feedback')
     .delete()
-    .in('id', ids)
+    .in('id', targetIds)
     .select('id')
 
-  if (error || !data || data.length !== ids.length) {
-    return NextResponse.json({ error: 'The selected feedback was not fully deleted.' }, { status: 500 })
+  if (error) {
+    return NextResponse.json({ error: 'The selected feedback could not be deleted.' }, { status: 500 })
   }
 
-  return NextResponse.json({ deletedIds: data.map((item) => item.id) })
+  const deletedIds = (data || []).map((item) => item.id)
+  return NextResponse.json({
+    deletedIds,
+    skippedCount: Math.max(0, ids.length - deletedIds.length),
+  })
 }

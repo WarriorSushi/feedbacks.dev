@@ -378,7 +378,7 @@ export function FeedbacksWidgetScript() {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ event: 'install_code_copied' }),
-                })
+                }).catch(() => undefined)
               }}
             />
           </div>

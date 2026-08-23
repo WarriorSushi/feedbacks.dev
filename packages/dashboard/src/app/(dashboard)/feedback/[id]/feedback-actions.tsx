@@ -153,7 +153,7 @@ export function FeedbackActions({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event: 'first_feedback_triaged' }),
-      })
+      }).catch(() => undefined)
     }
     mutationInFlightRef.current = false
   }
@@ -300,25 +300,34 @@ export function FeedbackActions({
   const handleDelete = async () => {
     if (deleting) return
     setDeleting(true)
-    const response = await fetch('/api/feedback/bulk', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: [feedbackId] }),
-    })
-    const payload = await response.json().catch(() => null)
-    if (!response.ok) {
-      setDeleting(false)
+    try {
+      const response = await fetch('/api/feedback/bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [feedbackId] }),
+      })
+      const payload = await response.json().catch(() => null)
+      if (!response.ok) {
+        toast({
+          title: 'Feedback was not deleted',
+          description: payload?.error || 'Refresh the page and try again.',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      window.dispatchEvent(new CustomEvent('feedbacks:unread-count-changed'))
+      toast({ title: 'Feedback deleted' })
+      router.push(inboxHref)
+    } catch {
       toast({
         title: 'Feedback was not deleted',
-        description: payload?.error || 'Try again.',
+        description: 'The request did not reach the server. Check your connection and try again.',
         variant: 'destructive',
       })
-      return
+    } finally {
+      setDeleting(false)
     }
-
-    window.dispatchEvent(new CustomEvent('feedbacks:unread-count-changed'))
-    toast({ title: 'Feedback deleted' })
-    router.push(inboxHref)
   }
 
   return (

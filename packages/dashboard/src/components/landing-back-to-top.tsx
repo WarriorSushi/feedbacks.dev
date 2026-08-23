@@ -29,6 +29,7 @@ export function LandingBackToTop() {
 
   return (
     <button
+      data-toast-clearance={visible ? '' : undefined}
       type="button"
       aria-label="Back to top"
       title="Back to top"
