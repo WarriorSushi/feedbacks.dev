@@ -13,7 +13,6 @@ import { AlertTriangle, Loader2, Mail } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 import Link from 'next/link'
 import { FieldError, FormErrorSummary } from '@/components/ui/field-error'
-import { ProductFeedbackPanel } from '@/components/product-feedback-panel'
 import { persistSharedAppearance } from '@/lib/appearance'
 import { PrivacyChoicesButton } from '@/components/privacy-choices-button'
 import { MascotSpotlight } from '@/components/mascot-spotlight'
@@ -242,8 +241,6 @@ export default function SettingsPage() {
             </p>
           </div>
         </section>
-
-        <ProductFeedbackPanel />
 
         <section className="grid gap-6 p-5 sm:p-6 md:grid-cols-[150px_minmax(0,1fr)]">
           <div>

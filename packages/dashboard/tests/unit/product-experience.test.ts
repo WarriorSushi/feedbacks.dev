@@ -593,23 +593,11 @@ test('marketing hero and workspace states share the new motion and texture langu
   assert.doesNotMatch(layout, /key=\{pathname\}/)
 })
 
-test('settings reuses a private system project for product feedback and updates', () => {
+test('settings does not duplicate the account-menu feedback widget', () => {
   const settings = read('../../src/app/(dashboard)/settings/page.tsx')
-  const panel = read('../../src/components/product-feedback-panel.tsx')
-  const route = read('../../src/app/api/product-feedback/route.ts')
-  const migration = read('../../../../sql/058_internal_product_feedback_project.sql')
 
-  assert.match(settings, /<ProductFeedbackPanel/)
-  assert.match(panel, /Suggestion/)
-  assert.match(panel, /Problem/)
-  assert.match(panel, /Updates from us/)
-  assert.match(route, /getUser\(\)/)
-  assert.match(route, /checkRateLimit\(request, 'product-feedback', 5, 10, user\.id\)/)
-  assert.match(route, /is_public: false/)
-  assert.match(route, /\.eq\('status', 'published'\)/)
-  assert.match(migration, /drsyedirfan93@gmail\.com/i)
-  assert.match(migration, /internal_feedback_project', true/i)
-  assert.match(migration, /api_key,\s+api_key_hash,\s+api_key_last_four/i)
+  assert.doesNotMatch(settings, /ProductFeedbackPanel/)
+  assert.doesNotMatch(settings, /Feedbacks|Updates from us|Send to the team/)
 })
 
 test('downgraded accounts keep runtime feature limits, not just dashboard gates', () => {

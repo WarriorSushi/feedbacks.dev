@@ -379,13 +379,15 @@ Acceptance criteria:
 ### US-11.1
 
 Story:
-As an authenticated user, I want to send product feedback and read recent updates in Settings so I can help shape the product and see what changed.
+As an authenticated user, I want to send product feedback from the account menu and receive recent updates through the installed widget so I can help shape the product without learning a second feedback surface.
 
 Acceptance criteria:
+- the account-menu `Send feedback` action opens the standard installed widget through its custom trigger
+- Settings does not contain a duplicate product-feedback form
 - suggestion, problem, question, and positive-note categories are available
 - submissions are private, authenticated, bounded, and rate limited
 - the internal project does not consume the administrator's customer project allowance
-- published product updates appear without adding a second messaging system
+- published product updates use the shared Product Updates widget module without adding a second messaging system
 
 ## Epic 12: Control release-note visibility safely
 

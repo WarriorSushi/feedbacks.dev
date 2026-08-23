@@ -173,9 +173,9 @@ Must support:
 
 ### Customer feedback and product updates
 
-- Authenticated users can send a bounded suggestion, problem, question, or positive note from Settings.
+- Authenticated users can send a bounded suggestion, problem, question, or positive note from the account-menu `Send feedback` action, which opens the standard installed widget through its custom trigger.
 - Internal product feedback is routed into a private system project owned by the product administrator and excluded from customer plan usage.
-- Published updates from that project appear in the same Settings surface so the product team can close the loop.
+- Settings does not contain a second feedback form. Published updates from that project use the shared Product Updates widget module so the product team can close the loop without a parallel messaging surface.
 - Each release note has an independent on/off visibility state available in both its editor and the overview list.
 - Turning a release note off preserves its identifier, content, publication time, metrics, and visitor seen state.
 - Editing or re-enabling an existing release note does not make it reappear for visitors who already saw it.
