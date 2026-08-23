@@ -59,9 +59,9 @@ The order is:
 
 1. Create project.
 2. Copy the Website snippet.
-3. Run hosted verification.
-4. Confirm feedback lands in the inbox.
-5. Customize, connect integrations, publish boards, or add API/MCP after first success.
+3. Test the installed form in the real product.
+4. Customize the form remotely after the first successful test.
+5. Review the received item in the inbox, then connect integrations, publish updates, or add API/MCP.
 
 The UI should keep this order visible anywhere installation is discussed.
 

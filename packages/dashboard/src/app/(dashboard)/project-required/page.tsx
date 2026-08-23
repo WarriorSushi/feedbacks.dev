@@ -1,7 +1,7 @@
 import { ProjectRequiredEmpty } from '@/components/project-required-empty'
 
 const FEATURE_COPY: Record<string, { eyebrow: string; title: string; description: string }> = {
-  'Feedback form': {
+  'Customize form': {
     eyebrow: 'Feedback form',
     title: 'Create a project before configuring a feedback form',
     description: 'A project supplies the browser-safe key, form settings, and inbox where responses arrive.',

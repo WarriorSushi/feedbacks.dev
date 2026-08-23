@@ -12,8 +12,8 @@ export function SetupProgress({
   const steps: Array<{ id: SetupStep; label: string; href: string }> = [
     { id: 'install', label: 'Install', href: `/projects/${projectId}/install` },
     { id: 'verify', label: 'Test', href: `/projects/${projectId}/verify` },
-    { id: 'inbox', label: 'Inbox', href: `/feedback?projectId=${projectId}` },
     { id: 'customize', label: 'Customize', href: `/projects/${projectId}/feedback-form` },
+    { id: 'inbox', label: 'Inbox', href: `/feedback?projectId=${projectId}` },
   ]
   const activeIndex = Math.max(steps.findIndex((step) => step.id === activeStep), 0)
 

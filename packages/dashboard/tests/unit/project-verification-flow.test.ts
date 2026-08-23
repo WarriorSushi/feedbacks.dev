@@ -26,6 +26,10 @@ test('real product verification uses a bounded, visibility-aware polling window'
   assert.match(client, /document\.addEventListener\('visibilitychange', resumeWhenVisible\)/)
   assert.doesNotMatch(client, /setInterval\(\(\) => void checkForProductFeedback/)
   assert.match(client, /Test feedback arrived from your product/)
+  assert.match(client, /Customize this form/)
+  assert.match(client, /Saved changes reach the installed form automatically/)
+  assert.match(client, /aria-label="Dismiss customization reminder"/)
+  assert.match(client, /setCustomizationNoticeDismissed\(true\)/)
 })
 
 test('embed detection stops polling after a connection is confirmed', () => {
@@ -45,6 +49,8 @@ test('first connection guides users from installation through customization', ()
   for (const label of ['Install', 'Test', 'Inbox', 'Customize']) {
     assert.match(progress, new RegExp(`label: '${label}'`))
   }
+  assert.ok(progress.indexOf("label: 'Test'") < progress.indexOf("label: 'Customize'"))
+  assert.ok(progress.indexOf("label: 'Customize'") < progress.indexOf("label: 'Inbox'"))
   assert.match(verify, /Customize feedback form/)
   assert.match(verify, /Troubleshooting: test the saved form here/)
   assert.match(verify, /fixed to the \$\{launcherPosition\} of this page/)

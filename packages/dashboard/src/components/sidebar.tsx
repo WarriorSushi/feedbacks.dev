@@ -70,13 +70,19 @@ const primaryNavGroups: NavGroup[] = [
   {
     items: [
       { href: '/dashboard', label: 'Dashboard', icon: House, exact: true, tourId: 'nav-dashboard' },
-      { href: '/project-overview', label: 'Project overview', icon: LayoutDashboard, tourId: 'nav-project-overview', projectTab: 'home' },
     ],
   },
   {
-    label: 'Collect',
+    label: 'Set up project',
     items: [
-      { href: '/feedback-form', label: 'Feedback form', icon: ClipboardPenLine, tourId: 'nav-feedback-form', projectTab: 'feedback-form' },
+      { href: '/project-overview', label: 'Project overview', icon: LayoutDashboard, tourId: 'nav-project-overview', projectTab: 'home' },
+      { href: '/install', label: 'Install & test', icon: Code2, tourId: 'nav-install', projectTab: 'install' },
+      { href: '/feedback-form', label: 'Customize form', icon: ClipboardPenLine, tourId: 'nav-feedback-form', projectTab: 'feedback-form' },
+    ],
+  },
+  {
+    label: 'Collect & review',
+    items: [
       { href: '/feedback', label: 'Feedback inbox', icon: Inbox, tourId: 'nav-feedback' },
     ],
   },
@@ -90,7 +96,6 @@ const primaryNavGroups: NavGroup[] = [
   {
     label: 'Connect',
     items: [
-      { href: '/install', label: 'Install & test', icon: Code2, tourId: 'nav-install', projectTab: 'install' },
       { href: '/integrations', label: 'Integrations', icon: Webhook, tourId: 'nav-integrations', projectTab: 'integrations' },
       { href: '/api', label: 'API & MCP', icon: Code2, tourId: 'nav-api', projectTab: 'api' },
     ],

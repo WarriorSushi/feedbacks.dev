@@ -32,8 +32,12 @@ test('verifies a real product submission and keeps the hosted form as troublesho
   })
   expect(realSubmission.ok(), await realSubmission.text()).toBeTruthy()
   await expect(page.getByText('Test feedback arrived from your product')).toBeVisible({ timeout: 30_000 })
+  await expect(page.getByText('Saved changes reach the installed form automatically')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Customize this form' })).toHaveAttribute('href', `/projects/${project.id}/feedback-form`)
   await expect(page.getByRole('link', { name: 'Open inbox item' })).toBeVisible()
   await expect(page.getByRole('link', { name: /Feedback inbox/ }).getByText('1', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Dismiss customization reminder' }).click()
+  await expect(page.getByRole('link', { name: 'Customize this form' })).toHaveCount(0)
 
   await page.getByText('Troubleshooting: test the saved form here').click()
   await expect(launcher).toBeVisible()

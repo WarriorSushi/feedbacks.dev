@@ -22,6 +22,7 @@ import {
   RefreshCw,
   TriangleAlert,
   Wrench,
+  X,
 } from 'lucide-react'
 import { WidgetPreviewSurface } from './widget-preview-surface'
 import { SetupProgress } from './project-flow-nav'
@@ -67,6 +68,7 @@ export function ProjectVerifyClient({
   const [hostedPreviewOpen, setHostedPreviewOpen] = React.useState(false)
   const [hostedFeedbackId, setHostedFeedbackId] = React.useState<string | null>(null)
   const [verifiedFeedback, setVerifiedFeedback] = React.useState<VerifiedFeedback | null>(null)
+  const [customizationNoticeDismissed, setCustomizationNoticeDismissed] = React.useState(false)
   const [verificationStartedAt, setVerificationStartedAt] = React.useState<string | null>(null)
   const [verificationAutoCheckExpired, setVerificationAutoCheckExpired] = React.useState(false)
   const [checkingFeedback, setCheckingFeedback] = React.useState(false)
@@ -121,6 +123,7 @@ export function ProjectVerifyClient({
 
   const markProductVerification = React.useCallback((feedback: VerifiedFeedback) => {
     setVerifiedFeedback(feedback)
+    setCustomizationNoticeDismissed(false)
     if (activatedFeedbackIds.current.has(feedback.id)) return
     activatedFeedbackIds.current.add(feedback.id)
     void fetch(`/api/projects/${projectId}/activation`, {
@@ -288,6 +291,42 @@ export function ProjectVerifyClient({
 
   return (
     <div className="mx-auto max-w-6xl space-y-6" data-tour="verify-surface">
+      {verifiedFeedback && !customizationNoticeDismissed ? (
+        <div className="relative flex flex-col gap-4 rounded-lg border border-primary/35 bg-card px-5 py-4 pr-12 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between" role="status">
+          <div className="flex min-w-0 gap-3">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+            <div>
+              <p className="font-semibold text-foreground">Test feedback arrived from your product. Make the form yours.</p>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+                Change the button position and wording, fields, color, screenshots, attachments, and spam protection. Saved changes reach the installed form automatically, with no snippet replacement.
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button asChild>
+              <Link href={`/projects/${projectId}/feedback-form`}>
+                <Palette className="mr-2 h-4 w-4" />
+                Customize this form
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href={`/feedback/${verifiedFeedback.id}`}>
+                Open inbox item
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCustomizationNoticeDismissed(true)}
+            className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-surface-raised hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70"
+            aria-label="Dismiss customization reminder"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      ) : null}
+
       <SetupProgress projectId={projectId} activeStep="verify" />
 
       <div data-tour="verify-guide">
@@ -297,34 +336,6 @@ export function ProjectVerifyClient({
           description="Open the product where you installed feedbacks.dev, send one message there, and watch for it to arrive here."
         />
       </div>
-
-      {verifiedFeedback ? (
-        <div className="flex flex-col gap-4 rounded-lg border border-primary/35 bg-card p-5 shadow-[var(--shadow-card)] sm:flex-row sm:items-center sm:justify-between" role="status">
-          <div className="flex min-w-0 gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-            <div>
-              <p className="font-semibold text-foreground">Test feedback arrived from your product</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                The installed embed, saved form, submission endpoint, and inbox path are working together.
-              </p>
-            </div>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <Button asChild>
-              <Link href={`/feedback/${verifiedFeedback.id}`}>
-                Open inbox item
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href={`/projects/${projectId}/feedback-form`}>
-                <Palette className="mr-2 h-4 w-4" />
-                Customize form
-              </Link>
-            </Button>
-          </div>
-        </div>
-      ) : null}
 
       <section className="overflow-hidden rounded-lg border bg-card shadow-[var(--shadow-card)]">
         <div className="grid lg:grid-cols-[minmax(0,1fr)_320px]">
