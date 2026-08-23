@@ -72,6 +72,34 @@ type OpenFeedbackEventDetail = {
   projectKey?: string;
 };
 
+type ScreenshotErrorCode =
+  | 'RENDERER_LOAD_FAILED'
+  | 'CAPTURE_TIMEOUT'
+  | 'CAPTURE_FAILED'
+  | 'ENCODE_FAILED'
+  | 'IMAGE_TYPE_UNSUPPORTED'
+  | 'IMAGE_TOO_LARGE'
+  | 'IMAGE_DIMENSIONS_TOO_LARGE'
+  | 'IMAGE_DECODE_FAILED';
+
+type CaptureRendererModule = {
+  captureVisibleViewport(root: Element): Promise<HTMLCanvasElement>;
+};
+
+class ScreenshotError extends Error {
+  constructor(
+    readonly code: ScreenshotErrorCode,
+    message: string,
+    readonly cause?: unknown,
+  ) {
+    super(message);
+    this.name = 'ScreenshotError';
+  }
+}
+
+const captureRendererPromises = new Map<string, Promise<CaptureRendererModule>>();
+const SCREENSHOT_CAPTURE_TIMEOUT_MS = 12_000;
+
 // ---- Widget Class ----
 
 class FeedbacksWidget {
@@ -144,6 +172,7 @@ class FeedbacksWidget {
     if (hadFeedbackPresentation && !preserveActiveDraft) this.teardownFeedbackPresentation();
 
     this.cfg = { ...this.cfg, ...nextConfig, projectKey: this.cfg.projectKey };
+    if (!nextConfig.enableScreenshot) this.screenshotData = null;
     this.applyTheme();
     this.feedbackEnabled = feedbackEnabled;
 
@@ -384,6 +413,7 @@ class FeedbacksWidget {
     const label = this.cfg.buttonText ?? 'Feedback';
     this.launcher.innerHTML = `${CHAT_SVG}<span>${escapeHtml(label)}</span>`;
     this.launcher.setAttribute('aria-label', label);
+    this.launcher.dataset.feedbacksCaptureExclude = 'true';
     if (this.cfg.primaryColor) {
       this.launcher.style.color = isLightColor(this.cfg.primaryColor) ? '#111827' : '#ffffff';
     }
@@ -422,6 +452,7 @@ class FeedbacksWidget {
     const container = document.createElement('div');
     this.inlineContainer = container;
     container.className = 'fb-inline';
+    container.dataset.feedbacksCaptureExclude = 'true';
     container.innerHTML = this.buildFormHTML(false);
     this.applyThemeToElement(container);
     (target as HTMLElement).innerHTML = '';
@@ -442,6 +473,7 @@ class FeedbacksWidget {
 
     this.overlayEl = document.createElement('div');
     this.overlayEl.className = 'fb-overlay';
+    this.overlayEl.dataset.feedbacksCaptureExclude = 'true';
     this.overlayEl.addEventListener('click', (e) => { if (e.target === this.overlayEl) this.close(); });
 
     const modal = document.createElement('div');
@@ -565,8 +597,11 @@ class FeedbacksWidget {
           <div class="fb-field">
             <div class="fb-screenshot-row">
               <button type="button" class="fb-btn-sm fb-capture-btn">\u{1F4F8} Capture screenshot</button>
-              <span class="fb-screenshot-badge"></span>
+              <button type="button" class="fb-btn-sm fb-choose-screenshot-btn">Choose image</button>
+              <input id="fb-screenshot-${id}" type="file" class="fb-screenshot-input" accept="image/png,image/jpeg" tabindex="-1" aria-hidden="true" />
+              <span class="fb-screenshot-badge" role="status" aria-live="polite"></span>
             </div>
+            <span class="fb-help">Captures the visible page. If automatic capture is blocked, choose a PNG or JPG instead.${t.screenshotRequired ? ' Required.' : ''}</span>
           </div>` : ''}
 
           ${t.enableAttachment ? `
@@ -602,6 +637,8 @@ class FeedbacksWidget {
     const closeBtn = container.querySelector('.fb-close') as HTMLElement | null;
     const cancelBtn = container.querySelector('.fb-btn-cancel') as HTMLElement | null;
     const captureBtn = container.querySelector('.fb-capture-btn') as HTMLButtonElement | null;
+    const chooseScreenshotBtn = container.querySelector('.fb-choose-screenshot-btn') as HTMLButtonElement | null;
+    const screenshotInput = container.querySelector(`#fb-screenshot-${id}`) as HTMLInputElement | null;
     const screenshotBadge = container.querySelector('.fb-screenshot-badge') as HTMLElement | null;
     const fileInput = container.querySelector(`#fb-file-${id}`) as HTMLInputElement | null;
     const draftStorage = this.getSessionStorage();
@@ -706,20 +743,54 @@ class FeedbacksWidget {
     updateStars();
 
     // Screenshot
+    const setScreenshotStatus = (message: string, tone: 'success' | 'error' | 'muted', title = '') => {
+      if (!screenshotBadge) return;
+      screenshotBadge.textContent = message;
+      screenshotBadge.className = `fb-screenshot-badge fb-screenshot-${tone}`;
+      screenshotBadge.title = title;
+    };
     if (captureBtn) {
       captureBtn.addEventListener('click', async () => {
         captureBtn.disabled = true;
+        if (chooseScreenshotBtn) chooseScreenshotBtn.disabled = true;
         captureBtn.textContent = 'Capturing...';
+        setScreenshotStatus('Preparing capture...', 'muted');
         try {
           this.screenshotData = await this.captureScreenshot();
-          if (screenshotBadge) screenshotBadge.textContent = this.screenshotData ? 'Captured' : 'Failed';
-        } catch {
-          if (screenshotBadge) screenshotBadge.textContent = 'Failed';
+          setScreenshotStatus('Screenshot ready', 'success');
+        } catch (error) {
+          const diagnostic = this.reportScreenshotFailure(error);
+          setScreenshotStatus(
+            `Automatic capture failed (${diagnostic.code}). Choose an image instead.`,
+            'error',
+            diagnostic.message,
+          );
         }
         captureBtn.disabled = false;
+        if (chooseScreenshotBtn) chooseScreenshotBtn.disabled = false;
         captureBtn.textContent = '\u{1F4F8} Capture screenshot';
       });
     }
+    chooseScreenshotBtn?.addEventListener('click', () => screenshotInput?.click());
+    screenshotInput?.addEventListener('change', async () => {
+      const image = screenshotInput.files?.[0];
+      if (!image) return;
+      if (captureBtn) captureBtn.disabled = true;
+      if (chooseScreenshotBtn) chooseScreenshotBtn.disabled = true;
+      setScreenshotStatus('Preparing image...', 'muted');
+      try {
+        this.screenshotData = await this.encodeScreenshotFile(image);
+        setScreenshotStatus('Screenshot ready', 'success');
+      } catch (error) {
+        const diagnostic = this.reportScreenshotFailure(error);
+        this.screenshotData = null;
+        setScreenshotStatus(`Could not use image (${diagnostic.code}).`, 'error', diagnostic.message);
+      } finally {
+        screenshotInput.value = '';
+        if (captureBtn) captureBtn.disabled = false;
+        if (chooseScreenshotBtn) chooseScreenshotBtn.disabled = false;
+      }
+    });
 
     // Submit
     form.addEventListener('submit', async (e) => {
@@ -736,6 +807,10 @@ class FeedbacksWidget {
       if (message.length > 2000) { this.showError(container, 'Feedback message: use no more than 2,000 characters.', textarea); return; }
       if (this.cfg.requireEmail && !email) { this.showError(container, 'Email: enter an address.', emailInput); return; }
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.showError(container, 'Email: enter a valid address.', emailInput); return; }
+      if (this.cfg.screenshotRequired && !this.screenshotData) {
+        this.showError(container, 'Screenshot: capture the page or choose an image before sending.', captureBtn || chooseScreenshotBtn);
+        return;
+      }
       if (!this.cfg.projectKey) { this.showError(container, 'Widget is missing a project key.'); return; }
       if (navigator.onLine === false) {
         this.showError(container, 'You appear to be offline. Your draft is saved in this tab - reconnect and try again.');
@@ -765,7 +840,7 @@ class FeedbacksWidget {
         const captchaToken = container.querySelector<HTMLInputElement>(`#fb-captcha-token-${id}`)?.value || '';
         let response: FeedbackResponse;
 
-        if (file) {
+        if (file || this.screenshotData) {
           const fd = new FormData();
           fd.append('apiKey', this.cfg.projectKey);
           if (submissionId) fd.append('submissionId', submissionId);
@@ -776,9 +851,9 @@ class FeedbacksWidget {
           fd.append('userAgent', navigator.userAgent);
           if (this.selectedCategory) fd.append('type', this.selectedCategory);
           if (this.selectedRating) fd.append('rating', String(this.selectedRating));
-          if (this.screenshotData) fd.append('screenshot', this.screenshotData);
+          if (this.screenshotData) fd.append('screenshot', this.dataUrlToBlob(this.screenshotData), 'screenshot.jpg');
           if (captchaToken) fd.append(this.cfg.captchaProvider === 'hcaptcha' ? 'hcaptchaToken' : 'turnstileToken', captchaToken);
-          fd.append('attachment', file);
+          if (file) fd.append('attachment', file);
           response = await this.submitData(fd);
         } else {
           const data: FeedbackData = {
@@ -802,6 +877,7 @@ class FeedbacksWidget {
           detail: { id: response.id, submissionContext: this.cfg.submissionContext },
         }));
         draftStorage?.removeItem(draftKey);
+        this.screenshotData = null;
         this.showSuccess(container, isModal);
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Failed to send feedback. Please try again.';
@@ -816,7 +892,8 @@ class FeedbacksWidget {
   private async submitData(data: FeedbackData | FormData, attempt = 1): Promise<FeedbackResponse> {
     const url = this.cfg.apiUrl || 'https://app.feedbacks.dev/api/feedback';
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const timeoutMs = data instanceof FormData ? 20_000 : 8_000;
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
       const isForm = data instanceof FormData;
@@ -844,60 +921,146 @@ class FeedbacksWidget {
         await new Promise(r => setTimeout(r, 500 * attempt));
         return this.submitData(data, attempt + 1);
       }
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new Error('Upload timed out. Check your connection and try again.');
+      }
       throw err;
     }
   }
 
   // ---- Screenshot ----
 
-  private async captureScreenshot(): Promise<string | null> {
-    const w = window as unknown as Record<string, unknown>;
-    if (!w.html2canvas) {
-      await new Promise<void>((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
-        s.integrity = 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H';
-        s.crossOrigin = 'anonymous';
-        s.async = true;
-        s.onload = () => resolve();
-        s.onerror = () => reject(new Error('Failed to load html2canvas'));
-        document.head.appendChild(s);
-      });
-    }
-    const h2c = w.html2canvas as ((el: HTMLElement, opts: Record<string, unknown>) => Promise<HTMLCanvasElement>) | undefined;
-    if (!h2c) return null;
-    // Hide our overlay before capture
-    if (this.overlayEl) this.overlayEl.style.display = 'none';
+  private async captureScreenshot(): Promise<string> {
     try {
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const canvas = await h2c(document.body, {
-        useCORS: true,
-        logging: false,
-        scale: 1,
-        x: window.scrollX,
-        y: window.scrollY,
-        scrollX: window.scrollX,
-        scrollY: window.scrollY,
-        width: viewportWidth,
-        height: viewportHeight,
-        windowWidth: viewportWidth,
-        windowHeight: viewportHeight,
-      });
-      return this.encodeScreenshot(canvas);
-    } finally {
-      if (this.overlayEl) this.overlayEl.style.display = '';
+      const renderer = await this.withScreenshotTimeout(
+        this.loadCaptureRenderer(),
+        'RENDERER_LOAD_FAILED',
+      );
+      const canvas = await this.withScreenshotTimeout(
+        renderer.captureVisibleViewport(document.documentElement),
+        'CAPTURE_TIMEOUT',
+      );
+      const encoded = this.encodeScreenshot(canvas);
+      if (!encoded) throw new ScreenshotError('ENCODE_FAILED', 'The captured image could not be encoded within the 2.8 MB limit.');
+      return encoded;
+    } catch (error) {
+      if (error instanceof ScreenshotError) throw error;
+      throw new ScreenshotError('CAPTURE_FAILED', this.errorMessage(error, 'The page could not be captured.'), error);
     }
   }
 
+  private async loadCaptureRenderer(): Promise<CaptureRendererModule> {
+    let rendererUrl: string;
+    try {
+      const feedbackUrl = new URL(this.cfg.apiUrl || 'https://app.feedbacks.dev/api/feedback', window.location.href);
+      rendererUrl = new URL('/widget/capture.mjs', feedbackUrl.origin).href;
+    } catch (error) {
+      throw new ScreenshotError('RENDERER_LOAD_FAILED', 'The screenshot renderer URL is invalid.', error);
+    }
+
+    let rendererPromise = captureRendererPromises.get(rendererUrl);
+    if (!rendererPromise) {
+      rendererPromise = import(rendererUrl) as Promise<CaptureRendererModule>;
+      captureRendererPromises.set(rendererUrl, rendererPromise);
+      rendererPromise.catch(() => captureRendererPromises.delete(rendererUrl));
+    }
+    try {
+      const renderer = await rendererPromise;
+      if (typeof renderer.captureVisibleViewport !== 'function') throw new Error('Capture module has no renderer export.');
+      return renderer;
+    } catch (error) {
+      throw new ScreenshotError('RENDERER_LOAD_FAILED', this.errorMessage(error, 'The screenshot renderer could not be loaded.'), error);
+    }
+  }
+
+  private withScreenshotTimeout<T>(promise: Promise<T>, timeoutCode: ScreenshotErrorCode): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timeout = window.setTimeout(() => {
+        reject(new ScreenshotError(timeoutCode, `Screenshot capture exceeded ${SCREENSHOT_CAPTURE_TIMEOUT_MS / 1000} seconds.`));
+      }, SCREENSHOT_CAPTURE_TIMEOUT_MS);
+      promise.then(
+        value => { window.clearTimeout(timeout); resolve(value); },
+        error => { window.clearTimeout(timeout); reject(error); },
+      );
+    });
+  }
+
+  private async encodeScreenshotFile(file: File): Promise<string> {
+    if (file.type !== 'image/png' && file.type !== 'image/jpeg') {
+      throw new ScreenshotError('IMAGE_TYPE_UNSUPPORTED', 'Choose a PNG or JPG image.');
+    }
+    if (file.size > 12 * 1024 * 1024) {
+      throw new ScreenshotError('IMAGE_TOO_LARGE', 'Choose an image smaller than 12 MB. It will be compressed before upload.');
+    }
+
+    let source: CanvasImageSource;
+    let cleanup = () => {};
+    try {
+      if (typeof createImageBitmap === 'function') {
+        const bitmap = await createImageBitmap(file);
+        source = bitmap;
+        cleanup = () => bitmap.close();
+      } else {
+        const objectUrl = URL.createObjectURL(file);
+        cleanup = () => URL.revokeObjectURL(objectUrl);
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = objectUrl;
+        await image.decode();
+        source = image;
+      }
+      const width = 'naturalWidth' in source ? source.naturalWidth : source.width;
+      const height = 'naturalHeight' in source ? source.naturalHeight : source.height;
+      if (width < 1 || height < 1 || width * height > 40_000_000) {
+        throw new ScreenshotError('IMAGE_DIMENSIONS_TOO_LARGE', 'Choose an image smaller than 40 megapixels.');
+      }
+      const encoded = this.encodeImageSource(source, width, height);
+      if (!encoded) throw new ScreenshotError('IMAGE_TOO_LARGE', 'The image is still too large after compression. Choose a smaller image.');
+      return encoded;
+    } catch (error) {
+      if (error instanceof ScreenshotError) throw error;
+      throw new ScreenshotError('IMAGE_DECODE_FAILED', this.errorMessage(error, 'The selected image could not be read.'), error);
+    } finally {
+      cleanup();
+    }
+  }
+
+  private dataUrlToBlob(dataUrl: string): Blob {
+    const [header, payload] = dataUrl.split(',', 2);
+    if (!header || !payload) throw new ScreenshotError('ENCODE_FAILED', 'The screenshot data is invalid.');
+    const mime = /^data:([^;]+);base64$/.exec(header)?.[1] || 'image/jpeg';
+    const binary = atob(payload);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    return new Blob([bytes], { type: mime });
+  }
+
+  private reportScreenshotFailure(error: unknown): { code: ScreenshotErrorCode; message: string } {
+    const diagnostic = error instanceof ScreenshotError
+      ? error
+      : new ScreenshotError('CAPTURE_FAILED', this.errorMessage(error, 'The page could not be captured.'), error);
+    const detail = { code: diagnostic.code, message: diagnostic.message, renderer: 'snapdom' as const };
+    console.warn('[feedbacks.dev] Screenshot capture failed', detail);
+    window.dispatchEvent(new CustomEvent('feedbacks:screenshot-error', { detail }));
+    return detail;
+  }
+
+  private errorMessage(error: unknown, fallback: string): string {
+    return error instanceof Error && error.message ? error.message : fallback;
+  }
+
   private encodeScreenshot(source: HTMLCanvasElement): string | null {
+    return this.encodeImageSource(source, source.width, source.height);
+  }
+
+  private encodeImageSource(source: CanvasImageSource, sourceWidth: number, sourceHeight: number): string | null {
     const maxWidth = 1920;
     const maxHeight = 1080;
     const maxBytes = 2.8 * 1024 * 1024;
-    const scale = Math.min(1, maxWidth / source.width, maxHeight / source.height);
+    const scale = Math.min(1, maxWidth / sourceWidth, maxHeight / sourceHeight);
     const canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(source.width * scale));
-    canvas.height = Math.max(1, Math.round(source.height * scale));
+    canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+    canvas.height = Math.max(1, Math.round(sourceHeight * scale));
 
     const context = canvas.getContext('2d');
     if (!context) return null;

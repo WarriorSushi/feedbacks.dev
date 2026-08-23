@@ -24,7 +24,7 @@ const cssPlugin = {
 };
 
 /** @type {esbuild.BuildOptions} */
-const config = {
+const widgetConfig = {
   entryPoints: ['src/index.ts'],
   bundle: true,
   minify: !isWatch,
@@ -39,13 +39,35 @@ const config = {
   },
 };
 
+/** @type {esbuild.BuildOptions} */
+const captureConfig = {
+  entryPoints: ['src/capture-renderer.ts'],
+  bundle: true,
+  minify: !isWatch,
+  sourcemap: isWatch,
+  target: 'es2020',
+  format: 'esm',
+  outfile: 'dist/capture.mjs',
+  define: {
+    'process.env.NODE_ENV': isWatch ? '"development"' : '"production"',
+  },
+};
+
 if (isWatch) {
-  const ctx = await esbuild.context(config);
-  await ctx.watch();
+  const [widgetContext, captureContext] = await Promise.all([
+    esbuild.context(widgetConfig),
+    esbuild.context(captureConfig),
+  ]);
+  await Promise.all([widgetContext.watch(), captureContext.watch()]);
   console.log('[widget] watching for changes...');
 } else {
-  const result = await esbuild.build({ ...config, metafile: true });
-  const text = await esbuild.analyzeMetafile(result.metafile);
+  const [widgetResult, captureResult] = await Promise.all([
+    esbuild.build({ ...widgetConfig, metafile: true }),
+    esbuild.build({ ...captureConfig, metafile: true }),
+  ]);
+  const text = await esbuild.analyzeMetafile(widgetResult.metafile);
+  const captureText = await esbuild.analyzeMetafile(captureResult.metafile);
   console.log(text);
+  console.log(captureText);
   console.log('[widget] build complete');
 }

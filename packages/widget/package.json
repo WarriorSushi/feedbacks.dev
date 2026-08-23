@@ -5,14 +5,17 @@
   "type": "module",
   "main": "dist/widget.js",
   "types": "dist/types.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "node esbuild.config.mjs --watch",
     "build": "node esbuild.config.mjs",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@feedbacks/shared": "workspace:*"
+    "@feedbacks/shared": "workspace:*",
+    "@zumer/snapdom": "2.24.7"
   },
   "devDependencies": {
     "esbuild": "0.28.1",

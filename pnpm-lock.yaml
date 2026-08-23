@@ -193,6 +193,9 @@ importers:
       '@feedbacks/shared':
         specifier: workspace:*
         version: link:../shared
+      '@zumer/snapdom':
+        specifier: 2.24.7
+        version: 2.24.7
     devDependencies:
       esbuild:
         specifier: 0.28.1
@@ -1542,6 +1545,9 @@ packages:
 
   '@vue/shared@3.5.31':
     resolution: {integrity: sha512-nBxuiuS9Lj5bPkPbWogPUnjxxWpkRniX7e5UBQDWl6Fsf4roq9wwV+cR7ezQ4zXswNvPIlsdj1slcLB7XCsRAw==}
+
+  '@zumer/snapdom@2.24.7':
+    resolution: {integrity: sha512-RKWP/NoxU5zXO1O1QaIerdb8HYLDrQPSU9G9UMk9XDSevsXwIydDYFnJukrp0BqrckQT+Hbspxx2WERXIF2i9w==}
 
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
@@ -4426,6 +4432,8 @@ snapshots:
       vue: 3.5.31(typescript@5.9.3)
 
   '@vue/shared@3.5.31': {}
+
+  '@zumer/snapdom@2.24.7': {}
 
   accepts@2.0.0:
     dependencies:

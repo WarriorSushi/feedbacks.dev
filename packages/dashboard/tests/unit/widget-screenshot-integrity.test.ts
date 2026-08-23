@@ -2,25 +2,37 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
-test('widget html2canvas SRI uses a complete SHA-384 integrity value', async () => {
+test('widget loads the first-party screenshot renderer on demand without a third-party CDN', async () => {
   const widgetUrl = new URL('../../../widget/src/widget.ts', import.meta.url)
   const source = await readFile(widgetUrl, 'utf8')
-  const match = source.match(/s\.integrity = '(sha384-[A-Za-z0-9+/]+={0,2})'/)
 
-  assert.ok(match, 'html2canvas integrity assignment should be present')
-  const value = match[1]
-  assert.equal(value, 'sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H')
-  assert.equal(value.length, 'sha384-'.length + 64)
+  assert.match(source, /new URL\('\/widget\/capture\.mjs'/)
+  assert.match(source, /import\(rendererUrl\)/)
+  assert.doesNotMatch(source, /html2canvas|cdn\.jsdelivr\.net/)
 })
 
-test('widget captures and compresses the visible viewport instead of the full page', async () => {
+test('capture renderer supports modern CSS and captures only the visible viewport', async () => {
+  const rendererUrl = new URL('../../../widget/src/capture-renderer.ts', import.meta.url)
+  const renderer = await readFile(rendererUrl, 'utf8')
   const widgetUrl = new URL('../../../widget/src/widget.ts', import.meta.url)
   const source = await readFile(widgetUrl, 'utf8')
 
-  assert.match(source, /x: window\.scrollX/)
-  assert.match(source, /y: window\.scrollY/)
-  assert.match(source, /width: viewportWidth/)
-  assert.match(source, /height: viewportHeight/)
+  assert.match(renderer, /from '@zumer\/snapdom'/)
+  assert.match(renderer, /clip: 'viewport'/)
+  assert.match(renderer, /data-feedbacks-capture-exclude/)
   assert.match(source, /toDataURL\('image\/jpeg'/)
-  assert.doesNotMatch(source, /h2c\(document\.body, \{ useCORS: true, logging: false, scale: 1 \}\)/)
+  assert.match(source, /SCREENSHOT_CAPTURE_TIMEOUT_MS = 12_000/)
+  assert.match(source, /Choose image/)
+  assert.match(source, /feedbacks:screenshot-error/)
+  assert.match(source, /dataUrlToBlob/)
+  assert.match(source, /width \* height > 40_000_000/)
+})
+
+test('required screenshots are enforced before feedback submission', async () => {
+  const widgetUrl = new URL('../../../widget/src/widget.ts', import.meta.url)
+  const source = await readFile(widgetUrl, 'utf8')
+
+  assert.match(source, /this\.cfg\.screenshotRequired && !this\.screenshotData/)
+  assert.match(source, /capture the page or choose an image before sending/)
+  assert.match(source, /draftStorage\?\.removeItem\(draftKey\);\s+this\.screenshotData = null;/)
 })

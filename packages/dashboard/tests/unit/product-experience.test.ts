@@ -136,10 +136,10 @@ test('landing page explains both sides of the feedback loop and keeps the instal
   assert.doesNotMatch(source, /userbase|Collecting user feedbacks/)
 })
 
-test('hosted widget assets are cross-origin compatible and bounded by a short browser cache', () => {
+test('hosted widget and on-demand capture assets are cross-origin compatible and bounded by a short browser cache', () => {
   const nextConfig = read('../../next.config.js')
 
-  assert.match(nextConfig, /source: '\/widget\/:path\*\.js'/)
+  assert.match(nextConfig, /source: '\/widget\/:path\*'/)
   assert.match(nextConfig, /key: 'Access-Control-Allow-Origin'[\s\S]*value: '\*'/)
   assert.match(nextConfig, /key: 'Cross-Origin-Resource-Policy'[\s\S]*value: 'cross-origin'/)
   assert.match(nextConfig, /max-age=300, s-maxage=3600, stale-while-revalidate=86400/)

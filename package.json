@@ -29,7 +29,7 @@
     "activation:report": "node scripts/activation-funnel-report.mjs",
     "indexnow:submit": "node scripts/submit-indexnow.mjs",
     "supabase:types": "supabase gen types typescript --project-id xiiaugllydxxmjbtzfux --schema public > packages/dashboard/src/lib/database.types.ts",
-    "widget:copy": "node -e \"const fs=require('fs');const p='packages/dashboard/public/widget';fs.mkdirSync(p,{recursive:true});fs.copyFileSync('packages/widget/dist/widget.js',p+'/latest.js');fs.copyFileSync('packages/widget/dist/widget.js',p+'/v2.js');console.log('Widget copied to public/widget/')\"",
+    "widget:copy": "node scripts/copy-widget-assets.mjs",
     "hooks:install": "node scripts/setup-git-hooks.mjs",
     "mcp:pack": "node scripts/pack-mcp-server.mjs",
     "dashboard:dev": "pnpm --filter @feedbacks/dashboard dev",

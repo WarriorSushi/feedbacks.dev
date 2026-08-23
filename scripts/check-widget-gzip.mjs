@@ -1,15 +1,23 @@
 import { gzipSync } from 'node:zlib'
 import { readFileSync } from 'node:fs'
 
-const file = new URL('../packages/widget/dist/widget.js', import.meta.url)
-const buffer = readFileSync(file)
-const gzipBytes = gzipSync(buffer).byteLength
-const maxGzipBytes = 20 * 1024
+const budgets = [
+  { name: 'widget.js', maxGzipBytes: 20 * 1024 },
+  { name: 'capture.mjs', maxGzipBytes: 55 * 1024 },
+]
 
-console.log(`widget.js raw: ${buffer.byteLength} bytes`)
-console.log(`widget.js gzip: ${gzipBytes} bytes`)
+let failed = false
+for (const { name, maxGzipBytes } of budgets) {
+  const file = new URL(`../packages/widget/dist/${name}`, import.meta.url)
+  const buffer = readFileSync(file)
+  const gzipBytes = gzipSync(buffer).byteLength
+  console.log(`${name} raw: ${buffer.byteLength} bytes`)
+  console.log(`${name} gzip: ${gzipBytes} bytes`)
 
-if (gzipBytes > maxGzipBytes) {
-  console.error(`Widget gzip size exceeded budget: ${gzipBytes} > ${maxGzipBytes}`)
-  process.exit(1)
+  if (gzipBytes > maxGzipBytes) {
+    console.error(`${name} gzip size exceeded budget: ${gzipBytes} > ${maxGzipBytes}`)
+    failed = true
+  }
 }
+
+if (failed) process.exit(1)

@@ -33,7 +33,7 @@ const nextConfig = {
         headers: securityHeaders,
       },
       {
-        source: '/widget/:path*.js',
+        source: '/widget/:path*',
         headers: [
           {
             key: 'Access-Control-Allow-Origin',

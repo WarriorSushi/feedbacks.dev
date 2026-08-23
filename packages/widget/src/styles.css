@@ -362,6 +362,7 @@
 .fb-screenshot-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
 }
 .fb-btn-sm {
@@ -392,9 +393,22 @@
   outline-offset: 1px;
 }
 .fb-screenshot-badge {
+  flex-basis: 100%;
   font-size: 12px;
-  color: var(--fb-success);
   font-weight: 500;
+  line-height: 1.4;
+}
+.fb-screenshot-success {
+  color: var(--fb-success);
+}
+.fb-screenshot-error {
+  color: var(--fb-error);
+}
+.fb-screenshot-muted {
+  color: var(--fb-text-muted);
+}
+.fb-screenshot-input {
+  display: none;
 }
 .fb-file-input {
   font-size: 13px;
