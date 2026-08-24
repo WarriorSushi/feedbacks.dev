@@ -218,6 +218,10 @@ export function getGuidedTutorial(id: string | null | undefined) {
   return GUIDED_TUTORIALS.find((tutorial) => tutorial.id === id) || null
 }
 
+export function usesBuiltInTutorialWorkspace(id: string | null | undefined) {
+  return id === 'navigation'
+}
+
 export function isUsableTutorialProjectId(projectId?: string) {
   return Boolean(projectId && !['new', 'undefined', 'null'].includes(projectId))
 }

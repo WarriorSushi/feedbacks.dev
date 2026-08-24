@@ -90,10 +90,8 @@ export default async function DashboardLayout({
     effectiveEarlyAdopterMembership
     && ['accepted', 'onboarding'].includes(effectiveEarlyAdopterMembership.status)
   )
-  const hasProjectForOnboarding = Boolean(currentProjectId || projects?.[0]?.id)
   const shouldOfferStandardOnboarding = Boolean(
     !requiredEarlyAdopterOnboarding
-    && hasProjectForOnboarding
     && !preferences.productTourCompletedAt
     && !preferences.productTourDismissedAt
   )

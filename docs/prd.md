@@ -69,6 +69,7 @@ Must answer:
 - why should I care
 - how fast can I install it
 - first-time standard accounts are offered the same complete product tour as Early Adopters, but can dismiss and replay it without any Pro reward language
+- the complete product tour uses fast built-in practice screens, works before a project exists, and never changes saved project data
 - only Early Adopter claimants receive mandatory-tour and Pro-activation messaging
 
 ### B. Project setup

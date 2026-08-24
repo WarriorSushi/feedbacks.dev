@@ -56,6 +56,15 @@ test('required product onboarding teaches the complete product loop', async () =
   }
 })
 
+test('built-in product onboarding does not depend on a real project', async () => {
+  const { getGuidedTutorial, usesBuiltInTutorialWorkspace } = await loadTutorials()
+  const onboarding = getGuidedTutorial('navigation')
+
+  assert.ok(onboarding)
+  assert.equal(usesBuiltInTutorialWorkspace(onboarding.id), true)
+  assert.equal(usesBuiltInTutorialWorkspace('customize-form'), false)
+})
+
 test('project tutorial routes resolve to the selected project', async () => {
   const { resolveTutorialHref, withTutorialContext } = await loadTutorials()
   assert.equal(

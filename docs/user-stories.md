@@ -69,7 +69,8 @@ Story:
 As a new standard user, I want an optional guided product tour so I can learn the complete feedback loop without programme or reward messaging.
 
 Acceptance criteria:
-- first-time standard accounts are offered the detailed product tour once their first project exists
+- first-time standard accounts are offered the detailed product tour even before their first project exists
+- the complete product tour uses an instant practice workspace with realistic sample data and never requires or changes a real project
 - standard users can dismiss the welcome and replay the tour later from the account menu
 - standard tour copy does not mention mandatory completion or unlocking Pro
 - standard tour completion never calls the Early Adopter Pro activation path

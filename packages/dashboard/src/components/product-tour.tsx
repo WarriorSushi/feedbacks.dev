@@ -1,14 +1,20 @@
 'use client'
 
 import * as React from 'react'
+import dynamic from 'next/dynamic'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Check, Lightbulb, Loader2, Sparkles, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase-browser'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
-import { GUIDED_TUTORIAL_PROGRESS_KEY, getGuidedTutorial, isUsableTutorialProjectId, resolveTutorialHref, withTutorialContext, type GuidedTutorialId, type GuidedTutorialProgress } from '@/lib/guided-tutorials'
+import { GUIDED_TUTORIAL_PROGRESS_KEY, getGuidedTutorial, isUsableTutorialProjectId, resolveTutorialHref, usesBuiltInTutorialWorkspace, withTutorialContext, type GuidedTutorialId, type GuidedTutorialProgress } from '@/lib/guided-tutorials'
 import { getTourPanelPosition } from '@/lib/tour-position'
 import { MascotSpotlight, type MascotVariant } from '@/components/mascot-spotlight'
+
+const ProductTourDemo = dynamic(
+  () => import('@/components/product-tour-demo').then((module) => module.ProductTourDemo),
+  { ssr: false },
+)
 
 interface SpotlightRect {
   top: number
@@ -19,6 +25,7 @@ interface SpotlightRect {
 }
 
 const SPOTLIGHT_PADDING = 8
+const SIDEBAR_SPOTLIGHT_PADDING = 1
 const PANEL_WIDTH = 420
 const PANEL_HEIGHT_ESTIMATE = 360
 const EMPTY_TUTORIAL_PROGRESS: Record<string, GuidedTutorialProgress> = {}
@@ -57,8 +64,12 @@ function isCurrentHref(pathname: string, searchParams: URLSearchParams, href: st
   return true
 }
 
-function getTourTarget(selector: string): HTMLElement | null {
-  const targets = Array.from(document.querySelectorAll<HTMLElement>(selector))
+function getTourTarget(selector: string, demoMode = false): HTMLElement | null {
+  const scope = demoMode
+    ? document.querySelector<HTMLElement>('[data-tour-demo-root]')
+    : document
+  if (!scope) return null
+  const targets = Array.from(scope.querySelectorAll<HTMLElement>(selector))
   return targets.find((target) => {
     const rect = target.getBoundingClientRect()
     const style = window.getComputedStyle(target)
@@ -71,8 +82,8 @@ function getTourTarget(selector: string): HTMLElement | null {
   }) || null
 }
 
-function getVisibleTourTarget(selector: string): HTMLElement | null {
-  const target = getTourTarget(selector)
+function getVisibleTourTarget(selector: string, demoMode = false): HTMLElement | null {
+  const target = getTourTarget(selector, demoMode)
   if (!target) return null
   const rect = target.getBoundingClientRect()
   return (
@@ -83,14 +94,18 @@ function getVisibleTourTarget(selector: string): HTMLElement | null {
     ) ? target : null
 }
 
-function getSpotlightRect(selector: string): SpotlightRect | null {
-  const target = getVisibleTourTarget(selector)
+function getSpotlightRect(selector: string, demoMode = false): SpotlightRect | null {
+  const target = getVisibleTourTarget(selector, demoMode)
   if (!target) return null
   const rect = target.getBoundingClientRect()
-  const top = Math.max(SPOTLIGHT_PADDING, rect.top - SPOTLIGHT_PADDING)
-  const left = Math.max(SPOTLIGHT_PADDING, rect.left - SPOTLIGHT_PADDING)
-  const width = Math.min(window.innerWidth - left - SPOTLIGHT_PADDING, rect.width + SPOTLIGHT_PADDING * 2)
-  const height = Math.min(window.innerHeight - top - SPOTLIGHT_PADDING, rect.height + SPOTLIGHT_PADDING * 2)
+  const padding = isSidebarTourTarget(selector) ? SIDEBAR_SPOTLIGHT_PADDING : SPOTLIGHT_PADDING
+  const viewportInset = Math.min(padding, SPOTLIGHT_PADDING)
+  const top = Math.max(viewportInset, rect.top - padding)
+  const left = Math.max(viewportInset, rect.left - padding)
+  const right = Math.min(window.innerWidth - viewportInset, rect.right + padding)
+  const bottom = Math.min(window.innerHeight - viewportInset, rect.bottom + padding)
+  const width = Math.max(0, right - left)
+  const height = Math.max(0, bottom - top)
   const style = window.getComputedStyle(target)
   const targetRadius = Math.max(
     Number.parseFloat(style.borderTopLeftRadius) || 0,
@@ -98,7 +113,7 @@ function getSpotlightRect(selector: string): SpotlightRect | null {
     Number.parseFloat(style.borderBottomRightRadius) || 0,
     Number.parseFloat(style.borderBottomLeftRadius) || 0,
   )
-  const radius = Math.min(targetRadius + SPOTLIGHT_PADDING, width / 2, height / 2)
+  const radius = Math.min(targetRadius + padding, width / 2, height / 2)
 
   return { top, left, width, height, radius }
 }
@@ -151,10 +166,11 @@ export function ProductTour({
   )
 
   const tutorial = getGuidedTutorial(tutorialId) || getGuidedTutorial('navigation')!
+  const demoMode = usesBuiltInTutorialWorkspace(tutorial.id)
   const steps = React.useMemo(
     () => tutorial.steps.map((step, index) => {
       const needsProject = step.href.includes('{projectId}')
-      const waitingForProject = needsProject && !isUsableTutorialProjectId(activeProjectId)
+      const waitingForProject = !demoMode && needsProject && !isUsableTutorialProjectId(activeProjectId)
       const resolvedStep = waitingForProject
         ? {
             ...step,
@@ -164,14 +180,16 @@ export function ProductTour({
             target: '[data-tour="project-create-form"]',
             tip: 'Only the project name is required. You can add the domain and change every setting later.',
           }
-        : { ...step, href: resolveTutorialHref(step.href, activeProjectId) }
+        : demoMode
+          ? { ...step, href: '/dashboard' }
+          : { ...step, href: resolveTutorialHref(step.href, activeProjectId) }
       return {
         ...resolvedStep,
         href: withTutorialContext(resolvedStep.href, tutorial.id, index),
         waitingForProject,
       }
     }),
-    [activeProjectId, tutorial],
+    [activeProjectId, demoMode, tutorial],
   )
   const activeStep = steps[Math.min(stepIndex, steps.length - 1)]
   const requestedTutorialId = searchParams.get('tutorial') || searchParams.get('guidedTour')
@@ -266,7 +284,7 @@ export function ProductTour({
   }, [getResumeStep, required])
 
   React.useEffect(() => {
-    if (!open) return
+    if (!open || demoMode) return
     const targetHref = pendingStepIndex === null ? activeStep.href : steps[pendingStepIndex].href
     let attempts = 0
     const navigate = () => {
@@ -281,7 +299,7 @@ export function ProductTour({
       if (navigate() || attempts >= 12) window.clearInterval(retry)
     }, 1_500)
     return () => window.clearInterval(retry)
-  }, [activeStep.href, open, pathname, pendingStepIndex, router, searchParams, steps])
+  }, [activeStep.href, demoMode, open, pathname, pendingStepIndex, router, searchParams, steps])
 
   React.useEffect(() => {
     if (!open) return
@@ -294,11 +312,11 @@ export function ProductTour({
     let frame = 0
     const measureSpotlight = () => {
       frame = window.requestAnimationFrame(() => {
-        setSpotlight(getSpotlightRect(activeStep.target))
+        setSpotlight(getSpotlightRect(activeStep.target, demoMode))
       })
     }
     const focusTarget = () => {
-      const target = getTourTarget(activeStep.target)
+      const target = getTourTarget(activeStep.target, demoMode)
       if (!target) return false
       target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' })
       measureSpotlight()
@@ -325,7 +343,7 @@ export function ProductTour({
       window.removeEventListener('resize', measureSpotlight)
       window.removeEventListener('scroll', measureSpotlight, true)
     }
-  }, [activeStep.target, open, pathname, searchParams])
+  }, [activeStep.target, demoMode, open, pathname, searchParams])
 
   React.useLayoutEffect(() => {
     if (!open || !panelRef.current) return
@@ -435,6 +453,11 @@ export function ProductTour({
     const safeIndex = clamp(nextIndex, 0, steps.length - 1)
     const nextStep = steps[safeIndex]
     saveTutorialProgress(tutorialId, { stepIndex: safeIndex })
+    if (demoMode) {
+      setStepIndex(safeIndex)
+      setSpotlight(null)
+      return
+    }
     if (!isCurrentHref(pathname, searchParams, nextStep.href)) {
       setPendingStepIndex(safeIndex)
       router.push(nextStep.href)
@@ -523,8 +546,8 @@ export function ProductTour({
             </h1>
             <p id="onboarding-welcome-description" className="mt-3 text-base leading-7 text-muted-foreground">
               {required
-                ? 'Learn project setup, themes, form customization, installation, real feedback use cases, inbox triage, updates, boards, and integrations. Pro activates automatically when you finish the last step.'
-                : 'Learn project setup, themes, form customization, installation, real feedback use cases, inbox triage, updates, boards, and integrations. The tour explains the product without changing your saved settings.'}
+                ? 'Explore every core screen in a fast practice workspace with realistic sample data. No project is required, nothing is saved, and Pro activates when you finish the last step.'
+                : 'Explore every core screen in a fast practice workspace with realistic sample data. No project is required, and the tour never changes your saved settings.'}
             </p>
           </div>
           <div className="relative mt-7 border-t pt-5">
@@ -573,6 +596,7 @@ export function ProductTour({
 
   return (
     <div className="fixed inset-0 z-[90] pointer-events-none">
+      {demoMode ? <ProductTourDemo activeTarget={activeStep.target} /> : null}
       {spotlight ? (
         <svg
           aria-hidden="true"
@@ -617,7 +641,7 @@ export function ProductTour({
         aria-modal="true"
         aria-labelledby="product-tour-title"
         aria-describedby="product-tour-description"
-        className="pointer-events-auto fixed w-[calc(100vw-2rem)] max-w-[420px] rounded-xl border bg-card p-6 shadow-[0_24px_70px_rgb(0_0_0/0.32)]"
+        className="pointer-events-auto fixed flex max-h-[320px] w-[calc(100vw-2rem)] max-w-[420px] flex-col overflow-hidden rounded-xl border bg-card p-4 shadow-[0_24px_70px_rgb(0_0_0/0.32)] sm:block sm:max-h-none sm:p-6"
         style={{ top: panelPosition.top, left: panelPosition.left }}
       >
         <div className="flex items-start justify-between gap-3">
@@ -642,25 +666,27 @@ export function ProductTour({
             </button> : null}
           </div>
         </div>
-        <p id="product-tour-description" className="mt-3 text-[15px] leading-6 text-muted-foreground">
-          {activeStep.body}
-        </p>
-        {activeStep.tip ? (
-          <div className="mt-4 flex gap-2.5 rounded-lg border border-primary/20 bg-primary/[0.06] p-3 text-sm leading-5">
-            <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-            <p><span className="font-semibold text-foreground">Pro tip:</span> <span className="text-muted-foreground">{activeStep.tip}</span></p>
-          </div>
-        ) : null}
-        {required && stepIndex === 0 ? (
-          <p className="mt-3 border-l-2 border-primary pl-3 text-sm font-medium text-foreground">
-            Complete every step of this guided onboarding. Pro activates at the end.
+        <div className="min-h-0 overflow-y-auto pr-1 sm:overflow-visible sm:pr-0">
+          <p id="product-tour-description" className="mt-3 text-[14px] leading-5 text-muted-foreground sm:text-[15px] sm:leading-6">
+            {activeStep.body}
           </p>
-        ) : null}
-        {!spotlight && (
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            Opening the right section now. You can always use Back to return to the previous working step.
-          </p>
-        )}
+          {activeStep.tip ? (
+            <div className="mt-3 flex gap-2.5 rounded-lg border border-primary/20 bg-primary/[0.06] p-2.5 text-[13px] leading-[18px] sm:mt-4 sm:p-3 sm:text-sm sm:leading-5">
+              <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+              <p><span className="font-semibold text-foreground">Pro tip:</span> <span className="text-muted-foreground">{activeStep.tip}</span></p>
+            </div>
+          ) : null}
+          {required && stepIndex === 0 ? (
+            <p className="mt-3 rounded-md border border-primary/25 bg-primary/[0.05] px-3 py-2 text-sm font-medium text-foreground">
+              Complete every step of this guided onboarding. Pro activates at the end.
+            </p>
+          ) : null}
+          {!spotlight && (
+            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+              Opening the right section now. You can always use Back to return to the previous working step.
+            </p>
+          )}
+        </div>
         <div className="mt-4 flex items-center justify-between gap-2">
           <Button
             variant="ghost"

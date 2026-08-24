@@ -1,6 +1,5 @@
 import { expect, test, skipE2EIfNeeded } from './fixtures'
 import { signInWithTestSession } from './helpers/auth'
-import { createProjectViaApi } from './helpers/project'
 
 const env = skipE2EIfNeeded()
 test.skip(!env.ready, env.skipReason)
@@ -11,18 +10,18 @@ const tourSteps = [
   { title: 'Understand the feedback loop', path: /\/dashboard(?:\?.*)?$/, target: 'nav-dashboard' },
   { title: 'Know which project you are changing', path: /\/dashboard(?:\?.*)?$/, target: 'project-switcher' },
   { title: 'Make the workspace comfortable', path: /\/dashboard(?:\?.*)?$/, target: 'theme-switcher' },
-  { title: 'Choose how customers open the form', path: /\/projects\/[^/]+\/feedback-form\?.*guidedTour=navigation/, target: 'widget-placement' },
-  { title: 'Match the launcher to your product', path: /\/projects\/[^/]+\/feedback-form\?.*guidedTour=navigation/, target: 'widget-appearance' },
-  { title: 'Ask for a useful message', path: /\/projects\/[^/]+\/feedback-form\?.*guidedTour=navigation/, target: 'widget-content' },
-  { title: 'Add fields only when they earn their place', path: /\/projects\/[^/]+\/feedback-form\?.*guidedTour=navigation/, target: 'widget-protection' },
-  { title: 'Preview before you save', path: /\/projects\/[^/]+\/feedback-form\?.*guidedTour=navigation/, target: 'widget-preview' },
-  { title: 'Choose the install guide for your app', path: /\/projects\/[^/]+\/install\?.*guidedTour=navigation/, target: 'install-platforms' },
-  { title: 'Install once, then verify with a real test', path: /\/projects\/[^/]+\/install\?.*guidedTour=navigation/, target: 'install-code' },
-  { title: 'Turn messages into decisions', path: /\/feedback(?:\?.*)?$/, target: 'inbox-filters' },
-  { title: 'Use each feedback type differently', path: /\/feedback(?:\?.*)?$/, target: 'inbox-list' },
-  { title: 'Close the loop with product updates', path: /\/projects\/[^/]+\/release-notes\?.*guidedTour=navigation/, target: 'nav-updates' },
-  { title: 'Use a public board for shared demand', path: /\/projects\/[^/]+\/board\?.*guidedTour=navigation/, target: 'nav-boards' },
-  { title: 'Route high-signal work to your team', path: /\/projects\/[^/]+\/integrations\?.*guidedTour=navigation/, target: 'integration-endpoint' },
+  { title: 'Choose how customers open the form', path: /\/dashboard(?:\?.*)?$/, target: 'widget-placement' },
+  { title: 'Match the launcher to your product', path: /\/dashboard(?:\?.*)?$/, target: 'widget-appearance' },
+  { title: 'Ask for a useful message', path: /\/dashboard(?:\?.*)?$/, target: 'widget-content' },
+  { title: 'Add fields only when they earn their place', path: /\/dashboard(?:\?.*)?$/, target: 'widget-protection' },
+  { title: 'Preview before you save', path: /\/dashboard(?:\?.*)?$/, target: 'widget-preview' },
+  { title: 'Choose the install guide for your app', path: /\/dashboard(?:\?.*)?$/, target: 'install-platforms' },
+  { title: 'Install once, then verify with a real test', path: /\/dashboard(?:\?.*)?$/, target: 'install-code' },
+  { title: 'Turn messages into decisions', path: /\/dashboard(?:\?.*)?$/, target: 'inbox-filters' },
+  { title: 'Use each feedback type differently', path: /\/dashboard(?:\?.*)?$/, target: 'inbox-list' },
+  { title: 'Close the loop with product updates', path: /\/dashboard(?:\?.*)?$/, target: 'nav-updates' },
+  { title: 'Use a public board for shared demand', path: /\/dashboard(?:\?.*)?$/, target: 'nav-boards' },
+  { title: 'Route high-signal work to your team', path: /\/dashboard(?:\?.*)?$/, target: 'integration-endpoint' },
   { title: 'Run your first complete loop', path: /\/dashboard(?:\?.*)?$/, target: 'dashboard-capabilities' },
 ]
 
@@ -30,7 +29,6 @@ test.describe('product tour', () => {
   test('walks every navigation step and finishes on the dashboard', async ({ page }) => {
     test.setTimeout(300_000)
     await signInWithTestSession(page)
-    await createProjectViaApi(page, { name: `Playwright Tour Desktop ${Date.now().toString(36)}` })
     await page.goto('/dashboard?tour=1')
 
     const welcome = page.getByRole('dialog')
@@ -46,7 +44,7 @@ test.describe('product tour', () => {
       })
       await expect(page).toHaveURL(step.path, { timeout: TOUR_STEP_TIMEOUT_MS })
 
-      const visibleTarget = page.locator(`[data-tour="${step.target}"]:visible`)
+      const visibleTarget = page.locator(`[data-tour-demo-root] [data-tour="${step.target}"]:visible`)
       await expect(visibleTarget).toBeVisible({ timeout: TOUR_STEP_TIMEOUT_MS })
 
       if (index < tourSteps.length - 1) {
@@ -62,7 +60,6 @@ test.describe('product tour', () => {
   test('walks every mobile step without covering the highlighted menu item', async ({ page }) => {
     test.setTimeout(300_000)
     await signInWithTestSession(page)
-    await createProjectViaApi(page, { name: `Playwright Tour Mobile ${Date.now().toString(36)}` })
     await page.setViewportSize({ width: 390, height: 844 })
     await page.goto('/dashboard?tour=1')
 
@@ -79,7 +76,7 @@ test.describe('product tour', () => {
       })
       await expect(page).toHaveURL(step.path, { timeout: TOUR_STEP_TIMEOUT_MS })
 
-      const target = page.locator(`[data-tour="${step.target}"]:visible`)
+      const target = page.locator(`[data-tour-demo-root] [data-tour="${step.target}"]:visible`)
       await expect(target).toBeVisible({ timeout: TOUR_STEP_TIMEOUT_MS })
 
       const [dialogBox, targetBox] = await Promise.all([dialog.boundingBox(), target.boundingBox()])
