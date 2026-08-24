@@ -301,7 +301,7 @@ export function ProductTour({
     return () => window.clearInterval(retry)
   }, [activeStep.href, demoMode, open, pathname, pendingStepIndex, router, searchParams, steps])
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (!open) return
     window.dispatchEvent(new CustomEvent(
       isSidebarTourTarget(activeStep.target)
@@ -310,9 +310,13 @@ export function ProductTour({
     ))
 
     let frame = 0
+    const updateSpotlight = () => {
+      setSpotlight(getSpotlightRect(activeStep.target, demoMode))
+    }
     const measureSpotlight = () => {
+      window.cancelAnimationFrame(frame)
       frame = window.requestAnimationFrame(() => {
-        setSpotlight(getSpotlightRect(activeStep.target, demoMode))
+        updateSpotlight()
       })
     }
     const focusTarget = () => {
@@ -323,7 +327,7 @@ export function ProductTour({
       return true
     }
 
-    measureSpotlight()
+    updateSpotlight()
     let retryTimer = 0
     const timer = window.setTimeout(() => {
       if (focusTarget()) return
@@ -455,7 +459,6 @@ export function ProductTour({
     saveTutorialProgress(tutorialId, { stepIndex: safeIndex })
     if (demoMode) {
       setStepIndex(safeIndex)
-      setSpotlight(null)
       return
     }
     if (!isCurrentHref(pathname, searchParams, nextStep.href)) {
