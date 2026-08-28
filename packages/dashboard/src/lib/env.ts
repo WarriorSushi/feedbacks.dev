@@ -1,3 +1,8 @@
+import {
+  normalizeDodoPaymentsEnvironment,
+  resolveBillingMode,
+} from './billing-mode.ts'
+
 function requireEnv(name: string): string {
   const value = process.env[name]
   if (!value) {
@@ -21,9 +26,7 @@ export const env = {
   SUPABASE_SERVICE_ROLE_KEY: requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
   NEXT_PUBLIC_APP_ORIGIN: requireEnv('NEXT_PUBLIC_APP_ORIGIN'),
   DODO_PAYMENTS_API_KEY: optionalEnv('DODO_PAYMENTS_API_KEY'),
-  DODO_PAYMENTS_ENVIRONMENT: (process.env.DODO_PAYMENTS_ENVIRONMENT || 'test').toLowerCase() === 'live'
-    ? 'live'
-    : 'test',
+  DODO_PAYMENTS_ENVIRONMENT: normalizeDodoPaymentsEnvironment(process.env.DODO_PAYMENTS_ENVIRONMENT),
   DODO_PAYMENTS_PRO_MONTHLY_PRODUCT_ID: optionalEnv('DODO_PAYMENTS_PRO_MONTHLY_PRODUCT_ID'),
   DODO_PAYMENTS_PRO_YEARLY_PRODUCT_ID: optionalEnv('DODO_PAYMENTS_PRO_YEARLY_PRODUCT_ID'),
   DODO_PAYMENTS_WEBHOOK_SECRET: optionalEnv('DODO_PAYMENTS_WEBHOOK_SECRET'),
@@ -39,15 +42,16 @@ export const env = {
 } as const
 
 export function isBillingEnabled() {
-  return Boolean(
-    env.DODO_PAYMENTS_API_KEY &&
-      env.DODO_PAYMENTS_PRO_MONTHLY_PRODUCT_ID &&
-      env.DODO_PAYMENTS_WEBHOOK_SECRET,
-  )
+  return getBillingMode() !== 'disabled'
 }
 
-export function isCustomerBillingLive() {
-  return isBillingEnabled() && env.DODO_PAYMENTS_ENVIRONMENT === 'live'
+export function getBillingMode() {
+  return resolveBillingMode({
+    environment: env.DODO_PAYMENTS_ENVIRONMENT,
+    apiKey: env.DODO_PAYMENTS_API_KEY,
+    monthlyProductId: env.DODO_PAYMENTS_PRO_MONTHLY_PRODUCT_ID,
+    webhookSecret: env.DODO_PAYMENTS_WEBHOOK_SECRET,
+  })
 }
 
 export function isEmailEnabled() {

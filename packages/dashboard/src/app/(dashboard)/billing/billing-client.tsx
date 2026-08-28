@@ -6,11 +6,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
 import type { BillingSummary } from '@/lib/types'
+import type { BillingMode } from '@/lib/billing-mode'
 import { ArrowUpRight, Check, Loader2, ShieldCheck } from 'lucide-react'
 
 interface BillingClientProps {
   initialSummary: BillingSummary
-  customerBillingLive: boolean
+  billingMode: BillingMode
 }
 
 function formatPeriodEnd(value: string | null) {
@@ -40,7 +41,7 @@ function formatBillingInterval(interval: string | null, count: number | null) {
   return amount === 1 ? `Every ${interval}` : `Every ${amount} ${interval}s`
 }
 
-export function BillingClient({ initialSummary, customerBillingLive }: BillingClientProps) {
+export function BillingClient({ initialSummary, billingMode }: BillingClientProps) {
   const [summary, setSummary] = React.useState(initialSummary)
   const [checkoutLoading, setCheckoutLoading] = React.useState(false)
   const [portalLoading, setPortalLoading] = React.useState(false)
@@ -150,6 +151,8 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
         .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0]
     : null
   const effectivePro = summary.entitlements.planTier === 'pro'
+  const billingEnabled = billingMode !== 'disabled'
+  const testPayments = billingMode === 'test'
 
   return (
     <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
@@ -160,7 +163,8 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
               {summary.entitlements.label}
             </Badge>
             <Badge variant="outline">{cancellationScheduled ? 'cancels soon' : complimentaryProActive && !paidProActive ? 'referral reward' : summary.account.billing_status}</Badge>
-            {!customerBillingLive && <Badge variant="outline">Live checkout unavailable</Badge>}
+            {testPayments && <Badge variant="outline">Test payments</Badge>}
+            {!billingEnabled && <Badge variant="outline">Checkout unavailable</Badge>}
           </div>
           <h2 className="mt-3 text-xl font-semibold tracking-tight">{effectivePro ? 'Your feedback operation is fully unlocked' : hasProIntent ? 'Finish upgrading to Pro' : 'Turn feedback into a shipping system'}</h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -172,9 +176,14 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
               <p><strong>Your data is safe.</strong> Your Pro access remains active through {formatPeriodEnd(cancellationAccessEnd)}. After that, Free limits return and extra projects are frozen, never deleted.</p>
             </div>
           )}
-          {!customerBillingLive && !effectivePro && (
+          {testPayments && (
+            <p className="mt-3 max-w-2xl rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground">
+              <strong>Test mode is active.</strong> No real money will be charged. A completed Dodo test checkout activates Pro only after its verified test webhook is received.
+            </p>
+          )}
+          {!billingEnabled && !effectivePro && (
             <p className="mt-3 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-foreground">
-              Pro checkout is paused while the live payment configuration is being verified. Your Free plan remains fully available and no test checkout will be shown in production.
+              Pro checkout is unavailable because the Dodo API key, monthly product, or webhook secret is not fully configured.
             </p>
           )}
         </header>
@@ -237,9 +246,9 @@ export function BillingClient({ initialSummary, customerBillingLive }: BillingCl
             ) : complimentaryProActive ? (
               <Button disabled>Referral Pro active</Button>
             ) : (
-              <Button onClick={startCheckout} disabled={checkoutLoading || !customerBillingLive}>
+              <Button onClick={startCheckout} disabled={checkoutLoading || !billingEnabled}>
                 {checkoutLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Upgrade to Pro, $19/month <ArrowUpRight className="ml-2 h-4 w-4" />
+                {testPayments ? 'Run test checkout, $19/month' : 'Upgrade to Pro, $19/month'} <ArrowUpRight className="ml-2 h-4 w-4" />
               </Button>
             )}
             <Button variant="outline" onClick={() => void refreshSummary()} disabled={syncing}>

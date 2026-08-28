@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createDodoCheckoutSession } from '@/lib/dodo'
-import { env, isBillingEnabled, isCustomerBillingLive } from '@/lib/env'
+import { env, isBillingEnabled } from '@/lib/env'
 import { getCurrentUserBillingSummary, getOrCreateBillingAccount } from '@/lib/billing'
 import { createServerSupabase, createAdminSupabase } from '@/lib/supabase-server'
 import { buildBillingReturnUrl } from '@/lib/billing-return-url'
@@ -10,15 +10,6 @@ export async function POST(request: NextRequest) {
   try {
     if (!isBillingEnabled()) {
       return NextResponse.json({ error: 'Billing is not configured yet' }, { status: 503 })
-    }
-    if (process.env.VERCEL_ENV === 'production' && !isCustomerBillingLive()) {
-      return NextResponse.json(
-        {
-          code: 'billing_not_live',
-          error: 'Pro checkout is temporarily unavailable while live billing is being verified.',
-        },
-        { status: 503 },
-      )
     }
 
     const supabase = await createServerSupabase()

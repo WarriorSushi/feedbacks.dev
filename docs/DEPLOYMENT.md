@@ -207,6 +207,22 @@ AGENT_SETUP_TOKEN_SECRET
 
 Add billing, captcha, and email variables only when those surfaces are enabled in production.
 
+For the current test-only Dodo billing deployment, configure all values from the same Dodo test environment:
+
+```text
+DODO_PAYMENTS_ENVIRONMENT=test
+DODO_PAYMENTS_API_KEY
+DODO_PAYMENTS_PRO_MONTHLY_PRODUCT_ID
+DODO_PAYMENTS_PRO_YEARLY_PRODUCT_ID (optional; yearly checkout falls back to the monthly product)
+DODO_PAYMENTS_WEBHOOK_SECRET
+```
+
+Vercel Production may run Dodo in test mode. In that mode, checkout, subscriptions, the customer portal,
+and verified webhooks exercise the complete billing and entitlement flow without charging real money.
+Dodo test and live API keys, products, customers, subscriptions, and webhooks are separate, so never mix
+credentials or IDs across environments. The browser return is informational; only a verified webhook may
+change Pro entitlement state.
+
 When email notifications are enabled, configure all three server-only values:
 
 ```text

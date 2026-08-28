@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUserBillingSummary } from '@/lib/billing'
 import { BillingClient } from './billing-client'
 import { PageHeader } from '@/components/ui/workspace-shell'
-import { isCustomerBillingLive } from '@/lib/env'
+import { getBillingMode } from '@/lib/env'
 import { MascotSpotlight } from '@/components/mascot-spotlight'
 
 export const dynamic = 'force-dynamic'
@@ -23,7 +23,7 @@ export default async function BillingPage() {
         action={<MascotSpotlight variant="billing" className="h-28 w-28" sizes="112px" />}
       />
 
-      <BillingClient initialSummary={summary} customerBillingLive={isCustomerBillingLive()} />
+      <BillingClient initialSummary={summary} billingMode={getBillingMode()} />
     </div>
   )
 }
