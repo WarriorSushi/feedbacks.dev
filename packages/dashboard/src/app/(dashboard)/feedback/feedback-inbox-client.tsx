@@ -40,6 +40,7 @@ import {
   Trash2,
   SlidersHorizontal,
   ArrowUpDown,
+  RefreshCw,
 } from 'lucide-react'
 import {
   FeedbackFilterPill,
@@ -123,6 +124,7 @@ export function FeedbackInboxClient({
   const hasLoadedRef = React.useRef(true)
   const lastLoadedQueryKeyRef = React.useRef(initialQueryKey)
   const latestFetchRef = React.useRef(0)
+  const hasRefreshedOnEntryRef = React.useRef(false)
   const lastSyncedAtRef = React.useRef(Date.now())
   const initialErrorShownRef = React.useRef(false)
   const filters = React.useMemo(() => parseFeedbackInboxFilters(searchParams), [searchParams])
@@ -264,6 +266,12 @@ export function FeedbackInboxClient({
       }
     }
   }, [filters, historyCutoff, projectId, queryKey, supabase])
+
+  React.useEffect(() => {
+    if (hasRefreshedOnEntryRef.current) return
+    hasRefreshedOnEntryRef.current = true
+    void fetchFeedback()
+  }, [fetchFeedback])
 
   React.useEffect(() => {
     if (lastLoadedQueryKeyRef.current === queryKey) return
@@ -506,7 +514,24 @@ export function FeedbackInboxClient({
             Free plan shows the most recent {initialHistoryDays} days.
           </p>
         )}
-        action={<div className="text-right"><p className="text-xl font-semibold tabular-nums">{loading ? '…' : total}</p><p className="text-xs text-muted-foreground">{hasFilters ? 'shown' : total === 1 ? 'message' : 'messages'}</p></div>}
+        action={(
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={loading || refreshing}
+              onClick={() => void fetchFeedback()}
+            >
+              <RefreshCw className={cn('mr-1.5 h-3.5 w-3.5', refreshing && 'animate-spin')} />
+              Refresh
+            </Button>
+            <div className="text-right">
+              <p className="text-xl font-semibold tabular-nums">{loading ? '…' : total}</p>
+              <p className="text-xs text-muted-foreground">{hasFilters ? 'shown' : total === 1 ? 'message' : 'messages'}</p>
+            </div>
+          </div>
+        )}
       />
 
       {/* ─── Filters ─────────────────────────────────────── */}

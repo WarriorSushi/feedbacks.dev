@@ -18,7 +18,7 @@ test('feedback inbox server-loads its first page while independent reads run con
   assert.match(page, /initialHistoryCutoff=\{historyCutoff\}/)
 })
 
-test('feedback inbox hydrates without repeating the server query or billing request', () => {
+test('feedback inbox reuses its server snapshot without repeating billing or project queries', () => {
   const client = read('../../src/app/(dashboard)/feedback/feedback-inbox-client.tsx')
 
   assert.match(client, /useState<Feedback\[]>\(initialFeedbacks\)/)
@@ -28,6 +28,15 @@ test('feedback inbox hydrates without repeating the server query or billing requ
   assert.doesNotMatch(client, /getFeedbackHistoryCutoff/)
   assert.doesNotMatch(client, /\/api\/billing\/sync/)
   assert.doesNotMatch(client, /\.from\(['"]projects['"]\)/)
+})
+
+test('feedback inbox refreshes on entry and exposes a manual refresh action', () => {
+  const client = read('../../src/app/(dashboard)/feedback/feedback-inbox-client.tsx')
+
+  assert.match(client, /const hasRefreshedOnEntryRef = React\.useRef\(false\)/)
+  assert.match(client, /if \(hasRefreshedOnEntryRef\.current\) return/)
+  assert.match(client, /onClick=\{\(\) => void fetchFeedback\(\)\}/)
+  assert.match(client, />\s*Refresh\s*</)
 })
 
 test('feedback inbox keeps project scope out of the empty-search filter state and preserves detail return context', () => {
