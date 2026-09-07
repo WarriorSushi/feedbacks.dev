@@ -743,7 +743,7 @@ test('dashboard MCP setup emits a valid stdio client configuration with key safe
   assert.match(apiDocs, /FEEDBACKS_API_KEY/)
   assert.match(apiDocs, /FEEDBACKS_API_URL/)
   assert.match(apiDocs, /personal MCP settings/)
-  assert.match(apiDocs, /never commit it/)
+  assert.match(apiDocs, /never commit this configuration/)
 })
 
 test('agent setup guidance matches Claude Code and Cursor MCP configuration rules', () => {
