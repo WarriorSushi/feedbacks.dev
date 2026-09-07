@@ -150,8 +150,8 @@ export function buildAgentSetupPacket(project: Project, projectKey: string, appO
       instructions: [
         'Install the recommended Website snippet in the app shell or global HTML.',
         'Run the app locally and confirm the feedback UI appears.',
-        'Submit one test report from a real page.',
-        'Open the project inbox and confirm the report includes URL and browser context.',
+        'Submit one test report from a real page and confirm the request succeeds.',
+        'Ask the user to confirm the report appears in the project inbox unless authenticated MCP access is available.',
       ],
     },
     docs: {
@@ -162,7 +162,7 @@ export function buildAgentSetupPacket(project: Project, projectKey: string, appO
       'Use the Website snippet unless the app has a clear React or Vue wrapper integration point.',
       'Keep the first install minimal before changing advanced widget settings.',
       'Do not expose private server secrets in browser code.',
-      'After installing, run the app and send one test feedback item.',
+      'After installing, run the app, send one test feedback item, and report whether the request succeeds.',
     ],
     safety: [
       'This packet contains a browser-safe project key, not a server secret.',

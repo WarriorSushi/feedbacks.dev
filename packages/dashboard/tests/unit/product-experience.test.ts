@@ -734,7 +734,7 @@ test('public docs use the stable canonical embed and remote customization langua
   assert.doesNotMatch(source, /data-config-version/)
 })
 
-test('dashboard MCP setup emits a valid project-scoped client configuration', () => {
+test('dashboard MCP setup emits a valid stdio client configuration with key safety guidance', () => {
   const apiDocs = read('../../src/app/(dashboard)/projects/[id]/api-docs.tsx')
 
   assert.match(apiDocs, /"mcpServers": \{/)
@@ -742,6 +742,24 @@ test('dashboard MCP setup emits a valid project-scoped client configuration', ()
   assert.match(apiDocs, /"type": "stdio"/)
   assert.match(apiDocs, /FEEDBACKS_API_KEY/)
   assert.match(apiDocs, /FEEDBACKS_API_URL/)
+  assert.match(apiDocs, /personal MCP settings/)
+  assert.match(apiDocs, /never commit it/)
+})
+
+test('agent setup guidance matches Claude Code and Cursor MCP configuration rules', () => {
+  const mcpDocs = read('../../../../docs/MCP.md')
+  const install = read('../../src/app/(dashboard)/projects/[id]/install-tab.tsx')
+  const setupPacket = read('../../src/lib/agent-setup.ts')
+  const landing = read('../../src/components/landing-vibe-install.tsx')
+  const cursorSection = mcpDocs.split('## Cursor')[1]?.split('## Generic MCP Clients')[0] || ''
+
+  assert.match(mcpDocs, /--transport stdio --env FEEDBACKS_API_KEY=fb_live_your_key feedbacks --/)
+  assert.doesNotMatch(mcpDocs, /--transport stdio feedbacks --env/)
+  assert.match(cursorSection, /"type": "stdio"/)
+  assert.match(cursorSection, /"FEEDBACKS_API_KEY": "\$\{env:FEEDBACKS_API_KEY\}"/)
+  assert.match(install, /ask me to confirm it appears in the inbox unless you have authenticated MCP access/)
+  assert.match(setupPacket, /Ask the user to confirm the report appears in the project inbox unless authenticated MCP access is available/)
+  assert.match(landing, /ask me to verify its page and browser context in the inbox/)
 })
 
 test('public board directory owns a main landmark without nesting one in the dashboard', () => {

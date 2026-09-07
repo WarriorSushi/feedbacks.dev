@@ -100,8 +100,8 @@ export function InstallTab({
         instructions: [
           'Install the recommended Website snippet in the app shell or global HTML.',
           'Run the app locally and confirm the feedback UI appears.',
-          'Submit one test report from a real page.',
-          'Open the project inbox and confirm the report includes URL and browser context.',
+          'Submit one test report from a real page and confirm the request succeeds.',
+          'Ask the user to confirm the report appears in the project inbox unless authenticated MCP access is available.',
         ],
       },
       safety: [
@@ -118,7 +118,7 @@ Goals:
 2. Keep the first pass minimal.
 3. Do not expose private API keys.
 4. Run the app locally and confirm the feedback UI appears.
-5. Submit one test report and tell me whether it appears in the feedbacks.dev inbox.
+5. Submit one test report, report whether the request succeeds, and ask me to confirm it appears in the inbox unless you have authenticated MCP access.
 
 Setup packet:
 ${JSON.stringify(setupPacket, null, 2)}`

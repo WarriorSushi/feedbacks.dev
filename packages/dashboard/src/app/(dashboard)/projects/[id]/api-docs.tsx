@@ -258,7 +258,7 @@ export function ApiDocs({
         </summary>
         <div className="space-y-4 border-t px-6 py-5">
           <p className="text-sm text-muted-foreground">
-            Add this to your <code className="bg-muted px-1 rounded">.mcp.json</code> or Claude Code settings:
+            Use this only in personal MCP settings. It contains a private project key; never commit this configuration to source control. Use the environment-variable examples in the public MCP guide for shared <code className="bg-muted px-1 rounded">.mcp.json</code> configuration.
           </p>
           <CodeBlock language="json" code={`{
   "mcpServers": {

@@ -79,7 +79,7 @@ Then start Claude Code from the project directory and run:
 If you prefer CLI setup:
 
 ```bash
-claude mcp add --transport stdio feedbacks --env FEEDBACKS_API_KEY=fb_live_your_key -- npm exec --yes --package=https://app.feedbacks.dev/mcp/feedbacks-mcp-server-1.0.0.tgz -- feedbacks-mcp
+claude mcp add --transport stdio --env FEEDBACKS_API_KEY=fb_live_your_key feedbacks -- npm exec --yes --package=https://app.feedbacks.dev/mcp/feedbacks-mcp-server-1.0.0.tgz -- feedbacks-mcp
 ```
 
 ## Cursor
@@ -92,10 +92,11 @@ Use this server entry:
 {
   "mcpServers": {
     "feedbacks": {
+      "type": "stdio",
       "command": "npm",
       "args": ["exec", "--yes", "--package=https://app.feedbacks.dev/mcp/feedbacks-mcp-server-1.0.0.tgz", "--", "feedbacks-mcp"],
       "env": {
-        "FEEDBACKS_API_KEY": "fb_live_your_key",
+        "FEEDBACKS_API_KEY": "${env:FEEDBACKS_API_KEY}",
         "FEEDBACKS_API_URL": "https://app.feedbacks.dev"
       }
     }

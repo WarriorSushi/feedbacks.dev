@@ -11,7 +11,7 @@ const agentPrompt = `Install feedbacks.dev in this project using the project-spe
 2. Add the exact dashboard-generated snippet once.
 3. Do not expose private API keys or server credentials.
 4. Start the app and confirm the feedback button appears without layout shift.
-5. Send one test report and verify its page and browser context in the inbox.
+5. Send one test report, confirm the request succeeds, and ask me to verify its page and browser context in the inbox.
 6. Summarize the changed file and verification result.`
 
 type InstallView = 'code' | 'agent'
