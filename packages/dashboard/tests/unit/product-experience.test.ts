@@ -630,14 +630,17 @@ test('widget attribution is conspicuous, linked, and controlled by server entitl
 
 test('theme tokens use perceptual OKLCH colors in both themes', () => {
   const css = read('../../src/app/globals.css')
+  const layout = read('../../src/app/layout.tsx')
   const tailwind = read('../../tailwind.config.cjs')
 
   assert.match(css, /--background: 0\.968/)
-  assert.match(css, /\.dark[\s\S]*--background: 0\.115/)
-  assert.match(css, /\.dark[\s\S]*--surface-raised: 0\.305/)
-  assert.match(css, /\.dark[\s\S]*--surface-soft: 0\.255/)
-  assert.match(css, /\.dark[\s\S]*--surface-inset: 0\.165/)
-  assert.match(css, /\.dark[\s\S]*--card: 0\.225/)
+  assert.match(css, /\.dark[\s\S]*--background: 0\.105/)
+  assert.match(css, /\.dark[\s\S]*--surface-raised: 0\.195/)
+  assert.match(css, /\.dark[\s\S]*--surface-soft: 0\.155/)
+  assert.match(css, /\.dark[\s\S]*--surface-inset: 0\.09/)
+  assert.match(css, /\.dark[\s\S]*--card: 0\.17/)
+  assert.match(layout, /geist\/font\/sans/)
+  assert.match(layout, /GeistSans\.className/)
   assert.match(css, /\[class~="shadow-\[var\(--shadow-card\)\]"\]/)
   assert.match(css, /--surface-sidebar:/)
   assert.match(css, /--surface-selected:/)

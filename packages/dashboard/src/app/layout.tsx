@@ -1,6 +1,7 @@
 import '@/lib/env' // validate env vars at startup
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { GeistMono } from 'geist/font/mono'
+import { GeistSans } from 'geist/font/sans'
 import { headers } from 'next/headers'
 import { cookies } from 'next/headers'
 import './globals.css'
@@ -12,8 +13,6 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { MarketingMeasurement } from '@/components/marketing-measurement'
 import { Suspense } from 'react'
 import { APPEARANCE_COOKIE_NAME, normalizeAppearanceTheme } from '@/lib/appearance'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_ORIGIN),
@@ -70,7 +69,7 @@ export default async function RootLayout({
           />
         ) : null}
       </head>
-      <body className={inter.className}>
+      <body className={`${GeistSans.className} ${GeistMono.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

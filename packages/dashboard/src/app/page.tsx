@@ -92,8 +92,7 @@ export default function LandingPage() {
         <section id="setup" className="landing-setup-section landing-atmosphere-section landing-tone-code landing-reveal relative border-b py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-5 sm:px-6">
             <div className="mx-auto mb-12 max-w-3xl text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">From zero to a real report</p>
-              <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.045em] sm:text-5xl">Install it before your coffee gets cold.</h2>
+              <h2 className="text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">Install it before your coffee gets cold.</h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-muted-foreground">Create a project, copy the exact snippet, and send one test message from your own page. Advanced customization can wait until the feedback is already flowing.</p>
             </div>
             <LandingVibeInstall snippet={installSnippet} />
@@ -153,7 +152,7 @@ export default function LandingPage() {
 
         <section className="landing-faq-section landing-atmosphere-section landing-tone-quiet landing-reveal relative overflow-hidden border-b py-20 sm:py-28">
           <div className="relative z-[2] mx-auto max-w-6xl px-5 sm:px-6">
-            <div className="mx-auto max-w-2xl text-center"><p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Straight answers</p><h2 className="mt-4 text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">The things developers ask first.</h2></div>
+            <div className="mx-auto max-w-2xl text-center"><h2 className="text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">The things developers ask first.</h2></div>
             <div className="mt-12 grid gap-3 md:grid-cols-2">
               {[
                 ['Will it slow down my app?', 'The production widget is under 20KB gzip, loads asynchronously, and has a CI size budget.'],
@@ -191,8 +190,8 @@ export default function LandingPage() {
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 text-[11px] text-muted-foreground"><Link href="/feedback-widget">Feedback widget</Link><Link href="/feedback-widget/nextjs">Next.js guide</Link><Link href="/docs" prefetch={false}>Docs</Link><Link href="/boards" prefetch={false}>Public boards</Link><Link href="/early-access">Early adopter programme</Link><Link href="/privacy">Privacy</Link><PrivacyChoicesButton /><Link href="/terms">Terms</Link></div>
           <a href="https://github.com/WarriorSushi/Feedbacks.dev" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground"><Github className="h-3.5 w-3.5" /> Source available</a>
         </div>
+        <a href={dashboardHref} className="sr-only">Open dashboard</a>
       </footer>
-      <a href={dashboardHref} className="sr-only">Open dashboard</a>
     </div>
   )
 }
