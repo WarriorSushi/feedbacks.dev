@@ -1,17 +1,17 @@
 # feedbacks.dev Product Implementation Status
 
-Last updated: 2026-08-22
+Last updated: 2026-09-09
 
-## August 22 launch-readiness refresh
+## September 9 release-readiness refresh
 
-- General Free signup remains open to every visitor. The optional Early Adopter Programme has 100 claimable places without a review call or observed onboarding session. Email submission records interest but does not consume a place.
-- Early Adopter onboarding is handled by the persisted, mandatory product tour. Completing every step atomically claims a remaining place and activates Pro; structured monthly feedback renews it one month at a time up to 12 total months.
-- Programme feedback opens seven days before each due date, remains claimable through a two-month grace period inside a maximum 14-month programme window, and is mirrored into the private product inbox. A dashboard banner, daily lifecycle job, deduplicated service emails, and explicit completed/removed states make the programme end predictably without deleting customer data.
-- Free and Pro now both expose complete feedback history. The old 30-day Free visibility cutoff did not delete or materially reduce stored data, so it was removed from the entitlement matrix and every customer-facing surface.
-- Cron, health, and internal job bearer credentials now use constant-time comparison. Public CSP reports are byte-bounded and rate-limited before logging. The framework-identifying response header is disabled.
-- The current baseline is 217 unit tests, passing TypeScript and ESLint, no known production dependency vulnerabilities, and a passing live Supabase schema contract.
-- The release passed `pnpm ci:verify` and production deployment `dpl_4QaQWDFBm6Vnu5KwFbRCjW8eafQa` for commit `1ed713d` is Ready on all canonical aliases; post-deploy public browser smoke and error/5xx log scans are clean.
-- The one remaining Supabase security-advisor warning is the account-level leaked-password-protection setting. It must be enabled in Supabase Auth when the current plan supports it; it is not a repository migration.
+- The canonical hosted script is now the only advertised Website, React, Vue, WordPress, and site-builder install path. Unpublished framework packages are no longer shown to customers.
+- The hosted MCP tarball connects in Claude Code, all nine tools initialize, and the documented Claude CLI argument order matches the current client. The Cursor JSON contract matches current Cursor stdio and environment-interpolation documentation.
+- Production dependencies have zero known advisories. The release gate now checks low-severity advisories, TypeScript, ESLint, all 269 unit tests, every package build, widget size, and dashboard route budgets.
+- The live Supabase schema, storage buckets, policies, and service-only database functions pass `pnpm supabase:check`.
+- GitHub Actions now monitors `/api/internal/health` externally. The cron credential was rotated across Vercel and GitHub, the retry worker and health monitor passed after rotation, and schedules avoid GitHub's high-load clock boundaries.
+- Production deployment `dpl_BwHVhBW3AjuJk3i2uZVpFYJjVwwb` is Ready on all canonical aliases. Live public Playwright smoke, hosted widget and MCP asset checks, authorization-boundary probes, and the post-deploy Vercel error-log scan are clean.
+- Dodo remains intentionally in test mode. Live promotion requires one coherent live Dodo API key, product set, webhook secret, environment switch, redeploy, and real checkout verification.
+- Three account-side gates remain: configure the signed Resend production webhook, enable Supabase leaked-password protection when the plan supports it, and provision a non-production Supabase project before enabling the isolated data-mutating Playwright job.
 
 This document tracks the stable product status after the full product audit in `docs/review/2026-06-21-full-product-audit-and-phase-plan.md`. Use it as the short source of truth for what is shipped, what is intentionally deferred, and what should not be promoted as complete yet.
 
