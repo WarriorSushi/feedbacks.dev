@@ -778,6 +778,18 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
                 {user.email ? <p className="mt-0.5 truncate text-xs text-muted-foreground">{user.email}</p> : null}
               </div>
               <DropdownMenu.Separator className="my-1 h-px bg-border" />
+              {!showProBrand ? (
+                <DropdownMenu.Item asChild>
+                  <Link
+                    href="/billing?intent=pro"
+                    onClick={() => beginNavigation('/billing?intent=pro')}
+                    className="mb-1 flex min-h-9 cursor-pointer items-center gap-2.5 rounded-md bg-primary px-2.5 text-[13px] font-semibold text-primary-foreground outline-none transition-colors focus:bg-primary/90"
+                  >
+                    <Sparkles className="h-4 w-4 shrink-0" />
+                    Upgrade to Pro
+                  </Link>
+                </DropdownMenu.Item>
+              ) : null}
               {accountMenuItems.map((item) => (
                 <DropdownMenu.Item key={item.href} asChild>
                   <Link
