@@ -4446,62 +4446,11 @@ html.windows98 {
   50% { background-position: 100% 50%; opacity: 1; }
 }
 
-.account-menu-trigger {
-  position: relative;
-  box-shadow:
-    0 0 0 1px oklch(var(--brand) / 0.34),
-    0 0 18px -5px oklch(var(--brand) / 0.9);
-}
-
-.account-menu-trigger::before {
-  content: "";
-  position: absolute;
-  inset: -5px;
-  border-radius: 9999px;
-  padding: 2px;
-  background: conic-gradient(
-    from 0deg,
-    transparent 0 18%,
-    oklch(var(--brand) / 0.42) 31%,
-    oklch(var(--brand)) 48%,
-    oklch(0.77 0.16 190) 61%,
-    transparent 78% 100%
-  );
-  animation: account-menu-ring-turn 2.6s linear infinite;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-
-.account-menu-trigger:hover,
-.account-menu-trigger[data-state="open"] {
-  box-shadow:
-    0 0 0 2px oklch(var(--brand) / 0.38),
-    0 0 24px -3px oklch(var(--brand) / 0.95);
-}
-
-.account-menu-trigger[data-state="open"]::before {
-  animation-duration: 1s;
-}
-
 .windows98 .account-menu-trigger {
   border-radius: 9999px !important;
-  background: oklch(var(--brand) / 0.14) !important;
-  color: oklch(var(--brand)) !important;
-  box-shadow:
-    0 0 0 1px oklch(var(--brand) / 0.34),
-    0 0 18px -5px oklch(var(--brand) / 0.9) !important;
-}
-
-@keyframes account-menu-ring-turn {
-  to { transform: rotate(1turn); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .account-menu-trigger::before {
-    animation: none;
-  }
+  background: oklch(var(--accent)) !important;
+  color: oklch(var(--accent-foreground)) !important;
+  box-shadow: 0 0 0 1px oklch(var(--accent-foreground) / 0.2) !important;
 }
 
 /* Landing atmosphere: one continuous canvas with locally art-directed light. */
