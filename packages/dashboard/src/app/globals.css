@@ -3426,8 +3426,8 @@ html.windows98 {
 
 .windows98 .dashboard-shell > main > div {
   min-height: calc(100% - 2px);
-  background: var(--win98-face);
-  box-shadow: var(--win98-raised);
+  background: transparent;
+  box-shadow: none;
 }
 
 .windows98 .dashboard-shell aside,

@@ -705,6 +705,7 @@ test('Windows 98 is a complete selectable appearance across product and public s
   assert.match(css, /\.windows98 \{/)
   assert.match(css, /--win98-raised:/)
   assert.match(css, /\.windows98 \.dashboard-shell/)
+  assert.match(css, /\.windows98 \.dashboard-shell > main > div \{[\s\S]*background: transparent;[\s\S]*box-shadow: none;/)
   assert.match(css, /\.windows98 \.landing-hero/)
   assert.match(css, /\.windows98 \.docs-content/)
   assert.match(css, /\.windows98 \.public-board-shell/)
