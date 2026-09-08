@@ -112,7 +112,11 @@ function trackConversion(detail: ConversionDetail, config: MarketingMeasurementP
   window.sessionStorage.setItem(storageKey, '1')
 
   if (detail.email) window.gtag?.('set', 'user_data', { email: detail.email.trim().toLowerCase() })
-  const googleLabel = detail.eventName === 'Lead' ? config.googleLeadLabel : config.googleSignupLabel
+  const googleLabel = detail.eventName === 'Lead'
+    ? config.googleLeadLabel
+    : detail.eventName === 'CompleteRegistration'
+      ? config.googleSignupLabel
+      : config.googleProjectCreatedLabel
   if (config.googleTagId && googleLabel) {
     window.gtag?.('event', 'conversion', {
       send_to: `${config.googleTagId}/${googleLabel}`,
@@ -148,6 +152,7 @@ type MarketingMeasurementProps = {
     googleTagId?: string
     googleLeadLabel?: string
     googleSignupLabel?: string
+    googleProjectCreatedLabel?: string
     metaPixelId?: string
     redditPixelId?: string
   }

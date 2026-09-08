@@ -107,6 +107,7 @@ test('advertising integrations remain consent-gated and outside customer widgets
   assert.match(measurement, /window\.location\.reload\(\)/)
   assert.match(measurement, /eventID: detail\.eventId/)
   assert.match(measurement, /conversionId: detail\.eventId/)
+  assert.match(measurement, /detail\.eventName === 'CompleteRegistration'[\s\S]*googleSignupLabel[\s\S]*googleProjectCreatedLabel/)
   assert.match(marketing, /metadata: \{ conversion_id: args\.eventId \}/)
   assert.match(marketing, /event_id: args\.eventId/)
   assert.doesNotMatch(widget, /facebook|redditstatic|googletagmanager|fbq|rdt\(/i)

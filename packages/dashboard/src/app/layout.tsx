@@ -95,6 +95,7 @@ export default async function RootLayout({
                 googleTagId: process.env.NEXT_PUBLIC_GOOGLE_TAG_ID,
                 googleLeadLabel: process.env.NEXT_PUBLIC_GOOGLE_ADS_LEAD_LABEL,
                 googleSignupLabel: process.env.NEXT_PUBLIC_GOOGLE_ADS_SIGNUP_LABEL,
+                googleProjectCreatedLabel: process.env.NEXT_PUBLIC_GOOGLE_ADS_PROJECT_CREATED_LABEL,
                 metaPixelId: process.env.NEXT_PUBLIC_META_PIXEL_ID,
                 redditPixelId: process.env.NEXT_PUBLIC_REDDIT_PIXEL_ID,
               }}
