@@ -418,6 +418,11 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
               <motion.h1 key="complete-heading" id="try-widget-title" initial={false} animate={{ opacity: 1, y: 0 }} className="font-semibold tracking-[-0.04em]">
                 The Best Addition to Your Website/App/SaaS ever
               </motion.h1>
+            ) : open ? (
+              <motion.h1 key="open-heading" id="try-widget-title" initial={false} exit={{ opacity: 0 }} transition={{ duration: 0 }} className="font-semibold tracking-[-0.04em]">
+                <span className="block">This is your feedback form.</span>
+                <span className="landing-try-result mt-1 block">Write something, then press Send.</span>
+              </motion.h1>
             ) : (
               <motion.h1 key="demo-heading" id="try-widget-title" initial={false} exit={{ opacity: 0 }} transition={{ duration: 0 }} className="font-semibold tracking-[-0.04em]">
                 <span className="block">We believe in “<span className="landing-try-show-accent">Show</span>, don&apos;t tell”.</span>

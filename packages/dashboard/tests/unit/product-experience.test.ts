@@ -41,6 +41,7 @@ test('landing page explains both sides of the feedback loop and keeps the instal
 
   assert.match(hero, /Show<\/span>, don&apos;t tell/)
   assert.match(hero, /Your users will press this button/)
+  assert.match(hero, /This is your feedback form[\s\S]*Write something, then press Send/)
   assert.match(hero, /Send feedback/)
   assert.match(hero, /Page \+ browser context included/)
   assert.match(hero, /Feedback received/)
