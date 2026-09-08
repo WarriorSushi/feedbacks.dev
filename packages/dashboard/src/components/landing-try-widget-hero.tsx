@@ -415,13 +415,13 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
         <motion.div layout="position" className={cn('landing-try-heading relative z-[2] mx-auto max-w-[920px] text-center', open && 'landing-try-heading-open', completed && 'landing-try-heading-complete')} transition={{ layout: { duration: reduceMotion || completed ? 0 : 0.58, ease: [0.16, 1, 0.3, 1] } }}>
           <AnimatePresence initial={false}>
             {completed ? (
-              <motion.h1 key="complete-heading" id="try-widget-title" initial={false} animate={{ opacity: 1, y: 0 }} className="font-semibold tracking-[-0.055em]">
+              <motion.h1 key="complete-heading" id="try-widget-title" initial={false} animate={{ opacity: 1, y: 0 }} className="font-semibold tracking-[-0.04em]">
                 The Best Addition to Your Website/App/SaaS ever
               </motion.h1>
             ) : (
-              <motion.h1 key="demo-heading" id="try-widget-title" initial={false} exit={{ opacity: 0 }} transition={{ duration: 0 }} className="font-semibold tracking-[-0.055em]">
+              <motion.h1 key="demo-heading" id="try-widget-title" initial={false} exit={{ opacity: 0 }} transition={{ duration: 0 }} className="font-semibold tracking-[-0.04em]">
                 <span className="block">We believe in “<span className="landing-try-show-accent">Show</span>, don&apos;t tell”.</span>
-                <span className="mt-1 block text-primary">Your users will press this button.</span>
+                <span className="landing-try-result mt-1 block">Your users will press this button.</span>
               </motion.h1>
             )}
           </AnimatePresence>

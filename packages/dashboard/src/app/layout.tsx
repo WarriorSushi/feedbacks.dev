@@ -2,6 +2,7 @@ import '@/lib/env' // validate env vars at startup
 import type { Metadata } from 'next'
 import { GeistMono } from 'geist/font/mono'
 import { GeistSans } from 'geist/font/sans'
+import { Instrument_Serif } from 'next/font/google'
 import { headers } from 'next/headers'
 import { cookies } from 'next/headers'
 import './globals.css'
@@ -13,6 +14,12 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { MarketingMeasurement } from '@/components/marketing-measurement'
 import { Suspense } from 'react'
 import { APPEARANCE_COOKIE_NAME, normalizeAppearanceTheme } from '@/lib/appearance'
+
+const instrumentSerif = Instrument_Serif({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-instrument-serif',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_ORIGIN),
@@ -69,7 +76,7 @@ export default async function RootLayout({
           />
         ) : null}
       </head>
-      <body className={`${GeistSans.className} ${GeistMono.variable}`}>
+      <body className={`${GeistSans.className} ${GeistMono.variable} ${instrumentSerif.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

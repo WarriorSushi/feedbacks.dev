@@ -39,7 +39,7 @@ export function BrandWordmark({
         )}
       />
       <span className={cn('tracking-tight', intro && 'animate-fade-in', textClassName)}>
-        feedbacks<span className={cn('text-primary', dotClassName)}>.dev</span>
+        feedbacks<span className={cn('text-[oklch(var(--brand))]', dotClassName)}>.dev</span>
       </span>
     </span>
   )
