@@ -4453,6 +4453,15 @@ html.windows98 {
   box-shadow: 0 0 0 1px oklch(var(--accent-foreground) / 0.2) !important;
 }
 
+:root:not(.dark):not(.windows98) .account-menu-trigger {
+  background: oklch(0.3213 0.0889 149.8);
+  color: oklch(0.9695 0.0045 258.3);
+}
+
+:root:not(.dark):not(.windows98) .account-menu-trigger:hover {
+  background: oklch(0.37 0.1 149.8);
+}
+
 /* Landing atmosphere: one continuous canvas with locally art-directed light. */
 @keyframes landing-final-orb-breathe {
   0%, 100% { transform: translate(-50%, -50%) scale(0.94); opacity: 0.66; }
