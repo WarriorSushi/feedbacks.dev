@@ -72,13 +72,13 @@ export default function LandingPage() {
             <Link href="#product"><Button variant="ghost" size="sm">Product</Button></Link>
             <Link href="#setup"><Button variant="ghost" size="sm">Install</Button></Link>
             <Link href="#pricing"><Button variant="ghost" size="sm">Pricing</Button></Link>
-            <Link href="/early-access"><Button variant="outline" size="sm" className="border-primary/30 text-primary hover:border-primary/50 hover:bg-primary/5 hover:text-primary">Join the Early Adopter Programme</Button></Link>
+            <Link href="/early-access"><Button variant="outline" size="sm" className="landing-brand-outline">Join the Early Adopter Programme</Button></Link>
             <Link href="/docs" prefetch={false}><Button variant="ghost" size="sm">Docs</Button></Link>
           </nav>
           <div className="flex items-center gap-1 sm:gap-2">
             <ThemeToggle landing />
             <LandingMobileMenu />
-            <Link href={authHref}><Button size="sm" className="h-10 gap-1 px-3 lg:h-9">Get started <ArrowRight className="hidden h-3.5 w-3.5 sm:block" /></Button></Link>
+            <Link href={authHref}><Button size="sm" className="landing-brand-primary h-10 gap-1 px-3 lg:h-9">Get started <ArrowRight className="hidden h-3.5 w-3.5 sm:block" /></Button></Link>
           </div>
         </div>
       </LandingScrollHeader>
@@ -176,9 +176,9 @@ export default function LandingPage() {
           <Image className="landing-section-mascot landing-mascot-final" src="/mascots-v2/final-victory.png" alt="" width={1217} height={1293} sizes="(max-width: 767px) 150px, 260px" aria-hidden="true" />
           <div className="relative mx-auto max-w-4xl text-center">
             <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border bg-card shadow-sm"><HeartHandshake className="h-6 w-6 text-primary" /></span>
-            <h2 className="mt-7 text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">Your first useful report could arrive today.</h2>
+            <h2 className="landing-final-heading mt-7 text-4xl font-semibold tracking-[-0.05em] sm:text-6xl">Your first useful report could arrive today.</h2>
             <p className="mx-auto mt-5 max-w-xl text-base leading-7 text-muted-foreground">Start with the generous plan. Keep the context. Ship the fix. Tell the people who asked.</p>
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Link href={authHref}><Button size="lg" className="h-12 w-full gap-2 px-7 sm:w-auto">Create a free project <ArrowRight className="h-4 w-4" /></Button></Link><Link href="/docs" prefetch={false}><Button size="lg" variant="outline" className="h-12 w-full px-7 sm:w-auto">Read the docs</Button></Link></div>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row"><Link href={authHref}><Button size="lg" className="landing-brand-primary h-12 w-full gap-2 px-7 sm:w-auto">Create a free project <ArrowRight className="h-4 w-4" /></Button></Link><Link href="/docs" prefetch={false}><Button size="lg" variant="outline" className="landing-brand-outline h-12 w-full px-7 sm:w-auto">Read the docs</Button></Link></div>
           </div>
         </section>
       </main>

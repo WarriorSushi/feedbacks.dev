@@ -574,8 +574,8 @@ export function LandingTryWidgetHero({ authHref }: { authHref: string }) {
               )}
             >
               <div className="flex w-full flex-col justify-center gap-2 sm:w-auto sm:flex-row">
-                <Button asChild size="lg" className={cn('h-12 px-7', completed && 'h-auto min-h-14 px-9 py-3 text-base sm:min-h-16 sm:px-11 sm:text-lg')}><Link href={authHref}>Start free</Link></Button>
-                <Button asChild size="lg" variant="outline" className={cn('h-12 gap-2 px-7', completed && 'h-auto min-h-14 px-9 py-3 text-base sm:min-h-16 sm:px-11 sm:text-lg')}><Link href="/early-access"><UsersRound className={cn('h-4 w-4', completed && 'h-5 w-5')} />Join the Early Adopter Programme</Link></Button>
+                <Button asChild size="lg" className={cn('landing-brand-primary h-12 px-7', completed && 'h-auto min-h-14 px-9 py-3 text-base sm:min-h-16 sm:px-11 sm:text-lg')}><Link href={authHref}>Start free</Link></Button>
+                <Button asChild size="lg" variant="outline" className={cn('landing-brand-outline h-12 gap-2 px-7', completed && 'h-auto min-h-14 px-9 py-3 text-base sm:min-h-16 sm:px-11 sm:text-lg')}><Link href="/early-access"><UsersRound className={cn('h-4 w-4', completed && 'h-5 w-5')} />Join the Early Adopter Programme</Link></Button>
               </div>
               {!completed ? <p className="mt-3 text-sm leading-6 text-muted-foreground">Free signup is open to everyone. The 100-member programme adds guided onboarding and up to 12 earned Pro months.</p> : null}
               {completed ? (

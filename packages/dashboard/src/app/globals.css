@@ -901,7 +901,7 @@
   .landing-mascot-proof { right: 0.75rem; bottom: 0.5rem; width: 6.5rem; opacity: 0.9; }
   .landing-mascot-pricing { top: 18rem; right: 0.75rem; width: 8rem; }
   .landing-mascot-faq { top: 9rem; right: 0.75rem; width: 6.5rem; opacity: 0.9; }
-  .landing-mascot-final { left: 0.75rem; bottom: 0.25rem; width: 9.5rem; opacity: 0.92; }
+  .landing-mascot-final { left: -2.5rem; bottom: 0.25rem; width: 8rem; opacity: 0.88; }
 }
 
 .landing-try-hero {
@@ -3272,6 +3272,7 @@ html:not(.dark):not(.windows98) .auth-form-pane {
   --landing-slate-surface-raised: linear-gradient(155deg, oklch(0.997 0.004 258), oklch(0.982 0.009 250) 58%, oklch(0.958 0.017 248));
   --landing-slate-titlebar: linear-gradient(180deg, oklch(0.998 0.003 256), oklch(0.965 0.013 250));
   --landing-slate-border: oklch(0.59 0.028 253 / 0.46);
+  --landing-slate-edge: linear-gradient(var(--landing-slate-border), var(--landing-slate-border));
   --landing-slate-shadow:
     0 34px 82px -46px oklch(0.3 0.055 256 / 0.48),
     0 12px 30px -24px oklch(0.45 0.08 246 / 0.25),
@@ -3302,8 +3303,10 @@ html:not(.dark):not(.windows98) .auth-form-pane {
   .landing-feedback-inbox,
   .landing-feedback-update
 ) {
-  border-color: var(--landing-slate-border) !important;
-  background: var(--landing-slate-surface) !important;
+  border-color: transparent !important;
+  background:
+    var(--landing-slate-surface) padding-box,
+    var(--landing-slate-edge) border-box !important;
   box-shadow: var(--landing-slate-shadow) !important;
 }
 
@@ -3328,7 +3331,10 @@ html:not(.dark):not(.windows98) .auth-form-pane {
 
 /* The inbox is a dark product preview, not another page-level color field. */
 .marketing-shell .landing-inbox-section .landing-triage-dashboard {
-  background: linear-gradient(145deg, oklch(0.18 0.018 140), oklch(0.08 0.012 140)) !important;
+  border-color: transparent !important;
+  background:
+    linear-gradient(145deg, oklch(0.18 0.018 140), oklch(0.08 0.012 140)) padding-box,
+    var(--landing-slate-edge) border-box !important;
 }
 
 .marketing-shell .landing-inbox-section .landing-triage-dashboard :is(
@@ -4730,6 +4736,14 @@ html.windows98 {
   --landing-slate-surface-raised: linear-gradient(150deg, oklch(0.215 0.008 250), oklch(0.17 0.007 252) 58%, oklch(0.13 0.006 255));
   --landing-slate-titlebar: linear-gradient(180deg, oklch(0.205 0.008 250), oklch(0.145 0.006 255));
   --landing-slate-border: oklch(0.84 0.006 250 / 0.14);
+  --landing-slate-edge: linear-gradient(
+    to bottom left,
+    oklch(0.94 0.035 138 / 0.82),
+    oklch(var(--brand) / 0.54) 18%,
+    oklch(var(--brand) / 0.2) 44%,
+    oklch(var(--foreground) / 0.08) 76%,
+    transparent
+  );
   --landing-slate-shadow:
     0 32px 76px -40px rgb(0 0 0 / 0.88),
     0 12px 28px -24px rgb(0 0 0 / 0.72),
@@ -4813,10 +4827,57 @@ html.windows98 {
 }
 
 .dark .landing-try-launch {
+  border: 1px solid transparent;
   background: linear-gradient(180deg, oklch(0.17 0.008 252), oklch(0.09 0.006 255));
   box-shadow:
     inset 0 1px 0 oklch(0.98 0.004 250 / 0.1),
     0 26px 62px -30px rgb(0 0 0 / 0.95);
+}
+
+.dark .marketing-shell .landing-try-launch {
+  background:
+    linear-gradient(180deg, oklch(0.17 0.008 252), oklch(0.09 0.006 255)) padding-box,
+    var(--landing-slate-edge) border-box;
+}
+
+.dark .marketing-shell .landing-try-show-accent,
+.dark .marketing-shell .landing-final-heading {
+  color: oklch(var(--brand));
+  text-shadow: 0 12px 36px oklch(var(--brand) / 0.16);
+}
+
+.dark .marketing-shell .landing-brand-primary {
+  border: 1px solid transparent;
+  color: oklch(0.14 0.035 150);
+  background:
+    linear-gradient(oklch(var(--brand)), oklch(var(--brand))) padding-box,
+    linear-gradient(to bottom left, oklch(0.96 0.07 138), oklch(var(--brand)) 30%, oklch(var(--brand) / 0.42) 72%) border-box;
+  box-shadow:
+    inset 0 1px 0 oklch(0.98 0.03 138 / 0.46),
+    0 14px 34px -20px oklch(var(--brand) / 0.72);
+}
+
+.dark .marketing-shell .landing-brand-primary:hover {
+  color: oklch(0.12 0.03 150);
+  background:
+    linear-gradient(oklch(0.76 0.19 150), oklch(0.76 0.19 150)) padding-box,
+    linear-gradient(to bottom left, oklch(0.98 0.05 138), oklch(0.78 0.19 150) 32%, oklch(var(--brand) / 0.5) 74%) border-box;
+}
+
+.dark .marketing-shell .landing-brand-outline {
+  border: 1px solid transparent;
+  color: oklch(var(--foreground));
+  background:
+    linear-gradient(oklch(0.105 0.006 255), oklch(0.105 0.006 255)) padding-box,
+    var(--landing-slate-edge) border-box;
+  box-shadow: inset 0 1px 0 oklch(var(--foreground) / 0.06);
+}
+
+.dark .marketing-shell .landing-brand-outline:hover {
+  color: oklch(var(--brand));
+  background:
+    linear-gradient(oklch(0.135 0.015 150), oklch(0.105 0.006 255)) padding-box,
+    var(--landing-slate-edge) border-box;
 }
 
 .dark .landing-footer {
