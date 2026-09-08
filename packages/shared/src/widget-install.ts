@@ -263,10 +263,6 @@ function sanitizeBoolean(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined
 }
 
-function quoteString(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
-}
-
 function isPresent(value: string | undefined, presence = false): boolean {
   return value === 'true' || (presence && value !== 'false')
 }
@@ -729,39 +725,6 @@ function formatWebsiteSnippet(config: WidgetConfig, appOrigin?: string): string 
   return lines.join('\n')
 }
 
-function formatReactSnippet(config: WidgetConfig, appOrigin?: string): string {
-  return [
-    `import { FeedbacksWidget } from '@feedbacks/widget-react'`,
-    '',
-    'export default function App() {',
-    '  return (',
-    '    <>',
-    '      <FeedbacksWidget',
-    `        projectKey="${quoteString(config.projectKey)}"`,
-    `        appOrigin="${quoteString(normalizeAppOrigin(appOrigin))}"`,
-    '      />',
-    '      {/* your app */}',
-    '    </>',
-    '  )',
-    '}',
-  ].join('\n')
-}
-
-function formatVueSnippet(config: WidgetConfig, appOrigin?: string): string {
-  return [
-    '<script setup>',
-    `import { FeedbacksWidget } from '@feedbacks/widget-vue'`,
-    '</script>',
-    '',
-    '<template>',
-    '  <FeedbacksWidget',
-    `    project-key="${quoteString(config.projectKey)}"`,
-    `    app-origin="${quoteString(normalizeAppOrigin(appOrigin))}"`,
-    '  />',
-    '</template>',
-  ].join('\n')
-}
-
 export function generateInstallSnippets(input: GenerateInstallSnippetsInput): InstallSnippet[] {
   const runtimeConfig = buildRuntimeWidgetConfig(input.projectKey, input.savedConfig, {
     appOrigin: input.appOrigin,
@@ -775,13 +738,13 @@ export function generateInstallSnippets(input: GenerateInstallSnippetsInput): In
     },
     {
       label: 'React',
-      language: 'tsx',
-      code: formatReactSnippet(runtimeConfig, input.appOrigin),
+      language: 'html',
+      code: formatWebsiteSnippet(runtimeConfig, input.appOrigin),
     },
     {
       label: 'Vue',
-      language: 'vue',
-      code: formatVueSnippet(runtimeConfig, input.appOrigin),
+      language: 'html',
+      code: formatWebsiteSnippet(runtimeConfig, input.appOrigin),
     },
   ]
 }

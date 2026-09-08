@@ -34,15 +34,12 @@ Most feedback tools are either too heavy for small teams or too simple to be use
 ### Drop-In Widget
 Install with one snippet. Collect feedback with page and browser context plus an optional user-triggered screenshot. Under 20KB gzipped. Works with any framework.
 
-```bash
-pnpm add @feedbacks/widget
-```
-
 ```html
+<div data-feedbacks-host="your-project-key"></div>
+
 <script
   src="https://app.feedbacks.dev/widget/latest.js"
   data-project="your-project-key"
-  data-api-url="https://app.feedbacks.dev/api/feedback"
   defer
 ></script>
 ```
@@ -148,21 +145,13 @@ pnpm build
 
 ### Widget Installation
 
-```bash
-# npm/pnpm/yarn
-pnpm add @feedbacks/widget
+```html
+<!-- Website, React, Vue, WordPress, and site builders -->
+<div data-feedbacks-host="your-project-key"></div>
 
-# React wrapper
-pnpm add @feedbacks/widget-react
-
-# Vue wrapper
-pnpm add @feedbacks/widget-vue
-
-# CDN (no build step)
 <script
   src="https://app.feedbacks.dev/widget/latest.js"
   data-project="your-project-key"
-  data-api-url="https://app.feedbacks.dev/api/feedback"
   defer
 ></script>
 ```
@@ -175,8 +164,8 @@ pnpm add @feedbacks/widget-vue
 packages/
   dashboard/      # Next.js 15 app - auth, inbox, projects, boards, integrations
   widget/         # Embeddable feedback widget - modal, inline, trigger modes
-  widget-react/   # React wrapper component
-  widget-vue/     # Vue wrapper component
+  widget-react/   # Internal React wrapper (not published)
+  widget-vue/     # Internal Vue wrapper (not published)
   shared/         # Shared TypeScript types
   mcp-server/     # MCP server for AI agent integration
 sql/              # Internal Supabase migration files for hosted/staging operations

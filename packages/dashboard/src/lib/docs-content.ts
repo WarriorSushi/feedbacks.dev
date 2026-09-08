@@ -122,9 +122,8 @@ export const DOCS_PAGES: DocsPage[] = [
       { type: 'paragraph', text: 'Add the generated Website script to the root layout. This avoids duplicate instances and keeps the form available across routes.' },
       { type: 'code', label: 'app/layout.tsx', language: 'tsx', code: `import Script from 'next/script'\n\nexport default function RootLayout({ children }) {\n  return (\n    <html lang="en">\n      <body>\n        {children}\n        <div data-feedbacks-host="YOUR_PROJECT_KEY" />\n        <Script\n          src="https://app.feedbacks.dev/widget/latest.js"\n          data-project="YOUR_PROJECT_KEY"\n          strategy="afterInteractive"\n        />\n      </body>\n    </html>\n  )\n}` },
       { type: 'heading', id: 'react-vue', title: 'React and Vue' },
-      { type: 'paragraph', text: 'Install the matching wrapper package, then copy the generated component from the project Install tab. Put the wrapper at the application root. Saved product settings are resolved remotely. If your package registry cannot resolve a wrapper, use the Website script in the root HTML instead.' },
-      { type: 'code', label: 'React package', language: 'bash', code: 'pnpm add @feedbacks/widget-react' },
-      { type: 'code', label: 'Vue package', language: 'bash', code: 'pnpm add @feedbacks/widget-vue' },
+      { type: 'paragraph', text: 'Copy the generated React or Vue snippet into the root index.html file, after the framework mount element. It uses the same hosted script as Website installation, loads once, survives client-side navigation, and resolves saved product settings remotely.' },
+      { type: 'code', label: 'Root index.html', language: 'html', code: websiteSnippet },
       { type: 'heading', id: 'wordpress', title: 'WordPress' },
       { type: 'steps', items: [
         { title: 'Open Embed installation', body: 'Select WordPress to see the stable Website snippet and placement guidance.' },

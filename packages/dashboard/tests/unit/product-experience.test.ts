@@ -765,8 +765,8 @@ test('agent setup guidance matches Claude Code and Cursor MCP configuration rule
   const landing = read('../../src/components/landing-vibe-install.tsx')
   const cursorSection = mcpDocs.split('## Cursor')[1]?.split('## Generic MCP Clients')[0] || ''
 
-  assert.match(mcpDocs, /--transport stdio --env FEEDBACKS_API_KEY=fb_live_your_key feedbacks --/)
-  assert.doesNotMatch(mcpDocs, /--transport stdio feedbacks --env/)
+  assert.match(mcpDocs, /--transport stdio feedbacks --env FEEDBACKS_API_KEY=fb_live_your_key --/)
+  assert.doesNotMatch(mcpDocs, /--transport stdio --env FEEDBACKS_API_KEY=fb_live_your_key feedbacks --/)
   assert.match(cursorSection, /"type": "stdio"/)
   assert.match(cursorSection, /"FEEDBACKS_API_KEY": "\$\{env:FEEDBACKS_API_KEY\}"/)
   assert.match(install, /ask me to confirm it appears in the inbox unless you have authenticated MCP access/)

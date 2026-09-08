@@ -223,6 +223,22 @@ Dodo test and live API keys, products, customers, subscriptions, and webhooks ar
 credentials or IDs across environments. The browser return is informational; only a verified webhook may
 change Pro entitlement state.
 
+To promote billing to live, make all of these changes in one maintenance window and redeploy only after the
+set is complete:
+
+1. Switch the Dodo dashboard to live mode and create or copy the live Pro monthly and optional yearly products.
+2. Create a live API key and a live webhook for `https://app.feedbacks.dev/api/billing/webhook`.
+3. Subscribe the webhook to `payment.failed`, `subscription.active`, `subscription.updated`,
+   `subscription.on_hold`, `subscription.renewed`, `subscription.plan_changed`, `subscription.cancelled`,
+   `subscription.failed`, and `subscription.expired`.
+4. Replace every Dodo Production variable in Vercel with values from that same live environment, then set
+   `DODO_PAYMENTS_ENVIRONMENT=live`. Do not reuse any test key, product ID, or webhook secret.
+5. Redeploy Production once. Complete one real checkout, confirm the Dodo webhook received HTTP 200, verify
+   Pro access in feedbacks.dev, open the customer portal, and cancel the test subscription if it is not needed.
+
+Rollback means restoring the complete test credential set plus `DODO_PAYMENTS_ENVIRONMENT=test`, then
+redeploying. Changing only the environment flag is not a safe rollback.
+
 When email notifications are enabled, configure all three server-only values:
 
 ```text

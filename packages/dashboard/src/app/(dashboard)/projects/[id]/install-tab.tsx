@@ -253,12 +253,11 @@ export function FeedbacksWidgetScript() {
     {
       id: 'react',
       label: 'React',
-      title: 'React component',
-      body: 'Use when your web app has a React root where the widget should load once.',
+      title: 'React root script',
+      body: 'Use the hosted script once in the root HTML so it survives React renders and route changes.',
       code: reactSnippet,
-      language: 'tsx',
-      packageCommand: 'pnpm add @feedbacks/widget-react',
-      placement: 'Render this once near your app root, layout, or provider tree.',
+      language: 'html',
+      placement: 'Paste this inside the body of the root index.html file, after the React mount element.',
       expected: expectedResult,
     },
     {
@@ -274,12 +273,11 @@ export function FeedbacksWidgetScript() {
     {
       id: 'vue',
       label: 'Vue',
-      title: 'Vue component',
-      body: 'Use when your web app has a Vue shell where the widget should load once.',
+      title: 'Vue root script',
+      body: 'Use the hosted script once in the root HTML so it survives Vue renders and route changes.',
       code: vueSnippet,
-      language: 'vue',
-      packageCommand: 'pnpm add @feedbacks/widget-vue',
-      placement: 'Mount once in the app shell so route changes do not create duplicate widgets.',
+      language: 'html',
+      placement: 'Paste this inside the body of the root index.html file, after the Vue mount element.',
       expected: expectedResult,
     },
     {

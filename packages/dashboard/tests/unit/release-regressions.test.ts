@@ -59,12 +59,14 @@ test('invalid profile, board, and widget values identify the field that needs at
   assert.match(boardIdentity, /board-website-url-error/)
 })
 
-test('framework installation includes package commands before component code', () => {
+test('framework installation uses the public hosted script without unpublished packages', () => {
   const install = read('../../src/app/(dashboard)/projects/[id]/install-tab.tsx')
   const docs = read('../../src/lib/docs-content.ts')
+  const shared = read('../../../shared/src/widget-install.ts')
 
-  for (const packageName of ['@feedbacks/widget-react', '@feedbacks/widget-vue']) {
-    assert.match(install, new RegExp(`pnpm add ${packageName.replace('/', '\\/')}`))
-    assert.match(docs, new RegExp(`pnpm add ${packageName.replace('/', '\\/')}`))
+  for (const source of [install, docs, shared]) {
+    assert.doesNotMatch(source, /pnpm add @feedbacks\/widget/)
   }
+  assert.match(install, /root index\.html file/)
+  assert.match(docs, /root index\.html file/)
 })

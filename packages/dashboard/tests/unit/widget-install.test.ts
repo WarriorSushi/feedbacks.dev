@@ -109,7 +109,7 @@ test('install snippets stay stable when remotely managed settings change', async
   const reactSnippet = snippets.find((snippet: { label: string }) => snippet.label === 'React')?.code || ''
   assert.doesNotMatch(websiteSnippet, /data-enable-updates|data-embed-mode|data-require-email|site-key|Report a bug/)
   assert.doesNotMatch(reactSnippet, /embedMode|requireEmail|turnstile|Report a bug/)
-  assert.match(reactSnippet, /projectKey="fb_live_demo"/)
+  assert.equal(reactSnippet, websiteSnippet)
 })
 
 test('server module preference survives customization without leaking into install markup', async () => {
