@@ -756,7 +756,7 @@ export function Sidebar({ user, projects, currentProjectId, boardSlugs = {}, bil
             <button
               type="button"
               className={cn(
-                'flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[12px] font-semibold text-primary ring-1 ring-primary/20 transition-[background-color,box-shadow,transform] hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/70 focus-visible:ring-offset-2 active:scale-[0.96]',
+                'account-menu-trigger flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[13px] font-bold text-primary transition-[background-color,box-shadow,transform] hover:scale-105 hover:bg-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 active:scale-[0.96] motion-reduce:transform-none',
                 collapsed && 'mx-auto',
               )}
               aria-label={`Open account menu for ${displayName}`}
