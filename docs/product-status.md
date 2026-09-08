@@ -9,9 +9,10 @@ Last updated: 2026-09-09
 - Production dependencies have zero known advisories. The release gate now checks low-severity advisories, TypeScript, ESLint, all 269 unit tests, every package build, widget size, and dashboard route budgets.
 - The live Supabase schema, storage buckets, policies, and service-only database functions pass `pnpm supabase:check`.
 - GitHub Actions now monitors `/api/internal/health` externally. The cron credential was rotated across Vercel and GitHub, the retry worker and health monitor passed after rotation, and schedules avoid GitHub's high-load clock boundaries.
-- Production deployment `dpl_BwHVhBW3AjuJk3i2uZVpFYJjVwwb` is Ready on all canonical aliases. Live public Playwright smoke, hosted widget and MCP asset checks, authorization-boundary probes, and the post-deploy Vercel error-log scan are clean.
+- Production deployment `dpl_HL2xot5dLcgY6ic6yxUWSjdsosGe` is Ready on all canonical aliases. Live public Playwright smoke, hosted widget and MCP asset checks, authorization-boundary probes, and the post-deploy Vercel error-log scan are clean.
 - Dodo remains intentionally in test mode. Live promotion requires one coherent live Dodo API key, product set, webhook secret, environment switch, redeploy, and real checkout verification.
-- Three account-side gates remain: configure the signed Resend production webhook, enable Supabase leaked-password protection when the plan supports it, and provision a non-production Supabase project before enabling the isolated data-mutating Playwright job.
+- One account-side reliability gate remains before the Dodo live switch: configure the signed Resend production webhook.
+- Owner decision, 9 September 2026: do not revisit Supabase leaked-password protection or a paid non-production Supabase project. The owner accepts the unavailable paid password check, and the isolated data-mutating Playwright job remains disabled. Revisit only if the owner explicitly reverses either decision.
 
 This document tracks the stable product status after the full product audit in `docs/review/2026-06-21-full-product-audit-and-phase-plan.md`. Use it as the short source of truth for what is shipped, what is intentionally deferred, and what should not be promoted as complete yet.
 

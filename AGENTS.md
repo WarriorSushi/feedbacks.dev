@@ -42,6 +42,11 @@ Before proposing or building anything, read:
 - If old archived behavior conflicts with current docs, follow the current docs.
 - Treat docs in `docs/` as authoritative unless explicitly updated.
 
+## Owner decisions
+
+- Do not ask to enable Supabase leaked-password protection. The owner has permanently accepted that limitation rather than upgrading the Supabase plan.
+- Do not ask to provision a paid non-production Supabase project for isolated E2E tests. Keep the isolated data-mutating Playwright job disabled unless the owner explicitly reverses this decision.
+
 ## Verification cadence
 
 - For UI-only changes, run targeted lint, type checks, relevant tests, and browser checks. Do not run the full monorepo build after every small visual commit.

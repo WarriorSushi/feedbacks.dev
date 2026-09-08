@@ -89,7 +89,9 @@ For a new internal staging, recovery, or disposable verification project, run th
 65. `sql/065_early_adopter_programme.sql` - adds the Early Adopter lifecycle, mandatory onboarding reward, monthly feedback renewal, and service-only programme controls
 66. `sql/066_claim_early_adopter_seats_on_activation.sql` - makes email submission claim-ready without consuming capacity and atomically allocates a seat only when onboarding activates Pro
 
-Hosted schema note, 22 August 2026: migrations through `066` are applied and verified on the live project. Product Updates tables and storage exist with RLS enabled, embed heartbeats are service-managed, module choices are atomic, public-directory pagination is snapshot-stable, stale writes, publications, and visibility changes are rejected atomically, email bounces and complaints are replay-safe and suppress future sends, referral rewards require a server-observed first feedback submission, public replies inherit their parent feedback and board visibility, project and feedback quotas are enforced by serialized service-only writes, manual referral reviews have a service-only resolution path, the internal product-feedback project exists, and Early Adopter email claims do not consume a seat until the locked onboarding-completion operation assigns one and activates Pro. Generated types are current, and `pnpm supabase:check` passes. The remaining Supabase security advisory is the project-level leaked-password-protection setting, not a database migration issue.
+Hosted schema note, 22 August 2026: migrations through `066` are applied and verified on the live project. Product Updates tables and storage exist with RLS enabled, embed heartbeats are service-managed, module choices are atomic, public-directory pagination is snapshot-stable, stale writes, publications, and visibility changes are rejected atomically, email bounces and complaints are replay-safe and suppress future sends, referral rewards require a server-observed first feedback submission, public replies inherit their parent feedback and board visibility, project and feedback quotas are enforced by serialized service-only writes, manual referral reviews have a service-only resolution path, the internal product-feedback project exists, and Early Adopter email claims do not consume a seat until the locked onboarding-completion operation assigns one and activates Pro. Generated types are current, and `pnpm supabase:check` passes. The project-level leaked-password-protection advisory is an accepted limitation: the owner will not upgrade the Supabase plan for it.
+
+Owner decision, 9 September 2026: do not propose a paid non-production Supabase project. Keep the isolated data-mutating Playwright job disabled unless the owner explicitly reverses this decision.
 
 **How for internal/staging use:** apply the files through the Supabase CLI or copy-paste the contents of each file into the SQL Editor and click "Run".
 
@@ -226,7 +228,7 @@ change Pro entitlement state.
 To promote billing to live, make all of these changes in one maintenance window and redeploy only after the
 set is complete:
 
-1. Switch the Dodo dashboard to live mode and create or copy the live Pro monthly and optional yearly products.
+1. While still in Dodo test mode, open each Pro product and choose **Copy to live mode**. Dodo creates a separate live product with a new product ID, so copy the new live monthly and optional yearly IDs after switching the dashboard to live mode.
 2. Create a live API key and a live webhook for `https://app.feedbacks.dev/api/billing/webhook`.
 3. Subscribe the webhook to `payment.failed`, `subscription.active`, `subscription.updated`,
    `subscription.on_hold`, `subscription.renewed`, `subscription.plan_changed`, `subscription.cancelled`,
@@ -247,14 +249,25 @@ RESEND_FROM_EMAIL
 RESEND_WEBHOOK_SECRET
 ```
 
-In Resend, create a webhook for
-`https://app.feedbacks.dev/api/webhooks/resend`, subscribe to `email.bounced`,
-`email.complained`, `email.suppressed`, `email.failed`,
-`email.delivery_delayed`, `email.sent`, and `email.delivered`, then copy its
-`whsec_…` signing secret into `RESEND_WEBHOOK_SECRET`. The route verifies the
-raw-body Svix signature and timestamp, deduplicates on `svix-id`, stores only
-hashed recipients, and prevents future sends to bounced, suppressed, or
-complaining recipients.
+Configure the production webhook as one operation:
+
+1. In **Resend Dashboard → Webhooks**, choose **Add Webhook**.
+2. Set the endpoint to `https://app.feedbacks.dev/api/webhooks/resend`.
+3. Subscribe to `email.bounced`, `email.complained`, `email.suppressed`,
+   `email.failed`, `email.delivery_delayed`, `email.sent`, and `email.delivered`.
+4. Create the webhook and copy the complete `whsec_…` signing secret.
+5. In **Vercel → feedbacks-dev-dashboard → Settings → Environment Variables**, add
+   `RESEND_WEBHOOK_SECRET`, paste the `whsec_…` value, scope it to **Production**,
+   mark it sensitive, and save it. Never paste the secret into chat or source control.
+6. In **Vercel → feedbacks-dev-dashboard → Deployments**, redeploy the latest
+   Production deployment. Environment-variable changes do not affect an existing deployment.
+7. Send through Resend to `delivered@resend.dev`, `bounced@resend.dev`,
+   `complained@resend.dev`, and `suppressed@resend.dev`. In **Resend → Webhooks →
+   the feedbacks.dev endpoint**, confirm the matching deliveries received HTTP `200`.
+
+The route verifies the raw-body Svix signature and timestamp, deduplicates on
+`svix-id`, stores only hashed recipients, and prevents future sends to bounced,
+suppressed, or complaining recipients.
 
 ### Cron plan note
 
